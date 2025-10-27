@@ -9,7 +9,15 @@ export default defineConfig({
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'],
             ssr: 'resources/js/ssr.tsx',
-            refresh: true,
+             refresh: {
+                // Configuración para detectar cambios en subdominios
+                paths: [
+                    'resources/views/**',
+                    'resources/js/**',
+                    'routes/**',
+                    'lang/**',
+                ],
+            },
         }),
         react(),
         tailwindcss(),
@@ -20,4 +28,34 @@ export default defineConfig({
     esbuild: {
         jsx: 'automatic',
     },
+    server: {
+        host: '0.0.0.0',
+        port: 5173,
+        hmr: {
+            host: 'owomarket.local',
+            // Configuración específica para CORS
+            protocol: 'ws',
+            // Agrega esto para permitir todos los orígenes en desarrollo
+        },
+        // Configuración CORS crítica
+        cors: {
+            origin: true, // Permite todos los orígenes
+            credentials: true,
+        },
+        // Agregar headers CORS manualmente
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+            'Access-Control-Allow-Headers': 'X-Requested-With, content-type, Authorization',
+        },
+    },
+    // Configuración adicional para el build
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: undefined,
+            },
+        },
+    },
+
 });

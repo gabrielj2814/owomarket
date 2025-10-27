@@ -20,5 +20,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         //
+        if (tenancy()->initialized) {
+            $currentDomain = tenancy()->tenant->domains->first()->domain;
+            \URL::forceRootUrl('http://' . $currentDomain);
+
+            // Para Vite/Webpack
+            config(['app.url' => 'http://' . $currentDomain]);
+        }
     }
 }

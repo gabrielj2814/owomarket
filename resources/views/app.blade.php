@@ -15,6 +15,13 @@
 
         @viteReactRefresh
         @vite(['resources/js/app.tsx', "resources/js/pages/{$page['component']}.tsx"])
+        <!-- Configuración de asset URL para tenant -->
+        <script>
+            // Configuración para desarrollo con subdominios
+            @if(app()->isLocal())
+            window.viteBaseUrl = 'http://localhost:5173';
+            @endif
+        </script>
         @inertiaHead
     </head>
     <body class="font-sans antialiased">
