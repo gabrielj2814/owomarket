@@ -7,11 +7,13 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use Stancl\JobPipeline\JobPipeline;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
+use Stancl\Tenancy\DatabaseConfig;
 
 class TenancyServiceProvider extends ServiceProvider
 {
@@ -103,6 +105,25 @@ class TenancyServiceProvider extends ServiceProvider
         $this->mapRoutes();
 
         $this->makeTenancyMiddlewareHighestPriority();
+
+        // Custom DB name format: tenant_{nombre}_{tenant_id}_tenant
+        DatabaseConfig::generateDatabaseNamesUsing(function ($tenant) {
+            $id = (string) $tenant->getTenantKey();
+            $base = $tenant->slug ?? $tenant->name ?? '';
+            $slug = Str::slug((string) $base, '_');
+            if ($slug === '') {
+                $slug = 't';
+            }
+
+            // Ensure MySQL 64-char limit: 15 fixed chars + id length + slug length
+            $maxSlug = 64 - 15 - strlen($id);
+            if ($maxSlug < 1) {
+                $maxSlug = 1;
+            }
+            $slug = substr($slug, 0, $maxSlug);
+
+            return "tenant_{$slug}_{$id}_tenant";
+        });
     }
 
     protected function bootEvents()
