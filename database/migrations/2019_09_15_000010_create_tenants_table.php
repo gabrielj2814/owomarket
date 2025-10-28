@@ -19,6 +19,14 @@ class CreateTenantsTable extends Migration
             $table->string('id')->primary();
 
             // your custom columns may go here
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->json('data'); // Configuraciones de la tienda
+            $table->enum('status', ['active', 'inactive', 'suspended'])->default('active');
+            $table->string('theme')->default('default');
+            $table->string('locale')->default('es');
+            $table->string('timezone')->default('UTC');
+            $table->string('currency')->default('USD');
 
             $table->timestamps();
             $table->json('data')->nullable();

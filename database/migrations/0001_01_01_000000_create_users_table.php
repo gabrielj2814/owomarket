@@ -17,6 +17,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('pin')->nullable();
+            $table->enum('type', ['super_admin', 'tenant_owner', 'customer'])->default('customer');
+            $table->string('phone')->nullable();
+            $table->text('avatar')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();
         });
