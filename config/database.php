@@ -31,6 +31,16 @@ return [
 
     'connections' => [
 
+        'central' => [
+            'driver' => 'mysql',
+            'host' => env('CENTRAL_DB_HOST', '127.0.0.1'),
+            'port' => env('CENTRAL_DB_PORT', '3306'),
+            'database' => env('CENTRAL_DB_DATABASE', 'owomarket_dev'),
+            'username' => env('CENTRAL_DB_USERNAME', 'root'),
+            'password' => env('CENTRAL_DB_PASSWORD', ''),
+            // ... resto de configuración
+        ],
+
         'sqlite' => [
             'driver' => 'sqlite',
             'url' => env('DB_URL'),
