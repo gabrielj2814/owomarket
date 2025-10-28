@@ -13,6 +13,18 @@ return new class extends Migration
     {
         Schema::create('tenant_categories', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
+            $table->string('slug')->unique();
+            $table->text('description')->nullable();
+            $table->string('icon')->nullable();
+            $table->string('image')->nullable();
+            $table->foreignId('parent_id')->nullable()->constrained('tenant_categories')->onDelete('cascade');
+            $table->integer('lft')->nullable();
+            $table->integer('rgt')->nullable();
+            $table->integer('depth')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->integer('position')->default(0);
+            $table->json('metadata')->nullable();
             $table->timestamps();
         });
     }
