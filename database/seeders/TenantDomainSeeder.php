@@ -34,13 +34,25 @@ class TenantDomainSeeder extends Seeder
 
         foreach ($codes as $code) {
             $sub = Str::lower($code);
+            $slug = Str::slug($code);
+            $name = $code; // usar el valor de codes como nombre
             $fullDomain = sprintf('%s.%s', $sub, $baseDomain);
 
-            // Idempotent: only create when the domain does not exist yet
-            if (!Domain::where('domain', $fullDomain)->exists()) {
-                $tenant = Tenant::create();
-                $tenant->domains()->create(['domain' => $fullDomain]);
+            // Evitar duplicados por dominio
+            if (Domain::where('domain', $fullDomain)->exists()) {
+                continue;
             }
+
+            // Crear o reutilizar tenant por slug y asignar nombre
+            $tenant = Tenant::firstOrCreate(
+                ['slug' => $slug],
+                [
+                    'name' => $name,
+                    // Los demás campos tienen default en la migración
+                ]
+            );
+
+            $tenant->domains()->create(['domain' => $fullDomain]);
         }
     }
 }

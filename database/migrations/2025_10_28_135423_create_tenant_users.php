@@ -13,11 +13,24 @@ return new class extends Migration
     {
         Schema::create('tenant_users', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained()->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+
             $table->enum('role', ['owner', 'admin', 'manager', 'staff'])->default('staff');
             $table->json('permissions')->nullable();
             $table->timestamps();
+
+            $table->string('tenant_id');
+            $table->unsignedBigInteger('user_id');
+
+            // Foreign keys explícitas
+            $table->foreign('tenant_id')
+                  ->references('id')
+                  ->on('tenants')
+                  ->onDelete('cascade');
+
+            $table->foreign('user_id')
+                  ->references('id')
+                  ->on('users')
+                  ->onDelete('cascade');
 
             $table->unique(['tenant_id', 'user_id']);
         });
