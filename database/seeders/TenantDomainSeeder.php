@@ -48,6 +48,7 @@ class TenantDomainSeeder extends Seeder
                 ['slug' => $slug],
                 [
                     'name' => $name,
+                    'slug' => $slug
                     // Los demás campos tienen default en la migración
                 ]
             );

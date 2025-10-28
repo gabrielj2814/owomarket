@@ -23,4 +23,24 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     {
         return $this->hasMany(TenantUser::class);
     }
+
+    /**
+     * Tell VirtualColumn which attributes are real DB columns
+     * so they are not moved into the JSON `data` field.
+     */
+    public static function getCustomColumns(): array
+    {
+        return [
+            'id',
+            'name',
+            'slug',
+            'status',
+            'theme',
+            'locale',
+            'timezone',
+            'currency',
+            'created_at',
+            'updated_at',
+        ];
+    }
 }
