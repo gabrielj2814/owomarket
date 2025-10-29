@@ -11,7 +11,6 @@ foreach (config('tenancy.central_domains') as $domain) {
                 'domain' => $domain,
             ]);
         })->name('home');
-
     });
 }
 

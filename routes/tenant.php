@@ -24,14 +24,14 @@ Route::middleware([
     InitializeTenancyByDomain::class,
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
+
     Route::get('/', function () {
-        return 'This is your multi-tenant application. The id of the current tenant is ' . tenant('id');
-    });
-    Route::get('/wel', function () {
         $domain = request()->getHost();
         return Inertia::render('welcome',[
             'domain' => $domain,
         ]);
-    })->name('home2');
+    })->name('tenant.welcome');
+
+    Route::prefix("auth")->group(callback: base_path("app/Modules/Core/Auth/Routes/Web.php"));
 
 });
