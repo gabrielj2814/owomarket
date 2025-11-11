@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class RootUserSeeder extends Seeder
 {
@@ -15,6 +16,7 @@ class RootUserSeeder extends Seeder
         User::updateOrCreate(
             ['email' => 'root@owomarket.local'],
             [
+                'id' =>   Str::uuid()->toString(),
                 'name' => 'Root',
                 'password' => Hash::make($password),
             ]

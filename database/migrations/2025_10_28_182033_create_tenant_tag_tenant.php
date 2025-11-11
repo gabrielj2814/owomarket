@@ -12,11 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_tag_tenant', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
             // Tenants use string UUID IDs, so use string FK
             $table->string('tenant_id');
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            $table->foreignId('tenant_tag_id')->constrained()->onDelete('cascade');
+            $table->foreign('tenant_id')->references('id')->on('tenants')->onUpdate('cascade')->onDelete('cascade');
+            $table->string('tenant_tag_id')->constrained()->onDelete('cascade');
             $table->timestamps();
 
             $table->unique(['tenant_id', 'tenant_tag_id']);

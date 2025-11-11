@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_feature_tenant', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
             // Tenants use string UUID IDs, so use string FK
             $table->string('tenant_id');
+            $table->string('tenant_feature_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            $table->foreignId('tenant_feature_id')->constrained()->onDelete('cascade');
+            $table->foreign('tenant_feature_id')->references('id')->on('tenant_feature_tenant')->onDelete('cascade');
             $table->text('value')->nullable();
             $table->timestamps();
 

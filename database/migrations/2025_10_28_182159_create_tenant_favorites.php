@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('tenant_favorites', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             // Tenants use string UUID IDs, so use string FK
             $table->string('tenant_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');

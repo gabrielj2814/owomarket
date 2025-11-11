@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_users', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
 
             $table->enum('role', ['owner', 'admin', 'manager', 'staff'])->default('staff');
             $table->json('permissions')->nullable();
             $table->timestamps();
 
             $table->string('tenant_id');
-            $table->unsignedBigInteger('user_id');
+            $table->string('user_id');
 
             // Foreign keys explícitas
             $table->foreign('tenant_id')

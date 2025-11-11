@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_stats', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
             // Tenants use string UUID IDs, so use string FK
             $table->string('tenant_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');

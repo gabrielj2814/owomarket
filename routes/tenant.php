@@ -32,6 +32,6 @@ Route::middleware([
         ]);
     })->name('tenant.welcome');
 
-    Route::prefix("auth")->group(callback: base_path("app/Modules/Core/Auth/Routes/Web.php"));
+    // Route::prefix("auth")->group(callback: base_path("app/Modules/Core/Auth/Routes/Web.php"));
 
 });

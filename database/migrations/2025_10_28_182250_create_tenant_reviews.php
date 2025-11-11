@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             // Tenants use string UUID IDs, so use string FK
             $table->string('tenant_id');
+            $table->string('user_id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->integer('rating');
             $table->string('title')->nullable();
             $table->text('comment')->nullable();

@@ -12,13 +12,20 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_categories', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->string('icon')->nullable();
             $table->string('image')->nullable();
-            $table->foreignId('parent_id')->nullable()->constrained('tenant_categories')->onDelete('cascade');
+            // $table->foreignId('parent_id')->nullable()->constrained('tenant_categories')->onDelete('cascade');
+
+
+            $table->string('parent_id');
+
+            // Foreign keys explícitas
+            $table->foreign('parent_id')->nullable()->references("id")->on('tenant_categories')->onDelete('cascade');
+
             $table->integer('lft')->nullable();
             $table->integer('rgt')->nullable();
             $table->integer('depth')->nullable();
