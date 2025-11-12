@@ -9,7 +9,7 @@ class Uuid {
 
      private string $value;
 
-    public function __construct(string $value) {
+    private function __construct(string $value) {
         if (!self::isValid($value)) {
             throw new InvalidUuidException(
                 message: null,
@@ -21,6 +21,10 @@ class Uuid {
 
     public function value(): string {
         return $this->value;
+    }
+
+    public static function make(string $value):self{
+        return new self($value);
     }
 
     public static function generate(): self {

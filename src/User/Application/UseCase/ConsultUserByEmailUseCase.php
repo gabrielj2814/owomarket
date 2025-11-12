@@ -15,7 +15,7 @@ class ConsultUserByEmailUseCase {
 
     public function execute(EmailUserData $user): ?User{
 
-        $mail=new UserEmail($user->email);
+        $mail=UserEmail::make($user->email);
 
         $user=$this->userRepository->consultarPorMail($mail);
 

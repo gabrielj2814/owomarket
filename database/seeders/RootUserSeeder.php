@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Src\User\Domain\ValueObjects\Password;
 
 class RootUserSeeder extends Seeder
 {
@@ -18,7 +19,7 @@ class RootUserSeeder extends Seeder
             [
                 'id' =>   Str::uuid()->toString(),
                 'name' => 'Root',
-                'password' => Hash::make($password),
+                'password' => Password::fromPlainText($password)->getHash(),
             ]
         );
     }

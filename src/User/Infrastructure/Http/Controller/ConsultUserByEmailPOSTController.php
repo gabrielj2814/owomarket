@@ -5,6 +5,7 @@ namespace Src\User\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Src\Shared\Helper\ApiResponse;
 use Src\User\Application\Data\EmailUserData;
 use Src\User\Application\UseCase\ConsultUserByEmailUseCase;
 use Src\User\Infrastructure\Eloquent\Repositories\UserRepository;
@@ -23,10 +24,18 @@ class ConsultUserByEmailPOSTController extends Controller{
 
         $respuesta = $consultUseCase->execute($dto);
 
-        return new JsonResponse([
+        if(!$respuesta){
+            return ApiResponse::error("El usuario no fue encontrado",404);
+        }
+
+        $data=[
             "id" => $respuesta?->getId()->value(),
+            "name" => $respuesta?->getName()->value(),
             "email" => $respuesta?->getEmail()->value(),
-        ]);
+            "password" => $respuesta?->getPassword()->getHash(),
+        ];
+
+        return ApiResponse::success($data,"usuario consultado",200);
 
     }
 
