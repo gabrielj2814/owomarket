@@ -1,12 +1,17 @@
 RememberToken<?php
 
-namespace App\Authentication\Domain\ValueObjects;
+namespace Src\User\Domain\ValueObjects;
 
 use InvalidArgumentException;
 use Src\Shared\ValuesObjects\StringValueObject;
 
 final class RememberToken extends StringValueObject
 {
+
+    public static function make(string $value):self{
+        return new self($value);
+    }
+
     protected function validate(string $value): void
     {
         if (empty($value)) {

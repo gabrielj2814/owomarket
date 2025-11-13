@@ -33,6 +33,12 @@ class ConsultUserByEmailPOSTController extends Controller{
             "name" => $respuesta?->getName()->value(),
             "email" => $respuesta?->getEmail()->value(),
             "password" => $respuesta?->getPassword()->getHash(),
+            "type" => $respuesta?->getType()->value(),
+            "has_phone" => $respuesta?->hasPhone(),
+            "has_avatar" => $respuesta?->hasAvatar(),
+            "is_active" => $respuesta?->isActive(),
+            "createdAt" => $respuesta?->getCreatedAt()->value(),
+            "updatedAt" => $respuesta?->getUpdatedAt()->value(),
         ];
 
         return ApiResponse::success($data,"usuario consultado",200);

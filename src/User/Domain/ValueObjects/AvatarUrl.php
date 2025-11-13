@@ -1,12 +1,18 @@
 <?php
 
-namespace App\User\Domain\ValueObjects;
+namespace Src\User\Domain\ValueObjects;
 
 use InvalidArgumentException;
 use Src\Shared\ValuesObjects\StringValueObject;
 
 final class AvatarUrl extends StringValueObject
 {
+
+
+    public static function make(string $value):self{
+        return new self($value);
+    }
+
     protected function validate(string $value): void
     {
         if (empty(trim($value))) {

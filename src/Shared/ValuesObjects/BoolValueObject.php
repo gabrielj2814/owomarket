@@ -6,14 +6,10 @@ abstract class BoolValueObject
 {
     protected bool $value;
 
-    private function __construct(string $value)
+    protected function __construct(string $value)
     {
         $this->validate($value);
         $this->value = $value;
-    }
-
-    public static function make(string $value):self{
-        return new self($value);
     }
 
     protected function validate(bool $value): void

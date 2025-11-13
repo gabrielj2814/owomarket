@@ -10,7 +10,7 @@ final class CreatedAt
 {
     private DateTimeImmutable $value;
 
-    public function __construct(?DateTimeImmutable $value = null)
+    private function __construct(?DateTimeImmutable $value = null)
     {
         $this->value = $value ?? new DateTimeImmutable();
     }

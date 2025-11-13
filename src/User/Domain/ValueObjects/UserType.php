@@ -8,6 +8,7 @@ use Src\Shared\ValuesObjects\StringValueObject;
 
 final class UserType extends StringValueObject
 {
+
     public const SUPER_ADMIN = 'super_admin';
     public const TENANT_OWNER = 'tenant_owner';
     public const CUSTOMER = 'customer';
@@ -23,6 +24,10 @@ final class UserType extends StringValueObject
         self::TENANT_OWNER => 2,
         self::CUSTOMER => 1,
     ];
+
+    public static function make(string $value):self{
+        return new self($value);
+    }
 
     protected function validate(string $value): void
     {

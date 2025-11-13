@@ -8,6 +8,10 @@ use Src\Shared\ValuesObjects\StringValueObject;
 
 final class PinVerification extends StringValueObject
 {
+    public static function make(string $value):self{
+        return new self($value);
+    }
+
     protected function validate(string $value): void
     {
         if (strlen($value) !== 6) {

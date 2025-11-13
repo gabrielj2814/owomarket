@@ -1,11 +1,16 @@
 <?php
 
-namespace App\User\Domain\ValueObjects;
+namespace Src\User\Domain\ValueObjects;
 
 use Src\Shared\ValuesObjects\BoolValueObject;
 
 final class UserStatus extends BoolValueObject
 {
+
+    public static function make(bool $value):self{
+        return new self($value);
+    }
+
     public function activate(): self
     {
         return new self(true);

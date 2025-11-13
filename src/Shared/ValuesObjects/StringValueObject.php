@@ -6,16 +6,11 @@ abstract class StringValueObject
 {
     protected string $value;
 
-    private function __construct(string $value)
+    protected function __construct(string $value)
     {
         $this->validate($value);
         $this->value = $value;
     }
-
-    public static function make(string $value):self{
-        return new self($value);
-    }
-
 
     abstract protected function validate(string $value): void;
 

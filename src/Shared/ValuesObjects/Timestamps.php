@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Shared\Domain\ValueObjects;
+namespace Src\Shared\ValuesObjects;
 
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\SoftDeleteAt;
@@ -12,7 +12,7 @@ final class Timestamps
     private UpdatedAt $updatedAt;
     private SoftDeleteAt $deletedAt;
 
-    public function __construct(
+    private function __construct(
         ?CreatedAt $createdAt = null,
         ?UpdatedAt $updatedAt = null,
         ?SoftDeleteAt $deletedAt = null
@@ -20,6 +20,18 @@ final class Timestamps
         $this->createdAt = $createdAt ?? CreatedAt::now();
         $this->updatedAt = $updatedAt ?? new UpdatedAt();
         $this->deletedAt = $deletedAt ?? new SoftDeleteAt();
+    }
+
+    public static function make(
+        ?CreatedAt $createdAt = null,
+        ?UpdatedAt $updatedAt = null,
+        ?SoftDeleteAt $deletedAt = null
+    ):self{
+        return new self(
+            $createdAt,
+            $updatedAt,
+            $deletedAt
+        );
     }
 
     public static function create(): self

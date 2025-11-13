@@ -7,7 +7,7 @@ use Src\User\Domain\Exceptions\InvalidUuidException;
 
 final class Uuid {
 
-     private string $value;
+    private string $value;
 
     private function __construct(string $value) {
         if (!self::isValid($value)) {
