@@ -4,7 +4,7 @@
 namespace Src\User\Domain\ValueObjects;
 
 
-class UserEmail
+final class UserEmail
 {
     //
     private string $email;

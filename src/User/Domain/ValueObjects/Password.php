@@ -14,7 +14,7 @@ use InvalidArgumentException;
  * validación, hashing, verificación y gestión de hashes.
  * Implementa el patrón Value Object garantizando inmutabilidad y validación.
  */
-class Password
+final class Password
 {
     /**
      * Longitud mínima permitida para contraseñas

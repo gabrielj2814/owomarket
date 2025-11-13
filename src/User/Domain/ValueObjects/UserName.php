@@ -5,7 +5,7 @@ namespace Src\User\Domain\ValueObjects;
 
 use InvalidArgumentException;
 
-class UserName {
+final class UserName {
 
     private string $value;
 

@@ -5,7 +5,7 @@ namespace Src\User\Domain\ValueObjects;
 use Illuminate\Support\Str;
 use Src\User\Domain\Exceptions\InvalidUuidException;
 
-class Uuid {
+final class Uuid {
 
      private string $value;
 
