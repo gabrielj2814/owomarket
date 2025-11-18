@@ -21,7 +21,10 @@ login web
   - customer     -> url panel customer
 
 Servicio de Auth
-- tipar con un entity de usuario la respuesta buscar por correo que te trae la api de usario
+- tipar con un entity de usuario la respuesta buscar por correo que te trae la api de usuario
+
+Servicio de usuario
+- agregar un form request para que valide que los datos que le estan llegando sean correcto en este caso el correo del usuario
 
 
 

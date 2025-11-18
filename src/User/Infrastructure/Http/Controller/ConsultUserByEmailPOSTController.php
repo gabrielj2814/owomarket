@@ -13,7 +13,7 @@ use Src\User\Infrastructure\Eloquent\Repositories\UserRepository;
 class ConsultUserByEmailPOSTController extends Controller{
 
 
-
+    // TODO: agregar un form request para validar los datos que recibe el endpoint
     public function index(Request $request):JsonResponse{
 
         $userRepository=new UserRepository();
