@@ -32,7 +32,7 @@ class ConsultUserByEmailPOSTController extends Controller{
             "id" => $respuesta?->getId()->value(),
             "name" => $respuesta?->getName()->value(),
             "email" => $respuesta?->getEmail()->value(),
-            "password" => $respuesta?->getPassword()->getHash(),
+            // "password" => $respuesta?->getPassword()->getHash(),
             "type" => $respuesta?->getType()->value(),
             "has_phone" => $respuesta?->hasPhone(),
             "has_avatar" => $respuesta?->hasAvatar(),
