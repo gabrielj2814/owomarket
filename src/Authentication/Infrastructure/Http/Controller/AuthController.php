@@ -3,16 +3,13 @@
 namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Log;
+use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
 use Src\Authentication\Infrastructure\Http\Request\LoginFormRequest;
 use Src\Authentication\Infrastructure\Services\ApiGateway;
+use Src\Authentication\Infrastructure\Services\AuthServices;
 use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
-// use App\Modules\Core\Auth\Contracts\Auth;
-// use App\Modules\Core\Helpers\ApiResponse;
-// use Illuminate\Http\JsonResponse;
-// use Illuminate\Http\Request;
 
 class AuthController extends Controller
 {
@@ -26,14 +23,14 @@ class AuthController extends Controller
     }
 
 
-    public function login(LoginFormRequest $request): JsonResponse
-    {
-        $credentials = $request->data;
+    // public function login(LoginFormRequest $request): JsonResponse
+    // {
+    //     $credentials = $request->data;
 
 
-        return ApiResponse::success(message: 'Inicio de sesión exitoso', code:200);
+    //     return ApiResponse::success(message: 'Inicio de sesión exitoso', code:200);
 
-    }
+    // }
 
     public function loginApi(LoginFormRequest $request): JsonResponse{
 
@@ -41,8 +38,19 @@ class AuthController extends Controller
 
         $respuestaApiUser=$this->api->users()->consultUserByEmail($credentials->email);
 
-        Log::info("respuesta api user");
-        Log::info($respuestaApiUser);
+        if($respuestaApiUser["code"]==404){
+            return ApiResponse::error(message: $respuestaApiUser["message"], code:$respuestaApiUser["code"]);
+        }
+
+        $userRepository= new UserRepository();
+
+        $authServices= new AuthServices($userRepository);
+
+        $email=UserEmail::make($respuestaApiUser["data"]["email"]);
+
+        $authServices->consultUserByEmail($email);
+
+
 
         return ApiResponse::success(data: $credentials->toArray(), message: 'Inicio de sesión exitoso', code:200);
 

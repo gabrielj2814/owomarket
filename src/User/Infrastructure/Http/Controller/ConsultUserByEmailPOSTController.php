@@ -9,18 +9,19 @@ use Src\Shared\Helper\ApiResponse;
 use Src\User\Application\Data\EmailUserData;
 use Src\User\Application\UseCase\ConsultUserByEmailUseCase;
 use Src\User\Infrastructure\Eloquent\Repositories\UserRepository;
+use Src\User\Infrastructure\Http\Request\ConsultarUsuarioByEmailFormRequest;
 
 class ConsultUserByEmailPOSTController extends Controller{
 
 
-    // TODO: agregar un form request para validar los datos que recibe el endpoint
-    public function index(Request $request):JsonResponse{
+    public function index(ConsultarUsuarioByEmailFormRequest $request):JsonResponse{
+        $body=$request->data;
 
         $userRepository=new UserRepository();
 
         $consultUseCase=new ConsultUserByEmailUseCase($userRepository);
 
-        $dto=new EmailUserData($request->email);
+        $dto=new EmailUserData($body->email);
 
         $respuesta = $consultUseCase->execute($dto);
 

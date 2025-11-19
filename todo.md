@@ -2,9 +2,6 @@
 
 
 login api
-- crear los VO que usara la entity de usuario
-- crear entity de usuario con lo que usara el servicio de authentication
-- consultar lo datos del usuario por email
 - crear repositori para poder consultar usuario por correo
 - crear servicio donde valide la clave del usuario y genere el token si la clave es valida
 - respoder con su token y su rol
@@ -25,11 +22,3 @@ Servicio de Auth
 
 Servicio de usuario
 - agregar un form request para que valide que los datos que le estan llegando sean correcto en este caso el correo del usuario
-
-
-
-
-TODO: configurar todos los modelos que son exclusivos de los tenant usen el uuid
-
-
-

@@ -1,9 +1,8 @@
 <?php
 
-
-
 namespace Src\User\Infrastructure\Eloquent\Repositories;
 
+use Illuminate\Support\Facades\Log;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\Timestamps;
 use Src\Shared\ValuesObjects\UpdatedAt;
@@ -20,7 +19,7 @@ use Src\User\Domain\ValueObjects\UserName;
 use Src\User\Domain\ValueObjects\UserStatus;
 use Src\User\Domain\ValueObjects\UserType;
 use Src\User\Domain\ValueObjects\Uuid;
-use Src\User\Infrastructure\Models\User;
+use Src\User\Infrastructure\Eloquent\Models\User;
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -30,6 +29,10 @@ class UserRepository implements UserRepositoryInterface
     public function consultarPorMail(UserEmail $mail): ?EntitiesUser
     {
         $respuesta=User::where("email","=",$mail->value())->first();
+
+        if(!$respuesta){
+            return null;
+        }
 
         $fechas=Timestamps::make(CreatedAt::fromString($respuesta->created_at),UpdatedAt::fromString($respuesta->updated_at));
 

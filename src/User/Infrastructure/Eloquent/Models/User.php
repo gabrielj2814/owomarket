@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace Src\User\Infrastructure\Eloquent\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +12,12 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    public $table = 'users';
+    public $primaryKey = 'id';
+    public $incrementing = false;
+    protected $ketType = "string";
+
 
     /**
      * The attributes that are mass assignable.
@@ -47,15 +53,15 @@ class User extends Authenticatable
         ];
     }
 
-    public function tenants(): BelongsToMany
-    {
-        return $this->belongsToMany(Tenant::class, 'tenant_users')
-            ->withPivot(['role', 'permissions'])
-            ->withTimestamps();
-    }
+    // public function tenants(): BelongsToMany
+    // {
+    //     return $this->belongsToMany(Tenant::class, 'tenant_users')
+    //         ->withPivot(['role', 'permissions'])
+    //         ->withTimestamps();
+    // }
 
-    public function tenantUsers()
-    {
-        return $this->hasMany(TenantUser::class);
-    }
+    // public function tenantUsers()
+    // {
+    //     return $this->hasMany(TenantUser::class);
+    // }
 }

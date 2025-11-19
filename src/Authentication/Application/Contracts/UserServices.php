@@ -3,9 +3,11 @@
 
 namespace Src\Authentication\Application\Contracts;
 
+use Src\Authentication\Domain\Entities\User;
+
 interface UserServices {
 
-    public function consultUserByEmail(string $email):void;
+    public function consultUserByEmail(string $email):array;
 
 }
 
