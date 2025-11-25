@@ -3,6 +3,8 @@
 namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
+use Inertia\Inertia;
+use Spatie\LaravelData\Attributes\Validation\In;
 use Src\Authentication\Application\UseCase\ConsultDataUserByEmailCase;
 use Src\Authentication\Application\UseCase\LoginApiUserUseCase;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
@@ -25,6 +27,13 @@ class AuthController extends Controller
         return ApiResponse::success(message: 'El servicio de autenticación está funcionando correctamente', code:200);
     }
 
+    public function LoginStaffScreen() {
+        $host=request()->getHost();
+
+        return Inertia::render('auth/LoginStaff',[
+            'domain' => $host,
+        ]);
+    }
 
     // public function login(LoginFormRequest $request): JsonResponse
     // {

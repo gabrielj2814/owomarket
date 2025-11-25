@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Src\Authentication\Infrastructure\Http\Controller\AuthController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
@@ -31,6 +32,8 @@ Route::middleware([
             'domain' => $domain,
         ]);
     })->name('tenant.welcome');
+
+    Route::get("auth/login-staff", [AuthController::class, 'LoginStaffScreen'])->name('auth.web.login-staff');
 
     // Route::prefix("auth")->group(callback: base_path("app/Modules/Core/Auth/Routes/Web.php"));
 

@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RootUserSeeder::class,
-            // TenantDefaultUsersSeeder::class,
+            TenantDomainSeeder::class,
+            TenantDefaultUsersSeeder::class,
         ]);
     }
 }

@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use App\Models\Tenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Stancl\Tenancy\Database\Models\Domain;
 
 class TenantDomainSeeder extends Seeder
@@ -53,7 +53,10 @@ class TenantDomainSeeder extends Seeder
                 ]
             );
 
-            $tenant->domains()->create(['domain' => $fullDomain]);
+            $tenant->domains()->create([
+                'id' => Str::uuid()->toString(),
+                'domain' => $fullDomain
+            ]);
         }
     }
 }

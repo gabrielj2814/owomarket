@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Tenant;
-use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 class TenantDefaultUsersSeeder extends Seeder
 {
@@ -15,14 +15,14 @@ class TenantDefaultUsersSeeder extends Seeder
         $password = env('USER_PASSWORD_DEV', '12345678');
 
         $owners = [
-            'tecs' => 'Kō Yamori',
-            'chivostore' => 'Kyouko Mejiro',
-            'tecno_isekaic' => 'Nazuna Nanakusa',
-            'tematicosvzla' => 'arturia',
-            'cosplay_' => 'modred',
-            'darker' => 'astolfo',
-            'montcord_sc' => 'stay gold',
-            'baymax' => 'Akira Asai',
+            'tecs'              => 'Kō Yamori',
+            'chivostore'        => 'Kyouko Mejiro',
+            'tecno_isekaic'     => 'Nazuna Nanakusa',
+            'tematicosvzla'     => 'arturia',
+            'cosplay_'          => 'modred',
+            'darker'            => 'astolfo',
+            'montcord_sc'       => 'stay gold',
+            'baymax'            => 'Akira Asai',
         ];
 
         foreach ($owners as $code => $name) {
@@ -45,6 +45,7 @@ class TenantDefaultUsersSeeder extends Seeder
             $user = User::updateOrCreate(
                 ['email' => $email],
                 [
+                    'id' =>   Str::uuid()->toString(),
                     'name' => $name,
                     'password' => Hash::make($password),
                 ]
@@ -53,6 +54,7 @@ class TenantDefaultUsersSeeder extends Seeder
             // Attach as owner via pivot table tenant_users
             $tenant->users()->syncWithoutDetaching([
                 $user->id => [
+                    'id' => Str::uuid()->toString(),
                     'role' => 'owner',
                     'permissions' => null,
                 ],
