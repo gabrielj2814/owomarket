@@ -14,7 +14,8 @@ foreach (config('tenancy.central_domains') as $domain) {
             ]);
         })->name('home');
 
-        // Route::get("auth/login-staff", [AuthController::class, 'LoginStaffScreen'])->name('auth.web.login-staff');
+        Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/web.php"));
     });
+
 }
 

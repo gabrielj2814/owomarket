@@ -33,8 +33,8 @@ Route::middleware([
         ]);
     })->name('tenant.welcome');
 
-    Route::get("auth/login-staff", [AuthController::class, 'LoginStaffScreen'])->name('auth.web.login-staff');
+    // Route::get("auth/login-staff", [AuthController::class, 'LoginStaffScreen'])->name('tenant.auth.web.login-staff');
 
-    // Route::prefix("auth")->group(callback: base_path("app/Modules/Core/Auth/Routes/Web.php"));
+    Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/tenant.php"));
 
 });

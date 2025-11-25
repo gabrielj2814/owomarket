@@ -30,6 +30,8 @@ class AuthController extends Controller
     public function LoginStaffScreen() {
         $host=request()->getHost();
 
+        // dd($host, tenancy()->initialized);
+
         return Inertia::render('auth/LoginStaff',[
             'domain' => $host,
         ]);
