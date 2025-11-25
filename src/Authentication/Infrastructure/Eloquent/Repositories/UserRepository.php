@@ -37,6 +37,19 @@ class UserRepository implements UserRepositoryInterface
         );
     }
 
+    public function generarToken(UserEmail $mail): ? string
+    {
+        $user=User::where("email","=",$mail->value())->first();
+
+        if(!$user){
+            return null;
+        }
+
+        $token=$user->createToken('auth_token')->plainTextToken;
+
+        return $token;
+    }
+
 
 
 

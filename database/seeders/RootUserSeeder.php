@@ -19,6 +19,7 @@ class RootUserSeeder extends Seeder
             [
                 'id' =>   Str::uuid()->toString(),
                 'name' => 'Root',
+                'type' => 'super_admin',
                 'password' => Password::fromPlainText($password)->getHash(),
             ]
         );

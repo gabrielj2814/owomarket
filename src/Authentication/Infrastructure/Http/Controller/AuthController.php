@@ -3,7 +3,10 @@
 namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
+use Src\Authentication\Application\UseCase\ConsultDataUserByEmailCase;
+use Src\Authentication\Application\UseCase\LoginApiUserUseCase;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Authentication\Infrastructure\Eloquent\Repositories\PersonalAccessTokenRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
 use Src\Authentication\Infrastructure\Http\Request\LoginFormRequest;
 use Src\Authentication\Infrastructure\Services\ApiGateway;
@@ -36,23 +39,39 @@ class AuthController extends Controller
 
         $credentials = $request->data;
 
-        $respuestaApiUser=$this->api->users()->consultUserByEmail($credentials->email);
+        $userRepository= new UserRepository();
+        $personalTokenRepository= new PersonalAccessTokenRepository();
 
-        if($respuestaApiUser["code"]==404){
-            return ApiResponse::error(message: $respuestaApiUser["message"], code:$respuestaApiUser["code"]);
+        $LoginApiUserUseCase= new LoginApiUserUseCase(
+            $userRepository,
+            $personalTokenRepository
+        );
+
+        $email=UserEmail::make($credentials->email);
+
+        $token=$LoginApiUserUseCase->execute(
+            $email,
+            $credentials->password
+        );
+
+        if($token==null){
+            return ApiResponse::error(message: 'Credenciales inválidas', code:401);
         }
 
-        $userRepository= new UserRepository();
+        $ConsultarDataUserByEmailCase= new ConsultDataUserByEmailCase(
+            $userRepository
+        );
 
-        $authServices= new AuthServices($userRepository);
+        $dataUser=$ConsultarDataUserByEmailCase->execute(
+            $email
+        );
 
-        $email=UserEmail::make($respuestaApiUser["data"]["email"]);
+        $data=[
+            'token'=>$token,
+            "user_type" => $dataUser->getType()->value()
+        ];
 
-        $authServices->consultUserByEmail($email);
-
-
-
-        return ApiResponse::success(data: $credentials->toArray(), message: 'Inicio de sesión exitoso', code:200);
+        return ApiResponse::success(data: $data, message: 'Inicio de sesión exitoso', code:200);
 
     }
 
