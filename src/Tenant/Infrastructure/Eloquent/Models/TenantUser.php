@@ -9,6 +9,7 @@ class TenantUser extends Model
 {
     use HasFactory;
 
+    protected $connection = 'central';
     protected $table = 'tenant_users';
 
     protected $guarded = [];

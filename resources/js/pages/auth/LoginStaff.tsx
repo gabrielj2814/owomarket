@@ -1,5 +1,4 @@
-import auth from "@/routes/web/auth";
-import LoginServices from "@/Services/LoginServices";
+import AuthServices from "@/Services/AuthServices";
 import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
 import React from "react";
@@ -15,8 +14,8 @@ interface PasswordValidationRules {
 const LoginStaff = () => {
 
     const [statuFormLogin, setStatuFormLogin] = React.useState<FormLogin>({
-        email: "test@gmail.com",
-        password: '2345ggtrdfaA_@'
+        email: "",
+        password: ''
     });
 
 
@@ -103,12 +102,35 @@ const LoginStaff = () => {
             return
         }
 
-        // alert("todo piola")
-
-        let respuestaServidor= await LoginServices.login(statuFormLogin)
+        let respuestaServidor= await AuthServices.login(statuFormLogin)
         console.log(respuestaServidor);
+
+        if(respuestaServidor.status !== 200){
+            alert("Error en el login: "+respuestaServidor.data.message);
+            return null
+        }
+
+        if(respuestaServidor.data.data==null){
+            alert("Error en el login: "+respuestaServidor.data.message);
+            return null
+        }
+
+        irHaPorElRol(respuestaServidor.data.data.rol);
     }
 
+
+    const irHaPorElRol = (rol:string) => {
+        if(rol === 'super_admin'){
+            alert("hola")
+            window.location.href = '/auth/pagina-inicial';
+        }
+        if(rol === 'tenant_owner'){
+            window.location.href = '/auth/pagina-inicial';
+        }
+        if(rol === 'customer'){
+            window.location.href = '/auth/pagina-inicial';
+        }
+    }
     // ======= Render =======
 
     return (

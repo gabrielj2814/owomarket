@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 
 class PersonalAccessToken extends SanctumPersonalAccessToken
 {
-
+    protected $connection = 'central';
     protected $fillable = [
         'name',
         'token',

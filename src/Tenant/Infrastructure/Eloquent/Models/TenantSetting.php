@@ -9,6 +9,8 @@ class TenantSetting extends Model
 {
     use HasFactory;
 
+    protected $connection = 'central';
+
     protected $guarded = [];
 }
 

@@ -38,9 +38,12 @@ export interface Transitional {
 }
 
 export interface Data<T> {
+    // data:    T | Array<any> | null;
     data:    T | null;
-    mensaje: string;
+    status:  string;
+    message: string;
     code:    number;
+    meta:    Array<any>;
 }
 
 export interface Headers {

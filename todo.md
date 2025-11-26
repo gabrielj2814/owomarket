@@ -1,17 +1,15 @@
 <!-- npm run dev -- --host 0.0.0.0 --port 5173 -->
-login web
-- crear los VO que usara la entity de usuario
-- crear entity de usuario con lo que usara el servicio de authentication
-- consultar lo datos del usuario por email
-- crear repositori para poder consultar usuario por correo
-- crear servicio donde valide la clave del usuario y genere un auth web
-- respoder dependiendo del rol del usuario
-  - super_admin  -> url panel admin
-  - tenant owner -> url panel tenant owner
-  - customer     -> url panel customer
+general
+- agregar loader
+- ver que es mejor que la vista app genere el token para quye todas las vista tengan acceso al token o generar el token desde el backend y usarlo en memoria en el codigo
 
-Servicio de Auth
-- tipar con un entity de usuario la respuesta buscar por correo que te trae la api de usuario
+formulario de login
+- mostar alerta cuando el login da error
+- mostrar alerta si la clave no cumple con el formato
+
+- redireción si entra a una vista si no estas autenticado 
+
+
 
 Servicio de usuario
 - agregar un form request para que valide que los datos que le estan llegando sean correcto en este caso el correo del usuario

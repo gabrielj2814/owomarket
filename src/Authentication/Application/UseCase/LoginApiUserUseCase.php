@@ -27,6 +27,10 @@ class LoginApiUserUseCase {
                 throw new LogicException("Usuario no encontrado");
             }
 
+            if(!$user->canLogin()){
+                throw new Exception("Usuario no autorizado para iniciar sesion");
+            }
+
             if(!$user->getPassword()->verify($clave)){
                 throw new LogicException("clave invalida");
             }

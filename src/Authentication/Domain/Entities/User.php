@@ -95,6 +95,10 @@ class User {
         return $this->isActive->isActive();
     }
 
+    public function canLogin(): bool {
+        return $this->isActive->canLogin();
+    }
+
     public function isSuperAdmin(): bool {
         return $this->type->isSuperAdmin();
     }

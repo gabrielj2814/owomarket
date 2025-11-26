@@ -46,7 +46,7 @@ class UserRepository implements UserRepositoryInterface
             type:               UserType::make($respuesta->type),
             phone:              ($respuesta->phone!==null)?PhoneNumber::make($respuesta->phone):null,
             avatar:             ($respuesta->avatar!==null)?AvatarUrl::make($respuesta->avatar):null,
-            isActive:           UserStatus::make((bool)$respuesta->isActive),
+            isActive:           UserStatus::make($respuesta->is_active),
             rememberToken:      ($respuesta->rememberToken!==null)?RememberToken::make($respuesta->rememberToken):null,
             createdAt:          $fechas->createdAt(),
             updatedAt:          $fechas->updatedAt(),

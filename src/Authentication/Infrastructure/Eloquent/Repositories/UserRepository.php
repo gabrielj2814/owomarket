@@ -33,7 +33,7 @@ class UserRepository implements UserRepositoryInterface
             email:              UserEmail::make($respuesta->email),
             password:           Password::fromHash($respuesta->password),
             type:               UserType::make($respuesta->type),
-            isActive:           UserStatus::make((bool)$respuesta->isActive)
+            isActive:           UserStatus::make($respuesta->is_active),
         );
     }
 

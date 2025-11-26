@@ -16,6 +16,7 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens, HasUuids;
 
+    protected $connection = 'central';
     public $table = 'users';
     public $primaryKey = 'id';
     public $incrementing = false;
