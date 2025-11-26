@@ -30,20 +30,23 @@ class AuthController extends Controller
     public function LoginStaffScreen() {
         $host=request()->getHost();
 
-        // dd($host, tenancy()->initialized);
-
         return Inertia::render('auth/LoginStaff',[
             'domain' => $host,
         ]);
     }
 
-    // public function login(LoginFormRequest $request): JsonResponse
+    public function loginWeb(LoginFormRequest $request): JsonResponse
+    {
+        $credentials = $request->data;
+
+        return ApiResponse::success(data:$credentials, message: 'Inicio de sesión exitoso', code:200);
+    }
+
+    // public function logout(): JsonResponse
     // {
-    //     $credentials = $request->data;
+    //     // $this->auth->logout();
 
-
-    //     return ApiResponse::success(message: 'Inicio de sesión exitoso', code:200);
-
+    //     // return ApiResponse::success(message: 'Cierre de sesión exitoso', code:200);
     // }
 
     public function loginApi(LoginFormRequest $request): JsonResponse{
@@ -86,15 +89,6 @@ class AuthController extends Controller
 
     }
 
-    // public function logout(): JsonResponse
-    // {
-    //     // $this->auth->logout();
-
-    //     // return ApiResponse::success(message: 'Cierre de sesión exitoso', code:200);
-    // }
-
-
-
     // public function logoutApi(Request $request): JsonResponse{
 
     //     // $token = request()->bearerToken();
@@ -105,12 +99,6 @@ class AuthController extends Controller
 
     // }
 
-
-
-
-
 }
-
-
 
 ?>

@@ -1,3 +1,5 @@
+import auth from "@/routes/web/auth";
+import LoginServices from "@/Services/LoginServices";
 import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
 import React from "react";
@@ -13,8 +15,8 @@ interface PasswordValidationRules {
 const LoginStaff = () => {
 
     const [statuFormLogin, setStatuFormLogin] = React.useState<FormLogin>({
-        email: '',
-        password: ''
+        email: "test@gmail.com",
+        password: '2345ggtrdfaA_@'
     });
 
 
@@ -88,7 +90,7 @@ const LoginStaff = () => {
         }));
     }
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         if(!validarEmail(statuFormLogin.email)){
@@ -101,7 +103,10 @@ const LoginStaff = () => {
             return
         }
 
-        alert("todo piola")
+        // alert("todo piola")
+
+        let respuestaServidor= await LoginServices.login(statuFormLogin)
+        console.log(respuestaServidor);
     }
 
     // ======= Render =======
