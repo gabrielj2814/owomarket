@@ -1,9 +1,110 @@
+import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
+import React from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { LuSend, LuStore  } from "react-icons/lu";
 
+interface PasswordValidationRules {
+  [key: string]: RegExp;
+}
+
+
 
 const LoginStaff = () => {
+
+    const [statuFormLogin, setStatuFormLogin] = React.useState<FormLogin>({
+        email: '',
+        password: ''
+    });
+
+
+
+    // ======= States =======
+
+    // ======= UseEffect =======
+
+
+    // ======= Validaciones =======
+    const validarEmail = (email: string):boolean => {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    }
+
+    /**
+     * Valida una contraseña según las reglas de negocio
+     *
+     * Realiza las siguientes validaciones:
+     * - Longitud mínima y máxima
+     * - Presencia de mayúsculas
+     * - Presencia de minúsculas
+     * - Presencia de números
+     * - Presencia de caracteres especiales
+     *
+     * @param password Contraseña a validar
+     * @param minLength Longitud mínima requerida
+     * @param maxLength Longitud máxima permitida
+     * @returns boolean Indica si la contraseña es válida
+     */
+    function validatePassword(
+        password: string,
+        minLength: number = 8,
+        maxLength: number = 72
+    ): boolean {
+        // Validar longitud mínima
+        if (password.length < minLength) {
+            return false;
+        }
+
+        // Validar longitud máxima (límite de BCrypt)
+        if (password.length > maxLength) {
+            return false;
+        }
+
+        // Reglas de complejidad de contraseña
+        const rules: PasswordValidationRules = {
+            'mayúscula': /[A-Z]/,                      // Al menos una letra mayúscula
+            'minúscula': /[a-z]/,                      // Al menos una letra minúscula
+            'número': /[0-9]/,                         // Al menos un número
+            'carácter especial': /[!@#$%^&*()\-_=+{};:,<.>]/ // Al menos un carácter especial
+        };
+
+        // Aplicar cada regla de validación
+        for (const [tipo, patron] of Object.entries(rules)) {
+            if (!patron.test(password)) {
+            return false;
+            }
+        }
+
+        return true;
+    }
+
+    // ======= Handler =======
+
+    const handlersChangeFormLogin = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        const { name, value } = e.target;
+        setStatuFormLogin(prev => ({
+            ...prev,
+            [name]: value
+        }));
+    }
+
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if(!validarEmail(statuFormLogin.email)){
+            alert("El email no es válido");
+            return
+        }
+
+        if(!validatePassword(statuFormLogin.password)){
+            alert("La contraseña no cumple con los requisitos de seguridad");
+            return
+        }
+
+        alert("todo piola")
+    }
+
+    // ======= Render =======
 
     return (
         <>
@@ -17,18 +118,18 @@ const LoginStaff = () => {
                         </div>
                         <div className="w-full lg:w-3/6 ">
                             <h1 className=" text-2xl text-white mb-5 font-bold">Staff Sing In</h1>
-                            <form className="flex flex-col gap-4">
+                            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                 <div className="">
                                     <div className="mb-2 block">
-                                        <Label htmlFor="emailInput">Email</Label>
+                                        <Label htmlFor="email">Email</Label>
                                     </div>
-                                    <TextInput id="emailInput" type="email" icon={HiMail} placeholder="name@owomarket.com" required />
+                                    <TextInput id="email" type="email" name="email" icon={HiMail} placeholder="name@owomarket.com" onChange={handlersChangeFormLogin} value={statuFormLogin.email} required />
                                 </div>
                                 <div className="mb-5">
                                     <div className="mb-2 block">
-                                        <Label htmlFor="passwordInput">Password</Label>
+                                        <Label htmlFor="password">Password</Label>
                                     </div>
-                                    <TextInput id="passwordInput" type="password" icon={HiLockClosed} placeholder="password" required />
+                                    <TextInput id="password" type="password" name="password" icon={HiLockClosed} placeholder="password" onChange={handlersChangeFormLogin} value={statuFormLogin.password} required />
                                 </div>
                                 {/* <div className="flex items-center gap-2">
                                     <Checkbox id="remember" />
