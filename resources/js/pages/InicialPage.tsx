@@ -1,3 +1,4 @@
+import Dashboard from "@/components/layouts/Dashboard";
 import AuthServices from "@/Services/AuthServices";
 import { Button } from "flowbite-react";
 
@@ -15,10 +16,9 @@ const InicialPage = () => {
 
     return (
         <>
-            <h1>hola usuario</h1>
-
-            <Button onClick={() => logout()}>Logout</Button>
-
+            <Dashboard>
+                <h1>Dashboard</h1>
+            </Dashboard>
         </>
     )
 }

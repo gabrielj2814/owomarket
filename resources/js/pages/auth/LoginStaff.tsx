@@ -17,8 +17,8 @@ const LoginStaff = () => {
     // ======= States =======
 
     const [statuFormLogin,  setStatuFormLogin] = useState<FormLogin>({
-        email: "test@gmail.com",
-        password: '@Gabriel1234',
+        email: "",
+        password: '',
     });
 
     const [statusLoader,    setStatusLoader]   = useState<boolean>(false);
