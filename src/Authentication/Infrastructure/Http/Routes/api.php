@@ -1,11 +1,12 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Src\Authentication\Infrastructure\Http\Controller\AuthController;
+use Src\Authentication\Infrastructure\Http\Controller\LoginApiPOSTController;
+use Src\Authentication\Infrastructure\Http\Controller\LogoutApiGETController;
 
-Route::get("/helpcheck",    [AuthController::class, "helpCheck"])->name("api.auth.helpCheck");
-Route::post("/login",       [AuthController::class, "loginApi"])->name("api.auth.login");
-Route::post("/logout",      [AuthController::class, "logoutApi"])->name("api.auth.logout");
+Route::post("/login",       [LoginApiPOSTController::class, "index"])->name("api.auth.login");
+Route::post("/logout",      [LogoutApiGETController::class, "index"])->name("api.auth.logout")->middleware('auth:sanctum');
+// Route::post("/logout",      [LogoutApiGETController::class, "index"])->name("api.auth.logout");
 
 
 ?>

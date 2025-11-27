@@ -1,13 +1,16 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Src\Authentication\Infrastructure\Http\Controller\AuthController;
+use Src\Authentication\Infrastructure\Http\Controller\LoginStaffScreenGETController;
+use Src\Authentication\Infrastructure\Http\Controller\LoginWebPOSTController;
+use Src\Authentication\Infrastructure\Http\Controller\LogoutWebPOSTController;
+use Src\Authentication\Infrastructure\Http\Controller\PaginaInicialTestGETController;
 
-Route::get("login-staff", [AuthController::class, 'LoginStaffScreen'])->name('central.auth.web.login-staff');
+Route::get("login-staff",           [LoginStaffScreenGETController::class, 'index'])->name('central.auth.web.login-staff');
 
-Route::post("/login",               [AuthController::class, "loginWeb"])->name("central.web.auth.login");
-Route::post("/logout",              [AuthController::class, "logoutWeb"])->name("central.web.auth.logout")->middleware('auth');
-Route::get("/pagina-inicial",       [AuthController::class, "InicialPageScreen"])->name("central.web.inicial.page")->middleware('auth');
+Route::post("/login",               [LoginWebPOSTController::class, "index"])->name("central.web.auth.login");
+Route::post("/logout",              [LogoutWebPOSTController::class, "index"])->name("central.web.auth.logout")->middleware('auth');
+Route::get("/pagina-inicial",       [PaginaInicialTestGETController::class, "index"])->name("central.web.inicial.page")->middleware('auth');
 
 
 ?>

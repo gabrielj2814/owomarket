@@ -127,7 +127,6 @@ const LoginStaff = () => {
 
     const irHaPorElRol = (rol:string) => {
         if(rol === 'super_admin'){
-            alert("hola")
             window.location.href = '/auth/pagina-inicial';
         }
         if(rol === 'tenant_owner'){
