@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'internal' => [
+        'secret' => env('INTERNAL_API_SECRET'),
+        'allowed_services' => [
+            'auth-context',
+            'user-context',
+            'tenant-context',
+        ],
+    ],
+
+
 ];

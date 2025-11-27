@@ -14,7 +14,9 @@ abstract class BaseApiClient {
         return Http::timeout(30)
                   ->retry(3, 100)
                   ->withHeaders(array_merge([
-                  'Content-Type' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'X-Internal-Service' => 'auth-context',
+                    'X-Internal-Secret' => config('services.internal.secret'),
                 ],$headers))
                   ->get($url)
                   ->throw()
@@ -29,7 +31,9 @@ abstract class BaseApiClient {
         return Http::timeout(30)
                   ->retry(3, 100)
                   ->withHeaders(array_merge([
-                  'Content-Type' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'X-Internal-Service' => 'auth-context',
+                    'X-Internal-Secret' => config('services.internal.secret'),
                 ],$headers))
                   ->post($url,$data)
                   ->throw()

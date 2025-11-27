@@ -15,7 +15,7 @@ class UserApiClient extends BaseApiClient implements UserServices {
             "email" => $email
         ];
         try {
-            $endpoint="/api/user/consulta-usuario-por-email";
+            $endpoint="/api/user/interna/consulta-usuario-por-email";
             $data = $this->post($endpoint,$body);
             if(env("APP_ENV")=="local"){
                 Log::info(" Ok ");
