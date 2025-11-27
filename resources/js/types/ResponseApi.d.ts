@@ -5,6 +5,16 @@ export interface ApiResponse<T> {
     headers:    Headers;
     config:     Config;
     request:    Request;
+    response?:  Response<T>;
+}
+
+export interface Response<T> {
+    data:       Data<T>;
+    status:     number;
+    statusText: string;
+    headers:    Headers;
+    config:     Config;
+    request:    Request;
 }
 
 export interface Config {

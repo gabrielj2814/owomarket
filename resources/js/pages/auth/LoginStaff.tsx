@@ -1,7 +1,8 @@
+import LoaderSpinner from "@/components/LoaderSpinner";
 import AuthServices from "@/Services/AuthServices";
 import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
-import React from "react";
+import React, { useState } from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { LuSend, LuStore  } from "react-icons/lu";
 
@@ -13,14 +14,14 @@ interface PasswordValidationRules {
 
 const LoginStaff = () => {
 
-    const [statuFormLogin, setStatuFormLogin] = React.useState<FormLogin>({
-        email: "",
-        password: ''
+    // ======= States =======
+
+    const [statuFormLogin,  setStatuFormLogin] = useState<FormLogin>({
+        email: "test@gmail.com",
+        password: '@Gabriel1234',
     });
 
-
-
-    // ======= States =======
+    const [statusLoader,    setStatusLoader]   = useState<boolean>(false);
 
     // ======= UseEffect =======
 
@@ -102,16 +103,21 @@ const LoginStaff = () => {
             return
         }
 
+        setStatusLoader(true);
+
         let respuestaServidor= await AuthServices.login(statuFormLogin)
+
         console.log(respuestaServidor);
 
+        setStatusLoader(false);
+
         if(respuestaServidor.status !== 200){
-            alert("Error en el login: "+respuestaServidor.data.message);
+            alert(respuestaServidor.response?.data.message);
             return null
         }
 
-        if(respuestaServidor.data.data==null){
-            alert("Error en el login: "+respuestaServidor.data.message);
+        if(respuestaServidor.data.data == null){
+            alert(respuestaServidor.response?.data.message);
             return null
         }
 
@@ -136,6 +142,7 @@ const LoginStaff = () => {
     return (
         <>
             <main className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+                <LoaderSpinner status={statusLoader} />
                 <Card className="w-11/12 lg:w-8/12">
                     <div className="flex flex-row">
                         <div className="w-3/6 hidden lg:flex  flex-col justify-center p-5 text-white   ">

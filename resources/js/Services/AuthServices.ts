@@ -11,16 +11,21 @@ const getCSRFToken = () => {
 const AuthServices = {
 
     login: async (dataFormLogin: { email: string; password: string; }): Promise<ApiResponse<ResponseLogin>> => {
-        const headers = {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': getCSRFToken(),
+        try{
+            const headers = {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': getCSRFToken(),
+            }
+
+            const response: ApiResponse<ResponseLogin> = await axios.post('/auth/login', dataFormLogin, {
+                headers,
+            });
+
+            return response
         }
-
-        const response: ApiResponse<ResponseLogin> = await axios.post('/auth/login', dataFormLogin, {
-            headers,
-        });
-
-        return response
+        catch(error){
+            return error as ApiResponse<ResponseLogin>;
+        }
 
     },
 
