@@ -140,17 +140,17 @@ const LoginStaff = () => {
 
     return (
         <>
-            <main className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+            <main className="flex flex-col items-center justify-center h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
                 <LoaderSpinner status={statusLoader} />
                 <Card className="w-11/12 lg:w-8/12">
                     <div className="flex flex-row">
-                        <div className="w-3/6 hidden lg:flex  flex-col justify-center p-5 text-white   ">
+                        <div className="w-3/6 hidden lg:flex  flex-col justify-center p-5 text-gray-600 dark:text-gray-400  ">
                             <h3 className="text-xl font-bold mb-7"><LuStore className=" inline-block text-4xl stroke-blue-600"/> Marketplace for business</h3>
                             <h3 className="text-4xl font-bold mb-3">Store Management Portal</h3>
                             <h3 className="text-xl text-gray-300">Welcomen back. Manage your products, orders, and staff</h3>
                         </div>
                         <div className="w-full lg:w-3/6 ">
-                            <h1 className=" text-2xl text-white mb-5 font-bold">Staff Sing In</h1>
+                            <h1 className=" text-2xl text-gray-600 dark:text-gray-400 mb-5 font-bold">Staff Sing In</h1>
                             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                 <div className="">
                                     <div className="mb-2 block">
@@ -169,7 +169,7 @@ const LoginStaff = () => {
                                     <Label htmlFor="remember">Remember me</Label>
                                 </div> */}
                                 <Button type="submit"> <LuSend/>  Submit</Button>
-                                <h6 className=" text-center text-sm text-white ">For authorized personnel only</h6>
+                                <h6 className=" text-center text-sm text-gray-600 dark:text-gray-400">For authorized personnel only</h6>
                             </form>
                         </div>
                     </div>

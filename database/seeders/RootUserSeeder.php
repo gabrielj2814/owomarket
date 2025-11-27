@@ -14,6 +14,7 @@ class RootUserSeeder extends Seeder
     {
         $password = env('USER_PASSWORD_DEV', '12345678');
 
+        // root@owomarket.local
         User::updateOrCreate(
             ['email' => 'root@owomarket.local'],
             [

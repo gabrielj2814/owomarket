@@ -1,6 +1,7 @@
 import { FC } from "react";
 import SidebarDashboardComponent from "../ui/SidebarDashboardComponent";
-import NavBarDashboardComponent from "../ui/NavBarDashboardComponent";
+import NavBarMovilDashboardComponent from "../ui/NavBarMovilDashboardComponent";
+import { Card } from "flowbite-react";
 
 interface DashboardProps {
 
@@ -13,13 +14,18 @@ interface DashboardProps {
 const Dashboard:FC<DashboardProps> = ({children}) => {
     return (
         <>
-            <NavBarDashboardComponent/>
-            <div className=" flex min-h-screen flex-row bg-gray-100 p-4 gap-4">
+        <div className=" h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
+            <NavBarMovilDashboardComponent/>
+            <div className=" flex flex-row p-4 gap-4">
                 <SidebarDashboardComponent />
-                <div>
+
+                <Card className="w-full p-4">
                     {children}
-                </div>
+                </Card>
+
             </div>
+        </div>
+
 
         </>
     );

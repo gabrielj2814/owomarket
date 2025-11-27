@@ -20,7 +20,7 @@ const SidebarDashboardComponent = () => {
 
 
   return (
-    <Sidebar aria-label="Default sidebar example" className="">
+    <Sidebar aria-label="Default sidebar example" className="hidden lg:block">
       <SidebarItems>
         <SidebarItemGroup>
             <SidebarItem href="#" icon={HiChartPie}>
