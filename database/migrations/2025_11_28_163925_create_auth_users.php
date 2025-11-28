@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string("user_email");
             $table->string("user_type");
             $table->string("user_avatar")->nullable();
-            $table->string("user_is_active");
             $table->timestamps();
         });
     }

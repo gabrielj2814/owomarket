@@ -27,14 +27,14 @@ class ConsultUserApiByEmailUseCase {
         if($dataApi['code']!=200){
             return null;
         }
+
         $uuid= Uuid::make($dataApi['data']["id"]);
         $name= UserName::make($dataApi['data']["name"]);
         $emailApi= UserEmail::make($dataApi['data']["email"]);
         $password=null;
         $type=UserType::make($dataApi['data']["type"]);
         $is_active=UserStatus::make($dataApi['data']["is_active"]);
-        $avatar=($dataApi['data']["avatar"]!=null || $dataApi['data']["avatar"]!="")?AvatarUrl::make($dataApi['data']["avatar"]):null;
-
+        $avatar=($dataApi['data']["avatar"]!=null && $dataApi['data']["avatar"]!="")? AvatarUrl::make($dataApi['data']["avatar"]) :null;
         return User::reconstitute(
             $uuid,
             $name,

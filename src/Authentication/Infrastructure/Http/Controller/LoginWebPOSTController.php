@@ -5,8 +5,10 @@ namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
 use Src\Authentication\Application\UseCase\ConsultUserApiByEmailUseCase;
+use Src\Authentication\Application\UseCase\CrearAuthUserUseCase;
 use Src\Authentication\Application\UseCase\LoginWebUserUseCase;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Authentication\Infrastructure\Eloquent\Repositories\AuthUserRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\LoginWebRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
 use Src\Authentication\Infrastructure\Http\Request\LoginFormRequest;
@@ -27,11 +29,9 @@ class LoginWebPOSTController extends Controller{
         $consultaUsuarioApiPorEmail=new ConsultUserApiByEmailUseCase($this->api->users());
         $usuario=$consultaUsuarioApiPorEmail->execute($email);
 
-
         if(!$usuario){
             return ApiResponse::error(message: 'El usuario no econtrado', code:401);
         }
-
 
         $loginWebRepository= new LoginWebRepository();
         $userRepository= new UserRepository();
@@ -45,6 +45,11 @@ class LoginWebPOSTController extends Controller{
         if(!$success){
             return ApiResponse::error(message: 'Credenciales inválidas', code:401);
         }
+
+
+        $authUserRepository= new AuthUserRepository();
+        $crearAuthUserUseCase= new CrearAuthUserUseCase($authUserRepository);
+        $crearAuthUserUseCase->execute($usuario);
 
         $respuesta=[
             'rol' => $usuario->getType()->value(),

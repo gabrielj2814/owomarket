@@ -6,6 +6,7 @@ namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\Authentication\Domain\Entities\User as EntitiesUser;
+use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\Password;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
@@ -13,7 +14,6 @@ use Src\Authentication\Domain\ValueObjects\UserStatus;
 use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Authentication\Domain\ValueObjects\Uuid;
 use Src\Authentication\Infrastructure\Eloquent\Models\User;
-use Src\User\Domain\ValueObjects\AvatarUrl;
 
 class UserRepository implements UserRepositoryInterface
 {
@@ -28,8 +28,8 @@ class UserRepository implements UserRepositoryInterface
             return null;
         }
 
-        $avatar=($respuesta->avatar!=null || $respuesta->avatar!="")?AvatarUrl::make($respuesta->avatar):null;
-
+        $avatar=($respuesta->avatar!=null && $respuesta->avatar!="")?AvatarUrl::make($respuesta->avatar) :null;
+        // dd($avatar);
         return EntitiesUser::reconstitute(
             id:                 Uuid::make($respuesta->id),
             name:               UserName::make($respuesta->name),
