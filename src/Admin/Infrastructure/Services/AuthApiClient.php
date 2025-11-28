@@ -6,19 +6,16 @@ namespace Src\Admin\Infrastructure\Services;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 use Src\Admin\Application\Contracts\AuthServices;
+use Src\Admin\Domain\ValueObjects\Uuid;
 
-class AuthWebClient extends BaseApiClient implements AuthServices {
+class AuthApiClient extends BaseApiClient implements AuthServices {
 
-    public function getCurrentUser(): array {
+    public function consultAuthUserByUuid(Uuid $uuid): array {
         try {
 
-            $endpoint="/auth/current-user";
+            $endpoint="/api/auth/interna/user/".$uuid->value();
 
-            $headers = [
-                "X-CSRF-TOKEN" => csrf_token(),
-            ];
-
-            $data = $this->get($endpoint, $headers);
+            $data = $this->get($endpoint);
             if(env("APP_ENV")=="local"){
                 Log::info(" Ok ");
                 Log::info(__METHOD__." Endpoint => ".config("app.url").$endpoint);;

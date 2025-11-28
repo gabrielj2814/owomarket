@@ -7,11 +7,11 @@ namespace Src\Admin\Infrastructure\Services;
 class ApiGateway {
 
     public function __construct(
-        private AuthWebClient $authWebClient
+        private AuthApiClient $authApiClient
     ) {}
 
-    public function auth(): AuthWebClient {
-        return $this->authWebClient;
+    public function auth(): AuthApiClient {
+        return $this->authApiClient;
     }
 }
 

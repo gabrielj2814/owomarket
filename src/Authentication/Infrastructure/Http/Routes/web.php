@@ -12,8 +12,6 @@ Route::get("/login-staff",           [LoginStaffScreenGETController::class, 'ind
 Route::post("/login",               [LoginWebPOSTController::class, "index"])->name("central.web.auth.login");
 Route::post("/logout",              [LogoutWebPOSTController::class, "index"])->name("central.web.auth.logout")->middleware('auth');
 Route::get("/pagina-inicial",       [PaginaInicialTestGETController::class, "index"])->name("central.web.inicial.page")->middleware('auth');
-// Route::get("/current-user",         [CurrentUserGETController::class, "index"])->name("central.web.auth.current.user")->middleware('auth');
-Route::get("/current-user",         [CurrentUserGETController::class, "index"])->name("central.web.auth.current.user");
 
 
 ?>

@@ -17,7 +17,7 @@ const LoginStaff = () => {
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
     // console.log("centralDomain:", centralDomain);
 
-    const BACKOFICCE_ADMIN_DASHBOARD = '/backoffice/admin/dashboard';
+
 
     // ======= States =======
 
@@ -126,11 +126,14 @@ const LoginStaff = () => {
             return null
         }
 
-        irHaPorElRol(respuestaServidor.data.data.rol);
+        const { rol , uuid } = respuestaServidor.data.data
+
+        irHaPorElRol(rol,uuid);
     }
 
 
-    const irHaPorElRol = (rol:string) => {
+    const irHaPorElRol = (rol:string,uuid:string) => {
+        const BACKOFICCE_ADMIN_DASHBOARD = `/backoffice/admin/${uuid}/dashboard`;
         if(rol === 'super_admin'){
             window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
         }

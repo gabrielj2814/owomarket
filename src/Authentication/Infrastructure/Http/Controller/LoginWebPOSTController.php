@@ -53,6 +53,7 @@ class LoginWebPOSTController extends Controller{
 
         $respuesta=[
             'rol' => $usuario->getType()->value(),
+            'uuid' => $usuario->getId()->value(),
             "user_name" => $usuario->getName()->value(),
         ];
 
