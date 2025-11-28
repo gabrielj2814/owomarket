@@ -1,6 +1,6 @@
 import Dashboard from "@/components/layouts/Dashboard";
 
-const TenantOwnerCentralDashboard = () => {
+const TenantOwnerCentralDashboardPage = () => {
 
     return (
         <>
@@ -11,4 +11,4 @@ const TenantOwnerCentralDashboard = () => {
     )
 }
 
-export default TenantOwnerCentralDashboard;
+export default TenantOwnerCentralDashboardPage;

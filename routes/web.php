@@ -15,6 +15,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         })->name('home');
 
         Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/web.php"));
+
+        Route::prefix("backoffice")->group(function (){
+            Route::prefix("admin")->group(callback: base_path("src/Admin/Infrastructure/Http/Routes/web.php"));
+        })->middleware('auth');
     });
 
 }

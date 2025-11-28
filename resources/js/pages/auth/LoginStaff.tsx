@@ -14,6 +14,11 @@ interface PasswordValidationRules {
 
 const LoginStaff = () => {
 
+    const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
+    // console.log("centralDomain:", centralDomain);
+
+    const BACKOFICCE_ADMIN_DASHBOARD = '/backoffice/admin/dashboard';
+
     // ======= States =======
 
     const [statuFormLogin,  setStatuFormLogin] = useState<FormLogin>({
@@ -127,13 +132,13 @@ const LoginStaff = () => {
 
     const irHaPorElRol = (rol:string) => {
         if(rol === 'super_admin'){
-            window.location.href = '/auth/pagina-inicial';
+            window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
         }
         if(rol === 'tenant_owner'){
             window.location.href = '/auth/pagina-inicial';
         }
         if(rol === 'customer'){
-            window.location.href = '/auth/pagina-inicial';
+            window.location.href = '/';
         }
     }
     // ======= Render =======

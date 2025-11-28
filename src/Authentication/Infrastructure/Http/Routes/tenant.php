@@ -6,7 +6,7 @@ use Src\Authentication\Infrastructure\Http\Controller\LoginWebPOSTController;
 use Src\Authentication\Infrastructure\Http\Controller\LogoutWebPOSTController;
 use Src\Authentication\Infrastructure\Http\Controller\PaginaInicialTestGETController;
 
-Route::get("login-staff",           [LoginStaffScreenGETController::class, 'index'])->name('tenant.auth.web.login-staff');
+Route::get("login-staff",           [LoginStaffScreenGETController::class, 'index'])->name('tenant.web.auth.login-staff');
 
 Route::post("/login",               [LoginWebPOSTController::class, "index"])->name("tenant.web.auth.login");
 Route::post("/logout",              [LogoutWebPOSTController::class, "index"])->name("tenant.web.auth.logout")->middleware('auth');
