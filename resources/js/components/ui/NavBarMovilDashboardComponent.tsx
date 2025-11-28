@@ -50,35 +50,35 @@ const NavBarMovilDashboardComponent = () => {
 
     return (
         <>
-    <Navbar fluid rounded>
-      <NavbarBrand href="https://flowbite-react.com">
-        <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Flowbite React Logo" />
-        <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">OwOMarket</span>
-      </NavbarBrand>
-      <div className="flex md:order-2">
-        <Dropdown
-          arrowIcon={false}
-          inline
-          label={
-            <Avatar alt="User settings" img="https://i.pinimg.com/736x/d4/e7/55/d4e755d2cf5476ef130b7bdc1d78de4e.jpg" rounded />
-          }
-        >
-          <DropdownHeader>
-            <span className="block text-sm">Bonnie Green</span>
-            <span className="block truncate text-sm font-medium">name@flowbite.com</span>
-          </DropdownHeader>
-          <DropdownItem>Dashboard</DropdownItem>
-          <DropdownItem>Settings</DropdownItem>
-          <DropdownItem>Earnings</DropdownItem>
-          <DropdownDivider />
-          <DropdownItem onClick={logout}>Sign out</DropdownItem>
-        </Dropdown>
-        <Button className="block lg:hidden ml-2"  color="light" onClick={() => setIsOpen(true)} >
-            <LuMenu className="h-6 w-6"/>
-        </Button>
-        {/* <NavbarToggle onClick={() => setIsOpen(true)} className="" /> */}
-      </div>
-    </Navbar>
+        <Navbar fluid rounded>
+            <NavbarBrand href="https://flowbite-react.com">
+                <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Flowbite React Logo" />
+                <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">OwOMarket</span>
+            </NavbarBrand>
+            <div className="flex md:order-2">
+                <Dropdown
+                arrowIcon={false}
+                inline
+                label={
+                    <Avatar alt="User settings" img="https://i.pinimg.com/736x/d4/e7/55/d4e755d2cf5476ef130b7bdc1d78de4e.jpg" rounded />
+                }
+                >
+                <DropdownHeader>
+                    <span className="block text-sm">Bonnie Green</span>
+                    <span className="block truncate text-sm font-medium">name@flowbite.com</span>
+                </DropdownHeader>
+                <DropdownItem>Dashboard</DropdownItem>
+                <DropdownItem>Settings</DropdownItem>
+                <DropdownItem>Earnings</DropdownItem>
+                <DropdownDivider />
+                <DropdownItem onClick={logout}>Sign out</DropdownItem>
+                </Dropdown>
+                <Button className="block lg:hidden ml-2"  color="light" onClick={() => setIsOpen(true)} >
+                    <LuMenu className="h-6 w-6"/>
+                </Button>
+                {/* <NavbarToggle onClick={() => setIsOpen(true)} className="" /> */}
+            </div>
+        </Navbar>
         <Drawer open={isOpen} onClose={handleClose}>
             <DrawerHeader title="MENU" titleIcon={() => <></>} />
             <DrawerItems>
