@@ -2,6 +2,7 @@
 
 namespace Src\Authentication\Domain\Entities;
 
+use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\Password;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
@@ -13,17 +14,19 @@ class User {
     private ?Uuid               $id;
     private UserName            $name;
     private UserEmail           $email;
-    private Password            $password;
+    private ?Password           $password;
     private UserType            $type;
     private UserStatus          $isActive;
+    private ?AvatarUrl          $avatar;
     // Constructor privado
     private function __construct(
         ?Uuid               $id,
         UserName            $name,
         UserEmail           $email,
-        Password            $password,
+        ?Password           $password,
         UserType            $type,
         UserStatus          $isActive,
+        ?AvatarUrl          $avatar,
         ) {
         $this->id                = $id;
         $this->name              = $name;
@@ -31,15 +34,17 @@ class User {
         $this->password          = $password;
         $this->type              = $type;
         $this->isActive          = $isActive;
+        $this->avatar            = $avatar;
     }
 
     // Factory method - genera su propio ID
     public static function create(
         UserName            $name,
         UserEmail           $email,
-        Password            $password,
+        ?Password           $password,
         UserType            $type,
         UserStatus          $isActive,
+        ?AvatarUrl          $avatar,
         ): self {
         return new self(
             Uuid::generate(),  // ← Auto-generado
@@ -48,6 +53,7 @@ class User {
             $password,
             $type,
             $isActive,
+            $avatar,
         );
     }
 
@@ -56,9 +62,10 @@ class User {
         ?Uuid               $id,
         UserName            $name,
         UserEmail           $email,
-        Password            $password,
+        ?Password            $password,
         UserType            $type,
         UserStatus          $isActive,
+        ?AvatarUrl          $avatar,
         ): self {
         // return new self($id, $email, $createdAt);
         return new self(
@@ -68,6 +75,7 @@ class User {
             $password,
             $type,
             $isActive,
+            $avatar
         );
     }
 
@@ -93,6 +101,10 @@ class User {
 
     public function isActive(): bool {
         return $this->isActive->isActive();
+    }
+
+    public function getAvatar(): ?AvatarUrl {
+        return $this->avatar;
     }
 
     public function canLogin(): bool {

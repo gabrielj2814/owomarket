@@ -39,6 +39,7 @@ return [
         'secret' => env('INTERNAL_API_SECRET'),
         'allowed_services' => [
             'auth-context',
+            'admin-context',
             'user-context',
             'tenant-context',
         ],

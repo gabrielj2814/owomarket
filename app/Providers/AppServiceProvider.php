@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
+use Src\Admin\Infrastructure\Services\AuthWebClient;
+use Src\Authentication\Application\Contracts\AuthServices;
 use Src\Authentication\Application\Contracts\UserServices;
 use Src\Authentication\Infrastructure\Eloquent\Models\PersonalAccessToken;
 use Src\Authentication\Infrastructure\Services\UserApiClient;
@@ -18,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
         //
 
         $this->app->bind(UserServices::class,UserApiClient::class);
+        $this->app->bind(AuthServices::class,AuthWebClient::class);
 
 
     }

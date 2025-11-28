@@ -2,7 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
-use Src\Authentication\Infrastructure\Http\Controller\AuthController;
 
 foreach (config('tenancy.central_domains') as $domain) {
 

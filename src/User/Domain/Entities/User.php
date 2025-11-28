@@ -153,6 +153,10 @@ class User {
         return $this->phone;
     }
 
+    public function getAvatar(): ?AvatarUrl {
+        return $this->avatar;
+    }
+
     public function getCreatedAt(): ?CreatedAt {
         return $this->createdAt;
     }

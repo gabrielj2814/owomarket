@@ -4,7 +4,6 @@
 namespace Src\Authentication\Application\UseCase;
 
 use Exception;
-use InvalidArgumentException;
 use LogicException;
 use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;

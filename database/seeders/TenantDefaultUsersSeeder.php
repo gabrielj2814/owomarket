@@ -48,6 +48,7 @@ class TenantDefaultUsersSeeder extends Seeder
                     'id' =>   Str::uuid()->toString(),
                     'name' => $name,
                     'password' => Hash::make($password),
+                    'type' => "tenant_owner",
                 ]
             );
 

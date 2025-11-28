@@ -4,6 +4,7 @@
 namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
+use Src\Authentication\Application\UseCase\ConsultUserApiByEmailUseCase;
 use Src\Authentication\Application\UseCase\LoginWebUserUseCase;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\LoginWebRepository;
@@ -21,10 +22,13 @@ class LoginWebPOSTController extends Controller{
 
     public function index(LoginFormRequest $request):JsonResponse {
         $credentials = $request->data;
+        $email=UserEmail::make($credentials->email);
 
-        $consultarExistenciaUsuarioApi=$this->api->users()->consultUserByEmail($credentials->email);
+        $consultaUsuarioApiPorEmail=new ConsultUserApiByEmailUseCase($this->api->users());
+        $usuario=$consultaUsuarioApiPorEmail->execute($email);
 
-        if($consultarExistenciaUsuarioApi['code']!=200){
+
+        if(!$usuario){
             return ApiResponse::error(message: 'El usuario no econtrado', code:401);
         }
 
@@ -34,7 +38,7 @@ class LoginWebPOSTController extends Controller{
         $loginWeb= new LoginWebUserUseCase($loginWebRepository,$userRepository);
 
         $success=$loginWeb->execute(
-            UserEmail::make($credentials->email),
+            $email,
             $credentials->password
         );
 
@@ -43,8 +47,8 @@ class LoginWebPOSTController extends Controller{
         }
 
         $respuesta=[
-            'rol' => $consultarExistenciaUsuarioApi['data']['type'],
-            "user_name" => $consultarExistenciaUsuarioApi['data']['name'],
+            'rol' => $usuario->getType()->value(),
+            "user_name" => $usuario->getName()->value(),
         ];
 
         return ApiResponse::success(data:$respuesta, message: 'Inicio de sesión exitoso', code:200);
