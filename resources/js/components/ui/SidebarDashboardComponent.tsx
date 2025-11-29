@@ -1,7 +1,8 @@
 import { useDashboard } from "@/contexts/DashboardContext";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
-import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
-import { LuLogOut} from "react-icons/lu";
+import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiUsers, HiViewBoards } from "react-icons/hi";
+import { LuLogOut, LuSettings, LuShield, LuStore} from "react-icons/lu";
+import { TbBuildingStore, TbWorldWww } from "react-icons/tb";
 
 const SidebarDashboardComponent = () => {
 
@@ -27,27 +28,37 @@ const SidebarDashboardComponent = () => {
     <Sidebar aria-label="Default sidebar example" className="hidden lg:block">
       <SidebarItems>
         <SidebarItemGroup>
-            <SidebarItem href="#" icon={HiChartPie}>
+            <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                 Dashboard
             </SidebarItem>
+
+            <SidebarItem href="#" icon={HiUser} >
+                My Perfil
+            </SidebarItem>
+            <SidebarItem href="#" icon={HiUsers} >
+                Admins
+            </SidebarItem>
+            <SidebarItem href="#" icon={LuStore} >
+                Tenants
+            </SidebarItem>
+            <SidebarItem href="#" icon={TbWorldWww} >
+                Domains
+            </SidebarItem>
+            <SidebarItem href="#" icon={LuShield} >
+                Security
+            </SidebarItem>
+            <SidebarItem href="#" icon={LuSettings} >
+                Settings
+            </SidebarItem>
+
             <SidebarItem href="#" icon={LuLogOut} onClick={logout}>
                 Log Out
             </SidebarItem>
-          {/* <SidebarItem href="#" icon={HiViewBoards} label="Pro" labelColor="dark">
-            Kanban
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiInbox} label="3">
-            Inbox
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiUser}>
-            Users
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiShoppingBag}>
-            Products
-          </SidebarItem>
-          <SidebarItem href="#" icon={HiArrowSmRight}>
-            Sign In
-          </SidebarItem> */}
+        </SidebarItemGroup>
+        <SidebarItemGroup>
+            <SidebarItem href="#" icon={TbBuildingStore} >
+                Settings Marketplace
+            </SidebarItem>
 
         </SidebarItemGroup>
       </SidebarItems>

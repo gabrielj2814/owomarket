@@ -19,7 +19,7 @@ const AdminDashboardPage:FC<AdminDashboardPageProps> = ({title, user_id}) => {
     return (
         <>
             <Dashboard user_uuid={user_id}>
-                <h1 className=" dark:text-white">Admin Dashboard</h1>
+                <div className=" dark:text-white">Admin Dashboard</div>
             </Dashboard>
         </>
     )
