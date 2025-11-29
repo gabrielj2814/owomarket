@@ -29,13 +29,17 @@ const AuthServices = {
 
     },
 
-    logout: async (): Promise<ApiResponse<null>> => {
+    logout: async (uuid: string): Promise<ApiResponse<boolean>> => {
         const headers = {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': getCSRFToken(),
         }
 
-        const response: ApiResponse<null> = await axios.post('/auth/logout', {}, {
+        const body= {
+            uuid,
+        }
+
+        const response: ApiResponse<boolean> = await axios.post('/auth/logout', body, {
             headers,
         });
 

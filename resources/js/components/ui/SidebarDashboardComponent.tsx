@@ -1,7 +1,3 @@
-
-"use client";
-
-import AuthServices from "@/Services/AuthServices";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
 import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
 import { LuLogOut} from "react-icons/lu";
@@ -10,10 +6,10 @@ const SidebarDashboardComponent = () => {
 
 
     const logout = async () => {
-
-        const respuesta = await AuthServices.logout()
-        console.log(respuesta)
-        window.location.href = '/auth/login-staff';
+        alert("En Desarrollo")
+        // const respuesta = await AuthServices.logout()
+        // console.log(respuesta)
+        // window.location.href = '/auth/login-staff';
 
     }
 

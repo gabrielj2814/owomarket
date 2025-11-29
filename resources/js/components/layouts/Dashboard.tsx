@@ -2,31 +2,34 @@ import { FC } from "react";
 import SidebarDashboardComponent from "../ui/SidebarDashboardComponent";
 import NavBarMovilDashboardComponent from "../ui/NavBarMovilDashboardComponent";
 import { Card } from "flowbite-react";
+import { DashboardProvider } from "@/contexts/DashboardContext";
+import LoaderSpinnerContext from "../LoaderSpinnerContext";
 
 interface DashboardProps {
-
+    user_uuid: string,
     children?: React.ReactNode;
-
 }
 
 
 
-const Dashboard:FC<DashboardProps> = ({children}) => {
+const Dashboard:FC<DashboardProps> = ({children, user_uuid}) => {
     return (
         <>
-        <div className=" h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
-            <NavBarMovilDashboardComponent/>
-            <div className=" flex flex-row p-4 gap-4">
-                <SidebarDashboardComponent />
+        <DashboardProvider user_uuid={user_uuid}>
+            <LoaderSpinnerContext/>
+            <div className=" h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
+                <NavBarMovilDashboardComponent/>
+                <div className=" flex flex-row p-4 gap-4">
+                    <SidebarDashboardComponent />
 
-                <Card className="w-full p-4">
-                    {children}
-                </Card>
+                    <Card className="w-full p-4">
+                        {children}
+                    </Card>
 
+                </div>
             </div>
-        </div>
 
-
+        </DashboardProvider>
         </>
     );
 }

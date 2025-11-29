@@ -6,19 +6,9 @@ import { FC, useEffect } from "react";
 interface AdminDashboardPageProps {
     title?:          string;
     user_id:         string
-    user_name:       string
-    user_email:      string
-    user_type:       string
-    user_avatar:     string
 }
 
-const AdminDashboardPage:FC<AdminDashboardPageProps> = ({title, user_id, user_name, user_email, user_avatar, user_type }) => {
-    console.log("current user_id => ", user_id)
-    console.log("current user_name => ", user_name)
-    console.log("current user_email => ", user_email)
-    console.log("current user_avatar => ", user_avatar)
-    console.log("current user_type => ", user_type)
-
+const AdminDashboardPage:FC<AdminDashboardPageProps> = ({title, user_id}) => {
     useEffect(() => {
         if (title) {
             document.title = title;
@@ -29,7 +19,7 @@ const AdminDashboardPage:FC<AdminDashboardPageProps> = ({title, user_id, user_na
 
     return (
         <>
-            <Dashboard>
+            <Dashboard user_uuid={user_id}>
                 <h1 className=" dark:text-white">Admin Dashboard</h1>
             </Dashboard>
         </>

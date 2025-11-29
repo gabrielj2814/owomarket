@@ -1,5 +1,6 @@
 
 
+import { useDashboard } from "@/contexts/DashboardContext";
 import AuthServices from "@/Services/AuthServices";
 import {
     Avatar,
@@ -36,15 +37,22 @@ import { LuMenu } from "react-icons/lu";
 
 const NavBarMovilDashboardComponent = () => {
 
+    const {state, actions} = useDashboard()
+
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClose = () => setIsOpen(false);
 
     const logout = async () => {
-
-        const respuesta = await AuthServices.logout()
-        console.log(respuesta)
-        window.location.href = '/auth/login-staff';
+        actions.load(true)
+        const respuestaAction= await actions.logout()
+        if(respuestaAction.data.code==200){
+            window.location.href = '/auth/login-staff';
+        }
+        else{
+            actions.load(false)
+            alert("Error al hacer logout")
+        }
 
     }
 

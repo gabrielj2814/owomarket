@@ -4,6 +4,7 @@
 namespace Src\Authentication\Application\UseCase;
 
 use Src\Authentication\Application\Contracts\Repositories\LoginWebRepositoryInterface;
+use Src\Authentication\Domain\ValueObjects\Uuid;
 
 class LogoutWebUseCase {
 
@@ -11,8 +12,8 @@ class LogoutWebUseCase {
         protected LoginWebRepositoryInterface $loginWebRepository
     ){}
 
-    public function execute(): void{
-        $this->loginWebRepository->logoutWebUser();
+    public function execute(Uuid $uuid): bool{
+        return $this->loginWebRepository->logoutWebUser($uuid);
     }
 
 }
