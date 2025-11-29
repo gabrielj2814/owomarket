@@ -1,3 +1,4 @@
+import { AuthUser } from '@/types/models/AuthUser';
 import { ApiResponse } from '@/types/ResponseApi';
 import { ResponseLogin } from '@/types/ResponseLogin';
 import axios from 'axios';
@@ -44,6 +45,21 @@ const AuthServices = {
         });
 
         return response
+
+    },
+
+    authUser: async (uuid: string): Promise<ApiResponse<AuthUser>> => {
+        const headers = {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCSRFToken(),
+        }
+
+        const response: ApiResponse<AuthUser> = await axios.get(`/auth/user/${uuid}`, {
+            headers,
+        });
+
+        return response
+
 
     }
 

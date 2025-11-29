@@ -1,5 +1,4 @@
 import Dashboard from "@/components/layouts/Dashboard";
-import { AuthUser } from "@/types/AuthUser";
 import { FC, useEffect } from "react";
 
 
