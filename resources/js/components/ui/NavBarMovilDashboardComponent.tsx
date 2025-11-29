@@ -53,7 +53,6 @@ const NavBarMovilDashboardComponent = () => {
             actions.load(false)
             alert("Error al hacer logout")
         }
-
     }
 
     return (

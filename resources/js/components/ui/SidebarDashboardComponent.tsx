@@ -1,15 +1,23 @@
+import { useDashboard } from "@/contexts/DashboardContext";
 import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
 import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiViewBoards } from "react-icons/hi";
 import { LuLogOut} from "react-icons/lu";
 
 const SidebarDashboardComponent = () => {
 
+    const {state, actions} = useDashboard()
+
 
     const logout = async () => {
-        alert("En Desarrollo")
-        // const respuesta = await AuthServices.logout()
-        // console.log(respuesta)
-        // window.location.href = '/auth/login-staff';
+        actions.load(true)
+        const respuestaAction= await actions.logout()
+        if(respuestaAction.data.code==200){
+            window.location.href = '/auth/login-staff';
+        }
+        else{
+            actions.load(false)
+            alert("Error al hacer logout")
+        }
 
     }
 
