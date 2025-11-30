@@ -154,7 +154,7 @@ const LoginStaff = () => {
                     <div className="flex flex-row">
                         <div className="w-3/6 hidden lg:flex  flex-col justify-center p-5 text-gray-600 dark:text-gray-400  ">
                             <h3 className="text-xl font-bold mb-7"><LuStore className=" inline-block text-4xl stroke-blue-600"/> Marketplace for business</h3>
-                            <h3 className="text-4xl font-bold mb-3">Store Management Portal</h3>
+                            <h3 className="text-4xl font-bold mb-3">Store Management Portal XD</h3>
                             <h3 className="text-xl text-gray-300">Welcomen back. Manage your products, orders, and staff</h3>
                         </div>
                         <div className="w-full lg:w-3/6 ">
