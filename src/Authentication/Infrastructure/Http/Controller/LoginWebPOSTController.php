@@ -6,6 +6,7 @@ namespace Src\Authentication\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Src\Authentication\Application\UseCase\ConsultUserApiByEmailUseCase;
 use Src\Authentication\Application\UseCase\CrearAuthUserUseCase;
+use Src\Authentication\Application\UseCase\EliminarAuthUserByUuidUseCase;
 use Src\Authentication\Application\UseCase\LoginWebUserUseCase;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\AuthUserRepository;
@@ -47,7 +48,13 @@ class LoginWebPOSTController extends Controller{
         }
 
 
+
         $authUserRepository= new AuthUserRepository();
+
+        $eliminarAuthUserUseCase= new EliminarAuthUserByUuidUseCase($authUserRepository);
+
+        $eliminarAuthUserUseCase->execute($usuario->getId());
+
         $crearAuthUserUseCase= new CrearAuthUserUseCase($authUserRepository);
         $crearAuthUserUseCase->execute($usuario);
 

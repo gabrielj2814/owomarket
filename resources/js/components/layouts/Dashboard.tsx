@@ -22,9 +22,9 @@ const Dashboard:FC<DashboardProps> = ({children, user_uuid}) => {
                 <div className=" flex flex-row p-4 gap-4">
                     <SidebarDashboardComponent />
 
-                    <Card className="w-full p-4">
+                    <div className="w-full">
                         {children}
-                    </Card>
+                    </div>
 
                 </div>
             </div>

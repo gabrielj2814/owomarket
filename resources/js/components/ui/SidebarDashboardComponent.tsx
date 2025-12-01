@@ -35,7 +35,7 @@ const SidebarDashboardComponent = () => {
             <SidebarItem href="#" icon={HiUser} >
                 My Perfil
             </SidebarItem>
-            <SidebarItem href="#" icon={HiUsers} >
+            <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module/admin`} icon={HiUsers} >
                 Admins
             </SidebarItem>
             <SidebarItem href="#" icon={LuStore} >
