@@ -2,7 +2,6 @@ import { AuthUser } from '@/types/models/AuthUser';
 import { ApiResponse } from '@/types/ResponseApi';
 import { ResponseLogin } from '@/types/ResponseLogin';
 import axios from 'axios';
-import { log } from 'console';
 
 const getCSRFToken = () => {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');

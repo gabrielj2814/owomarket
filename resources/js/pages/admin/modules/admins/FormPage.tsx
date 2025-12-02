@@ -1,4 +1,5 @@
 import Dashboard from "@/components/layouts/Dashboard";
+import AdminServices from "@/Services/AdminServices";
 import { FormModuleAdmin } from "@/types/FormModuleAdmin";
 import { Head } from "@inertiajs/react";
 import { Breadcrumb, BreadcrumbItem, Button, Card, Label, TextInput } from "flowbite-react";
@@ -16,9 +17,9 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
 
     const [form, setForm] = useState<FormModuleAdmin>({
         id: (record_id!=null)?record_id:"",
-        name: "",
-        email: "",
-        phone: "",
+        name: "testA",
+        email: "testA@gmail.com",
+        phone: "04160430565",
     })
 
 
@@ -34,8 +35,10 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
 
     const handlersSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+
+        const respuestaApi= AdminServices.create(user_id,form)
         // alert("hola")
-        console.log("datos formulario => ",form)
+        // console.log("datos formulario => ",form)
     }
 
     const regresar = () => {
@@ -96,7 +99,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                             </div>
 
                             <div className="flex flex-row justify-end gap-4">
-                                <Button pill color="red" onClick={cancelar}>Save</Button>
+                                <Button pill color="red" onClick={cancelar}>Cancelar</Button>
                                 <Button pill type="submit">Save</Button>
                             </div>
                         </form>

@@ -47,8 +47,6 @@ class LoginWebPOSTController extends Controller{
             return ApiResponse::error(message: 'Credenciales inválidas', code:401);
         }
 
-
-
         $authUserRepository= new AuthUserRepository();
 
         $eliminarAuthUserUseCase= new EliminarAuthUserByUuidUseCase($authUserRepository);

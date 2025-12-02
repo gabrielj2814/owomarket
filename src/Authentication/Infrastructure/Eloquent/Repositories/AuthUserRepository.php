@@ -15,7 +15,8 @@ use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser as ModelsAuthUser
 
 // use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser;
 
-class AuthUserRepository implements AuthUserRepositoryInterface{
+class
+AuthUserRepository implements AuthUserRepositoryInterface{
 
 
 
@@ -66,7 +67,7 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
     }
 
     public function delete(Uuid $uuid): void{
-        $registro=ModelsAuthUser::query()->where("id","=",$uuid->value())->first();
+        $registro=ModelsAuthUser::query()->where("user_id","=",$uuid->value())->first();
         if($registro){
             $registro->delete();
         }
