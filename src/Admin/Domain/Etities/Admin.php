@@ -222,6 +222,22 @@ class Admin {
     }
 
 
+    public function setName(UserName $userName): void{
+        $this->name=$userName;
+        $this->updatedAt = UpdatedAt::now();
+    }
+
+    public function setPhone(PhoneNumber $userPhone): void{
+        $this->phone=$userPhone;
+        $this->updatedAt = UpdatedAt::now();
+    }
+
+    public function setEmail(UserEmail $userEmail): void{
+        $this->email=$userEmail;
+        $this->updatedAt = UpdatedAt::now();
+    }
+
+
 
 
 }

@@ -1,5 +1,7 @@
 import { FormModuleAdmin } from '@/types/FormModuleAdmin';
+import { Admin } from '@/types/models/Admin';
 import { ModuleAdminFormReponseCreate } from '@/types/Response/ModuleAdminFormReponseCreate';
+import { ModuleAdminFormReponseUpdate } from '@/types/Response/ModuleAdminFormReponseUpdate';
 import { ApiResponse } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
@@ -17,24 +19,6 @@ const axiosAdmin= axios.create({
 
 const AdminServices = {
 
-//   login: async (dataFormLogin: { email: string; password: string; }): Promise<ApiResponse<ResponseLogin>> => {
-//         try{
-//             const headers = {
-//                 'Content-Type': 'application/json',
-//                 'X-CSRF-TOKEN': getCSRFToken(),
-//             }
-
-//             const response: ApiResponse<ResponseLogin> = await axios.post('/auth/login', dataFormLogin, {
-//                 headers,
-//             });
-
-//             return response
-//         }
-//         catch(error){
-//             return error as ApiResponse<ResponseLogin>;
-//         }
-
-//     },
 
     create:async (uuid: string,datos: FormModuleAdmin): Promise<ApiResponse<ModuleAdminFormReponseCreate>> => {
         try{
@@ -51,6 +35,37 @@ const AdminServices = {
         }
         catch(error){
             return error as ApiResponse<ModuleAdminFormReponseCreate>;
+        }
+    },
+
+    update:async (uuid: string,datos: FormModuleAdmin): Promise<ApiResponse<ModuleAdminFormReponseUpdate>> => {
+        try{
+
+            const body={
+                id:     datos.id,
+                name:   datos.name,
+                email:  datos.email,
+                phone:  datos.phone,
+            }
+
+            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate> = await axiosAdmin.put(`${uuid}/module/admin/update/${datos.id}`,body)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<ModuleAdminFormReponseUpdate>;
+        }
+    },
+
+    consultByUuid: async (user_uuid: string): Promise<ApiResponse<Admin>> => {
+         try{
+
+            let respuesta:ApiResponse<Admin> = await axiosAdmin.get(`consult/${user_uuid}`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<Admin>;
         }
     }
 

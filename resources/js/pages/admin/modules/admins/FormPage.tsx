@@ -1,9 +1,10 @@
 import Dashboard from "@/components/layouts/Dashboard";
+import LoaderSpinner from "@/components/LoaderSpinner";
 import AdminServices from "@/Services/AdminServices";
 import { FormModuleAdmin } from "@/types/FormModuleAdmin";
 import { Head } from "@inertiajs/react";
 import { Breadcrumb, BreadcrumbItem, Button, Card, Label, TextInput } from "flowbite-react";
-import { FC, useState } from "react"
+import { FC, useEffect, useState } from "react"
 import { HiHome, HiMail, HiPhone, HiPlus, HiUser } from "react-icons/hi";
 
 
@@ -15,12 +16,53 @@ interface FormPageProps{
 
 const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=null}) => {
 
-    const [form, setForm] = useState<FormModuleAdmin>({
+    const [load,           setLoad] = useState<boolean>(false)
+
+    const [recordId,       setRecordId] = useState<string|null>(record_id)
+
+    const [form,           setForm] = useState<FormModuleAdmin>({
         id: (record_id!=null)?record_id:"",
-        name: "testA",
-        email: "testA@gmail.com",
-        phone: "04160430565",
+        name: "",
+        email: "",
+        phone: "",
     })
+
+    // useEffect
+
+    useEffect(() => {
+        const inicializar = async () => {
+            setLoad(true)
+            await consultarAdmin()
+            setLoad(false)
+        }
+        inicializar()
+    },[recordId])
+
+
+    const consultarAdmin =async () => {
+        if(record_id==null){
+            return
+
+        }
+
+        const repuestaApi = await AdminServices.consultByUuid(record_id)
+
+        if(repuestaApi.status!=200 && repuestaApi.data.data==null){
+            return
+        }
+
+        if(repuestaApi.data.data==null ){
+            return
+        }
+
+        setForm({
+            id: repuestaApi.data.data.id,
+            name: repuestaApi.data.data.name,
+            email: repuestaApi.data.data.email,
+            phone: repuestaApi.data.data.phone,
+        })
+
+    }
 
 
     // Handlers
@@ -35,10 +77,23 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
 
     const handlersSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-
-        const respuestaApi= AdminServices.create(user_id,form)
-        // alert("hola")
-        // console.log("datos formulario => ",form)
+        setLoad(true)
+        // agregar validaciones formulario
+        if(recordId==null){
+            const respuestaApi=await AdminServices.create(user_id,form)
+            if(respuestaApi.status!=200){
+                return
+            }
+            alert("OK Register")
+        }
+        else{
+            const respuestaApi=await AdminServices.update(user_id,form)
+              if(respuestaApi.status!=200){
+                return
+            }
+            alert("OK Update")
+        }
+        setLoad(false)
     }
 
     const regresar = () => {
@@ -54,7 +109,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
 
     return (
         <>
-
+        <LoaderSpinner status={load} />
          <Head>
                 <title>{title}</title>
             </Head>
