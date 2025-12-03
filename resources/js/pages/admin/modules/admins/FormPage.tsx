@@ -6,6 +6,7 @@ import { Head } from "@inertiajs/react";
 import { Breadcrumb, BreadcrumbItem, Button, Card, Label, TextInput } from "flowbite-react";
 import { FC, useEffect, useState } from "react"
 import { HiHome, HiMail, HiPhone, HiPlus, HiUser } from "react-icons/hi";
+import { LuArrowBigLeft, LuSave, LuSaveOff } from "react-icons/lu";
 
 
 interface FormPageProps{
@@ -128,6 +129,9 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                         }
                     </BreadcrumbItem>
                 </Breadcrumb>
+                <div className="flex flex-row mb-2">
+                    <Button pill color="red" onClick={regresar}><LuArrowBigLeft className=" w-6 h-6 mr-1"/>  Back</Button>
+                </div>
                 <Card className="p-4 mb-3">
                         <h2 className=" text-3xl p-2">Form</h2>
                         <form onSubmit={handlersSubmit}>
@@ -153,9 +157,9 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                                 </div>
                             </div>
 
-                            <div className="flex flex-row justify-end gap-4">
-                                <Button pill color="red" onClick={cancelar}>Cancelar</Button>
-                                <Button pill type="submit">Save</Button>
+                            <div className="flex flex-row flex-wrap justify-end gap-4">
+                                <Button pill color="red" onClick={cancelar} className="w-full sm:w-auto order-2 sm:order-1"> <LuSaveOff className=" w-6 h-6 mr-1"/> Cancelar</Button>
+                                <Button pill type="submit" className="w-full sm:w-auto order-1 sm:order-2"> <LuSave className=" w-6 h-6 mr-1"/>   Save</Button>
                             </div>
                         </form>
                 </Card>
