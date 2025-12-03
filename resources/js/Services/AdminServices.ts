@@ -1,5 +1,6 @@
 import { FormModuleAdmin } from '@/types/FormModuleAdmin';
 import { Admin } from '@/types/models/Admin';
+import { ErrorResponse } from '@/types/Response/ErrorResponse';
 import { ModuleAdminFormReponseCreate } from '@/types/Response/ModuleAdminFormReponseCreate';
 import { ModuleAdminFormReponseUpdate } from '@/types/Response/ModuleAdminFormReponseUpdate';
 import { ApiResponse } from '@/types/ResponseApi';
@@ -20,7 +21,7 @@ const axiosAdmin= axios.create({
 const AdminServices = {
 
 
-    create:async (uuid: string,datos: FormModuleAdmin): Promise<ApiResponse<ModuleAdminFormReponseCreate>> => {
+    create:async (uuid: string,datos: FormModuleAdmin): Promise<ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse>> => {
         try{
 
             const body={
@@ -29,16 +30,16 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseCreate> = await axiosAdmin.post(`${uuid}/module/admin/create`,body)
+            let respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`${uuid}/module/admin/create`,body)
 
             return respuesta
         }
         catch(error){
-            return error as ApiResponse<ModuleAdminFormReponseCreate>;
+            return error as ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse>;
         }
     },
 
-    update:async (uuid: string,datos: FormModuleAdmin): Promise<ApiResponse<ModuleAdminFormReponseUpdate>> => {
+    update:async (uuid: string,datos: FormModuleAdmin): Promise<ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse>> => {
         try{
 
             const body={
@@ -48,12 +49,12 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate> = await axiosAdmin.put(`${uuid}/module/admin/update/${datos.id}`,body)
+            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`${uuid}/module/admin/update/${datos.id}`,body)
 
             return respuesta
         }
         catch(error){
-            return error as ApiResponse<ModuleAdminFormReponseUpdate>;
+            return error as ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse>;
         }
     },
 

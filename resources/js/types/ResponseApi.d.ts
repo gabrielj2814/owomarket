@@ -1,15 +1,15 @@
-export interface ApiResponse<T> {
-    data:       Data<T>;
+export interface ApiResponse<D, E = {}> {
+    data:       Data<D, E>;
     status:     number;
     statusText: string;
     headers:    Headers;
     config:     Config;
     request:    Request;
-    response?:  Response<T>;
+    response?:  Response<D, E>;
 }
 
-export interface Response<T> {
-    data:       Data<T>;
+export interface Response<D, E> {
+    data:       Data<D , E>;
     status:     number;
     statusText: string;
     headers:    Headers;
@@ -47,13 +47,20 @@ export interface Transitional {
     clarifyTimeoutError: boolean;
 }
 
-export interface Data<T> {
+export interface Data<D, E > {
     // data:    T | Array<any> | null;
-    data:    T | null;
-    status:  string;
-    message: string;
-    code:    number;
-    meta:    Array<any>;
+    data:     D | null;
+    status:   string;
+    message:  string;
+    code:     number;
+    meta:     Array<any>;
+    errors?:  E;
+    pagination?: {
+        page: number;
+        per_page: number;
+        total: number;
+        total_pages: number;
+  };
 }
 
 export interface Headers {

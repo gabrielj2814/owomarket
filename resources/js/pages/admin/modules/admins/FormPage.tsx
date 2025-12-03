@@ -1,9 +1,12 @@
 import Dashboard from "@/components/layouts/Dashboard";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import AdminServices from "@/Services/AdminServices";
+import { AlertInputForm } from "@/types/AlertInputForm";
+import { ErrorsFormModuleAdmin } from "@/types/ErrorsFormModuleAdmin";
 import { FormModuleAdmin } from "@/types/FormModuleAdmin";
+import { ErrorResponse } from "@/types/Response/ErrorResponse";
 import { Head } from "@inertiajs/react";
-import { Breadcrumb, BreadcrumbItem, Button, Card, Label, TextInput } from "flowbite-react";
+import { Breadcrumb, BreadcrumbItem, Button, Card, HelperText, Label, TextInput, TextInputColors } from "flowbite-react";
 import { FC, useEffect, useState } from "react"
 import { HiHome, HiMail, HiPhone, HiPlus, HiUser } from "react-icons/hi";
 import { LuArrowBigLeft, LuSave, LuSaveOff } from "react-icons/lu";
@@ -24,8 +27,14 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     const [form,           setForm] = useState<FormModuleAdmin>({
         id: (record_id!=null)?record_id:"",
         name: "",
-        email: "",
+        email: "test@gmail.com",
         phone: "",
+    })
+
+    const [errorForms,           setErrorForms] = useState<ErrorsFormModuleAdmin>({
+        name:  null,
+        email: null,
+        phone: null,
     })
 
     // useEffect
@@ -78,23 +87,92 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
 
     const handlersSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
-        setLoad(true)
+
         // agregar validaciones formulario
+        if(!validarFormulario()){
+            return
+        }
+
+        setLoad(true)
         if(recordId==null){
             const respuestaApi=await AdminServices.create(user_id,form)
+            setLoad(false)
             if(respuestaApi.status!=200){
+                console.log(respuestaApi.response?.data.errors)
+                if(respuestaApi.response){
+                    if(respuestaApi.response.data.errors){
+                        capturarErroresForm(respuestaApi.response.data.errors)
+                    }
+                }
                 return
             }
-            alert("OK Register")
         }
         else{
             const respuestaApi=await AdminServices.update(user_id,form)
+            setLoad(false)
               if(respuestaApi.status!=200){
-                return
+                if(respuestaApi.response){
+                    if(respuestaApi.response.data.errors){
+                        capturarErroresForm(respuestaApi.response.data.errors)
+                    }
+                }
             }
-            alert("OK Update")
+            return
         }
-        setLoad(false)
+
+    }
+
+    const capturarErroresForm= (errores: ErrorResponse): void => {
+
+        Object.entries(errores).forEach(([field, messages]) => {
+            const error: string = messages[0];
+            updateErrorForm(field,{type: "failure", message: messages[0]})
+            // console.log(`Error en ${field}: ${error}`);
+            // Ej: setFieldError(field, error);
+        });
+
+    }
+
+    const updateErrorForm= (name:string ,error: AlertInputForm | null) => {
+        if(error==null){
+            setErrorForms(prev => ({
+                ...prev,
+                [name]: null
+            }));
+        }
+         setErrorForms(prev => ({
+            ...prev,
+            [name]: error
+        }));
+    }
+
+     const validarFormulario= (): boolean => {
+        let estadoFormulario= true
+        // validaciones name
+        if(form.name.trim()==""){
+            updateErrorForm("name",{type: "failure", message: "el campo no puede quedar vació"})
+            estadoFormulario= false
+        }
+
+        // validaciones email
+        if(form.email.trim()==""){
+            updateErrorForm("email",{type: "failure", message: "el campo no puede quedar vació"})
+            estadoFormulario= false
+        }
+
+        // validaciones phone
+        if(form.phone.trim()==""){
+            updateErrorForm("phone",{type: "failure", message: "el campo no puede quedar vació"})
+            estadoFormulario= false
+        }
+
+        if(estadoFormulario){
+            updateErrorForm("name",{type: "success", message: ""})
+            updateErrorForm("email",{type: "success", message: ""})
+            updateErrorForm("phone",{type: "success", message: ""})
+        }
+
+        return estadoFormulario
     }
 
     const regresar = () => {
@@ -139,21 +217,36 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                             <div className="flex flex-wrap flex-row mb-5 lg:gap-4">
                                 <div className=" w-full sm:w-6/12 md:w-6/12 lg:w-3/12 p-2 lg:p-0">
                                     <div className="mb-2 block">
-                                        <Label htmlFor="name">Name <span className="text-red-500">(*)</span></Label>
+                                        <Label htmlFor="name" color={`${(errorForms.name!=null)?errorForms.name.type:"gray"}`} >Name <span className="text-red-500">(*)</span></Label>
                                     </div>
-                                    <TextInput id="name" type="text" name="name" icon={HiUser} placeholder="Name" onChange={handlersChangeForm} value={form.name} required />
+                                    <TextInput id="name" type="text" name="name" icon={HiUser} placeholder="Name" onChange={handlersChangeForm} value={form.name} required color={`${(errorForms.name!=null)?errorForms.name.type:"gray"}`} />
+                                    {errorForms.name!=null &&
+                                        <HelperText color={`${(errorForms.name!=null)?errorForms.name.type:"gray"}`}>
+                                            {errorForms.name.message}
+                                        </HelperText>
+                                    }
                                 </div>
                                 <div className=" w-full sm:w-6/12 md:w-6/12 lg:w-3/12 p-2 lg:p-0">
                                     <div className="mb-2 block">
-                                        <Label htmlFor="email">Email <span className="text-red-500">(*)</span></Label>
+                                        <Label htmlFor="email" color={`${(errorForms.email!=null)?errorForms.email.type:"gray"}`}>Email <span className="text-red-500">(*)</span></Label>
                                     </div>
-                                    <TextInput id="email" type="email" name="email" icon={HiMail} placeholder="email@owomarket.com" onChange={handlersChangeForm} value={form.email} required />
+                                    <TextInput id="email" type="email" name="email" icon={HiMail} placeholder="email@owomarket.com" onChange={handlersChangeForm} value={form.email} color={`${(errorForms.email!=null)?errorForms.email.type:"gray"}`} required />
+                                    {errorForms.email!=null &&
+                                        <HelperText color={`${(errorForms.email!=null)?errorForms.email.type:"gray"}`}>
+                                            {errorForms.email.message}
+                                        </HelperText>
+                                    }
                                 </div>
                                 <div className=" w-full sm:w-6/12 md:w-6/12 lg:w-3/12 p-2 lg:p-0">
                                     <div className="mb-2 block">
-                                        <Label htmlFor="phone">Phone <span className="text-red-500">(*)</span></Label>
+                                        <Label htmlFor="phone" color={`${(errorForms.phone!=null)?errorForms.phone.type:"gray"}`}>Phone <span className="text-red-500">(*)</span></Label>
                                     </div>
-                                    <TextInput id="phone" type="text" name="phone" icon={HiPhone} placeholder="00000000000" onChange={handlersChangeForm} value={form.phone} required />
+                                    <TextInput id="phone" type="text" name="phone" icon={HiPhone} placeholder="00000000000" onChange={handlersChangeForm} value={form.phone} required color={`${(errorForms.phone!=null)?errorForms.phone.type:"gray"}`} />
+                                    {errorForms.phone!=null &&
+                                        <HelperText color={`${(errorForms.phone!=null)?errorForms.phone.type:"gray"}`}>
+                                            {errorForms.phone.message}
+                                        </HelperText>
+                                    }
                                 </div>
                             </div>
 

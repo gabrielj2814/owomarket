@@ -25,9 +25,8 @@ class ApiResponse {
             'status' => 'error',
             'code' => $code,
             'message' => $message,
-            'data' => [
-                'errors' => $errors
-            ]
+            'data' => [],
+            'errors' => $errors
         ],$code);
     }
 }
