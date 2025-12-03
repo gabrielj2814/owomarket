@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Src\Admin\Application\UseCase\CreateAdminUseCase;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
+use Src\Admin\Infrastructure\Http\Request\CreateAdminFormRequest;
 use Src\Shared\Helper\ApiResponse;
 
 class CreateAdminPOSTController extends Controller {
@@ -26,10 +27,12 @@ class CreateAdminPOSTController extends Controller {
 
 
 
-    public function index(Request $request): JsonResponse {
-        $name=$request->name;
-        $email=$request->email;
-        $phone=$request->phone;
+    public function index(CreateAdminFormRequest $request): JsonResponse {
+        $data=$request->data;
+
+        $name=$data->name;
+        $email=$data->email;
+        $phone=$data->phone;
         $password=null;
 
         if(env("APP_ENV")=="local"){

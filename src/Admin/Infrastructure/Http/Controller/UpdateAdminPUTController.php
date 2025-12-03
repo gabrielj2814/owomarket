@@ -11,6 +11,7 @@ use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
 use Src\Admin\Application\UseCase\UpdateAdminUseCase;
 use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
+use Src\Admin\Infrastructure\Http\Request\UpdateAdminFormRequest;
 use Src\Shared\Helper\ApiResponse;
 
 class UpdateAdminPUTController extends Controller {
@@ -18,8 +19,9 @@ class UpdateAdminPUTController extends Controller {
 
 
 
-    public function index(Request $request): JsonResponse{
-        $uuid= Uuid::make($request->id);
+    public function index(UpdateAdminFormRequest $request): JsonResponse{
+        $data=$request->data;
+        $uuid= Uuid::make($data->id);
 
         $repository= new AdminRepository();
         $consultAdminByUuidUseCase= new ConsultAdminByUuidUseCase($repository);
@@ -31,7 +33,7 @@ class UpdateAdminPUTController extends Controller {
 
         $updateUseCase= new UpdateAdminUseCase($repository);
 
-        $adminUpdated= $updateUseCase->execute($request->id, $request->name,$request->email, $request->phone);
+        $adminUpdated= $updateUseCase->execute($data->id, $data->name, $data->email, $data->phone);
 
         $dataResponse= [
             "id" =>            $adminUpdated->getId()->value(),
