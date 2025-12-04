@@ -15,7 +15,7 @@ const Welcome:React.FC<props> = ({domain= null}) => {
         <>
             <Head title="Welcome" />
             <div className="container mx-auto p-4">
-                <img className=' d-block ml-auto mr-auto' src="http://owomarket.local:80/storage/images/503.jpg"  />
+                <img className=' d-block ml-auto mr-auto' src={storage.local.get("images/503.jpg").url}  />
                 <div className=' text-center'>
                     <h1 className="text-4xl font-bold mb-4">Welcome to Our Application</h1>
                     {domain && <p className="mb-4">You are visiting from the domain: <strong>{domain}</strong></p>}

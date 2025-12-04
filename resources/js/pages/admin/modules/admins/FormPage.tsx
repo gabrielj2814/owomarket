@@ -6,10 +6,13 @@ import { ErrorsFormModuleAdmin } from "@/types/ErrorsFormModuleAdmin";
 import { FormModuleAdmin } from "@/types/FormModuleAdmin";
 import { ErrorResponse } from "@/types/Response/ErrorResponse";
 import { Head } from "@inertiajs/react";
-import { Breadcrumb, BreadcrumbItem, Button, Card, HelperText, Label, TextInput, TextInputColors } from "flowbite-react";
-import { FC, useEffect, useState } from "react"
-import { HiHome, HiMail, HiPhone, HiPlus, HiUser } from "react-icons/hi";
-import { LuArrowBigLeft, LuSave, LuSaveOff } from "react-icons/lu";
+import { Breadcrumb, BreadcrumbItem, Button, Card, HelperText, Label, TextInput } from "flowbite-react";
+import { FC, ReactNode, useEffect, useState } from "react"
+import { HiHome, HiMail, HiPhone, HiUser } from "react-icons/hi";
+import { LuArrowBigLeft, LuPencil, LuSave, LuSaveOff, LuTriangleAlert, } from "react-icons/lu";
+import {v4 as uuidv4} from "uuid"
+import { ToastInterface } from "@/types/ToastInterface";
+import HeaderToasts from "@/components/HeaderToasts";
 
 
 interface FormPageProps{
@@ -23,6 +26,8 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     const [load,           setLoad] = useState<boolean>(false)
 
     const [recordId,       setRecordId] = useState<string|null>(record_id)
+
+    const [mapToast,       setMapToast] = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
 
     const [form,           setForm] = useState<FormModuleAdmin>({
         id: (record_id!=null)?record_id:"",
@@ -98,26 +103,30 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
             const respuestaApi=await AdminServices.create(user_id,form)
             setLoad(false)
             if(respuestaApi.status!=200){
-                console.log(respuestaApi.response?.data.errors)
+                // console.log(respuestaApi.response?.data.errors)
                 if(respuestaApi.response){
                     if(respuestaApi.response.data.errors){
                         capturarErroresForm(respuestaApi.response.data.errors)
+                        createToast(<LuTriangleAlert />,"warning", `Error ${respuestaApi.status}: Error Create Admin`)
                     }
                 }
                 return
             }
+            createToast(<LuSave/>,"success", "Admin Created", "The Admin Create Successful")
         }
         else{
             const respuestaApi=await AdminServices.update(user_id,form)
             setLoad(false)
-              if(respuestaApi.status!=200){
+            if(respuestaApi.status!=200){
                 if(respuestaApi.response){
                     if(respuestaApi.response.data.errors){
                         capturarErroresForm(respuestaApi.response.data.errors)
+                        createToast(<LuTriangleAlert />,"warning", `Error ${respuestaApi.status}: Error Update Admin`)
                     }
                 }
+                return
             }
-            return
+            createToast(<LuPencil/>,"success", "Admin Updated", "The Admin Update Successful")
         }
 
     }
@@ -184,14 +193,30 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     }
 
 
+    const createToast = (icon: ReactNode, type: string, title: string, message?: string) => {
+        const uuid= uuidv4();
+        const dataToast:ToastInterface={
+            icon,
+            type,
+            title,
+            message
+        }
+
+        mapToast.set(uuid, dataToast)
+        setMapToast(mapToast)
+    }
+
+
 
 
     return (
         <>
-        <LoaderSpinner status={load} />
-         <Head>
+            <LoaderSpinner status={load} />
+            <Head>
                 <title>{title}</title>
             </Head>
+
+            <HeaderToasts list={mapToast.values().toArray()}/>
             <Dashboard user_uuid={user_id}>
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">
                     <BreadcrumbItem href={`/backoffice/admin/${user_id}/dashboard`} icon={HiHome}>
@@ -203,7 +228,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                             "Nuevo Registro"
                         }
                         {record_id!=null &&
-                            "Nombre de usuario"
+                            form.name
                         }
                     </BreadcrumbItem>
                 </Breadcrumb>
