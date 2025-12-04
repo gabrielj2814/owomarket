@@ -32,7 +32,7 @@ class CreateAdminFormRequest extends FormRequest {
     {
         return [
             'name'     => 'required|min:2',
-            'email'    => 'required|email',
+            'email'    => 'required|email|unique:Src\Admin\Infrastructure\Eloquent\Models\User,email',
             'phone'    => 'required|min:11|max:11',
         ];
     }
@@ -45,6 +45,7 @@ class CreateAdminFormRequest extends FormRequest {
 
             'email.required'    => 'El campo email es obligatorio.',
             'email.email'       => 'El campo email debe ser una dirección de correo electrónico válida.',
+            'email.unique'      => 'No se puede usar un correo que ya esta en uso.',
 
             'phone.required'     => 'El campo email es obligatorio.',
             'phone.min'          => 'El campo tiene que tener minimo de 11 caracteres',

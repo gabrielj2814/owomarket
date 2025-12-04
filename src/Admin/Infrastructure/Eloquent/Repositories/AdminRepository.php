@@ -50,7 +50,48 @@ class AdminRepository implements AdminRepositoryInterface {
         $name=UserName::make($record->name);
         $email=UserEmail::make($record->email);
         $password=Password::fromHash($record->password);
-        $phone=PhoneNumber::make($record->phone);
+        $phone=($record->phone!=null &&  $record->phone!="")?PhoneNumber::make($record->phone):null;
+        $type=UserType::make($record->type);
+        $avatar=AvatarUrl::make($record->avatar);
+        $state=UserStatus::make($record->is_active);
+
+        $create_at= CreatedAt::fromString($record->created_at);
+        $update_at= UpdatedAt::fromString($record->updated_at);
+
+        $admin= Admin::reconstitute(
+            $id,
+            $name,
+            $email,
+            $password,
+            null,
+            null,
+            $type,
+            $phone,
+            $avatar,
+            $state,
+            $create_at,
+            $update_at
+        );
+
+        return $admin;
+
+
+    }
+
+    public function consultByEmail(UserEmail $email): ?Admin {
+        $record= AdminModel::query()
+        ->where("email","=",$email->value())
+        ->first();
+
+        if(!$record){
+            return null;
+        }
+
+        $id=Uuid::make($record->id);
+        $name=UserName::make($record->name);
+        $email=UserEmail::make($record->email);
+        $password=Password::fromHash($record->password);
+        $phone=($record->phone!=null &&  $record->phone!="")?PhoneNumber::make($record->phone):null;
         $type=UserType::make($record->type);
         $avatar=AvatarUrl::make($record->avatar);
         $state=UserStatus::make($record->is_active);

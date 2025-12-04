@@ -28,12 +28,12 @@ class UpdateAdminUseCase {
         $updateEmail=UserEmail::make($email);
         $updatePhone=PhoneNumber::make($phone);
 
-
         $admin= $this->admin_repository->consultByUuid($userUuid);
 
         if(!$admin){
             return null;
         }
+
 
         $admin->setName($updateName);
 
@@ -41,9 +41,14 @@ class UpdateAdminUseCase {
 
         $admin->setPhone($updatePhone);
 
-        $recordUpdated= $this->admin_repository->editar($admin);
+        $respuesta=$this->admin_repository->editar($admin);
 
-        return $recordUpdated;
+        if(!$respuesta){
+            return null;
+        }
+
+
+        return $admin;
 
     }
 

@@ -29,7 +29,7 @@ class UserRepository implements UserRepositoryInterface
         }
 
         $avatar=($respuesta->avatar!=null && $respuesta->avatar!="")?AvatarUrl::make($respuesta->avatar) :null;
-        // dd($avatar);
+
         return EntitiesUser::reconstitute(
             id:                 Uuid::make($respuesta->id),
             name:               UserName::make($respuesta->name),
