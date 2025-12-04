@@ -6,8 +6,10 @@ namespace Src\Admin\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
 use Src\Admin\Application\UseCase\ConsultAuthUserApiByUuid;
 use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Services\ApiGateway;
 
 class ViewModuloAdminFormGETController extends Controller {
@@ -30,8 +32,18 @@ class ViewModuloAdminFormGETController extends Controller {
         $record_id=null;
 
         if($request->record_id){
-            $record_id=$request->record_id;
-            $titulo='Modulo Admins en modo edit  - OwOMarket';
+            $record_id=Uuid::make($request->record_id);
+            $repository= new AdminRepository();
+            $consultAdminByUuidUseCase=new ConsultAdminByUuidUseCase($repository);
+            $admin=$consultAdminByUuidUseCase->execute($record_id);
+            if(!$admin){
+                return redirect(route("central.backoffice.web.admin.module.admin",
+                [
+                    "user_uuid" => $user_uuid,
+                    "type" => "failure",
+                    "message" => "Error: No se puedo cargar el formulario de edicón por que que el admintrador seleccionado no existe en la base de datos",
+                ]));
+            }
         }
 
 
@@ -40,7 +52,7 @@ class ViewModuloAdminFormGETController extends Controller {
             props: [
                 'title' => $titulo,
                 'user_id' => $usuario->getUserId()->value(),
-                'record_id' => $record_id
+                'record_id' => ($record_id!=null)?$record_id->value():null
             ]
         );
 

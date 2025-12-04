@@ -114,6 +114,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                 return
             }
             createToast(<LuSave/>,"success", "Admin Created", "The Admin Create Successful")
+            irHaInicio()
         }
         else{
             const respuestaApi=await AdminServices.update(user_id,form)
@@ -128,6 +129,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                 return
             }
             createToast(<LuPencil/>,"success", "Admin Updated", "The Admin Update Successful")
+            irHaInicio()
         }
 
     }
@@ -186,6 +188,13 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     }
 
     const regresar = () => {
+        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+    }
+
+    const irHaInicio = (type?:string, message?: string) => {
+        if(type!=null && message!= null){
+            window.location.href=`/backoffice/admin/${user_id}/module/admin?type=${type}&message=${message}`
+        }
         window.location.href=`/backoffice/admin/${user_id}/module/admin`
     }
 
