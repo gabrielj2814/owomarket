@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -18,6 +19,10 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::prefix("backoffice")->group(function (){
             Route::prefix("admin")->group(callback: base_path("src/Admin/Infrastructure/Http/Routes/web.php"));
         })->middleware('auth');
+
+        Route::get("/login", function(Request $request) {
+            return redirect("/");
+        })->name("login");
     });
 
 }
