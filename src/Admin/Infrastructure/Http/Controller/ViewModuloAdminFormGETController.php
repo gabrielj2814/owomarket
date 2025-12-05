@@ -40,7 +40,8 @@ class ViewModuloAdminFormGETController extends Controller {
                 return redirect(route("central.backoffice.web.admin.module.admin",
                 [
                     "user_uuid" => $user_uuid,
-                    "type" => "failure",
+                    "type"    => "failure",
+                    "title"   => "Error",
                     "message" => "Error: No se puedo cargar el formulario de edicón por que que el admintrador seleccionado no existe en la base de datos",
                 ]));
             }

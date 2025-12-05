@@ -18,7 +18,7 @@ import HeaderToasts from "@/components/HeaderToasts";
 interface FormPageProps{
     title?:       string;
     user_id:      string;
-    record_id?: string;
+    record_id?:   string;
 }
 
 const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=null}) => {
@@ -108,12 +108,12 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                 if(respuestaApi.response){
                     if(respuestaApi.response.data.errors){
                         capturarErroresForm(respuestaApi.response.data.errors)
-                        createToast(<LuTriangleAlert />,"warning", `Error ${respuestaApi.status}: Error Create Admin`)
+                        createToast("warning", `Error ${respuestaApi.status}: Error Create Admin`, undefined, <LuTriangleAlert />)
                     }
                 }
                 return
             }
-            createToast(<LuSave/>,"success", "Admin Created", "The Admin Create Successful")
+            createToast("success", "Admin Created", "The Admin Create Successful",<LuSave/>)
             irHaInicio()
         }
         else{
@@ -123,12 +123,12 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                 if(respuestaApi.response){
                     if(respuestaApi.response.data.errors){
                         capturarErroresForm(respuestaApi.response.data.errors)
-                        createToast(<LuTriangleAlert />,"warning", `Error ${respuestaApi.status}: Error Update Admin`)
+                        createToast("warning", `Error ${respuestaApi.status}: Error Update Admin`, undefined, <LuTriangleAlert />)
                     }
                 }
                 return
             }
-            createToast(<LuPencil/>,"success", "Admin Updated", "The Admin Update Successful")
+            createToast("success", "Admin Updated", "The Admin Update Successful", <LuPencil/>)
             irHaInicio()
         }
 
@@ -203,17 +203,33 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     }
 
 
-    const createToast = (icon: ReactNode, type: string, title: string, message?: string) => {
+    const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
         const uuid= uuidv4();
         const dataToast:ToastInterface={
-            icon,
             type,
             title,
-            message
+            message,
+            icon
         }
 
-        mapToast.set(uuid, dataToast)
-        setMapToast(mapToast)
+        setMapToast(prevMap => {
+            const newMap = new Map(prevMap);
+            newMap.set(uuid, dataToast);
+            return newMap;
+        });
+
+        // Opcional: Eliminar el toast después de un tiempo
+        setTimeout(() => {
+            removeToast(uuid);
+        }, 5000); // 5 segundos
+    }
+
+    const removeToast = (uuid: string) => {
+        setMapToast(prevMap => {
+            const newMap = new Map(prevMap);
+            newMap.delete(uuid);
+            return newMap;
+        });
     }
 
 

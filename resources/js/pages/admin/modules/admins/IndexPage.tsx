@@ -1,25 +1,76 @@
 import Dashboard from "@/components/layouts/Dashboard"
 import { Alert, Breadcrumb, BreadcrumbItem, Button, Card } from "flowbite-react"
-import { FC, useEffect, useState } from "react";
+import { FC, ReactNode, useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { HiHome, HiInformationCircle, HiPlus } from "react-icons/hi";
 import LoaderSpinner from "@/components/LoaderSpinner";
+import HeaderToasts from "@/components/HeaderToasts";
+import { ToastInterface } from "@/types/ToastInterface";
+import {v4 as uuidv4} from "uuid"
 
 
 interface IndexPageProps {
-    title?: string;
-    user_id: string
+    title?:          string;
+    user_id:         string;
+    type?:           string;
+    titleToast?:     string;
+    message?:        string;
 }
 
 
-const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_id }) => {
+const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_id, type=null, message=null, titleToast=null }) => {
 
-    const [stateLodaer, setStateLodaer] = useState(false);
+    const [stateLodaer,    setStateLodaer] = useState(false);
+
+    const [mapToast,       setMapToast]    = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
 
     const irHaFormularioDeCrear = () => {
         setStateLodaer(true)
         window.location.href=`/backoffice/admin/${user_id}/module/admin/record`
     }
+
+    useEffect(() => {
+        if(type!=null && titleToast!=null && message!=null){
+            createToast(type, titleToast, message, <HiHome/>)
+        }
+    },[])
+
+    const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
+        const uuid= uuidv4();
+        const dataToast:ToastInterface={
+            type,
+            title,
+            message,
+            icon
+        }
+        // mapToast.set(uuid, dataToast)
+        // setMapToast(mapToast)
+
+        setMapToast(prevMap => {
+            const newMap = new Map(prevMap);
+            newMap.set(uuid, dataToast);
+            return newMap;
+        });
+
+        // Opcional: Eliminar el toast después de un tiempo
+        setTimeout(() => {
+            removeToast(uuid);
+        }, 5000); // 5 segundos
+    }
+
+    const removeToast = (uuid: string) => {
+        setMapToast(prevMap => {
+            const newMap = new Map(prevMap);
+            newMap.delete(uuid);
+            return newMap;
+        });
+    }
+
+
+    // if(type!=null && titleToast!=null && message!=null){
+    //     alert("uwu")
+    //     createToast(type, titleToast, message, <HiHome/>)
+    // }
 
 
 
@@ -30,6 +81,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 <title>{title}</title>
             </Head>
 
+            <HeaderToasts list={Array.from(mapToast.values())}/>
             <Dashboard user_uuid={user_id}>
 
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">

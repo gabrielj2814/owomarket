@@ -1,6 +1,7 @@
 import { ToastInterface } from "@/types/ToastInterface"
 import { Toast, ToastToggle } from "flowbite-react"
 import { FC, ReactNode } from "react"
+import { LuEye, LuInfo, LuPencil, LuSave, LuTriangleAlert } from "react-icons/lu"
 
 
 interface HeaderToastsProps {
@@ -17,6 +18,14 @@ const HeaderToasts:FC<HeaderToastsProps> = ({list= []}) => {
         "grey":"bg-cyan-100 text-cyan-500 dark:bg-cyan-900 dark:text-cyan-300",
     }
 
+    const icon:any= {
+        "success":  <LuSave />,
+        "warning":  <LuTriangleAlert />,
+        "failure":  <LuPencil />,
+        "info":     <LuInfo /> ,
+        "grey":     <LuEye />,
+    }
+
 
     return (<div className="relative">
        <div className="absolute z-50 top-2 right-2">
@@ -28,6 +37,12 @@ const HeaderToasts:FC<HeaderToastsProps> = ({list= []}) => {
                                 <div className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${colorsIcon[toast.type]}`}>
                                     {toast.icon}
                                 </div>
+                            }
+                            {!toast.icon &&
+                                <div className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${colorsIcon[toast.type]}`}>
+                                    {icon[toast.type]}
+                                </div>
+
                             }
 
                             <div className="ml-3 text-sm font-normal">

@@ -26,11 +26,24 @@ class ViewModuleAdminIndexGETController extends Controller {
         $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuid($this->apiGateway->auth());
         $usuario=$ConsultAuthUserApiByUuid->execute($uuid);
 
+        $type=null;
+        $title=null;
+        $message=null;
+        if($request->has("type") && $request->has("message") && $request->has("title")){
+            $type=$request->query("type");
+            $title=$request->query("title");
+            $message=$request->query("message");
+        }
+
+
         return Inertia::render(
             component: 'admin/modules/admins/IndexPage',
             props: [
-                'title' => 'Modulo Admins - OwOMarket',
-                'user_id' => $usuario->getUserId()->value(),
+                'title'      => 'Modulo Admins - OwOMarket',
+                'user_id'    => $usuario->getUserId()->value(),
+                'type'       => $type,
+                'titleToast' => $title,
+                'message'    => $message,
             ]
         );
 
