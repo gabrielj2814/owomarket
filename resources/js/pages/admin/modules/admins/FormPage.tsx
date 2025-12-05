@@ -8,11 +8,12 @@ import { ErrorResponse } from "@/types/Response/ErrorResponse";
 import { Head } from "@inertiajs/react";
 import { Breadcrumb, BreadcrumbItem, Button, Card, HelperText, Label, TextInput } from "flowbite-react";
 import { FC, ReactNode, useEffect, useState } from "react"
-import { HiHome, HiMail, HiPhone, HiUser } from "react-icons/hi";
+import { HiHome, HiMail, HiOutlineExclamationCircle, HiPhone, HiUser } from "react-icons/hi";
 import { LuArrowBigLeft, LuPencil, LuSave, LuSaveOff, LuTriangleAlert, } from "react-icons/lu";
 import {v4 as uuidv4} from "uuid"
 import { ToastInterface } from "@/types/ToastInterface";
 import HeaderToasts from "@/components/HeaderToasts";
+import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 
 
 interface FormPageProps{
@@ -24,13 +25,15 @@ interface FormPageProps{
 const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=null}) => {
     // tecno-isekaic.owner@owomarket.local
 
-    const [load,           setLoad] = useState<boolean>(false)
+    const [load,                       setLoad] = useState<boolean>(false)
+    const [statuModalCancel,           setStatuModalCancel] = useState<boolean>(false)
+    const [statuModalSave,             setStatuModalSave] = useState<boolean>(false)
 
-    const [recordId,       setRecordId] = useState<string|null>(record_id)
+    const [recordId,                   setRecordId] = useState<string|null>(record_id)
 
-    const [mapToast,       setMapToast] = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
+    const [mapToast,                   setMapToast] = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
 
-    const [form,           setForm] = useState<FormModuleAdmin>({
+    const [form,                       setForm] = useState<FormModuleAdmin>({
         id: (record_id!=null)?record_id:"",
         name: "",
         email: "test@gmail.com",
@@ -91,10 +94,12 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
         }));
     }
 
-    const handlersSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handlersSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        mostrarModalSave()
+    }
 
-        // agregar validaciones formulario
+    const enviar = async () => {
         if(!validarFormulario()){
             return
         }
@@ -111,8 +116,10 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                         createToast("warning", `Error ${respuestaApi.status}: Error Create Admin`, undefined, <LuTriangleAlert />)
                     }
                 }
+                cerrarModalSave()
                 return
             }
+            cerrarModalSave()
             createToast("success", "Admin Created", "The Admin Create Successful",<LuSave/>)
             irHaInicio()
         }
@@ -126,12 +133,13 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                         createToast("warning", `Error ${respuestaApi.status}: Error Update Admin`, undefined, <LuTriangleAlert />)
                     }
                 }
+                cerrarModalSave()
                 return
             }
+            cerrarModalSave()
             createToast("success", "Admin Updated", "The Admin Update Successful", <LuPencil/>)
             irHaInicio()
         }
-
     }
 
     const capturarErroresForm= (errores: ErrorResponse): void => {
@@ -187,22 +195,6 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
         return estadoFormulario
     }
 
-    const regresar = () => {
-        window.location.href=`/backoffice/admin/${user_id}/module/admin`
-    }
-
-    const irHaInicio = (type?:string, message?: string) => {
-        if(type!=null && message!= null){
-            window.location.href=`/backoffice/admin/${user_id}/module/admin?type=${type}&message=${message}`
-        }
-        window.location.href=`/backoffice/admin/${user_id}/module/admin`
-    }
-
-    const cancelar = () => {
-        window.location.href=`/backoffice/admin/${user_id}/module/admin`
-    }
-
-
     const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
         const uuid= uuidv4();
         const dataToast:ToastInterface={
@@ -232,6 +224,43 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
         });
     }
 
+    const mostrarModalCancelar = () => {
+        setStatuModalCancel(true)
+    }
+
+    const cerrarModalCancelar = () => {
+        setStatuModalCancel(false);
+    }
+
+    const actionModalCancelar = () => {
+         setStatuModalCancel(true);
+         setLoad(true)
+         cancelar()
+    }
+
+    const mostrarModalSave = () => {
+        setStatuModalSave(true)
+    }
+
+    const cerrarModalSave = () => {
+        setStatuModalSave(false)
+    }
+
+    const regresar = () => {
+        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+    }
+
+    const irHaInicio = (type?:string, message?: string) => {
+        if(type!=null && message!= null){
+            window.location.href=`/backoffice/admin/${user_id}/module/admin?type=${type}&message=${message}`
+        }
+        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+    }
+
+    const cancelar = () => {
+        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+    }
+
 
 
 
@@ -242,7 +271,35 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                 <title>{title}</title>
             </Head>
 
+            {/* Modal Cancel */}
+            <ModalAlertConfirmation
+            openModal={statuModalCancel}
+            size="md"
+            icon={<HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to cancel the transaction?"
+            buttonTextCancel="No, I want not cancel"
+            buttonTextAction="yes, I want cancel"
+            onClose={cerrarModalCancelar}
+            onClickAction={actionModalCancelar}
+            colorButtonCancel="alternative"
+            colorButtonAction="red"
+            />
+
+            <ModalAlertConfirmation
+            openModal={statuModalSave}
+            size="md"
+            icon={<LuSave className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to save?"
+            buttonTextCancel="No, I want not cancel"
+            buttonTextAction="yes, I want save"
+            onClose={cerrarModalSave}
+            onClickAction={enviar}
+            colorButtonCancel="alternative"
+            colorButtonAction="green"
+            />
+
             <HeaderToasts list={mapToast.values().toArray()}/>
+
             <Dashboard user_uuid={user_id}>
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">
                     <BreadcrumbItem href={`/backoffice/admin/${user_id}/dashboard`} icon={HiHome}>
@@ -251,7 +308,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                     <BreadcrumbItem href={`/backoffice/admin/${user_id}/module/admin`} >Admins</BreadcrumbItem>
                     <BreadcrumbItem >
                         {record_id==null &&
-                            "Nuevo Registro"
+                            "New Record"
                         }
                         {record_id!=null &&
                             form.name
@@ -302,7 +359,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
                             </div>
 
                             <div className="flex flex-row flex-wrap justify-end gap-4">
-                                <Button pill color="red" onClick={cancelar} className="w-full sm:w-auto order-2 sm:order-1"> <LuSaveOff className=" w-6 h-6 mr-1"/> Cancelar</Button>
+                                <Button pill color="red" onClick={mostrarModalCancelar} className="w-full sm:w-auto order-2 sm:order-1"> <LuSaveOff className=" w-6 h-6 mr-1"/> Cancelar</Button>
                                 <Button pill type="submit" className="w-full sm:w-auto order-1 sm:order-2"> <LuSave className=" w-6 h-6 mr-1"/>   Save</Button>
                             </div>
                         </form>
