@@ -14,13 +14,16 @@ return new class extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->uuid("id")->primary();
             $table->string('name');
+            $table->string('cedula')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('pin')->nullable();
             $table->enum('type', ['super_admin', 'tenant_owner', 'customer'])->default('customer');
+            $table->string('code_phone')->nullable();
             $table->string('phone')->nullable();
             $table->text('avatar')->nullable();
+            $table->text('cedula_doc')->nullable();
             $table->boolean('is_active')->default(true);
             $table->rememberToken();
             $table->timestamps();

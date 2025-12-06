@@ -20,7 +20,12 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class LoginWebPOSTController extends Controller{
 
 
-    public function __construct(protected ApiGateway $api){}
+    public function __construct(
+        protected ApiGateway $api,
+        protected LoginWebUserUseCase $login_web_user_use_case,
+        protected CrearAuthUserUseCase $crear_auth_user_use_case,
+        protected EliminarAuthUserByUuidUseCase $eliminar_auth_user_by_uuid_use_case
+        ){}
 
 
     public function index(LoginFormRequest $request):JsonResponse {
@@ -34,11 +39,7 @@ class LoginWebPOSTController extends Controller{
             return ApiResponse::error(message: 'El usuario no econtrado', code:401);
         }
 
-        $loginWebRepository= new LoginWebRepository();
-        $userRepository= new UserRepository();
-        $loginWeb= new LoginWebUserUseCase($loginWebRepository,$userRepository);
-
-        $success=$loginWeb->execute(
+        $success=$this->login_web_user_use_case->execute(
             $email,
             $credentials->password
         );
@@ -47,14 +48,10 @@ class LoginWebPOSTController extends Controller{
             return ApiResponse::error(message: 'Credenciales inválidas', code:401);
         }
 
-        $authUserRepository= new AuthUserRepository();
+        $this->eliminar_auth_user_by_uuid_use_case->execute($usuario->getId());
 
-        $eliminarAuthUserUseCase= new EliminarAuthUserByUuidUseCase($authUserRepository);
+        $this->crear_auth_user_use_case->execute($usuario);
 
-        $eliminarAuthUserUseCase->execute($usuario->getId());
-
-        $crearAuthUserUseCase= new CrearAuthUserUseCase($authUserRepository);
-        $crearAuthUserUseCase->execute($usuario);
 
         $respuesta=[
             'rol' => $usuario->getType()->value(),

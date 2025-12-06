@@ -15,8 +15,7 @@ use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser as ModelsAuthUser
 
 // use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser;
 
-class
-AuthUserRepository implements AuthUserRepositoryInterface{
+class AuthUserRepository implements AuthUserRepositoryInterface{
 
 
 

@@ -6,10 +6,18 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Src\User\Domain\ValueObjects\Password;
+use Src\Admin\Domain\Shared\Security\PasswordHasher;
+use Src\Admin\Domain\Shared\Security\PasswordValidator;
+use Src\Admin\Domain\ValueObjects\Password;
 
 class RootUserSeeder extends Seeder
 {
+
+    public function __construct(
+        protected PasswordValidator $validator,
+        protected PasswordHasher $hasher
+    ){}
+
     public function run(): void
     {
         $password = env('USER_PASSWORD_DEV', '12345678');
@@ -21,7 +29,8 @@ class RootUserSeeder extends Seeder
                 'id' =>   Str::uuid()->toString(),
                 'name' => 'Root',
                 'type' => 'super_admin',
-                'password' => Password::fromPlainText($password)->getHash(),
+                'avatar' => 'https://i.pinimg.com/736x/d4/e7/55/d4e755d2cf5476ef130b7bdc1d78de4e.jpg',
+                'password' => Password::fromPlainText($password, $this->validator, $this->hasher)->getHash(),
             ]
         );
     }

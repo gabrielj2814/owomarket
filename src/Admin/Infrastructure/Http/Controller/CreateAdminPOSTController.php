@@ -4,16 +4,26 @@
 namespace Src\Admin\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Config\Repository;
+use Illuminate\Container\Container;
+use Illuminate\Hashing\HashManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Src\Admin\Application\UseCase\CreateAdminUseCase;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Http\Request\CreateAdminFormRequest;
+use Src\Admin\Infrastructure\Security\LaravelPasswordHasher;
+use Src\Admin\Infrastructure\Security\StrictPasswordValidator;
 use Src\Shared\Helper\ApiResponse;
 
 class CreateAdminPOSTController extends Controller {
 
+
+    public function __construct(
+        protected CreateAdminUseCase $create_admin_use_case
+    )
+    {}
 
     /**
      * Reglas de validación para la contraseña
@@ -42,11 +52,13 @@ class CreateAdminPOSTController extends Controller {
             $password=$this->generarContrasena(12);
         }
 
-        $repository= new AdminRepository();
-        $createAdminUseCase= new CreateAdminUseCase($repository);
+        // $repository= new AdminRepository();
 
 
-        $admin=$createAdminUseCase->execute($name,$email,$phone,$password);
+        // $createAdminUseCase= new CreateAdminUseCase($repository, $validator, $hasher);
+
+
+        $admin=$this->create_admin_use_case->execute($name,$email,$phone,$password);
 
         $dataRespose=[
             "id"          => $admin->getId()->value(),

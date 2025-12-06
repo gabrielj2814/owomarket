@@ -5,11 +5,21 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Src\Admin\Domain\Shared\Security\PasswordHasher;
+use Src\Admin\Domain\Shared\Security\PasswordValidator;
+use Src\Admin\Domain\ValueObjects\Password;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 class TenantDefaultUsersSeeder extends Seeder
 {
+
+
+    public function __construct(
+        protected PasswordValidator $validator,
+        protected PasswordHasher $hasher
+    ){}
+
     public function run(): void
     {
         $password = env('USER_PASSWORD_DEV', '12345678');
@@ -47,7 +57,8 @@ class TenantDefaultUsersSeeder extends Seeder
                 [
                     'id' =>   Str::uuid()->toString(),
                     'name' => $name,
-                    'password' => Hash::make($password),
+                    'password' => Password::fromPlainText($password, $this->validator, $this->hasher)->getHash(),
+                    'avatar' => "https://i.pinimg.com/originals/b0/ce/76/b0ce76f4cdb95ef13afa21a889adfc71.jpg",
                     'type' => "tenant_owner",
                 ]
             );
