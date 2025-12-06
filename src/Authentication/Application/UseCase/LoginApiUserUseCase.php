@@ -7,13 +7,15 @@ use Exception;
 use LogicException;
 use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
+use Src\Authentication\Domain\Shared\Security\PasswordHasher;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 
 class LoginApiUserUseCase {
 
     public function __construct(
         protected UserRepositoryInterface $userRepository,
-        protected PersonalAccessTokenRepositoryInterface $personal_access_token_repository
+        protected PersonalAccessTokenRepositoryInterface $personal_access_token_repository,
+        protected PasswordHasher $password_hasher
         ){}
 
 
@@ -30,7 +32,7 @@ class LoginApiUserUseCase {
                 throw new Exception("Usuario no autorizado para iniciar sesion");
             }
 
-            if(!$user->getPassword()->verify($clave)){
+            if(!$user->getPassword()->verify($clave,$this->password_hasher)){
                 throw new LogicException("clave invalida");
             }
 

@@ -17,7 +17,11 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class LoginApiPOSTController extends Controller {
 
 
-    public function __construct(protected ApiGateway $api){}
+    public function __construct(
+        protected ApiGateway $api,
+        protected LoginApiUserUseCase $login_api_user_use_case,
+        protected ConsultDataUserByEmailCase $consult_data_user_by_email_case,
+        ){}
 
 
     public function index(LoginFormRequest $request): JsonResponse{
@@ -30,18 +34,9 @@ class LoginApiPOSTController extends Controller {
             return ApiResponse::error(message: 'El usuario no econtrado', code:401);
         }
 
-
-        $userRepository= new UserRepository();
-        $personalTokenRepository= new PersonalAccessTokenRepository();
-
-        $LoginApiUserUseCase= new LoginApiUserUseCase(
-            $userRepository,
-            $personalTokenRepository
-        );
-
         $email=UserEmail::make($credentials->email);
 
-        $token=$LoginApiUserUseCase->execute(
+        $token=$this->login_api_user_use_case->execute(
             $email,
             $credentials->password
         );
@@ -50,11 +45,7 @@ class LoginApiPOSTController extends Controller {
             return ApiResponse::error(message: 'Credenciales inválidas', code:401);
         }
 
-        $ConsultarDataUserByEmailCase= new ConsultDataUserByEmailCase(
-            $userRepository
-        );
-
-        $dataUser=$ConsultarDataUserByEmailCase->execute(
+        $dataUser=$this->consult_data_user_by_email_case->execute(
             $email
         );
 
