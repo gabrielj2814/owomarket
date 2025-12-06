@@ -12,15 +12,19 @@ use Symfony\Component\HttpFoundation\Request;
 
 class LogoutApiGETController extends Controller {
 
+    public function __construct(
+        protected LogoutApiUserUseCase $logout_api_user_use_case
+    ){}
+
     public function index(Request $request): JsonResponse{
 
         $token= request()->bearerToken();
 
-        $repository= new PersonalAccessTokenRepository();
+        // $repository= new PersonalAccessTokenRepository();
 
-        $useCase = new LogoutApiUserUseCase($repository);
+        // $useCase = new LogoutApiUserUseCase($repository);
 
-        $useCase->execute($token);
+        $this->logout_api_user_use_case->execute($token);
 
 
         return ApiResponse::success(message: 'Logout exitoso', code:200);
