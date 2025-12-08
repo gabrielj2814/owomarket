@@ -1,12 +1,13 @@
 import Dashboard from "@/components/layouts/Dashboard"
-import { Alert, Breadcrumb, BreadcrumbItem, Button, Card } from "flowbite-react"
+import { Breadcrumb, BreadcrumbItem, Button, Card } from "flowbite-react"
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
-import { HiHome, HiInformationCircle, HiPlus } from "react-icons/hi";
+import { HiHome, HiPlus } from "react-icons/hi";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import HeaderToasts from "@/components/HeaderToasts";
 import { ToastInterface } from "@/types/ToastInterface";
 import {v4 as uuidv4} from "uuid"
+import AdminServices from "@/Services/AdminServices";
 
 
 interface IndexPageProps {
@@ -33,7 +34,20 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         if(type!=null && titleToast!=null && message!=null){
             createToast(type, titleToast, message, <HiHome/>)
         }
+        const incializar= async () => {
+            setStateLodaer(true)
+            await filtrarAdmins(1);
+            setStateLodaer(false)
+        }
+        incializar()
     },[])
+
+    const filtrarAdmins = async (page:Number = 1) => {
+        const repuestaApi= await AdminServices.filtrar(null,5,page);
+        console.log("respuesta api => ",repuestaApi)
+        console.log("respuesta api => ",repuestaApi.data.data)
+        console.log("respuesta api => ",repuestaApi.data.pagination)
+    }
 
     const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
         const uuid= uuidv4();

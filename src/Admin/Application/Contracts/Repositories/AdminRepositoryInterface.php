@@ -6,6 +6,7 @@ namespace Src\Admin\Application\Contracts\Repositories;
 use Src\Admin\Domain\Etities\Admin;
 use Src\Admin\Domain\ValueObjects\UserEmail;
 use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Collection\Pagination;
 
 interface AdminRepositoryInterface {
 
@@ -16,6 +17,8 @@ interface AdminRepositoryInterface {
     public function consultByEmail(UserEmail $email):? Admin;
 
     public function editar(Admin $admin):? Admin;
+
+    public function filter(string | null $search, int $prePage= 50): Pagination;
 
 
 

@@ -14,6 +14,8 @@ use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Models\User as AdminModel;
+use Src\Shared\Collection\Collection;
+use Src\Shared\Collection\Pagination;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
 
@@ -139,6 +141,71 @@ class AdminRepository implements AdminRepositoryInterface {
         $record->save();
 
         return $admin;
+    }
+
+    public function filter(string | null $search, int $prePage= 50): Pagination
+    {
+         // 1. Usamos Eloquent (infraestructura)
+        $paginator= AdminModel::query();
+
+        if($search!="" && $search!=null){
+            $paginator=$paginator->where(function($query) use ($search){
+               $query->where("name","like","%".$search."%")
+               ->orWhere("phone","like","%".$search."%")
+               ->orWhere("email","like","%".$search."%");
+            });
+        }
+
+        $paginator=$paginator->where("type","=","super_admin");
+
+        $respuesta=$paginator->paginate($prePage);
+
+        $items = $respuesta->items();
+
+        $admins = collect($items)->map(function ($model) {
+            $id = Uuid::make($model->id);
+            $name = UserName::make($model->name);
+            $email = UserEmail::make($model->email);
+            $password=Password::fromHash($model->password);
+            $phone = ($model->phone != null && $model->phone != "")
+                ? PhoneNumber::make($model->phone)
+                : null;
+            $type = UserType::make($model->type);
+            $avatar = AvatarUrl::make($model->avatar);
+            $state = UserStatus::make($model->is_active);
+
+            $create_at = CreatedAt::fromString($model->created_at);
+            $update_at = UpdatedAt::fromString($model->updated_at);
+
+            return Admin::reconstitute(
+                $id,
+                $name,
+                $email,
+                $password,
+                null,  // ???
+                null,  // ???
+                $type,
+                $phone,
+                $avatar,
+                $state,
+                $create_at,
+                $update_at
+            );
+        });
+
+        // 3. Usamos nuestra Collection del dominio
+        $domainCollection = new Collection($admins->all());
+
+        // 4. Devolvemos nuestro objeto de dominio
+        return new Pagination(
+            $domainCollection,
+            $respuesta->total(),
+            $respuesta->perPage(),
+            $respuesta->currentPage(),
+            $respuesta->lastPage()
+        );
+
+
     }
 
 

@@ -20,7 +20,7 @@ class Admin {
     private ?Uuid               $id;
     private UserName            $name;
     private UserEmail           $email;
-    private Password            $password;
+    private ?Password           $password;
     private ?EmailVerifiedAt    $emailVerifiedAt;
     private ?PinVerification    $pin;
     private UserType            $type;
@@ -34,7 +34,7 @@ class Admin {
         ?Uuid               $id,
         UserName            $name,
         UserEmail           $email,
-        Password            $password,
+        ?Password           $password,
         ?EmailVerifiedAt    $emailVerifiedAt,
         ?PinVerification    $pin,
         UserType            $type,
@@ -62,7 +62,7 @@ class Admin {
     public static function create(
         UserName            $name,
         UserEmail           $email,
-        Password            $password,
+        ?Password           $password,
         ?EmailVerifiedAt    $emailVerifiedAt,
         ?PinVerification    $pin,
         UserType            $type,
@@ -93,7 +93,7 @@ class Admin {
         ?Uuid               $id,
         UserName            $name,
         UserEmail           $email,
-        Password            $password,
+        ?Password            $password,
         ?EmailVerifiedAt    $emailVerifiedAt,
         ?PinVerification    $pin,
         UserType            $type,
@@ -132,7 +132,7 @@ class Admin {
         return $this->email;
     }
 
-    public function getPassword(): Password {
+    public function getPassword(): ?Password {
         return $this->password;
     }
 

@@ -56,10 +56,10 @@ export interface Data<D, E > {
     meta:     Array<any>;
     errors?:  E;
     pagination?: {
-        page: number;
-        per_page: number;
         total: number;
-        total_pages: number;
+        current_page: number;
+        per_page: number;
+        last_page: number;
   };
 }
 

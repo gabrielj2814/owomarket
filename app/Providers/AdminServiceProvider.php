@@ -4,8 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Support\ServiceProvider;
+use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Shared\Security\PasswordHasher;
 use Src\Admin\Domain\Shared\Security\PasswordValidator;
+use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Security\LaravelPasswordHasher;
 use Src\Admin\Infrastructure\Security\StrictPasswordValidator;
 
@@ -28,6 +30,7 @@ class AdminServiceProvider extends ServiceProvider
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
         // Laravel automáticamente inyectará Hasher::class en el constructor
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
+        $this->app->bind(AdminRepositoryInterface::class, AdminRepository::class);
     }
 
     /**

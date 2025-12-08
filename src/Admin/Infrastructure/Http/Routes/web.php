@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Src\Admin\Infrastructure\Http\Controller\ConsultAdminByUuidGETController;
 use Src\Admin\Infrastructure\Http\Controller\CreateAdminPOSTController;
+use Src\Admin\Infrastructure\Http\Controller\FilterAdminsPOSTController;
 use Src\Admin\Infrastructure\Http\Controller\UpdateAdminPUTController;
 use Src\Admin\Infrastructure\Http\Controller\ViewDashboardAdminGETController;
 use Src\Admin\Infrastructure\Http\Controller\ViewModuleAdminIndexGETController;
@@ -14,6 +15,7 @@ Route::get('/{user_uuid}/module/admin/record/{record_id?}',   [ViewModuloAdminFo
 Route::post('/{user_uuid}/module/admin/create',               [CreateAdminPOSTController::class, 'index'])->middleware("auth");
 Route::put('/{user_uuid}/module/admin/update/{uuid}',         [UpdateAdminPUTController::class, 'index'])->middleware("auth");
 Route::get('/consult/{uuid}',                                 [ConsultAdminByUuidGETController::class, 'index'])->middleware("auth");
+Route::post('/filter',                                        [FilterAdminsPOSTController::class, 'index'])->middleware("auth");
 
 
 ?>

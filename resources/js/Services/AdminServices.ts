@@ -68,6 +68,21 @@ const AdminServices = {
         catch(error){
             return error as ApiResponse<Admin>;
         }
+    },
+
+    filtrar: async (search: string|null, prePage: Number= 50, page: Number=1): Promise<ApiResponse<Admin[]>> => {
+         try{
+            const body={
+                search: search,
+                prePage,
+            }
+            let respuesta:ApiResponse<Admin[]> = await axiosAdmin.post(`filter?page=${page}`,body)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<Admin[]>;
+        }
     }
 
 
