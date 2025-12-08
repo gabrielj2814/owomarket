@@ -7,8 +7,6 @@ use App\Http\Controllers\Controller;
 use Src\Authentication\Application\UseCase\ConsultDataUserByEmailCase;
 use Src\Authentication\Application\UseCase\LoginApiUserUseCase;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
-use Src\Authentication\Infrastructure\Eloquent\Repositories\PersonalAccessTokenRepository;
-use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
 use Src\Authentication\Infrastructure\Http\Request\LoginFormRequest;
 use Src\Authentication\Infrastructure\Services\ApiGateway;
 use Src\Shared\Helper\ApiResponse;

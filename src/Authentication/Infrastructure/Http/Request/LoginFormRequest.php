@@ -8,7 +8,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
-use Src\Authentication\Application\Data\AuthCredencialesData;
+use Src\Authentication\Infrastructure\Http\Data\AuthCredencialesData;
 use Src\Shared\Helper\ApiResponse;
 
 class LoginFormRequest extends FormRequest

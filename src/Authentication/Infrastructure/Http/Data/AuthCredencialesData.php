@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Src\Authentication\Application\Data;
+namespace Src\Authentication\Infrastructure\Http\Data;
 
 use Spatie\LaravelData\Data;
 
