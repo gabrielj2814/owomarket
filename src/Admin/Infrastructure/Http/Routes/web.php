@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Src\Admin\Infrastructure\Http\Controller\ConsultAdminByUuidGETController;
 use Src\Admin\Infrastructure\Http\Controller\CreateAdminPOSTController;
+use Src\Admin\Infrastructure\Http\Controller\DeleteAdminByUuidDELETEController;
 use Src\Admin\Infrastructure\Http\Controller\FilterAdminsPOSTController;
 use Src\Admin\Infrastructure\Http\Controller\UpdateAdminPUTController;
 use Src\Admin\Infrastructure\Http\Controller\ViewDashboardAdminGETController;
@@ -16,6 +17,7 @@ Route::post('/{user_uuid}/module/admin/create',               [CreateAdminPOSTCo
 Route::put('/{user_uuid}/module/admin/update/{uuid}',         [UpdateAdminPUTController::class, 'index'])->middleware("auth");
 Route::get('/consult/{uuid}',                                 [ConsultAdminByUuidGETController::class, 'index'])->middleware("auth");
 Route::post('/filter',                                        [FilterAdminsPOSTController::class, 'index'])->middleware("auth");
+Route::delete('/delete/{uuid}',                               [DeleteAdminByUuidDELETEController::class, 'index'])->middleware("auth");
 
 
 ?>

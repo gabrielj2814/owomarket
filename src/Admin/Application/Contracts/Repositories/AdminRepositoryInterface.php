@@ -20,6 +20,7 @@ interface AdminRepositoryInterface {
 
     public function filter(string | null $search, int $prePage= 50): Pagination;
 
+    public function eliminar(Uuid $uuid): void;
 
 
 

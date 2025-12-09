@@ -42,7 +42,7 @@ class ViewModuloAdminFormGETController extends Controller {
                     "user_uuid" => $user_uuid,
                     "type"    => "failure",
                     "title"   => "Error",
-                    "message" => "Error: No se puedo cargar el formulario de edicón por que que el admintrador seleccionado no existe en la base de datos",
+                    "message" => "Error: No se puedo cargar el formulario de edición por que que el admintrador seleccionado no existe en la base de datos",
                 ]));
             }
         }

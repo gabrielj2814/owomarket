@@ -1,5 +1,5 @@
 import Dashboard from "@/components/layouts/Dashboard"
-import { Breadcrumb, BreadcrumbItem, Button, Card } from "flowbite-react"
+import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, Card, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react"
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { HiHome, HiPlus } from "react-icons/hi";
@@ -8,6 +8,14 @@ import HeaderToasts from "@/components/HeaderToasts";
 import { ToastInterface } from "@/types/ToastInterface";
 import {v4 as uuidv4} from "uuid"
 import AdminServices from "@/Services/AdminServices";
+import TableComponent from "@/components/ui/TableComponent";
+import { Admin } from "@/types/models/Admin";
+import { LuCheck, LuPencil, LuTrash2, LuTriangleAlert } from "react-icons/lu";
+import dayjs from "dayjs"
+import utc from "dayjs/plugin/utc"
+import timezone from "dayjs/plugin/timezone"
+import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
+import { useDebounce } from "@/hooks/useDebounce";
 
 
 interface IndexPageProps {
@@ -21,9 +29,30 @@ interface IndexPageProps {
 
 const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_id, type=null, message=null, titleToast=null }) => {
 
-    const [stateLodaer,    setStateLodaer] = useState(false);
+    const zonaHorariaSistema=import.meta.env.TIME_ZONE_SISTEMA
 
-    const [mapToast,       setMapToast]    = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
+    dayjs.extend(utc);
+    dayjs.extend(timezone);
+
+    const [cargaInicialCompleta,     setCargaInicialCompleta]         = useState(false);
+    const [stateLodaer,              setStateLodaer]                  = useState(false);
+    const [stateModalDelete,         setStateModalDelete]             = useState(false);
+
+    const [mapToast,                 setMapToast]                     = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
+
+    const [admins,                   setAdmins]                       = useState<Admin[]>([]);
+
+    const [uuidAdminDelete,          setUuidAdminDelete]              = useState<string>();
+    const [currentPage,              setCurrentPage]                  = useState<number>(1);
+    const [totalPage,                settotalPage]                    = useState<number>(0);
+    const [lastPage,                 setLastPage]                     = useState<number>(0);
+    const [prePage,                  setPrePage]                      = useState<number>(0);
+
+    // filtro
+    const [search,                   setSearch]                       = useState<String>("")
+    const debouncedSearchTerm = useDebounce(search, 500);
+
+
 
     const irHaFormularioDeCrear = () => {
         setStateLodaer(true)
@@ -36,17 +65,51 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         }
         const incializar= async () => {
             setStateLodaer(true)
-            await filtrarAdmins(1);
+            await filtrarAdmins(currentPage);
             setStateLodaer(false)
         }
         incializar()
     },[])
+    // este useeffect es para los botones de navegación de la paginación
+    // useEffect(() => {
+    //     const incializar= async () => {
+    //         setStateLodaer(true)
+    //         await filtrarAdmins(currentPage);
+    //         setStateLodaer(false)
+    //     }
+    //     incializar()
+    // },[currentPage])
 
-    const filtrarAdmins = async (page:Number = 1) => {
-        const repuestaApi= await AdminServices.filtrar(null,5,page);
-        console.log("respuesta api => ",repuestaApi)
-        console.log("respuesta api => ",repuestaApi.data.data)
-        console.log("respuesta api => ",repuestaApi.data.pagination)
+    // este useeffect es para el filftro de buscador
+    // useEffect(() => {
+    //     const inicializar = async () => {
+    //         setStateLodaer(true)
+    //         await filtrarAdmins(currentPage);
+    //         setStateLodaer(false)
+    //     }
+    //     inicializar()
+    // }, [debouncedSearchTerm]);
+
+    const actualizarTabla= async () => {
+        setStateLodaer(true)
+        await filtrarAdmins(1);
+        setStateLodaer(false)
+    }
+
+    const filtrarAdmins = async (page:number = 1) => {
+        const respuestaApi= await AdminServices.filtrar(null,5,page);
+
+        if(respuestaApi.data.code!=200){
+            return
+        }
+        let data= (respuestaApi.data.data!=null)? respuestaApi.data.data: []
+        let last= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.last_page: 0
+        let pre= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.per_page: 0
+        let total= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.total: 0
+        setAdmins(data)
+        setLastPage(last)
+        setPrePage(pre)
+        settotalPage(total)
     }
 
     const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
@@ -80,12 +143,87 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         });
     }
 
+    const verRegistro = () => {
+        alert("ula")
+    }
 
-    // if(type!=null && titleToast!=null && message!=null){
-    //     alert("uwu")
-    //     createToast(type, titleToast, message, <HiHome/>)
-    // }
+    const irAhFormularioEdit = (uuid: string) => {
+        setStateLodaer(true)
+        window.location.href=`/backoffice/admin/${user_id}/module/admin/record/${uuid}`
+    }
 
+    const mostrarModalDelete= (uuid: string) => {
+        setUuidAdminDelete(uuid)
+        setStateModalDelete(true)
+    }
+
+    const cerrarModalDelete= () => {
+        setStateModalDelete(false)
+    }
+
+    const eliminar = async () => {
+        if(uuidAdminDelete==null){
+            return
+        }
+        setStateLodaer(true)
+
+        let respuestaApi = await AdminServices.delete(uuidAdminDelete)
+        console.log("respuesta api => ",respuestaApi)
+        if(respuestaApi.status!=200){
+            createToast("failure", `Error: ${respuestaApi.status}`, respuestaApi.response?.data.message , <LuTriangleAlert/>)
+            setStateLodaer(false)
+            cerrarModalDelete()
+            return
+        }
+
+        createToast("success", `Operation Complete`, undefined , <LuCheck/>)
+        // setStateLodaer(false)
+        cerrarModalDelete()
+        setCurrentPage(1)
+        actualizarTabla()
+    }
+
+    const buildRowTable= (data: Admin[] = [] ): ReactNode[] => {
+        let rows:ReactNode[] = []
+
+        rows= data.map<ReactNode>( (item) => {
+            return (
+            <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <TableCell onClick={verRegistro} className="flex flex-row items-center">
+                    <Avatar className="cursor-pointer inline-block mr-3" alt="User Avatar" img={item.avatar} rounded/>
+                    {item.name}
+                </TableCell>
+                <TableCell onClick={verRegistro} > {item.email} </TableCell>
+                <TableCell onClick={verRegistro} > {item.phone} </TableCell>
+                <TableCell onClick={verRegistro} > {(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>} </TableCell>
+                <TableCell onClick={verRegistro} > {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY hh:mm:ss A")} </TableCell>
+                <TableCell onClick={verRegistro} > {dayjs.utc(item.updated_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY hh:mm:ss A")} </TableCell>
+                <TableCell> <Button color="yellow" title="edit" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button> </TableCell>
+                <TableCell> <Button color="red" title="delete" onClick={() => mostrarModalDelete(item.id)}>  <LuTrash2 className=" w-5 h-5" />  </Button>  </TableCell>
+            </TableRow>
+            )
+        } )
+
+        return rows
+    }
+
+
+    const TableHeaders= (
+        <TableHead>
+          <TableRow>
+            <TableHeadCell>Name</TableHeadCell>
+            <TableHeadCell>Email</TableHeadCell>
+            <TableHeadCell>Phone</TableHeadCell>
+            <TableHeadCell>Statu</TableHeadCell>
+            <TableHeadCell>Created At</TableHeadCell>
+            <TableHeadCell>Update At</TableHeadCell>
+            <TableHeadCell></TableHeadCell>
+            <TableHeadCell></TableHeadCell>
+          </TableRow>
+        </TableHead>
+    )
+
+    const tableRowContent= buildRowTable(admins)
 
 
     return (
@@ -96,6 +234,20 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
             </Head>
 
             <HeaderToasts list={Array.from(mapToast.values())}/>
+
+            <ModalAlertConfirmation
+            openModal={stateModalDelete}
+            size="md"
+            icon={<LuTrash2 className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to delete?"
+            buttonTextCancel="No, I want not cancel"
+            buttonTextAction="yes, I want delete"
+            onClose={cerrarModalDelete}
+            onClickAction={eliminar}
+            colorButtonCancel="alternative"
+            colorButtonAction="red"
+            />
+
             <Dashboard user_uuid={user_id}>
 
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">
@@ -108,12 +260,13 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 <div className="w-full flex flex-row justify-end mb-5">
                     <Button onClick={irHaFormularioDeCrear} pill> <HiPlus className=" w-6 h-6 mr-1"/>  Create</Button>
                 </div>
-                <Card className="p-4 mb-3">
+                {/* <Card className="p-4 mb-3">
                     <div className=" dark:text-white">Filtros</div>
-                </Card>
-                <Card className="p-4">
-                    <div className=" dark:text-white">Reporte</div>
-                </Card>
+                </Card> */}
+
+                <TableComponent TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
+
+
 
             </Dashboard>
         </>

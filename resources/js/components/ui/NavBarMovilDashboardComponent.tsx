@@ -13,7 +13,6 @@ import {
     DropdownItem,
     Navbar,
     NavbarBrand,
-    NavbarToggle,
     Sidebar,
     SidebarItem,
     SidebarItemGroup,
@@ -23,14 +22,8 @@ import {
 import { useState } from "react";
 import {
     HiChartPie,
-    HiClipboard,
-    HiCollection,
-    HiInformationCircle,
-    HiLogin,
     HiLogout,
-    HiPencil,
     HiSearch,
-    HiShoppingBag,
     HiUser,
     HiUsers,
 } from "react-icons/hi";

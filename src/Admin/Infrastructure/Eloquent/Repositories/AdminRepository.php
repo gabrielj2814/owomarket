@@ -156,7 +156,7 @@ class AdminRepository implements AdminRepositoryInterface {
             });
         }
 
-        $paginator=$paginator->where("type","=","super_admin");
+        // $paginator=$paginator->where("type","=","super_admin");
 
         $respuesta=$paginator->paginate($prePage);
 
@@ -206,6 +206,16 @@ class AdminRepository implements AdminRepositoryInterface {
         );
 
 
+    }
+
+    public function eliminar(Uuid $uuid): void
+    {
+        $admin=AdminModel::query()
+        ->where("id","=",$uuid->value())
+        ->first();
+        if($admin){
+            $admin->delete();
+        }
     }
 
 

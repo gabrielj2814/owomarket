@@ -11,10 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+
+         Schema::create('countries', function (Blueprint $table) {
+            $table->uuid("id")->primary();
+            $table->string('name');
+            $table->boolean('is_active')->default(true);
+            $table->timestamps();
+            $table->softDeletes();
+        });
+
         Schema::create('users', function (Blueprint $table) {
             $table->uuid("id")->primary();
             $table->string('name');
             $table->string('cedula')->nullable();
+            $table->string('nacionalidad',1)->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -25,8 +35,11 @@ return new class extends Migration
             $table->text('avatar')->nullable();
             $table->text('cedula_doc')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->string('country_id')->nullable();
+            $table->foreign('country_id')->references('id')->on('users');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
