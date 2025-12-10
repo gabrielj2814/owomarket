@@ -16,6 +16,7 @@ import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
 import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 import { useDebounce } from "@/hooks/useDebounce";
+import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
 
 
 interface IndexPageProps {
@@ -46,7 +47,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     const [currentPage,              setCurrentPage]                  = useState<number>(1);
     const [totalPage,                settotalPage]                    = useState<number>(0);
     const [lastPage,                 setLastPage]                     = useState<number>(0);
-    const [prePage,                  setPrePage]                      = useState<number>(0);
+    const [prePage,                  setPrePage]                      = useState<number>(50);
 
     // filtro
     const [search,                   setSearch]                       = useState<String>("")
@@ -71,14 +72,14 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         incializar()
     },[])
     // este useeffect es para los botones de navegación de la paginación
-    // useEffect(() => {
-    //     const incializar= async () => {
-    //         setStateLodaer(true)
-    //         await filtrarAdmins(currentPage);
-    //         setStateLodaer(false)
-    //     }
-    //     incializar()
-    // },[currentPage])
+    useEffect(() => {
+        const incializar= async () => {
+            setStateLodaer(true)
+            await filtrarAdmins(currentPage);
+            setStateLodaer(false)
+        }
+        incializar()
+    },[currentPage])
 
     // este useeffect es para el filftro de buscador
     // useEffect(() => {
@@ -89,6 +90,11 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     //     }
     //     inicializar()
     // }, [debouncedSearchTerm]);
+
+    const onPageChange = (page: number) => {
+        setCurrentPage(page)
+    };
+
 
     const actualizarTabla= async () => {
         setStateLodaer(true)
@@ -120,8 +126,6 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
             message,
             icon
         }
-        // mapToast.set(uuid, dataToast)
-        // setMapToast(mapToast)
 
         setMapToast(prevMap => {
             const newMap = new Map(prevMap);
@@ -265,6 +269,8 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 </Card> */}
 
                 <TableComponent TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
+
+                <PaginationNavigationCustom className="pt-5" currentPageFather={currentPage} itemsPerPageFather={prePage} totalItemsFather={totalPage} onPageChangeFather={onPageChange}/>
 
 
 
