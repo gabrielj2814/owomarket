@@ -36,7 +36,7 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     const [form,                       setForm] = useState<FormModuleAdmin>({
         id: (record_id!=null)?record_id:"",
         name: "",
-        email: "test@gmail.com",
+        email: "",
         phone: "",
     })
 
