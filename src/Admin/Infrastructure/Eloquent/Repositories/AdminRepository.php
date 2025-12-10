@@ -3,6 +3,7 @@
 
 namespace Src\Admin\Infrastructure\Eloquent\Repositories;
 
+use DateTime;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Etities\Admin;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
@@ -143,7 +144,13 @@ class AdminRepository implements AdminRepositoryInterface {
         return $admin;
     }
 
-    public function filter(string | null $search, int $prePage= 50): Pagination
+    public function filter(
+        string | null $search,
+        string | null $fechaDesdeUTC,
+        string | null $fechaHastaUTC,
+        bool | null $status,
+        int $prePage=50
+    ): Pagination
     {
          // 1. Usamos Eloquent (infraestructura)
         $paginator= AdminModel::query();
@@ -156,7 +163,22 @@ class AdminRepository implements AdminRepositoryInterface {
             });
         }
 
-        // $paginator=$paginator->where("type","=","super_admin");
+        if(($fechaDesdeUTC!="" && $fechaDesdeUTC!=null) && ($fechaHastaUTC!="" && $fechaHastaUTC!=null)){
+            $fechaDesde=new DateTime($fechaDesdeUTC);
+            $fechaHasta=new DateTime($fechaHastaUTC);
+            $paginator=$paginator->whereDate('created_at', '>=', $fechaDesde->format("Y-m-d"))
+            ->whereDate('created_at', '<=', $fechaHasta->format("Y-m-d"));
+        }
+
+
+        if($status!="" && $status!=null){
+            $paginator=$paginator->where("is_active","=",true);
+        }
+        else{
+            $paginator=$paginator->where("is_active","=",false);
+        }
+
+        $paginator=$paginator->where("type","=",UserType::SUPER_ADMIN);
 
         $respuesta=$paginator->paginate($prePage);
 

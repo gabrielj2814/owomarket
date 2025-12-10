@@ -70,10 +70,13 @@ const AdminServices = {
         }
     },
 
-    filtrar: async (search: string|null, prePage: number= 50, page: number=1): Promise<ApiResponse<Admin[]>> => {
+    filtrar: async (search: string|null, fechaDesdeUTC: string, fechaHastaUTC: string, status: boolean, prePage: number= 50, page: number=1): Promise<ApiResponse<Admin[]>> => {
          try{
             const body={
-                search: search,
+                search,
+                fechaDesdeUTC,
+                fechaHastaUTC,
+                status,
                 prePage,
             }
             let respuesta:ApiResponse<Admin[]> = await axiosAdmin.post(`filter?page=${page}`,body)

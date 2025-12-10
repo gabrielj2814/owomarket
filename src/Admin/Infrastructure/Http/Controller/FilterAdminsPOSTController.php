@@ -22,12 +22,27 @@ class FilterAdminsPOSTController extends Controller {
     public function index(Request $request): JsonResponse {
         $prePage=$request->prePage;
         $search=null;
+        $fechaDesdeUTC=null;
+        $fechaHastaUTC=null;
+        $status=null;
 
         if($request->filled("search")){
             $search=$request->search;
         }
 
-        $pagination=$this->filter_admins_use_case->excute($search,$prePage);
+        if($request->filled("fechaDesdeUTC")){
+            $fechaDesdeUTC=$request->fechaDesdeUTC;
+        }
+
+        if($request->filled("fechaHastaUTC")){
+            $fechaHastaUTC=$request->fechaHastaUTC;
+        }
+
+        if($request->filled("status")){
+            $status=$request->status;
+        }
+
+        $pagination=$this->filter_admins_use_case->excute($search, $fechaDesdeUTC, $fechaHastaUTC, $status, $prePage);
         // dd($pagination);
         $items=$pagination->getItems();
         $dataPaginate=[];

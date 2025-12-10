@@ -1,5 +1,5 @@
 import Dashboard from "@/components/layouts/Dashboard"
-import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, Card, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react"
+import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react"
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { HiHome, HiPlus } from "react-icons/hi";
@@ -17,6 +17,8 @@ import timezone from "dayjs/plugin/timezone"
 import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 import { useDebounce } from "@/hooks/useDebounce";
 import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
+import FiltersModuleAdminIndex from "@/components/filters/FiltersModuleAdminIndex";
+import dateUtils from "@/utils/date";
 
 
 interface IndexPageProps {
@@ -50,8 +52,14 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     const [prePage,                  setPrePage]                      = useState<number>(50);
 
     // filtro
-    const [search,                   setSearch]                       = useState<String>("")
+    const [status,                   setStatus]                       = useState<boolean>(false)
+    const [search,                   setSearch]                       = useState<string>("")
+    const [filtroDesdeUTC,           setFiltroDesdeUTC]               = useState<string>(dateUtils.procesarFechaCompleto(new Date()).paraBD)
+    const [filtroHastaUTC,           setFiltroHastaUTC]               = useState<string>(dateUtils.procesarFechaCompleto(new Date()).paraBD)
+    const [filtroDesde,              setFiltroDesde]                  = useState<Date>(new Date())
+    const [filtroHasta,              setFiltroHasta]                  = useState<Date>(new Date())
     const debouncedSearchTerm = useDebounce(search, 500);
+
 
 
 
@@ -68,32 +76,50 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
             setStateLodaer(true)
             await filtrarAdmins(currentPage);
             setStateLodaer(false)
+            setCargaInicialCompleta(true)
         }
         incializar()
     },[])
-    // este useeffect es para los botones de navegación de la paginación
-    useEffect(() => {
-        const incializar= async () => {
-            setStateLodaer(true)
-            await filtrarAdmins(currentPage);
-            setStateLodaer(false)
-        }
-        incializar()
-    },[currentPage])
 
     // este useeffect es para el filftro de buscador
-    // useEffect(() => {
-    //     const inicializar = async () => {
-    //         setStateLodaer(true)
-    //         await filtrarAdmins(currentPage);
-    //         setStateLodaer(false)
-    //     }
-    //     inicializar()
-    // }, [debouncedSearchTerm]);
+    useEffect(() => {
+        if(cargaInicialCompleta){
+            const inicializar = async () => {
+                setStateLodaer(true)
+                await filtrarAdmins(currentPage);
+                setStateLodaer(false)
+            }
+            inicializar()
+        }
+    }, [debouncedSearchTerm, status, filtroDesdeUTC, filtroHastaUTC, currentPage]);
 
     const onPageChange = (page: number) => {
         setCurrentPage(page)
     };
+
+    const onChangeSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSearch(e.target.value)
+    }
+
+    const onChangeDesde= (date: Date | null) => {
+        if(date==null){
+            return
+        }
+
+        let fecha=dateUtils.procesarFechaCompleto(date)
+        console.log("fecha desde local => ",fecha)
+        setFiltroDesdeUTC(fecha.paraBD)
+        setFiltroDesde(date)
+    }
+
+    const onChangeHasta= (date: Date | null) => {
+        if(date==null){
+            return
+        }
+        let fecha=dateUtils.procesarFechaCompleto(date)
+        setFiltroHastaUTC(fecha.paraBD)
+        setFiltroHasta(date)
+    }
 
 
     const actualizarTabla= async () => {
@@ -103,7 +129,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     }
 
     const filtrarAdmins = async (page:number = 1) => {
-        const respuestaApi= await AdminServices.filtrar(null,5,page);
+        const respuestaApi= await AdminServices.filtrar(search,filtroDesdeUTC, filtroHastaUTC, status, prePage, page);
 
         if(respuestaApi.data.code!=200){
             return
@@ -213,7 +239,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
 
 
     const TableHeaders= (
-        <TableHead>
+        <TableHead className=" sticky top-0 z-10">
           <TableRow>
             <TableHeadCell>Name</TableHeadCell>
             <TableHeadCell>Email</TableHeadCell>
@@ -264,11 +290,22 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 <div className="w-full flex flex-row justify-end mb-5">
                     <Button onClick={irHaFormularioDeCrear} pill> <HiPlus className=" w-6 h-6 mr-1"/>  Create</Button>
                 </div>
-                {/* <Card className="p-4 mb-3">
-                    <div className=" dark:text-white">Filtros</div>
-                </Card> */}
 
-                <TableComponent TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
+                <FiltersModuleAdminIndex
+                search={search}
+                status={status}
+                fechaDesde={filtroDesde}
+                fechaHasta={filtroHasta}
+                onChangeSearch={onChangeSearch}
+                onChangeDesde={onChangeDesde}
+                onChangeHasta={onChangeHasta}
+                onChangeStatus={setStatus}
+                />
+
+
+                <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 470px)" }}>
+                    <TableComponent TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
+                </div>
 
                 <PaginationNavigationCustom className="pt-5" currentPageFather={currentPage} itemsPerPageFather={prePage} totalItemsFather={totalPage} onPageChangeFather={onPageChange}/>
 

@@ -14,8 +14,14 @@ class FilterAdminsUseCase {
     ){}
 
 
-    public function excute(string | null $search, int $prePage=50): Pagination{
-        return $this->admin_repository_interface->filter($search, $prePage);
+    public function excute(
+        string | null $search,
+        string | null $fechaDesdeUTC,
+        string | null $fechaHastaUTC,
+        bool | null $status,
+        int $prePage=50
+     ): Pagination{
+        return $this->admin_repository_interface->filter($search, $fechaDesdeUTC, $fechaHastaUTC, $status, $prePage);
     }
 
 
