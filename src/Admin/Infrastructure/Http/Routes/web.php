@@ -20,7 +20,7 @@ Route::put('/{user_uuid}/admin/{uuid}',                       [UpdateAdminPUTCon
 Route::get('/{uuid}',                                         [ConsultAdminByUuidGETController::class, 'index'])->middleware("auth");
 Route::post('/filter',                                        [FilterAdminsPOSTController::class, 'index'])->middleware("auth");
 Route::delete('/{uuid}',                                      [DeleteAdminByUuidDELETEController::class, 'index'])->middleware("auth");
-Route::put('/{uuid}/change-statu',                          [ChangeStatuAdminByUuidPATCHController::class, 'index'])->middleware("auth");
+Route::put('/{uuid}/change-statu',                            [ChangeStatuAdminByUuidPATCHController::class, 'index'])->middleware("auth");
 
 
 ?>
