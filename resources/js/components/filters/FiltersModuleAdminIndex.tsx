@@ -23,10 +23,10 @@ const FiltersModuleAdminIndex:FC<FiltersModuleAdminIndexProps> = ({search="", fe
                     <TextInput id="search" type="text" placeholder="Search by name or email" icon={LuSearch} value={search} onChange={onChangeSearch} />
                 </div>
                 <div>
-                     <Datepicker name="filterFrom" title="filter from" value={fechaDesde} onChange={onChangeDesde}/>
+                     <Datepicker name="filterFrom" title="Filter from" value={fechaDesde} onChange={onChangeDesde}/>
                 </div>
                 <div>
-                     <Datepicker name="filterUpTo" title="filter up to" value={fechaHasta} onChange={onChangeHasta}/>
+                     <Datepicker name="filterUpTo" title="Filter up to" value={fechaHasta} onChange={onChangeHasta}/>
                 </div>
                 <div>
                      <ToggleSwitch checked={status} label="Activo" onChange={onChangeStatus} />

@@ -7,12 +7,12 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
-use Src\Admin\Infrastructure\Http\Data\UpdateAdminData;
+use Src\Admin\Infrastructure\Http\Data\ChangeStatuAdminData;
 use Src\Shared\Helper\ApiResponse;
 
-class UpdateAdminFormRequest extends FormRequest {
+class ChangeStatuAdminFormRequest extends FormRequest {
 
-    public UpdateAdminData $data;
+    public ChangeStatuAdminData $data;
 
     /**
     * Determine if the user is authorized to make this request.
@@ -31,27 +31,18 @@ class UpdateAdminFormRequest extends FormRequest {
     {
         return [
             'id'       => 'required|uuid:4',
-            'name'     => 'required|min:2',
-            'email'    => 'required|email',
-            'phone'    => 'required|min:11|max:11',
+            'statu'    => 'required|boolean:strict',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'id.required'       => 'El campo id es obligatorio.',
+            'id.required'       => 'El campo email es obligatorio.',
             'id.uuid'           => 'El Id no tiene un formato valido con cumple con el formato UUID v4',
 
-            'name.required'     => 'El campo name es obligatorio.',
-            'name.min'          => 'El campo tiene que tener minimo de 2 caracteres',
-
-            'email.required'    => 'El campo email es obligatorio.',
-            'email.email'       => 'El campo email debe ser una dirección de correo electrónico válida.',
-
-            'phone.required'     => 'El campo phone es obligatorio.',
-            'phone.min'          => 'El campo tiene que tener minimo de 11 caracteres',
-            'phone.max'          => 'El campo solo permite un  maximo de 11 caracteres',
+            'statu.required'    => 'El campo statu es obligatorio.',
+            'statu.boolean'     => 'El campo statu solo acepta true o false',
         ];
     }
 
@@ -64,11 +55,9 @@ class UpdateAdminFormRequest extends FormRequest {
 
     protected function passedValidation()
     {
-        $this->data=UpdateAdminData::from([
+        $this->data=ChangeStatuAdminData::from([
             'id'       => $this->id,
-            'name'     => $this->name,
-            'email'    => $this->email,
-            'phone'    => $this->phone,
+            'statu'    => $this->statu,
         ]);
     }
 

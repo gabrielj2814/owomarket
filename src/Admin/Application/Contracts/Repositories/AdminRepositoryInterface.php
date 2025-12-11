@@ -5,6 +5,7 @@ namespace Src\Admin\Application\Contracts\Repositories;
 
 use Src\Admin\Domain\Etities\Admin;
 use Src\Admin\Domain\ValueObjects\UserEmail;
+use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Shared\Collection\Pagination;
 
@@ -27,6 +28,8 @@ interface AdminRepositoryInterface {
     ): Pagination;
 
     public function eliminar(Uuid $uuid): void;
+
+    public function changeStatu(Uuid $uuid, UserStatus $statu): void;
 
 
 

@@ -1,5 +1,5 @@
 import Dashboard from "@/components/layouts/Dashboard"
-import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react"
+import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, TableCell, TableHead, TableHeadCell, TableRow, ToggleSwitch } from "flowbite-react"
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { HiHome, HiPlus } from "react-icons/hi";
@@ -217,6 +217,20 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         actualizarTabla()
     }
 
+    const actualizarEstadoUsuario= async (id: string, statusAdmin: boolean) => {
+        // console.log("id => ",id)
+        // console.log("statusAdmin => ",statusAdmin)
+        setStateLodaer(true)
+        const respuestaApi= await AdminServices.changeStatu(id, statusAdmin)
+        if(respuestaApi.status!=200){
+            createToast("failure", `Error: ${respuestaApi.status}`, respuestaApi.response?.data.message , <LuTriangleAlert/>)
+            setStateLodaer(false)
+            return
+        }
+        createToast("success", `Change Statu Successfully`, undefined , <LuCheck/>)
+        actualizarTabla()
+    }
+
     const buildRowTable= (data: Admin[] = [] ): ReactNode[] => {
         let rows:ReactNode[] = []
 
@@ -229,7 +243,10 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 </TableCell>
                 <TableCell onClick={verRegistro} > {item.email} </TableCell>
                 <TableCell onClick={verRegistro} > {item.phone} </TableCell>
-                <TableCell onClick={verRegistro} > {(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>} </TableCell>
+                <TableCell >
+                    <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  />
+                    {/* {(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>}  */}
+                </TableCell>
                 <TableCell onClick={verRegistro} > {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY hh:mm:ss A")} </TableCell>
                 <TableCell onClick={verRegistro} > {dayjs.utc(item.updated_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY hh:mm:ss A")} </TableCell>
                 <TableCell> <Button color="yellow" title="edit" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button> </TableCell>

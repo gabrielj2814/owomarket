@@ -30,7 +30,7 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`${uuid}/module/admin/create`,body)
+            let respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`${uuid}/admin`,body)
 
             return respuesta
         }
@@ -49,7 +49,7 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`${uuid}/module/admin/update/${datos.id}`,body)
+            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`${uuid}/admin/${datos.id}`,body)
 
             return respuesta
         }
@@ -61,7 +61,7 @@ const AdminServices = {
     consultByUuid: async (user_uuid: string): Promise<ApiResponse<Admin>> => {
          try{
 
-            let respuesta:ApiResponse<Admin> = await axiosAdmin.get(`consult/${user_uuid}`)
+            let respuesta:ApiResponse<Admin> = await axiosAdmin.get(`${user_uuid}`)
 
             return respuesta
         }
@@ -90,7 +90,22 @@ const AdminServices = {
 
     delete: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
-            let respuesta:ApiResponse<void> = await axiosAdmin.delete(`delete/${uuid}`)
+            let respuesta:ApiResponse<void> = await axiosAdmin.delete(`${uuid}`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<void>;
+        }
+    },
+
+    changeStatu: async (id: string, statu: boolean): Promise<ApiResponse<void>> => {
+        try{
+            const body={
+                id,
+                statu
+            }
+            let respuesta:ApiResponse<void> = await axiosAdmin.put(`${id}/change-statu`,body)
 
             return respuesta
         }

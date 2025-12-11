@@ -40,14 +40,14 @@ class CreateAdminFormRequest extends FormRequest {
     public function messages(): array
     {
         return [
-            'name.required'     => 'El campo email es obligatorio.',
+            'name.required'     => 'El campo name es obligatorio.',
             'name.min'          => 'El campo tiene que tener minimo de 2 caracteres',
 
             'email.required'    => 'El campo email es obligatorio.',
             'email.email'       => 'El campo email debe ser una dirección de correo electrónico válida.',
             'email.unique'      => 'No se puede usar un correo que ya esta en uso.',
 
-            'phone.required'     => 'El campo email es obligatorio.',
+            'phone.required'     => 'El campo phone es obligatorio.',
             'phone.min'          => 'El campo tiene que tener minimo de 11 caracteres',
             'phone.max'          => 'El campo solo permite un  maximo de 11 caracteres',
         ];

@@ -240,6 +240,15 @@ class AdminRepository implements AdminRepositoryInterface {
         }
     }
 
+    public function changeStatu(Uuid $uuid, UserStatus $statu): void
+    {
+        $admin=AdminModel::query()->where("id","=",$uuid->value())->first();
+        if($admin){
+            $admin->is_active=$statu->value();
+            $admin->save();
+        }
+    }
+
 
 }
 
