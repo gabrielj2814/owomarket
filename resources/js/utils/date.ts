@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 
 const dateUtils = {
 
@@ -33,7 +34,70 @@ const dateUtils = {
             horaMilitar: `${fechaUsuario.getHours().toString().padStart(2, '0')}:${fechaUsuario.getMinutes().toString().padStart(2, '0')}`,
             hora12h: fechaUsuario.toLocaleTimeString('es-ES', { hour12: true })
         };
+    },
+
+    /**
+     * Obtiene la primera y última fecha del mes actual
+     * @returns Un objeto con la primera y última fecha del mes actual
+     */
+
+    getFirstAndLastDayOfCurrentMonth: (): {
+        firstDay: dayjs.Dayjs;
+        lastDay: dayjs.Dayjs;
+    } => {
+        const now = dayjs();
+
+        // Primera fecha del mes (día 1)
+        const firstDay = now.startOf('month');
+
+        // Última fecha del mes (último día)
+        const lastDay = now.endOf('month');
+
+        return {
+            firstDay,
+            lastDay
+        };
+    },
+
+
+    /**
+     * Obtiene la primera y última fecha del mes actual en formato de cadena
+     * @param format Formato opcional para las fechas (por defecto: 'YYYY-MM-DD')
+     * @returns Un objeto con la primera y última fecha del mes actual en formato de cadena
+     */
+    getFirstAndLastDayOfCurrentMonthFormatted: (
+        format: string = 'YYYY-MM-DD'
+    ): {
+        firstDay: string;
+        lastDay: string;
+    } =>  {
+        const { firstDay, lastDay } = dateUtils.getFirstAndLastDayOfCurrentMonth();
+
+        return {
+            firstDay: firstDay.format(format),
+            lastDay: lastDay.format(format)
+        };
+    },
+
+    /**
+     * Obtiene la primera y última fecha de un mes específico
+     * @param date Fecha de referencia (dayjs, Date o string)
+     * @returns Un objeto con la primera y última fecha del mes de la fecha proporcionada
+     */
+    getFirstAndLastDayOfMonth: (
+        date: dayjs.Dayjs | Date | string
+    ): {
+        firstDay: dayjs.Dayjs;
+        lastDay: dayjs.Dayjs;
+    } => {
+        const dayjsDate = dayjs(date);
+
+        return {
+            firstDay: dayjsDate.startOf('month'),
+            lastDay: dayjsDate.endOf('month')
+        };
     }
+
 
 }
 

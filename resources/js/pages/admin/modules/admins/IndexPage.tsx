@@ -33,6 +33,10 @@ interface IndexPageProps {
 const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_id, type=null, message=null, titleToast=null }) => {
 
     const zonaHorariaSistema=import.meta.env.TIME_ZONE_SISTEMA
+    const fechasDelMesActual= dateUtils.getFirstAndLastDayOfCurrentMonth()
+
+    const FechaDesde=new Date(fechasDelMesActual.firstDay.toString());
+    const FechaHasta=new Date(fechasDelMesActual.lastDay.toString());
 
     dayjs.extend(utc);
     dayjs.extend(timezone);
@@ -52,12 +56,12 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     const [prePage,                  setPrePage]                      = useState<number>(50);
 
     // filtro
-    const [status,                   setStatus]                       = useState<boolean>(false)
+    const [status,                   setStatus]                       = useState<boolean>(true)
     const [search,                   setSearch]                       = useState<string>("")
-    const [filtroDesdeUTC,           setFiltroDesdeUTC]               = useState<string>(dateUtils.procesarFechaCompleto(new Date()).paraBD)
-    const [filtroHastaUTC,           setFiltroHastaUTC]               = useState<string>(dateUtils.procesarFechaCompleto(new Date()).paraBD)
-    const [filtroDesde,              setFiltroDesde]                  = useState<Date>(new Date())
-    const [filtroHasta,              setFiltroHasta]                  = useState<Date>(new Date())
+    const [filtroDesdeUTC,           setFiltroDesdeUTC]               = useState<string>(dateUtils.procesarFechaCompleto(FechaDesde).paraBD)
+    const [filtroHastaUTC,           setFiltroHastaUTC]               = useState<string>(dateUtils.procesarFechaCompleto(FechaHasta).paraBD)
+    const [filtroDesde,              setFiltroDesde]                  = useState<Date>(FechaDesde)
+    const [filtroHasta,              setFiltroHasta]                  = useState<Date>(FechaHasta)
     const debouncedSearchTerm = useDebounce(search, 500);
 
 
