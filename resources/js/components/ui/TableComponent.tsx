@@ -4,14 +4,15 @@ import { FC, ReactNode } from "react";
 import { LuDatabase } from "react-icons/lu";
 
 interface TableComponentProps {
-    TableHead:     ReactNode
-    TableContent?: ReactNode[]
-    colSpan:       number
+    TableHead:     ReactNode;
+    TableContent?: ReactNode[];
+    colSpan:       number;
+    className?:    string;
 }
 
-const TableComponent:FC<TableComponentProps> = ({TableHead, TableContent=[], colSpan}) => {
+const TableComponent:FC<TableComponentProps> = ({TableHead, TableContent=[], colSpan, className=""}) => {
   return (
-    <Table hoverable >
+    <Table hoverable className={className} >
         {TableHead}
         <TableBody className="divide-y">
             {TableContent &&

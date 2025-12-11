@@ -1,5 +1,5 @@
 import Dashboard from "@/components/layouts/Dashboard"
-import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, TableCell, TableHead, TableHeadCell, TableRow, ToggleSwitch } from "flowbite-react"
+import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, Card, HelperText, TableCell, TableHead, TableHeadCell, TableRow, ToggleSwitch } from "flowbite-react"
 import { FC, ReactNode, useEffect, useState } from "react";
 import { Head } from "@inertiajs/react";
 import { HiHome, HiPlus } from "react-icons/hi";
@@ -10,7 +10,7 @@ import {v4 as uuidv4} from "uuid"
 import AdminServices from "@/Services/AdminServices";
 import TableComponent from "@/components/ui/TableComponent";
 import { Admin } from "@/types/models/Admin";
-import { LuCheck, LuPencil, LuTrash2, LuTriangleAlert } from "react-icons/lu";
+import { LuCheck, LuEye, LuPencil, LuTrash2, LuTriangleAlert } from "react-icons/lu";
 import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
@@ -31,7 +31,7 @@ interface IndexPageProps {
 
 
 const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_id, type=null, message=null, titleToast=null }) => {
-
+    // DD/MM/YYYY hh:mm:ss A
     const zonaHorariaSistema=import.meta.env.TIME_ZONE_SISTEMA
     const fechasDelMesActual= dateUtils.getFirstAndLastDayOfCurrentMonth()
 
@@ -239,19 +239,51 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
             <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
                 <TableCell onClick={verRegistro} className="flex flex-row items-center">
                     <Avatar className="cursor-pointer inline-block mr-3" alt="User Avatar" img={item.avatar} rounded/>
-                    {item.name}
+                    <div>
+                        <div>{item.name}</div>
+                        <HelperText className="w-full">{item.email}</HelperText>
+                    </div>
                 </TableCell>
-                <TableCell onClick={verRegistro} > {item.email} </TableCell>
+                {/* <TableCell onClick={verRegistro} > {item.email} </TableCell> */}
                 <TableCell onClick={verRegistro} > {item.phone} </TableCell>
                 <TableCell >
                     <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  />
                     {/* {(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>}  */}
                 </TableCell>
-                <TableCell onClick={verRegistro} > {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY hh:mm:ss A")} </TableCell>
-                <TableCell onClick={verRegistro} > {dayjs.utc(item.updated_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY hh:mm:ss A")} </TableCell>
+                <TableCell onClick={verRegistro} > {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")} </TableCell>
+                {/* <TableCell onClick={verRegistro} > {dayjs.utc(item.updated_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")} </TableCell> */}
                 <TableCell> <Button color="yellow" title="edit" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button> </TableCell>
                 <TableCell> <Button color="red" title="delete" onClick={() => mostrarModalDelete(item.id)}>  <LuTrash2 className=" w-5 h-5" />  </Button>  </TableCell>
             </TableRow>
+            )
+        } )
+
+        return rows
+    }
+
+     const buildMovil= (data: Admin[] = [] ): ReactNode[] => {
+        let rows:ReactNode[] = []
+
+        rows= data.map<ReactNode>( (item) => {
+            return (
+            <Card className="mb-4">
+                <div><span className="font-bold">Name:</span>  <span>{item.name}</span> </div>
+                <div><span className="font-bold">Email:</span> <span>{item.email}</span> </div>
+                <div><span className="font-bold">Phone:</span> <span>{item.phone}</span> </div>
+                <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  />
+                <div className=" flex flex-row gap-4">
+                    <div className=" basis-6/12">
+                        <Button title="See" className="w-full" onClick={() => verRegistro()}>  <LuEye className=" w-5 h-5" />  </Button>
+                    </div>
+                    <div className=" basis-6/12">
+                        <Button color="yellow" title="edit" className="w-full" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button>
+                    </div>
+                    <div className=" basis-6/12">
+                        <Button color="red" title="delete" className="w-full" onClick={() => mostrarModalDelete(item.id)}>  <LuTrash2 className=" w-5 h-5" />  </Button>
+                    </div>
+                </div>
+
+            </Card>
             )
         } )
 
@@ -263,11 +295,11 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         <TableHead className=" sticky top-0 z-10">
           <TableRow>
             <TableHeadCell>Name</TableHeadCell>
-            <TableHeadCell>Email</TableHeadCell>
+            {/* <TableHeadCell>Email</TableHeadCell> */}
             <TableHeadCell>Phone</TableHeadCell>
             <TableHeadCell>Statu</TableHeadCell>
             <TableHeadCell>Created At</TableHeadCell>
-            <TableHeadCell>Update At</TableHeadCell>
+            {/* <TableHeadCell>Update At</TableHeadCell> */}
             <TableHeadCell></TableHeadCell>
             <TableHeadCell></TableHeadCell>
           </TableRow>
@@ -275,6 +307,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     )
 
     const tableRowContent= buildRowTable(admins)
+    const movilRowContent= buildMovil(admins)
 
 
     return (
@@ -325,7 +358,10 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
 
 
                 <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 470px)" }}>
-                    <TableComponent TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
+                    <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
+                    <div className="block lg:hidden">
+                        {movilRowContent}
+                    </div>
                 </div>
 
                 <PaginationNavigationCustom className="pt-5" currentPageFather={currentPage} itemsPerPageFather={prePage} totalItemsFather={totalPage} onPageChangeFather={onPageChange}/>

@@ -18,17 +18,17 @@ const FiltersModuleAdminIndex:FC<FiltersModuleAdminIndexProps> = ({search="", fe
 
     return (
       <Card className="mb-3">
-            <div className="flex w-full flex-row items-center gap-4">
-                <div className=" w-3/12">
+            <div className="flex flex-row flex-wrap items-center gap-4">
+                <div className="basis-full  lg:basis-3/12">
                     <TextInput id="search" type="text" placeholder="Search by name or email" icon={LuSearch} value={search} onChange={onChangeSearch} />
                 </div>
-                <div>
+                <div className="basis-full lg:basis-3/12">
                      <Datepicker name="filterFrom" title="Filter from" value={fechaDesde} onChange={onChangeDesde}/>
                 </div>
-                <div>
+                <div className="basis-full lg:basis-3/12">
                      <Datepicker name="filterUpTo" title="Filter up to" value={fechaHasta} onChange={onChangeHasta}/>
                 </div>
-                <div>
+                <div className="basis-full lg:basis-auto">
                      <ToggleSwitch checked={status} label="Activo" onChange={onChangeStatus} />
                 </div>
             </div>
