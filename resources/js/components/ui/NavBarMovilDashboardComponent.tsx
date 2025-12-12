@@ -14,6 +14,7 @@ import {
     Navbar,
     NavbarBrand,
     Sidebar,
+    SidebarCollapse,
     SidebarItem,
     SidebarItemGroup,
     SidebarItems,
@@ -27,7 +28,7 @@ import {
     HiUser,
     HiUsers,
 } from "react-icons/hi";
-import { LuBell, LuMenu, LuSettings, LuShield, LuStore } from "react-icons/lu";
+import { LuBell, LuMenu, LuSettings, LuShield, LuStore, LuUserPlus, LuUserRoundSearch, LuUsers } from "react-icons/lu";
 import { TbBuildingStore, TbWorldWww } from "react-icons/tb";
 
 const NavBarMovilDashboardComponent = () => {
@@ -81,7 +82,7 @@ const NavBarMovilDashboardComponent = () => {
                         </DropdownHeader>
                         {/* <DropdownItem>Dashboard</DropdownItem> */}
                         <DropdownItem>Perfil</DropdownItem>
-                        <DropdownItem>Settings</DropdownItem>
+                        {/* <DropdownItem>Settings</DropdownItem> */}
                         <DropdownDivider />
                         <DropdownItem onClick={logout}>Sign out</DropdownItem>
                     </Dropdown>
@@ -114,9 +115,11 @@ const NavBarMovilDashboardComponent = () => {
                                         <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module`} icon={HiUsers}>
                                             Admins
                                         </SidebarItem>
-                                        <SidebarItem href="#" icon={LuStore}>
-                                            Tenants
-                                        </SidebarItem>
+                                        <SidebarCollapse icon={LuStore} label="Tenants">
+                                            <SidebarItem icon={LuUsers} href={`/backoffice/tenant/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
+                                            <SidebarItem icon={LuUserPlus} href="#">Request</SidebarItem>
+                                            <SidebarItem icon={LuUserRoundSearch} href="#">Suspended</SidebarItem>
+                                        </SidebarCollapse>
                                         {/* <SidebarItem href="#" icon={TbWorldWww}>
                                             Domains
                                         </SidebarItem>
