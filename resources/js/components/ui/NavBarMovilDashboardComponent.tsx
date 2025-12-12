@@ -59,7 +59,6 @@ const NavBarMovilDashboardComponent = () => {
             <Navbar fluid rounded>
                 <NavbarBrand href="https://flowbite-react.com">
                     <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Flowbite React Logo" />
-                    {/* <img src={storage.local.get("images/owo_logo.png").url} className="mr-3 h-6 sm:h-15" alt="Flowbite React Logo" /> */}
                     <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">OwOMarket</span>
                 </NavbarBrand>
                 <div className="flex md:order-2">
@@ -80,9 +79,7 @@ const NavBarMovilDashboardComponent = () => {
                             <span className="block text-sm">{state.authUser.user_name}</span>
                             <span className="block truncate text-sm font-medium">{state.authUser.user_email}</span>
                         </DropdownHeader>
-                        {/* <DropdownItem>Dashboard</DropdownItem> */}
                         <DropdownItem>Perfil</DropdownItem>
-                        {/* <DropdownItem>Settings</DropdownItem> */}
                         <DropdownDivider />
                         <DropdownItem onClick={logout}>Sign out</DropdownItem>
                     </Dropdown>
@@ -120,15 +117,6 @@ const NavBarMovilDashboardComponent = () => {
                                             <SidebarItem icon={LuUserPlus} href="#">Request</SidebarItem>
                                             <SidebarItem icon={LuUserRoundSearch} href="#">Suspended</SidebarItem>
                                         </SidebarCollapse>
-                                        {/* <SidebarItem href="#" icon={TbWorldWww}>
-                                            Domains
-                                        </SidebarItem>
-                                        <SidebarItem href="#" icon={LuShield}>
-                                            Security
-                                        </SidebarItem>
-                                        <SidebarItem href="#" icon={LuSettings}>
-                                            Settings
-                                        </SidebarItem> */}
                                         <SidebarItem icon={HiLogout} onClick={logout}>
                                             Log Out
                                         </SidebarItem>
@@ -139,15 +127,6 @@ const NavBarMovilDashboardComponent = () => {
                                         <SidebarItem icon={TbBuildingStore}>
                                             Settings Marketplace
                                         </SidebarItem>
-                                        {/* <SidebarItem href="https://github.com/themesberg/flowbite-react/" icon={HiClipboard}>
-                                            Docs
-                                        </SidebarItem> */}
-                                        {/* <SidebarItem href="https://flowbite-react.com/" icon={HiCollection}>
-                                            Components
-                                        </SidebarItem>
-                                        <SidebarItem href="https://github.com/themesberg/flowbite-react/issues" icon={HiInformationCircle}>
-                                            Help
-                                        </SidebarItem> */}
                                     </SidebarItemGroup>
                                 </SidebarItems>
                             </div>

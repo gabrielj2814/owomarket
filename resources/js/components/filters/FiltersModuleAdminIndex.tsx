@@ -22,12 +22,24 @@ const FiltersModuleAdminIndex:FC<FiltersModuleAdminIndexProps> = ({search="", fe
                 <div className="basis-full  lg:basis-3/12">
                     <TextInput id="search" type="text" placeholder="Search by name or email" icon={LuSearch} value={search} onChange={onChangeSearch} />
                 </div>
-                <div className="basis-full lg:basis-3/12">
+                {/* desktop */}
+                <div className="basis-full lg:basis-3/12 hidden lg:block">
                      <Datepicker name="filterFrom" title="Filter from" value={fechaDesde} onChange={onChangeDesde}/>
                 </div>
-                <div className="basis-full lg:basis-3/12">
+                <div className="basis-full lg:basis-3/12 hidden lg:block">
                      <Datepicker name="filterUpTo" title="Filter up to" value={fechaHasta} onChange={onChangeHasta}/>
                 </div>
+                {/* movil */}
+                <div className="w-full flex flex-row lg:hidden gap-4">
+                    <div className=" basis-6/12 ">
+                        <Datepicker name="filterFrom" title="Filter from movil" value={fechaDesde} onChange={onChangeDesde}/>
+                    </div>
+                    <div className=" basis-6/12 ">
+                        <Datepicker name="filterUpTo" title="Filter up to movil" value={fechaHasta} onChange={onChangeHasta}/>
+                    </div>
+                </div>
+
+
                 <div className="basis-full lg:basis-auto">
                      <ToggleSwitch checked={status} label="Activo" onChange={onChangeStatus} />
                 </div>

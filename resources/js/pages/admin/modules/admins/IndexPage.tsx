@@ -237,21 +237,19 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         rows= data.map<ReactNode>( (item) => {
             return (
             <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <TableCell onClick={verRegistro} className="flex flex-row items-center">
+                <TableCell className="flex flex-row items-center">
                     <Avatar className="cursor-pointer inline-block mr-3" alt="User Avatar" img={item.avatar} rounded/>
                     <div>
                         <div>{item.name}</div>
                         <HelperText className="w-full">{item.email}</HelperText>
                     </div>
                 </TableCell>
-                {/* <TableCell onClick={verRegistro} > {item.email} </TableCell> */}
-                <TableCell onClick={verRegistro} > {item.phone} </TableCell>
+                <TableCell > {item.phone} </TableCell>
                 <TableCell >
                     <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  />
                     {/* {(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>}  */}
                 </TableCell>
-                <TableCell onClick={verRegistro} > {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")} </TableCell>
-                {/* <TableCell onClick={verRegistro} > {dayjs.utc(item.updated_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")} </TableCell> */}
+                <TableCell > {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")} </TableCell>
                 <TableCell> <Button color="yellow" title="edit" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button> </TableCell>
                 <TableCell> <Button color="red" title="delete" onClick={() => mostrarModalDelete(item.id)}>  <LuTrash2 className=" w-5 h-5" />  </Button>  </TableCell>
             </TableRow>
@@ -272,9 +270,9 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 <div><span className="font-bold">Phone:</span> <span>{item.phone}</span> </div>
                 <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  />
                 <div className=" flex flex-row gap-4">
-                    <div className=" basis-6/12">
+                    {/* <div className=" basis-6/12">
                         <Button title="See" className="w-full" onClick={() => verRegistro()}>  <LuEye className=" w-5 h-5" />  </Button>
-                    </div>
+                    </div> */}
                     <div className=" basis-6/12">
                         <Button color="yellow" title="edit" className="w-full" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button>
                     </div>
@@ -295,11 +293,9 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         <TableHead className=" sticky top-0 z-10">
           <TableRow>
             <TableHeadCell>Name</TableHeadCell>
-            {/* <TableHeadCell>Email</TableHeadCell> */}
             <TableHeadCell>Phone</TableHeadCell>
             <TableHeadCell>Statu</TableHeadCell>
             <TableHeadCell>Created At</TableHeadCell>
-            {/* <TableHeadCell>Update At</TableHeadCell> */}
             <TableHeadCell></TableHeadCell>
             <TableHeadCell></TableHeadCell>
           </TableRow>
