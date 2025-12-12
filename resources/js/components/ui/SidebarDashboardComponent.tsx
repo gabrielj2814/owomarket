@@ -1,7 +1,7 @@
 import { useDashboard } from "@/contexts/DashboardContext";
-import { Sidebar, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
+import { Sidebar, SidebarCollapse, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
 import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiUsers, HiViewBoards } from "react-icons/hi";
-import { LuLogOut, LuSettings, LuShield, LuStore} from "react-icons/lu";
+import { LuLogOut, LuSettings, LuShield, LuStore, LuUserPlus, LuUserRoundSearch, LuUsers} from "react-icons/lu";
 import { TbBuildingStore, TbWorldWww } from "react-icons/tb";
 
 const SidebarDashboardComponent = () => {
@@ -35,13 +35,15 @@ const SidebarDashboardComponent = () => {
             <SidebarItem href="#" icon={HiUser} >
                 My Perfil
             </SidebarItem>
-            <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module/admin`} icon={HiUsers} >
+            <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module`} icon={HiUsers} >
                 Admins
             </SidebarItem>
-            <SidebarItem href="#" icon={LuStore} >
-                Tenants
-            </SidebarItem>
-            <SidebarItem href="#" icon={TbWorldWww} >
+            <SidebarCollapse icon={LuStore} label="Tenants">
+                <SidebarItem icon={LuUsers} href={`/backoffice/tenant/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
+                <SidebarItem icon={LuUserPlus} href="#">Request</SidebarItem>
+                <SidebarItem icon={LuUserRoundSearch} href="#">Suspended</SidebarItem>
+            </SidebarCollapse>
+            {/* <SidebarItem href="#" icon={TbWorldWww} >
                 Domains
             </SidebarItem>
             <SidebarItem href="#" icon={LuShield} >
@@ -49,7 +51,7 @@ const SidebarDashboardComponent = () => {
             </SidebarItem>
             <SidebarItem href="#" icon={LuSettings} >
                 Settings
-            </SidebarItem>
+            </SidebarItem> */}
 
             <SidebarItem href="#" icon={LuLogOut} onClick={logout}>
                 Log Out

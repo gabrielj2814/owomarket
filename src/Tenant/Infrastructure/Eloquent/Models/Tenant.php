@@ -41,6 +41,7 @@ class Tenant extends BaseTenant implements TenantWithDatabase
             'locale',
             'timezone',
             'currency',
+            'request',
             'created_at',
             'updated_at',
         ];

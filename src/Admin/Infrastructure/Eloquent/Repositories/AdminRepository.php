@@ -5,7 +5,7 @@ namespace Src\Admin\Infrastructure\Eloquent\Repositories;
 
 use DateTime;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
-use Src\Admin\Domain\Etities\Admin;
+use Src\Admin\Domain\Entities\Admin;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\Password;
 use Src\Admin\Domain\ValueObjects\PhoneNumber;

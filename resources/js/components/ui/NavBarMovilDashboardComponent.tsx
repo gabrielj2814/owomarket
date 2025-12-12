@@ -111,13 +111,13 @@ const NavBarMovilDashboardComponent = () => {
                                         <SidebarItem href="#" icon={HiUser}>
                                             My Perfil
                                         </SidebarItem>
-                                        <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module/admin`} icon={HiUsers}>
+                                        <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module`} icon={HiUsers}>
                                             Admins
                                         </SidebarItem>
                                         <SidebarItem href="#" icon={LuStore}>
                                             Tenants
                                         </SidebarItem>
-                                        <SidebarItem href="#" icon={TbWorldWww}>
+                                        {/* <SidebarItem href="#" icon={TbWorldWww}>
                                             Domains
                                         </SidebarItem>
                                         <SidebarItem href="#" icon={LuShield}>
@@ -125,7 +125,7 @@ const NavBarMovilDashboardComponent = () => {
                                         </SidebarItem>
                                         <SidebarItem href="#" icon={LuSettings}>
                                             Settings
-                                        </SidebarItem>
+                                        </SidebarItem> */}
                                         <SidebarItem icon={HiLogout} onClick={logout}>
                                             Log Out
                                         </SidebarItem>

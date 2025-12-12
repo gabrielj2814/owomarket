@@ -3,7 +3,7 @@
 namespace Src\Admin\Application\UseCase;
 
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
-use Src\Admin\Domain\Etities\Admin;
+use Src\Admin\Domain\Entities\Admin;
 use Src\Admin\Domain\Shared\Security\PasswordHasher;
 use Src\Admin\Domain\Shared\Security\PasswordValidator;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;

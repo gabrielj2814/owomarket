@@ -69,7 +69,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
 
     const irHaFormularioDeCrear = () => {
         setStateLodaer(true)
-        window.location.href=`/backoffice/admin/${user_id}/module/admin/record`
+        window.location.href=`/backoffice/admin/${user_id}/module/record`
     }
 
     useEffect(() => {
@@ -183,7 +183,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
 
     const irAhFormularioEdit = (uuid: string) => {
         setStateLodaer(true)
-        window.location.href=`/backoffice/admin/${user_id}/module/admin/record/${uuid}`
+        window.location.href=`/backoffice/admin/${user_id}/module/record/${uuid}`
     }
 
     const mostrarModalDelete= (uuid: string) => {

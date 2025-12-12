@@ -5,7 +5,7 @@
 namespace Src\Admin\Application\UseCase;
 
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
-use Src\Admin\Domain\Etities\Admin;
+use Src\Admin\Domain\Entities\Admin;
 use Src\Admin\Domain\ValueObjects\Uuid;
 
 class ConsultAdminByUuidUseCase {

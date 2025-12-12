@@ -47,8 +47,10 @@ class TenantDomainSeeder extends Seeder
             $tenant = Tenant::firstOrCreate(
                 ['slug' => $slug],
                 [
-                    'name' => $name,
-                    'slug' => $slug
+                    'name'    => $name,
+                    'slug'    => $slug,
+                    'status'  => "active",
+                    'request' => "approved",
                     // Los demás campos tienen default en la migración
                 ]
             );

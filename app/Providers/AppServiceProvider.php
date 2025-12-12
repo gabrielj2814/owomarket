@@ -4,16 +4,10 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Laravel\Sanctum\Sanctum;
-use Src\Admin\Domain\Shared\Security\PasswordHasher as SecurityPasswordHasher;
-use Src\Admin\Domain\Shared\Security\PasswordValidator as SecurityPasswordValidator;
 use Src\Admin\Infrastructure\Services\AuthApiClient;
 use Src\Authentication\Application\Contracts\AuthServices;
 use Src\Authentication\Application\Contracts\UserServices;
-use Src\Authentication\Domain\Shared\Security\PasswordHasher;
-use Src\Authentication\Domain\Shared\Security\PasswordValidator;
 use Src\Authentication\Infrastructure\Eloquent\Models\PersonalAccessToken;
-use Src\Authentication\Infrastructure\Security\LaravelPasswordHasher;
-use Src\Authentication\Infrastructure\Security\StrictPasswordValidator;
 use Src\Authentication\Infrastructure\Services\UserApiClient;
 
 class AppServiceProvider extends ServiceProvider

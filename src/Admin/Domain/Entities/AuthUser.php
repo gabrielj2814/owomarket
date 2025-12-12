@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Src\Admin\Domain\Etities;
+namespace Src\Admin\Domain\Entities;
 
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\UserEmail;

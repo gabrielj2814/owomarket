@@ -247,18 +247,18 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     }
 
     const regresar = () => {
-        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+        window.location.href=`/backoffice/admin/${user_id}/module`
     }
 
     const irHaInicio = (type?:string, message?: string) => {
         if(type!=null && message!= null){
-            window.location.href=`/backoffice/admin/${user_id}/module/admin?type=${type}&message=${message}`
+            window.location.href=`/backoffice/admin/${user_id}/module?type=${type}&message=${message}`
         }
-        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+        window.location.href=`/backoffice/admin/${user_id}/module`
     }
 
     const cancelar = () => {
-        window.location.href=`/backoffice/admin/${user_id}/module/admin`
+        window.location.href=`/backoffice/admin/${user_id}/module`
     }
 
 

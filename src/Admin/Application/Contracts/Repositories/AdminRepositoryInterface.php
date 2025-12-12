@@ -3,7 +3,7 @@
 
 namespace Src\Admin\Application\Contracts\Repositories;
 
-use Src\Admin\Domain\Etities\Admin;
+use Src\Admin\Domain\Entities\Admin;
 use Src\Admin\Domain\ValueObjects\UserEmail;
 use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\Uuid;

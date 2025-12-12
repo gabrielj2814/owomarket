@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Admin\Domain\Etities;
+namespace Src\Admin\Domain\Entities;
 
 use DateTime;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;

@@ -28,7 +28,6 @@ class AdminServiceProvider extends ServiceProvider
         // });
 
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
-        // Laravel automáticamente inyectará Hasher::class en el constructor
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
         $this->app->bind(AdminRepositoryInterface::class, AdminRepository::class);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Admin\Domain\ValueObjects;
+namespace Src\Tenant\Domain\ValuesObjects;
 
 
 use InvalidArgumentException;
@@ -9,7 +9,7 @@ use Src\Shared\ValuesObjects\StringValueObject;
 final class UserType extends StringValueObject
 {
 
-   public const SUPER_ADMIN = 'super_admin';
+    public const SUPER_ADMIN = 'super_admin';
     public const TENANT_OWNER = 'tenant_owner';
     public const TENANT_EMPLOYEE = 'tenant_employee';
     public const CUSTOMER = 'customer';
