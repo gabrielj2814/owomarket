@@ -54,8 +54,6 @@ class TenantOwner {
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
-        ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt,
         ): self {
         return new self(
             Uuid::generate(),  // ← Auto-generado
@@ -65,8 +63,8 @@ class TenantOwner {
             $phone,
             $avatar,
             $isActive,
-            $createdAt,
-            $updatedAt,
+            CreatedAt::now(),
+            UpdatedAt::now(),
         );
     }
 
@@ -79,8 +77,8 @@ class TenantOwner {
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
-        ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt,
+        CreatedAt          $createdAt,
+        UpdatedAt          $updatedAt,
         ): self {
         // return new self($id, $email, $createdAt);
         return new self(
