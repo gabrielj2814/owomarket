@@ -11,3 +11,4 @@ Route::get('/user', function (Request $request) {
 // rutas servicio auth
 Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/api.php"));
 Route::prefix("user")->group(callback: base_path("src/User/Infrastructure/Http/Routes/api.php"));
+Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/api.php"));

@@ -6,5 +6,6 @@ return [
     App\Providers\AuthServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\TenancyServiceProvider::class,
+    App\Providers\TenantServiceProvider::class,
     App\Providers\UserServiceProvider::class,
 ];

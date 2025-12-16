@@ -14,7 +14,7 @@ class FilterAdminsUseCase {
     ){}
 
 
-    public function excute(
+    public function execute(
         string | null $search,
         string | null $fechaDesdeUTC,
         string | null $fechaHastaUTC,

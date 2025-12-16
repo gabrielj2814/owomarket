@@ -42,7 +42,7 @@ class FilterAdminsPOSTController extends Controller {
             $status=$request->status;
         }
 
-        $pagination=$this->filter_admins_use_case->excute($search, $fechaDesdeUTC, $fechaHastaUTC, $status, $prePage);
+        $pagination=$this->filter_admins_use_case->execute($search, $fechaDesdeUTC, $fechaHastaUTC, $status, $prePage);
         // dd($pagination);
         $items=$pagination->getItems();
         $dataPaginate=[];

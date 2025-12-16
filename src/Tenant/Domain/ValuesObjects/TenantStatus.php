@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Src\Tenant\Domain\ValuesObjects;
 
@@ -18,7 +19,7 @@ final class TenantStatus extends StringValueObject
         self::STATUS_SUSPENDED,
     ];
 
-    public static function make(bool $value):self{
+    public static function make(string $value):self{
         return new self($value);
     }
 

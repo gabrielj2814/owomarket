@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace Src\Tenant\Domain\ValuesObjects;
 
@@ -20,7 +21,7 @@ final class TenantRequest extends StringValueObject
         self::STATUS_IN_PROGRESS,
     ];
 
-    public static function make(bool $value):self{
+    public static function make(string $value):self{
         return new self($value);
     }
 
