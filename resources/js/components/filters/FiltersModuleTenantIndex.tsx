@@ -6,21 +6,21 @@ interface FiltersModuleAdminIndexProps {
     search?:       string;
     fechaDesde:    Date;
     fechaHasta:    Date;
-    status:        boolean;
-    onChangeStatus(checked: boolean): void
+    // status:        boolean;
+    // onChangeStatus(checked: boolean): void
     onChangeDesde(date: Date | null): void
     onChangeHasta(date: Date | null): void
     onChangeSearch(e: React.ChangeEvent<HTMLInputElement>) : void
 
 }
 
-const FiltersModuleTenantIndex:FC<FiltersModuleAdminIndexProps> = ({search="", fechaDesde, fechaHasta, status= true, onChangeStatus, onChangeDesde, onChangeHasta, onChangeSearch }) => {
+const FiltersModuleTenantIndex:FC<FiltersModuleAdminIndexProps> = ({search="", fechaDesde, fechaHasta, onChangeDesde, onChangeHasta, onChangeSearch }) => {
 
     return (
       <Card className="mb-3">
             <div className="flex flex-row flex-wrap items-center gap-4">
                 <div className="basis-full  lg:basis-3/12">
-                    <TextInput id="search" type="text" placeholder="Search by name or email" icon={LuSearch} value={search} onChange={onChangeSearch} />
+                    <TextInput id="search" type="text" placeholder="Search by name" icon={LuSearch} value={search} onChange={onChangeSearch} />
                 </div>
                 {/* desktop */}
                 <div className="basis-full lg:basis-3/12 hidden lg:block">
@@ -37,11 +37,6 @@ const FiltersModuleTenantIndex:FC<FiltersModuleAdminIndexProps> = ({search="", f
                     <div className=" basis-6/12 ">
                         <Datepicker name="filterUpTo" title="Filter up to movil" value={fechaHasta} onChange={onChangeHasta}/>
                     </div>
-                </div>
-
-
-                <div className="basis-full lg:basis-auto">
-                     <ToggleSwitch checked={status} label="Activo" onChange={onChangeStatus} />
                 </div>
             </div>
             {/* <div className="flex max-w-md flex-col gap-4">
