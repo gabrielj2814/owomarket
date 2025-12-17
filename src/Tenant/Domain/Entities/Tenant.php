@@ -3,6 +3,7 @@
 
 namespace Src\Tenant\Domain\Entities;
 
+use Src\Shared\Collection\Collection;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\Currency;
 use Src\Shared\ValuesObjects\SoftDeleteAt;
@@ -27,6 +28,8 @@ class Tenant {
     private ?CreatedAt      $createdAt;
     private ?UpdatedAt      $updatedAt;
     private ?SoftDeleteAt   $softdeleteAt;
+
+    private Collection      $owners;
 
     private function __construct(
         Uuid                    $id,
@@ -99,6 +102,14 @@ class Tenant {
             $updatedAt,
             $softdeleteAt,
         );
+    }
+
+    public function setOwners(Collection $owners){
+        $this->owners= $owners;
+    }
+
+    public function getOwners(): Collection{
+        return $this->owners;
     }
 
     public function getId(): Uuid

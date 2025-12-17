@@ -10,7 +10,7 @@ import { Head } from "@inertiajs/react";
 import HeaderToasts from "@/components/HeaderToasts";
 import Dashboard from "@/components/layouts/Dashboard";
 import { Breadcrumb, BreadcrumbItem, Card, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
-import { HiHome } from "react-icons/hi";
+import { HiHome, HiSearch } from "react-icons/hi";
 import FiltersModuleTenantIndex from "@/components/filters/FiltersModuleTenantIndex";
 import { useDebounce } from "@/hooks/useDebounce";
 import Tenant from "@/types/models/Tenant";
@@ -111,6 +111,20 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         setFiltroHasta(date)
     }
 
+    const mostrarDetalleDelTenant = async (uuid: string) => {
+        console.log("uuid => ",uuid)
+        setStateLodaer(true)
+        const respuestaApi= await TenantServices.consultTenantByUuid(uuid)
+        if(respuestaApi.status!=200){
+            createToast("failure", "Error", "el Tenant no fue encontrado", <HiSearch/>)
+            setStateLodaer(false)
+            return
+        }
+        setStateLodaer(false)
+        console.log("detalle tenant",respuestaApi.data.data)
+        console.log("owners tenant",respuestaApi.data.data?.owners)
+    }
+
 
     const actualizarTabla= async () => {
         setStateLodaer(true)
@@ -172,19 +186,19 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         rows= data.map<ReactNode>( (item) => {
             return (
             <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <TableCell className="">
+                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
                    {item.name}
                 </TableCell>
-                <TableCell className="">
+                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
                    {item.slug}
                 </TableCell>
-                <TableCell className="">
+                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
                    {item.currency.code}
                 </TableCell>
-                <TableCell className="">
+                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
                    {item.timezone}
                 </TableCell>
-                <TableCell className="">
+                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
                    {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                 </TableCell>
             </TableRow>

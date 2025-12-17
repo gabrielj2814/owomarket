@@ -54,12 +54,12 @@ class User extends Authenticatable
         ];
     }
 
-    // public function tenants(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Tenant::class, 'tenant_users')
-    //         ->withPivot(['role', 'permissions'])
-    //         ->withTimestamps();
-    // }
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_users')
+            ->withPivot(['role', 'permissions'])
+            ->withTimestamps();
+    }
 
     // public function tenantUsers()
     // {

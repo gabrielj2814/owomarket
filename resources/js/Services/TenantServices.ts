@@ -34,7 +34,20 @@ const TenantServices = {
         catch(error){
             return error as ApiResponse<Tenant[]>;
         }
+    },
+
+    consultTenantByUuid: async (uuid: string): Promise<ApiResponse<Tenant>> => {
+        try{
+
+            let respuesta:ApiResponse<Tenant> = await axiosTenant.get(`${uuid}`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<Tenant>;
+        }
     }
+
 
 
 }

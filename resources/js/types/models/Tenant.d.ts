@@ -8,7 +8,7 @@ export default interface Tenant {
        status:          string
        timezone:        string
        currency:        CurrencyDB
-       tenantOwner?:    TenantOwner
+       owners?:         TenantOwner[]
        request:         string
        created_at:      DateDB
        updated_at:      DateDB

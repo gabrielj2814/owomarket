@@ -2,7 +2,6 @@
 
 namespace Src\Tenant\Domain\Entities;
 
-use DateTime;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
@@ -70,15 +69,15 @@ class TenantOwner {
 
     // Factory method - para reconstruir desde BD
     public static function reconstitute(
-        ?Uuid               $id,
+        Uuid                $id,
         UserName            $name,
         UserEmail           $email,
         UserType            $type,
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
-        CreatedAt          $createdAt,
-        UpdatedAt          $updatedAt,
+        CreatedAt           $createdAt,
+        UpdatedAt           $updatedAt,
         ): self {
         // return new self($id, $email, $createdAt);
         return new self(

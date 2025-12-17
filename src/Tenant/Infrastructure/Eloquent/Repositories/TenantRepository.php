@@ -14,10 +14,17 @@ use Src\Shared\ValuesObjects\Timezone;
 use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Tenant;
+use Src\Tenant\Domain\Entities\TenantOwner;
+use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
+use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
 use Src\Tenant\Domain\ValuesObjects\Slug;
 use Src\Tenant\Domain\ValuesObjects\TenantName;
 use Src\Tenant\Domain\ValuesObjects\TenantRequest;
 use Src\Tenant\Domain\ValuesObjects\TenantStatus;
+use Src\Tenant\Domain\ValuesObjects\UserEmail;
+use Src\Tenant\Domain\ValuesObjects\UserName;
+use Src\Tenant\Domain\ValuesObjects\UserStatus;
+use Src\Tenant\Domain\ValuesObjects\UserType;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 
@@ -57,7 +64,6 @@ class TenantRepository implements TenantRepositoryInterface {
             $consulta->where("request","=",$request);
         }
 
-
         $respuesta=$consulta->paginate($prePage);
 
         $items=$respuesta->items();
@@ -74,7 +80,7 @@ class TenantRepository implements TenantRepositoryInterface {
             $updated_at  = UpdatedAt::fromString($model->updated_at);
             $deleted_at  = SoftDeleteAt::fromString($model->deleted_at);
 
-            return Tenant::reconstitute(
+            $tenant= Tenant::reconstitute(
                 $id,
                 $name,
                 $slug,
@@ -86,6 +92,8 @@ class TenantRepository implements TenantRepositoryInterface {
                 $updated_at,
                 $deleted_at,
             );
+
+            return $tenant;
         });
 
         // 3. Usamos nuestra Collection del dominio
@@ -99,6 +107,74 @@ class TenantRepository implements TenantRepositoryInterface {
             $respuesta->currentPage(),
             $respuesta->lastPage()
         );
+
+    }
+
+    public function consultTenantById(Uuid $uuid): ?Tenant
+    {
+        $consulta= ModelsTenant::where("id","=",$uuid->value())->first();
+        if(!$consulta){
+            return null;
+        }
+
+        $id          = Uuid::make($consulta->id);
+        $name        = TenantName::make($consulta->name);
+        $slug        = Slug::make($consulta->slug);
+        $status      = TenantStatus::make($consulta->status);
+        $timezone    = Timezone::make($consulta->timezone);
+        $currency    = Currency::make($consulta->currency);
+        $request     = TenantRequest::make($consulta->request);
+        $created_at  = CreatedAt::fromString($consulta->created_at);
+        $updated_at  = UpdatedAt::fromString($consulta->updated_at);
+        $deleted_at  = SoftDeleteAt::fromString($consulta->deleted_at);
+
+        $tenant= Tenant::reconstitute(
+            $id,
+            $name,
+            $slug,
+            $status,
+            $timezone,
+            $currency,
+            $request,
+            $created_at,
+            $updated_at,
+            $deleted_at,
+        );
+
+
+        $consultaOwner=$consulta->users()->wherePivot("role","owner")->get();
+
+        $owners= collect($consultaOwner)->map(function ($modelOwner){
+            $id = Uuid::make($modelOwner->id);
+            $name = UserName::make($modelOwner->name);
+            $email = UserEmail::make($modelOwner->email);
+            $phone = ($modelOwner->phone != null && $modelOwner->phone != "")
+            ? PhoneNumber::make($modelOwner->phone)
+            : null;
+            $type = UserType::make($modelOwner->type);
+            $avatar = AvatarUrl::make($modelOwner->avatar);
+            $state = UserStatus::make($modelOwner->is_active);
+
+            $create_at = CreatedAt::fromString($modelOwner->created_at);
+            $update_at = UpdatedAt::fromString($modelOwner->updated_at);
+
+            return TenantOwner::reconstitute(
+                $id,
+                $name,
+                $email,
+                $type,
+                $phone,
+                $avatar,
+                $state,
+                $create_at,
+                $update_at
+            );
+        });
+
+        $ownersCollection= new Collection($owners->all());
+        $tenant->setOwners($ownersCollection);
+
+        return $tenant;
 
     }
 
