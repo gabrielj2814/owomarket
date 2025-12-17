@@ -17,7 +17,45 @@ class FiltrarTenantsPOSTController extends Controller {
 
     public function index(Request $request){
 
-        $pagination=$this->filter_tenant_use_case->execute();
+        $search=null;
+        $fechaDesdeUTC=null;
+        $fechaHastaUTC=null;
+        $status=null;
+        $tenantRequest=null;
+        $prePage=null;
+
+        if($request->filled("search")){
+            $search=$request->search;
+        }
+
+        if($request->filled("fechaDesdeUTC") && $request->filled("fechaHastaUTC")){
+            $fechaDesdeUTC=$request->fechaDesdeUTC;
+            $fechaHastaUTC=$request->fechaHastaUTC;
+        }
+
+        if($request->filled("status")){
+            $status=$request->status;
+        }
+
+        if($request->filled("tenantRequest")){
+            $tenantRequest=$request->tenantRequest;
+        }
+
+        if($request->filled("prePage")){
+            $prePage=$request->prePage;
+        }
+        else{
+            $prePage=50;
+        }
+
+        $pagination=$this->filter_tenant_use_case->execute(
+            $search,
+            $fechaDesdeUTC,
+            $fechaHastaUTC,
+            $status,
+            $tenantRequest,
+            $prePage
+        );
         // dd($pagination);
         $items=$pagination->getItems();
         $dataPaginate=[];

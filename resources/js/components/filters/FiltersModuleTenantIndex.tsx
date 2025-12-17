@@ -20,7 +20,7 @@ const FiltersModuleTenantIndex:FC<FiltersModuleAdminIndexProps> = ({search="", f
       <Card className="mb-3">
             <div className="flex flex-row flex-wrap items-center gap-4">
                 <div className="basis-full  lg:basis-3/12">
-                    <TextInput id="search" type="text" placeholder="Search by name" icon={LuSearch} value={search} onChange={onChangeSearch} />
+                    <TextInput id="search" type="text" placeholder="Search by name or slug" icon={LuSearch} value={search} onChange={onChangeSearch} />
                 </div>
                 {/* desktop */}
                 <div className="basis-full lg:basis-3/12 hidden lg:block">

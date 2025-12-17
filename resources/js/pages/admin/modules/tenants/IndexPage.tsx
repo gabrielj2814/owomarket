@@ -81,7 +81,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
             }
             inicializar()
         }
-    }, [debouncedSearchTerm, status, filtroDesdeUTC, filtroHastaUTC, currentPage]);
+    }, [debouncedSearchTerm, filtroDesdeUTC, filtroHastaUTC, currentPage]);
 
     const onPageChange = (page: number) => {
         setCurrentPage(page)
@@ -119,7 +119,9 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
     }
 
     const filtrarTenant = async (page:number = 1) => {
-        const respuestaApi= await TenantServices.filtrar(search,filtroDesdeUTC, filtroHastaUTC, prePage, page);
+        const status="active";
+        const request="approved";
+        const respuestaApi= await TenantServices.filtrar(search, filtroDesdeUTC, filtroHastaUTC, status, request, prePage, page);
 
         if(respuestaApi.data.code!=200){
             return
@@ -185,9 +187,6 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                 <TableCell className="">
                    {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                 </TableCell>
-                <TableCell className="">
-                   {item.status}
-                </TableCell>
             </TableRow>
             )
         } )
@@ -207,7 +206,6 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                     <div><span className="font-bold">Currency:</span>  <span>{item.currency.code}</span> </div>
                     <div><span className="font-bold">Timezone:</span>  <span>{item.timezone}</span> </div>
                     <div><span className="font-bold">Created At:</span>  <span>{dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}</span> </div>
-                    <div><span className="font-bold">Status:</span>  <span>{item.status}</span> </div>
                     {/* <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  /> */}
                     <div className=" flex flex-row gap-4">
                     {/* <div className=" basis-6/12">
@@ -232,7 +230,6 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                 <TableHeadCell>Currency</TableHeadCell>
                 <TableHeadCell>Timezone</TableHeadCell>
                 <TableHeadCell>Created At</TableHeadCell>
-                <TableHeadCell>Status</TableHeadCell>
               </TableRow>
             </TableHead>
         )
