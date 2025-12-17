@@ -29,7 +29,8 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->string('pin')->nullable();
-            $table->enum('type', ['super_admin', 'tenant_owner', 'customer', 'tenant_employee'])->default('customer');
+            // staff
+            $table->enum('type', ['super_admin', 'tenant_owner', 'customer', 'TENANT_STAFF'])->default('customer');
             $table->string('code_phone')->nullable();
             $table->string('phone')->nullable();
             $table->text('avatar')->nullable();

@@ -11,20 +11,20 @@ final class UserType extends StringValueObject
 
     public const SUPER_ADMIN = 'super_admin';
     public const TENANT_OWNER = 'tenant_owner';
-    public const TENANT_EMPLOYEE = 'tenant_employee';
+    public const TENANT_STAFF = 'tenant_staff';
     public const CUSTOMER = 'customer';
 
     private const ALLOWED_TYPES = [
         self::SUPER_ADMIN,
         self::TENANT_OWNER,
-        self::TENANT_EMPLOYEE,
+        self::TENANT_STAFF,
         self::CUSTOMER,
     ];
 
     private const HIERARCHY = [
         self::SUPER_ADMIN => 3,
         self::TENANT_OWNER => 2,
-        self::TENANT_EMPLOYEE => 1,
+        self::TENANT_STAFF => 1,
         self::CUSTOMER => 0,
     ];
 
@@ -56,7 +56,7 @@ final class UserType extends StringValueObject
 
     public function isEmployee(): bool
     {
-        return $this->value === self::TENANT_EMPLOYEE;
+        return $this->value === self::TENANT_STAFF;
     }
 
     public function hasHigherOrEqualPrivilegesThan(self $other): bool
@@ -81,7 +81,7 @@ final class UserType extends StringValueObject
 
     public static function tenantEmployee(): self
     {
-        return new self(self::TENANT_EMPLOYEE);
+        return new self(self::TENANT_STAFF);
     }
 
     public static function customer(): self
