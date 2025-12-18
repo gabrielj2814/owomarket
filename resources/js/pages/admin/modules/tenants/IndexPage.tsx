@@ -9,7 +9,7 @@ import LoaderSpinner from "@/components/LoaderSpinner";
 import { Head } from "@inertiajs/react";
 import HeaderToasts from "@/components/HeaderToasts";
 import Dashboard from "@/components/layouts/Dashboard";
-import { Breadcrumb, BreadcrumbItem, Card, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
+import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, Card, HelperText, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
 import { HiHome, HiSearch } from "react-icons/hi";
 import FiltersModuleTenantIndex from "@/components/filters/FiltersModuleTenantIndex";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -17,6 +17,9 @@ import Tenant from "@/types/models/Tenant";
 import TenantServices from "@/Services/TenantServices";
 import TableComponent from "@/components/ui/TableComponent";
 import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
+import ModalDetails from "@/components/ui/ModalDetails";
+import { TenantOwner } from "@/types/models/TenantOwner";
+import { LuDatabase, LuEye } from "react-icons/lu";
 
 interface IndexPageProps {
     title?:          string;
@@ -39,10 +42,13 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
 
     const [cargaInicialCompleta,     setCargaInicialCompleta]         = useState(false);
     const [stateLodaer,              setStateLodaer]                  = useState(false);
+    const [statusModalDetails,       setStatusModalDetails]           = useState(false);
 
     const [mapToast,                 setMapToast]                     = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
 
     const [Tenants,                  setTenants]                       = useState<Tenant[]>([]);
+    const [Tenant,                   setTenant]                        = useState<Tenant | null>(null);
+    const [TenantOwner,              setTenantOwner]                   = useState<TenantOwner[]>([]);
 
     const [currentPage,              setCurrentPage]                  = useState<number>(1);
     const [totalPage,                settotalPage]                    = useState<number>(0);
@@ -111,18 +117,40 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         setFiltroHasta(date)
     }
 
-    const mostrarDetalleDelTenant = async (uuid: string) => {
-        console.log("uuid => ",uuid)
+    const openModalDetails = async (uuid: string) => {
+        // console.log("uuid => ",uuid)
         setStateLodaer(true)
         const respuestaApi= await TenantServices.consultTenantByUuid(uuid)
         if(respuestaApi.status!=200){
             createToast("failure", "Error", "el Tenant no fue encontrado", <HiSearch/>)
             setStateLodaer(false)
+            setTenant(null)
+            setTenantOwner([])
             return
         }
-        setStateLodaer(false)
+
+        if(respuestaApi.data.data == null){
+            setTenant(null)
+            setTenantOwner([])
+            setStateLodaer(false)
+            setStatusModalDetails(true)
+            return null
+        }
+
+        if(respuestaApi.data.data.owners == null){
+            setTenantOwner([])
+            setStateLodaer(false)
+            setStatusModalDetails(true)
+            return null
+        }
+
         console.log("detalle tenant",respuestaApi.data.data)
         console.log("owners tenant",respuestaApi.data.data?.owners)
+
+        setTenant(respuestaApi.data.data)
+        setTenantOwner(respuestaApi.data.data?.owners)
+        setStateLodaer(false)
+        setStatusModalDetails(true)
     }
 
 
@@ -186,19 +214,19 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         rows= data.map<ReactNode>( (item) => {
             return (
             <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
+                <TableCell className="" onClick={() => openModalDetails(item.id)}>
                    {item.name}
                 </TableCell>
-                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
+                <TableCell className="" onClick={() => openModalDetails(item.id)}>
                    {item.slug}
                 </TableCell>
-                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
+                <TableCell className="" onClick={() => openModalDetails(item.id)}>
                    {item.currency.code}
                 </TableCell>
-                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
+                <TableCell className="" onClick={() => openModalDetails(item.id)}>
                    {item.timezone}
                 </TableCell>
-                <TableCell className="" onClick={() => mostrarDetalleDelTenant(item.id)}>
+                <TableCell className="" onClick={() => openModalDetails(item.id)}>
                    {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                 </TableCell>
             </TableRow>
@@ -212,6 +240,17 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
     const buildMovil= (data: Tenant[] = [] ): ReactNode[] => {
         let rows:ReactNode[] = []
 
+
+        if(data.length==0){
+            return [
+                 <Card className="mb-4 text-gray-700 dark:text-gray-400">
+                    <div className=" flex flex-row justify-center">
+                        <LuDatabase className=" inline-block w-6 h-6 mr-2"/> <span className="inline-block"> No Data</span>
+                    </div>
+                </Card>
+            ]
+        }
+
         rows= data.map<ReactNode>( (item) => {
             return (
                 <Card className="mb-4">
@@ -220,11 +259,10 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                     <div><span className="font-bold">Currency:</span>  <span>{item.currency.code}</span> </div>
                     <div><span className="font-bold">Timezone:</span>  <span>{item.timezone}</span> </div>
                     <div><span className="font-bold">Created At:</span>  <span>{dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}</span> </div>
-                    {/* <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  /> */}
                     <div className=" flex flex-row gap-4">
-                    {/* <div className=" basis-6/12">
-                        <Button title="See" className="w-full" onClick={() => verRegistro()}>  <LuEye className=" w-5 h-5" />  </Button>
-                    </div> */}
+                        <div className=" basis-full">
+                            <Button title="See" className="w-full" onClick={() => openModalDetails(item.id)}>  <LuEye className=" w-5 h-5" />  </Button>
+                        </div>
                     </div>
 
                 </Card>
@@ -234,22 +272,90 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         return rows
     }
 
-
-
     const TableHeaders= (
-            <TableHead className=" sticky top-0 z-10">
-              <TableRow>
-                <TableHeadCell>Name</TableHeadCell>
-                <TableHeadCell>Slug</TableHeadCell>
-                <TableHeadCell>Currency</TableHeadCell>
-                <TableHeadCell>Timezone</TableHeadCell>
-                <TableHeadCell>Created At</TableHeadCell>
-              </TableRow>
-            </TableHead>
-        )
+        <TableHead className=" sticky top-0 z-10">
+          <TableRow>
+            <TableHeadCell>Name</TableHeadCell>
+            <TableHeadCell>Slug</TableHeadCell>
+            <TableHeadCell>Currency</TableHeadCell>
+            <TableHeadCell>Timezone</TableHeadCell>
+            <TableHeadCell>Created At</TableHeadCell>
+          </TableRow>
+        </TableHead>
+    )
 
     const tableRowContent= buildRowTable(Tenants)
     const movilRowContent= buildMovil(Tenants)
+
+
+    const buildRowTableModalDetails= (owners: TenantOwner[] = [] ): ReactNode[] => {
+        let rows:ReactNode[] = []
+
+        rows= owners.map<ReactNode>( (item) => {
+            return (
+            <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
+                <TableCell className="flex flex-row items-center">
+                   <Avatar className="cursor-pointer inline-block mr-3" alt="User Avatar" img={item.avatar} rounded/>
+                    <div>
+                        <div>{item.name}</div>
+                    </div>
+                </TableCell>
+                <TableCell >
+                   {item.email}
+                   <HelperText className="w-full">{item.phone}</HelperText>
+                </TableCell>
+                <TableCell >
+                   {(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>}
+                </TableCell>
+            </TableRow>
+            )
+        } )
+
+        return rows
+    }
+
+    const buildMovilModalDetails= (owners: TenantOwner[] = [] ): ReactNode[] => {
+        let rows:ReactNode[] = []
+
+        if(owners.length==0){
+            return [
+                 <Card className="mb-4 text-gray-700 dark:text-gray-400">
+                    <div className=" flex flex-row justify-center">
+                        <LuDatabase className=" inline-block w-6 h-6 mr-2"/> <span className="inline-block"> No Data</span>
+                    </div>
+                </Card>
+            ]
+        }
+
+        rows= owners.map<ReactNode>( (item) => {
+            return (
+                <Card className="mb-4 text-gray-700 dark:text-gray-400">
+                    <div className=" flex flex-row justify-center mb-5">
+                         <Avatar size="xl" className="cursor-pointer inline-block mr-3" alt="User Avatar" img={item.avatar} rounded bordered  color={(item.is_active==true)?"success":"pink"}/>
+                    </div>
+                    <div><span className="font-bold">Name:</span>  <span>{item.name}</span> </div>
+                    <div><span className="font-bold">Email:</span>  <span>{item.email}</span> </div>
+                    <div><span className="font-bold">Phone:</span>  <span>{item.phone}</span> </div>
+                    <div><span className="font-bold">Status:</span>  <span>{(item.is_active==true)?<Badge  size="sm" color="success">Activo</Badge>:<Badge  size="sm" color="failure">Inactivo</Badge>}</span> </div>
+                </Card>
+            )
+        } )
+
+        return rows
+    }
+
+
+    const TableHeadersModalDetails= (
+        <TableHead className=" sticky top-0 z-10">
+          <TableRow>
+            <TableHeadCell>Owner</TableHeadCell>
+            <TableHeadCell>Contacto</TableHeadCell>
+            <TableHeadCell>Status</TableHeadCell>
+          </TableRow>
+        </TableHead>
+    )
+
+
 
 
     return (
@@ -261,6 +367,14 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
             </Head>
 
             <HeaderToasts list={Array.from(mapToast.values())}/>
+
+            <ModalDetails title="Tenant Details" size="2xl"  onClose={setStatusModalDetails} openModal={statusModalDetails} >
+                <h2 className="text-gray-700 dark:text-gray-400 mb-5">Owners</h2>
+                <TableComponent className="hidden lg:block " TableHead={TableHeadersModalDetails} TableContent={buildRowTableModalDetails(TenantOwner)} colSpan={3} />
+                <div className="block lg:hidden">
+                    {buildMovilModalDetails(TenantOwner)}
+                </div>
+            </ModalDetails>
 
             <Dashboard user_uuid={user_id}>
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">
@@ -279,7 +393,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                 />
 
 
-                <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 340px)" }}>
+                <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 400px)" }}>
                     <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={6} />
                     <div className="block lg:hidden">
                         {movilRowContent}

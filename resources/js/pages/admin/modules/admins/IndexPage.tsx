@@ -353,7 +353,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 />
 
 
-                <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 400px)" }}>
+                <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 440px)" }}>
                     <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={8} />
                     <div className="block lg:hidden">
                         {movilRowContent}
