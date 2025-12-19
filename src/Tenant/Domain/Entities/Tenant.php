@@ -162,6 +162,11 @@ class Tenant {
         return $this->softdeleteAt;
     }
 
+    public function suspended(){
+        $this->status=TenantStatus::suspended();
+        $this->updatedAt=UpdatedAt::now();
+    }
+
 }
 
 

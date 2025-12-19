@@ -23,11 +23,11 @@ final class UserName {
     private static function validate(string $value){
 
         if($value==""){
-           throw new InvalidArgumentException("El nombre no puede estar vacio");
+           throw new InvalidArgumentException("El nombre no puede estar vacio", 400);
         }
 
         if(strlen($value)<=1){
-           throw new InvalidArgumentException("El nombre debe tener minumo 2 caracteres");
+           throw new InvalidArgumentException("El nombre debe tener minumo 2 caracteres", 400);
         }
     }
 

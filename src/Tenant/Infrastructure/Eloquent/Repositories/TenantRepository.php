@@ -5,6 +5,7 @@ namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
 use DateTime;
 use Illuminate\Support\Facades\Log;
+use InvalidArgumentException;
 use Src\Shared\Collection\Collection;
 use Src\Shared\Collection\Pagination;
 use Src\Shared\ValuesObjects\CreatedAt;
@@ -113,9 +114,6 @@ class TenantRepository implements TenantRepositoryInterface {
     public function consultTenantById(Uuid $uuid): ?Tenant
     {
         $consulta= ModelsTenant::where("id","=",$uuid->value())->first();
-        if(!$consulta){
-            return null;
-        }
 
         $id          = Uuid::make($consulta->id);
         $name        = TenantName::make($consulta->name);
@@ -175,6 +173,22 @@ class TenantRepository implements TenantRepositoryInterface {
         $tenant->setOwners($ownersCollection);
 
         return $tenant;
+
+    }
+
+    public function suspended(Tenant $tenant): Tenant
+    {
+
+        $tenant->suspended();
+
+        ModelsTenant::where("id","=",$tenant->getId()->value())
+        ->update(["status" => $tenant->getStatus()->value()]);
+
+
+        return $tenant;
+
+
+
 
     }
 

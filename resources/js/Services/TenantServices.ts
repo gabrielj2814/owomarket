@@ -46,6 +46,18 @@ const TenantServices = {
         catch(error){
             return error as ApiResponse<Tenant>;
         }
+    },
+
+    suspended: async (uuid: string): Promise<ApiResponse<void>> => {
+        try{
+
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`${uuid}/suspended`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<void>;
+        }
     }
 
 

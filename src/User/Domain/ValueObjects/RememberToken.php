@@ -19,11 +19,11 @@ final class RememberToken extends StringValueObject
         }
 
         if (strlen($value) !== 100) {
-            throw new InvalidArgumentException("El remember token debe tener 100 caracteres");
+            throw new InvalidArgumentException("El remember token debe tener 100 caracteres", 400);
         }
 
         if (!preg_match('/^[a-zA-Z0-9]+$/', $value)) {
-            throw new InvalidArgumentException("El remember token contiene caracteres inválidos");
+            throw new InvalidArgumentException("El remember token contiene caracteres inválidos", 400);
         }
     }
 

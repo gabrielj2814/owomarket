@@ -35,7 +35,7 @@ final class UserType extends StringValueObject
     protected function validate(string $value): void
     {
         if (!in_array($value, self::ALLOWED_TYPES)) {
-            throw new InvalidArgumentException("Tipo de usuario no válido: {$value}");
+            throw new InvalidArgumentException("Tipo de usuario no válido: {$value}", 400);
         }
     }
 

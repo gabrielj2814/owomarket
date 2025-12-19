@@ -19,7 +19,8 @@ import TableComponent from "@/components/ui/TableComponent";
 import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
 import ModalDetails from "@/components/ui/ModalDetails";
 import { TenantOwner } from "@/types/models/TenantOwner";
-import { LuDatabase, LuEye } from "react-icons/lu";
+import { LuArchiveRestore, LuCheck, LuDatabase, LuEye } from "react-icons/lu";
+import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 
 interface IndexPageProps {
     title?:          string;
@@ -40,27 +41,29 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
     dayjs.extend(utc);
     dayjs.extend(timezone);
 
-    const [cargaInicialCompleta,     setCargaInicialCompleta]         = useState(false);
-    const [stateLodaer,              setStateLodaer]                  = useState(false);
-    const [statusModalDetails,       setStatusModalDetails]           = useState(false);
+    const [cargaInicialCompleta,              setCargaInicialCompleta]                     = useState<boolean>(false);
+    const [stateLodaer,                       setStateLodaer]                              = useState<boolean>(false);
+    const [statusModalDetails,                setStatusModalDetails]                       = useState<boolean>(false);
+    const [stateModalConfirmatedSuspended,    setStateModalConfirmatedSuspended]           = useState<boolean>(false);
+    const [uuidTenant,                        setUuidTenant]                               = useState<string>("");
 
-    const [mapToast,                 setMapToast]                     = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
+    const [mapToast,                          setMapToast]                                 = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
 
-    const [Tenants,                  setTenants]                       = useState<Tenant[]>([]);
-    const [Tenant,                   setTenant]                        = useState<Tenant | null>(null);
-    const [TenantOwner,              setTenantOwner]                   = useState<TenantOwner[]>([]);
+    const [Tenants,                           setTenants]                                  = useState<Tenant[]>([]);
+    const [Tenant,                            setTenant]                                   = useState<Tenant | null>(null);
+    const [TenantOwner,                       setTenantOwner]                              = useState<TenantOwner[]>([]);
 
-    const [currentPage,              setCurrentPage]                  = useState<number>(1);
-    const [totalPage,                settotalPage]                    = useState<number>(0);
-    const [lastPage,                 setLastPage]                     = useState<number>(0);
-    const [prePage,                  setPrePage]                      = useState<number>(50);
+    const [currentPage,                       setCurrentPage]                              = useState<number>(1);
+    const [totalPage,                         settotalPage]                                = useState<number>(0);
+    const [lastPage,                          setLastPage]                                 = useState<number>(0);
+    const [prePage,                           setPrePage]                                  = useState<number>(50);
 
     // filtro
-    const [search,                   setSearch]                       = useState<string>("")
-    const [filtroDesdeUTC,           setFiltroDesdeUTC]               = useState<string>(dateUtils.procesarFechaCompleto(FechaDesde).paraBD)
-    const [filtroHastaUTC,           setFiltroHastaUTC]               = useState<string>(dateUtils.procesarFechaCompleto(FechaHasta).paraBD)
-    const [filtroDesde,              setFiltroDesde]                  = useState<Date>(FechaDesde)
-    const [filtroHasta,              setFiltroHasta]                  = useState<Date>(FechaHasta)
+    const [search,                            setSearch]                                   = useState<string>("")
+    const [filtroDesdeUTC,                    setFiltroDesdeUTC]                           = useState<string>(dateUtils.procesarFechaCompleto(FechaDesde).paraBD)
+    const [filtroHastaUTC,                    setFiltroHastaUTC]                           = useState<string>(dateUtils.procesarFechaCompleto(FechaHasta).paraBD)
+    const [filtroDesde,                       setFiltroDesde]                              = useState<Date>(FechaDesde)
+    const [filtroHasta,                       setFiltroHasta]                              = useState<Date>(FechaHasta)
     const debouncedSearchTerm = useDebounce(search, 500);
 
 
@@ -229,6 +232,9 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                 <TableCell className="" onClick={() => openModalDetails(item.id)}>
                    {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                 </TableCell>
+                <TableCell>
+                    <Button color="red" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
+                </TableCell>
             </TableRow>
             )
         } )
@@ -259,9 +265,12 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                     <div><span className="font-bold">Currency:</span>  <span>{item.currency.code}</span> </div>
                     <div><span className="font-bold">Timezone:</span>  <span>{item.timezone}</span> </div>
                     <div><span className="font-bold">Created At:</span>  <span>{dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}</span> </div>
-                    <div className=" flex flex-row gap-4">
+                    <div className=" flex flex-row flex-wrap gap-4">
                         <div className=" basis-full">
                             <Button title="See" className="w-full" onClick={() => openModalDetails(item.id)}>  <LuEye className=" w-5 h-5" />  </Button>
+                        </div>
+                        <div className=" basis-full">
+                            <Button color="red" className="w-full" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
                         </div>
                     </div>
 
@@ -280,6 +289,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
             <TableHeadCell>Currency</TableHeadCell>
             <TableHeadCell>Timezone</TableHeadCell>
             <TableHeadCell>Created At</TableHeadCell>
+            <TableHeadCell></TableHeadCell>
           </TableRow>
         </TableHead>
     )
@@ -355,6 +365,35 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         </TableHead>
     )
 
+    const onCloseModalConfirmatedSuspended = () => {
+        setStateModalConfirmatedSuspended(false)
+    }
+
+    const onSuspended = async () => {
+        setStateLodaer(true)
+
+        const uuid:string= uuidTenant
+
+        const apiResponse= await TenantServices.suspended(uuid)
+
+        if(apiResponse.status!=200){
+            createToast("failure", "Error", apiResponse.response?.data.message, <HiHome/>)
+            return
+        }
+
+
+        setStateLodaer(false)
+        setStateModalConfirmatedSuspended(false)
+        createToast("success", "OK", "Suspended Completed", <LuCheck/>)
+        await actualizarTabla();
+
+    }
+
+    const mostrarModalConfirmatedSuspended = (uuid: string) => {
+        setUuidTenant(uuid);
+        setStateModalConfirmatedSuspended(true)
+    }
+
 
 
 
@@ -367,6 +406,19 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
             </Head>
 
             <HeaderToasts list={Array.from(mapToast.values())}/>
+
+            <ModalAlertConfirmation
+            openModal={stateModalConfirmatedSuspended}
+            size="md"
+            icon={<LuArchiveRestore className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to delete?"
+            buttonTextCancel="No, I want cancel"
+            buttonTextAction="yes, I want suspended"
+            onClose={onCloseModalConfirmatedSuspended}
+            onClickAction={onSuspended}
+            colorButtonCancel="alternative"
+            colorButtonAction="red"
+            />
 
             <ModalDetails title="Tenant Details" size="2xl"  onClose={setStatusModalDetails} openModal={statusModalDetails} >
                 <h2 className="text-gray-700 dark:text-gray-400 mb-5">Owners</h2>

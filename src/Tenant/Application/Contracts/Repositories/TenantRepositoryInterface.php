@@ -21,6 +21,8 @@ interface TenantRepositoryInterface {
 
     public function consultTenantById(Uuid $uuid):? Tenant;
 
+    public function suspended(Tenant $tenant): Tenant;
+
 
 }
 

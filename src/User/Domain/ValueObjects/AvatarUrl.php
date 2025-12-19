@@ -20,14 +20,14 @@ final class AvatarUrl extends StringValueObject
         }
 
         if (!filter_var($value, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException("La URL del avatar no es válida");
+            throw new InvalidArgumentException("La URL del avatar no es válida", 400);
         }
 
         $allowedSchemes = ['http', 'https'];
         $scheme = parse_url($value, PHP_URL_SCHEME);
 
         if (!in_array($scheme, $allowedSchemes)) {
-            throw new InvalidArgumentException("El avatar debe usar HTTP o HTTPS");
+            throw new InvalidArgumentException("El avatar debe usar HTTP o HTTPS", 400);
         }
 
         // Validar extensión de archivo
@@ -36,11 +36,11 @@ final class AvatarUrl extends StringValueObject
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
         if (!in_array(strtolower($extension), $allowedExtensions)) {
-            throw new InvalidArgumentException("Formato de imagen no permitido para el avatar");
+            throw new InvalidArgumentException("Formato de imagen no permitido para el avatar", 400);
         }
 
         if (strlen($value) > 500) {
-            throw new InvalidArgumentException("La URL del avatar es demasiado larga");
+            throw new InvalidArgumentException("La URL del avatar es demasiado larga", 400);
         }
     }
 

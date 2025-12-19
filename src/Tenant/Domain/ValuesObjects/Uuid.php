@@ -3,7 +3,7 @@
 namespace Src\Tenant\Domain\ValuesObjects;
 
 use Illuminate\Support\Str;
-use Src\User\Domain\Exceptions\InvalidUuidException;
+use Src\Tenant\Domain\Exceptions\InvalidUuidException;
 
 final class Uuid {
 

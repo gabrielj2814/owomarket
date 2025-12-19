@@ -35,7 +35,7 @@ final class Password
     public static function fromHash(string $hash): self
     {
         if (!self::isValidHash($hash)) {
-            throw new InvalidArgumentException('Hash inválido');
+            throw new InvalidArgumentException('Hash inválido', 500);
         }
 
         return new self($hash);

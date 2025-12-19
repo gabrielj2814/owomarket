@@ -22,7 +22,7 @@ final class EmailVerifiedAt
 
         $date = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $value);
         if ($date === false) {
-            throw new InvalidArgumentException("Formato de fecha de verificación inválido");
+            throw new InvalidArgumentException("Formato de fecha de verificación inválido", 400);
         }
 
         return new self($date);

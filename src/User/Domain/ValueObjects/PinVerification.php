@@ -15,16 +15,16 @@ final class PinVerification extends StringValueObject
     protected function validate(string $value): void
     {
         if (strlen($value) !== 6) {
-            throw new InvalidArgumentException("El PIN debe tener exactamente 6 dígitos");
+            throw new InvalidArgumentException("El PIN debe tener exactamente 6 dígitos", 400);
         }
 
         if (!preg_match('/^\d+$/', $value)) {
-            throw new InvalidArgumentException("El PIN debe contener solo números");
+            throw new InvalidArgumentException("El PIN debe contener solo números", 400);
         }
 
         // Evitar PINs demasiado simples
         if (preg_match('/(\d)\1{2,}/', $value)) { // 111111, 222222, etc.
-            throw new InvalidArgumentException("El PIN no puede tener números repetidos consecutivos");
+            throw new InvalidArgumentException("El PIN no puede tener números repetidos consecutivos", 400);
         }
     }
 

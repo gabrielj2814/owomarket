@@ -28,7 +28,7 @@ final class TenantRequest extends StringValueObject
     protected function validate(string $value): void
     {
         if (!in_array($value, self::ALLOWED_REQUEST)) {
-            throw new InvalidArgumentException("Tipo de solicitud no válido: {$value}");
+            throw new InvalidArgumentException("Tipo de solicitud no válido: {$value}", 400);
         }
     }
 
