@@ -5,10 +5,16 @@ use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidGETController;
 use Src\Tenant\Infrastructure\Http\Controller\FiltrarTenantsPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\SuspendedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantIndexGETController;
+use Src\Tenant\Infrastructure\Http\Controller\ViweModuleTenantSuspendedIndexGETController;
 
+// module tenant
 Route::get('/{user_uuid}/module',                       [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware("auth");
 Route::post('/filter',                                  [FiltrarTenantsPOSTController::class, 'index'])->middleware("auth");
 Route::get('/{id}',                                     [ConsultTenantByUuidGETController::class, 'index'])->middleware("auth");
 Route::patch('/{id}/suspended',                         [SuspendedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
+
+// module tenant suspended/inactive
+Route::get('/{user_uuid}/module/suspended',             [ViweModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware("auth");
+
 
 ?>

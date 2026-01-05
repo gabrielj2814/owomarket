@@ -41,7 +41,7 @@ const SidebarDashboardComponent = () => {
             <SidebarCollapse icon={LuStore} label="Tenants">
                 <SidebarItem icon={LuUsers} href={`/backoffice/tenant/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
                 <SidebarItem icon={LuUserPlus} href="#">Request</SidebarItem>
-                <SidebarItem icon={LuUserRoundSearch} href="#">Suspended</SidebarItem>
+                <SidebarItem icon={LuUserRoundSearch} href={`/backoffice/tenant/${state.authUser.user_id}/module/suspended`}>Suspended</SidebarItem>
             </SidebarCollapse>
             {/* <SidebarItem href="#" icon={TbWorldWww} >
                 Domains
