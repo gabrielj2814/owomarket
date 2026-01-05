@@ -192,6 +192,26 @@ class TenantRepository implements TenantRepositoryInterface {
 
     }
 
+    public function inactive(Tenant $tenant): Tenant
+    {
+
+        $tenant->inactive();
+
+        ModelsTenant::where("id","=",$tenant->getId()->value())
+        ->update(["status" => $tenant->getStatus()->value()]);
+        return $tenant;
+    }
+
+    public function active(Tenant $tenant): Tenant
+    {
+
+        $tenant->active();
+
+        ModelsTenant::where("id","=",$tenant->getId()->value())
+        ->update(["status" => $tenant->getStatus()->value()]);
+        return $tenant;
+    }
+
 
 }
 

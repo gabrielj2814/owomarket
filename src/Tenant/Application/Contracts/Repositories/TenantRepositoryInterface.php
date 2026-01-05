@@ -23,6 +23,10 @@ interface TenantRepositoryInterface {
 
     public function suspended(Tenant $tenant): Tenant;
 
+    public function inactive(Tenant $tenant): Tenant;
+
+    public function active(Tenant $tenant): Tenant;
+
 
 }
 

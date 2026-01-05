@@ -167,6 +167,16 @@ class Tenant {
         $this->updatedAt=UpdatedAt::now();
     }
 
+    public function inactive(){
+        $this->status=TenantStatus::inactive();
+        $this->updatedAt=UpdatedAt::now();
+    }
+
+    public function active(){
+        $this->status=TenantStatus::active();
+        $this->updatedAt=UpdatedAt::now();
+    }
+
 }
 
 
