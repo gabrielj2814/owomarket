@@ -18,9 +18,15 @@ class InactiveTenantByUuidUseCase {
         $uuid= Uuid::make($uuid);
         $tenant=$this->tenant_repository->consultTenantById($uuid);
         if(!$tenant){
-            throw new Exception("No pudo inactivar el tenant por que no se encotro en la DB",404);
+            throw new Exception("No pudo desactivar el tenant por que no se encontro en la DB",404);
         }
-        $this->tenant_repository->inactive($tenant);
+        if($tenant->getStatus()->isSuspended() && $tenant->getRequest()->isApproved()){
+            $this->tenant_repository->inactive($tenant);
+        }
+        else{
+            throw new Exception("No se puede inactivar un tenant que no este en estado suspendido",400);
+        }
+
         return $tenant;
     }
 

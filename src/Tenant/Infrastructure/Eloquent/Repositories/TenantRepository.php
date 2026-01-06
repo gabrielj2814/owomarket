@@ -215,7 +215,7 @@ class TenantRepository implements TenantRepositoryInterface {
 
     public function active(Tenant $tenant): Tenant
     {
-        if($tenant->getStatus()->isInactive()){
+        if($tenant->getStatus()->isInactive() && $tenant->getRequest()->isApproved()){
             $tenant->active();
             // $tenantDB=ModelsTenant::where("id","=",$tenant->getId()->value())->first();
             // TODO: hacer que si pasa de inacvtivo a activo se cree la base de datos y se migren las tablas

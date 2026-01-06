@@ -20,7 +20,12 @@ class ActiveTenantByUuidUseCase {
         if(!$tenant){
             throw new Exception("No pudo activar el tenant por que no se encotro en la DB",404);
         }
-        $this->tenant_repository->active($tenant);
+        if(($tenant->getStatus()->isSuspended() || $tenant->getStatus()->isInactive()) && $tenant->getRequest()->isApproved()){
+            $this->tenant_repository->active($tenant);
+        }
+        else{
+            throw new Exception("No se puede activar un tenant que no este en estado suspendido o inactivo",400);
+        }
         return $tenant;
     }
 
