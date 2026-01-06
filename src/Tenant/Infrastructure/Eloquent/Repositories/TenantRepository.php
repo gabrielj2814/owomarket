@@ -4,8 +4,8 @@
 namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
 use DateTime;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use InvalidArgumentException;
 use Src\Shared\Collection\Collection;
 use Src\Shared\Collection\Pagination;
 use Src\Shared\ValuesObjects\CreatedAt;
@@ -28,6 +28,9 @@ use Src\Tenant\Domain\ValuesObjects\UserStatus;
 use Src\Tenant\Domain\ValuesObjects\UserType;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
+use Stancl\Tenancy\Jobs\CreateDatabase;
+use Stancl\Tenancy\Jobs\MigrateDatabase;
+use Stancl\Tenancy\Jobs\SeedDatabase;
 
 class TenantRepository implements TenantRepositoryInterface {
 
@@ -199,17 +202,43 @@ class TenantRepository implements TenantRepositoryInterface {
 
         ModelsTenant::where("id","=",$tenant->getId()->value())
         ->update(["status" => $tenant->getStatus()->value()]);
+
+        $tenantDB=ModelsTenant::where("id","=",$tenant->getId()->value())->first();
+        tenancy()->initialize($tenantDB);
+        $databaseName = $tenantDB->tenancy_db_name;
+        tenancy()->end();
+        DB::connection('central')->statement("DROP DATABASE IF EXISTS `{$databaseName}`");
+
+
         return $tenant;
     }
 
     public function active(Tenant $tenant): Tenant
     {
+        if($tenant->getStatus()->isInactive()){
+            $tenant->active();
+            // $tenantDB=ModelsTenant::where("id","=",$tenant->getId()->value())->first();
+            // TODO: hacer que si pasa de inacvtivo a activo se cree la base de datos y se migren las tablas
+            // 1. Crear la base de datos (Job)
+            // dispatch(new CreateDatabase($tenantDB));
+            // 2. Ejecutar migraciones (Job)
+            // dispatch(new MigrateDatabase($tenantDB));
+            // // 3. Sembrar datos (Opcional)
+            // dispatch(new SeedDatabase($tenantDB));
 
-        $tenant->active();
+            ModelsTenant::where("id","=",$tenant->getId()->value())
+            ->update(["status" => $tenant->getStatus()->value()]);
+            return $tenant;
 
-        ModelsTenant::where("id","=",$tenant->getId()->value())
-        ->update(["status" => $tenant->getStatus()->value()]);
-        return $tenant;
+        }
+        else{
+            $tenant->active();
+
+            ModelsTenant::where("id","=",$tenant->getId()->value())
+            ->update(["status" => $tenant->getStatus()->value()]);
+            return $tenant;
+        }
+
     }
 
 

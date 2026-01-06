@@ -15,11 +15,12 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { ToastInterface } from "@/types/ToastInterface";
 import {v4 as uuidv4} from "uuid"
 import TenantServices from "@/Services/TenantServices";
-import { LuDatabase, LuEye } from "react-icons/lu";
+import { LuArchiveRestore, LuArchiveX, LuCheck, LuDatabase, LuEye } from "react-icons/lu";
 import TableComponent from "@/components/ui/TableComponent";
 import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
 import HeaderToasts from "@/components/HeaderToasts";
 import ModalDetails from "@/components/ui/ModalDetails";
+import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 
 interface IndexPageProps {
     title?:          string;
@@ -43,7 +44,8 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
     const [cargaInicialCompleta,              setCargaInicialCompleta]                     = useState<boolean>(false);
     const [stateLodaer,                       setStateLodaer]                              = useState<boolean>(false);
     const [statusModalDetails,                setStatusModalDetails]                       = useState<boolean>(false);
-    const [stateModalConfirmatedSuspended,    setStateModalConfirmatedSuspended]           = useState<boolean>(false);
+    const [stateModalConfirmatedActive,       setStateModalConfirmatedActive]              = useState<boolean>(false);
+    const [stateModalConfirmatedInactive,     setStateModalConfirmatedInactive]            = useState<boolean>(false);
     const [uuidTenant,                        setUuidTenant]                               = useState<string>("");
 
     const [mapToast,                          setMapToast]                                 = useState<Map<string,ToastInterface>>(new Map<string,ToastInterface>())
@@ -92,6 +94,12 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         inicializar()
         }
     }, [debouncedSearchTerm, filtroDesdeUTC, filtroHastaUTC, currentPage, filtroStatus]);
+
+    const actualizarTabla= async () => {
+        setStateLodaer(true)
+        await filtrarTenant(1);
+        setStateLodaer(false)
+    }
 
     const onPageChange = (page: number) => {
         setCurrentPage(page)
@@ -229,7 +237,12 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                        {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                     </TableCell>
                     <TableCell>
-                        {/* <Button color="red" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button> */}
+                        <Button color="green" title="active" onClick={() => mostrarModalConfirmatedActive(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
+                    </TableCell>
+                    <TableCell>
+                        {item.status==="suspended"&&
+                            <Button color="red" title="inactive" onClick={() => mostrarModalConfirmatedInactive(item.id)}>  <LuArchiveX className=" w-5 h-5" />  </Button>
+                        }
                     </TableCell>
                 </TableRow>
                 )
@@ -265,9 +278,14 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                             <div className=" basis-full">
                                 <Button title="See" className="w-full" onClick={() => openModalDetails(item.id)}>  <LuEye className=" w-5 h-5" />  </Button>
                             </div>
-                            {/* <div className=" basis-full">
-                                <Button color="red" className="w-full" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
-                            </div> */}
+                            <div className=" basis-full">
+                                <Button color="green" className="w-full" title="active" onClick={() => mostrarModalConfirmatedActive(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
+                            </div>
+                            {item.status==="suspended"&&
+                                <div className=" basis-full">
+                                    <Button color="red" className="w-full" title="inactive" onClick={() => mostrarModalConfirmatedInactive(item.id)}>  <LuArchiveX  className=" w-5 h-5" />  </Button>
+                                </div>
+                            }
                         </div>
 
                     </Card>
@@ -285,6 +303,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                 <TableHeadCell>Currency</TableHeadCell>
                 <TableHeadCell>Timezone</TableHeadCell>
                 <TableHeadCell>Created At</TableHeadCell>
+                <TableHeadCell></TableHeadCell>
                 <TableHeadCell></TableHeadCell>
               </TableRow>
             </TableHead>
@@ -361,8 +380,62 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
             </TableHead>
         )
 
-        const onCloseModalConfirmatedSuspended = () => {
-            setStateModalConfirmatedSuspended(false)
+        const onCloseModalConfirmatedInactive = () => {
+            setStateModalConfirmatedInactive(false)
+        }
+
+        const mostrarModalConfirmatedInactive = (uuid: string) => {
+            setUuidTenant(uuid);
+            setStateModalConfirmatedInactive(true)
+        }
+
+        const onCloseModalConfirmatedActive = () => {
+            setStateModalConfirmatedActive(false)
+        }
+
+        const mostrarModalConfirmatedActive = (uuid: string) => {
+            setUuidTenant(uuid);
+            setStateModalConfirmatedActive(true)
+        }
+
+        const onActive = async () => {
+            setStateLodaer(true)
+
+            const uuid:string= uuidTenant
+
+            const apiResponse= await TenantServices.active(uuid)
+
+            if(apiResponse.status!=200){
+                createToast("failure", "Error", apiResponse.response?.data.message, <HiHome/>)
+                return
+            }
+
+
+            setStateLodaer(false)
+            setStateModalConfirmatedActive(false)
+            createToast("success", "OK", "Active Completed", <LuCheck/>)
+            await actualizarTabla();
+
+        }
+
+        const onInactive = async () => {
+            setStateLodaer(true)
+
+            const uuid:string= uuidTenant
+
+            const apiResponse= await TenantServices.inactive(uuid)
+
+            if(apiResponse.status!=200){
+                createToast("failure", "Error", apiResponse.response?.data.message, <HiHome/>)
+                return
+            }
+
+
+            setStateLodaer(false)
+            setStateModalConfirmatedInactive(false)
+            createToast("success", "OK", "Inactive Completed", <LuCheck/>)
+            await actualizarTabla();
+
         }
 
 
@@ -383,6 +456,32 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                     {buildMovilModalDetails(TenantOwner)}
                 </div>
             </ModalDetails>
+
+            <ModalAlertConfirmation
+            openModal={stateModalConfirmatedActive}
+            size="md"
+            icon={<LuArchiveRestore className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to active?"
+            buttonTextCancel="No, I want cancel"
+            buttonTextAction="yes, I want active"
+            onClose={onCloseModalConfirmatedActive}
+            onClickAction={onActive}
+            colorButtonCancel="alternative"
+            colorButtonAction="green"
+            />
+
+            <ModalAlertConfirmation
+            openModal={stateModalConfirmatedInactive}
+            size="md"
+            icon={<LuArchiveX className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to inactive?"
+            buttonTextCancel="No, I want cancel"
+            buttonTextAction="yes, I want inactive"
+            onClose={onCloseModalConfirmatedInactive}
+            onClickAction={onInactive}
+            colorButtonCancel="alternative"
+            colorButtonAction="red"
+            />
 
 
             <Dashboard user_uuid={user_id}>
@@ -408,7 +507,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
 
 
                 <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 380px)" }}>
-                    <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={6} />
+                    <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={7} />
                     <div className="block lg:hidden">
                         {movilRowContent}
                     </div>

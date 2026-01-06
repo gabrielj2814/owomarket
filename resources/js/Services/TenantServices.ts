@@ -58,6 +58,30 @@ const TenantServices = {
         catch(error){
             return error as ApiResponse<void>;
         }
+    },
+
+    active: async (uuid: string): Promise<ApiResponse<void>> => {
+        try{
+
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`${uuid}/active`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<void>;
+        }
+    },
+
+    inactive: async (uuid: string): Promise<ApiResponse<void>> => {
+        try{
+
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`${uuid}/inactive`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<void>;
+        }
     }
 
 

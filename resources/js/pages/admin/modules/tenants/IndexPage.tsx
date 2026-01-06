@@ -19,7 +19,7 @@ import TableComponent from "@/components/ui/TableComponent";
 import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
 import ModalDetails from "@/components/ui/ModalDetails";
 import { TenantOwner } from "@/types/models/TenantOwner";
-import { LuArchiveRestore, LuCheck, LuDatabase, LuEye } from "react-icons/lu";
+import { LuArchive, LuArchiveRestore, LuCheck, LuDatabase, LuEye } from "react-icons/lu";
 import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 
 interface IndexPageProps {
@@ -270,7 +270,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                             <Button title="See" className="w-full" onClick={() => openModalDetails(item.id)}>  <LuEye className=" w-5 h-5" />  </Button>
                         </div>
                         <div className=" basis-full">
-                            <Button color="red" className="w-full" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
+                            <Button color="red" className="w-full" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchive  className=" w-5 h-5" />  </Button>
                         </div>
                     </div>
 
@@ -410,7 +410,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
             <ModalAlertConfirmation
             openModal={stateModalConfirmatedSuspended}
             size="md"
-            icon={<LuArchiveRestore className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            icon={<LuArchive className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
             text="Are you sure you want to delete?"
             buttonTextCancel="No, I want cancel"
             buttonTextAction="yes, I want suspended"
