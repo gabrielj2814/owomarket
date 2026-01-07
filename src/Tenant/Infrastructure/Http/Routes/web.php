@@ -6,6 +6,7 @@ use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidGETController;
 use Src\Tenant\Infrastructure\Http\Controller\FiltrarTenantsPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\InactiveTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\SuspendedTenantByUuidPATCHController;
+use Src\Tenant\Infrastructure\Http\Controller\ViewCreateAccountTenantGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantIndexGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViweModuleTenantSuspendedIndexGETController;
 
@@ -20,6 +21,6 @@ Route::patch('/{id}/inactive',                                     [InactiveTena
 // module tenant suspended/inactive
 Route::get('/backoffice/{user_uuid}/module/suspended',             [ViweModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware("auth");
 
-
+Route::get('/create/account',                                      [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
 
 ?>
