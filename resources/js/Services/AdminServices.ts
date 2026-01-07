@@ -8,7 +8,7 @@ import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
 const axiosAdmin= axios.create({
-    baseURL: "/backoffice/admin/",
+    baseURL: "/admin/",
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`${uuid}/admin`,body)
+            let respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`backoffice/${uuid}/admin`,body)
 
             return respuesta
         }
@@ -49,7 +49,7 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`${uuid}/admin/${datos.id}`,body)
+            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`backoffice/${uuid}/admin/${datos.id}`,body)
 
             return respuesta
         }
@@ -61,7 +61,7 @@ const AdminServices = {
     consultByUuid: async (user_uuid: string): Promise<ApiResponse<Admin>> => {
          try{
 
-            let respuesta:ApiResponse<Admin> = await axiosAdmin.get(`${user_uuid}`)
+            let respuesta:ApiResponse<Admin> = await axiosAdmin.get(`backoffice/${user_uuid}`)
 
             return respuesta
         }
@@ -79,7 +79,7 @@ const AdminServices = {
                 status,
                 prePage,
             }
-            let respuesta:ApiResponse<Admin[]> = await axiosAdmin.post(`filter?page=${page}`,body)
+            let respuesta:ApiResponse<Admin[]> = await axiosAdmin.post(`backoffice/filter?page=${page}`,body)
 
             return respuesta
         }
@@ -90,7 +90,7 @@ const AdminServices = {
 
     delete: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
-            let respuesta:ApiResponse<void> = await axiosAdmin.delete(`${uuid}`)
+            let respuesta:ApiResponse<void> = await axiosAdmin.delete(`backoffice/${uuid}`)
 
             return respuesta
         }
@@ -105,7 +105,7 @@ const AdminServices = {
                 id,
                 statu
             }
-            let respuesta:ApiResponse<void> = await axiosAdmin.put(`${id}/change-statu`,body)
+            let respuesta:ApiResponse<void> = await axiosAdmin.put(`backoffice/${id}/change-statu`,body)
 
             return respuesta
         }

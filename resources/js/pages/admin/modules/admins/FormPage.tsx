@@ -247,18 +247,18 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
     }
 
     const regresar = () => {
-        window.location.href=`/backoffice/admin/${user_id}/module`
+        window.location.href=`/admin/backoffice/${user_id}/module`
     }
 
     const irHaInicio = (type?:string, message?: string) => {
         if(type!=null && message!= null){
-            window.location.href=`/backoffice/admin/${user_id}/module?type=${type}&message=${message}`
+            window.location.href=`/admin/backoffice/${user_id}/module?type=${type}&message=${message}`
         }
-        window.location.href=`/backoffice/admin/${user_id}/module`
+        window.location.href=`/admin/backoffice/${user_id}/module`
     }
 
     const cancelar = () => {
-        window.location.href=`/backoffice/admin/${user_id}/module`
+        window.location.href=`/admin/backoffice/${user_id}/module`
     }
 
 
@@ -302,10 +302,10 @@ const FormPage:FC<FormPageProps> = ({title="Nueno Modulo", user_id, record_id=nu
 
             <Dashboard user_uuid={user_id}>
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">
-                    <BreadcrumbItem href={`/backoffice/admin/${user_id}/dashboard`} icon={HiHome}>
+                    <BreadcrumbItem href={`/admin/backoffice/${user_id}/dashboard`} icon={HiHome}>
                         Home
                     </BreadcrumbItem>
-                    <BreadcrumbItem href={`/backoffice/admin/${user_id}/module/admin`} >Admins</BreadcrumbItem>
+                    <BreadcrumbItem href={`/admin/backoffice/${user_id}/module/admin`} >Admins</BreadcrumbItem>
                     <BreadcrumbItem >
                         {record_id==null &&
                             "New Record"

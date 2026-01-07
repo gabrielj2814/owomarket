@@ -486,10 +486,10 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
 
             <Dashboard user_uuid={user_id}>
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-2">
-                    <BreadcrumbItem href={`/backoffice/admin/${user_id}/dashboard`} icon={HiHome}>
+                    <BreadcrumbItem href={`/admin/backoffice/${user_id}/dashboard`} icon={HiHome}>
                         Home
                     </BreadcrumbItem>
-                    <BreadcrumbItem href={`/backoffice/tenant/${user_id}/module`} >Tenants Suspended</BreadcrumbItem>
+                    <BreadcrumbItem href={`/tenant/backoffice/${user_id}/module`} >Tenants Suspended</BreadcrumbItem>
                 </Breadcrumb>
 
                 <FiltersModuleTenantSuspendedIndex

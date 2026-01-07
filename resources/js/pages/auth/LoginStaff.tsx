@@ -133,7 +133,7 @@ const LoginStaff = () => {
 
 
     const irHaPorElRol = (rol:string,uuid:string) => {
-        const BACKOFICCE_ADMIN_DASHBOARD = `/backoffice/admin/${uuid}/dashboard`;
+        const BACKOFICCE_ADMIN_DASHBOARD = `/admin/backoffice/${uuid}/dashboard`;
         if(rol === 'super_admin'){
             window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
         }

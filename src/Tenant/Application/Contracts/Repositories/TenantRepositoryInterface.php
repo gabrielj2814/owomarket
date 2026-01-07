@@ -27,6 +27,8 @@ interface TenantRepositoryInterface {
 
     public function active(Tenant $tenant): Tenant;
 
+    public function save(Tenant $tenant): Tenant;
+
 
 }
 

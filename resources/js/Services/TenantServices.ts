@@ -5,7 +5,7 @@ import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
 const axiosTenant= axios.create({
-    baseURL: "/backoffice/tenant/",
+    baseURL: "/tenant/",
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json',
@@ -27,7 +27,7 @@ const TenantServices = {
                 prePage,
             }
 
-            let respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`filter?page=${page}`,body)
+            let respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`backoffice/filter?page=${page}`,body)
 
             return respuesta
         }
@@ -39,7 +39,7 @@ const TenantServices = {
     consultTenantByUuid: async (uuid: string): Promise<ApiResponse<Tenant>> => {
         try{
 
-            let respuesta:ApiResponse<Tenant> = await axiosTenant.get(`${uuid}`)
+            let respuesta:ApiResponse<Tenant> = await axiosTenant.get(`backoffice/${uuid}`)
 
             return respuesta
         }
@@ -51,7 +51,7 @@ const TenantServices = {
     suspended: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`${uuid}/suspended`)
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/suspended`)
 
             return respuesta
         }
@@ -63,7 +63,7 @@ const TenantServices = {
     active: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`${uuid}/active`)
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/active`)
 
             return respuesta
         }
@@ -75,7 +75,7 @@ const TenantServices = {
     inactive: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`${uuid}/inactive`)
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/inactive`)
 
             return respuesta
         }

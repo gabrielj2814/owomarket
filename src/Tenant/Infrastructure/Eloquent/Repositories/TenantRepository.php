@@ -28,9 +28,6 @@ use Src\Tenant\Domain\ValuesObjects\UserStatus;
 use Src\Tenant\Domain\ValuesObjects\UserType;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
-use Stancl\Tenancy\Jobs\CreateDatabase;
-use Stancl\Tenancy\Jobs\MigrateDatabase;
-use Stancl\Tenancy\Jobs\SeedDatabase;
 
 class TenantRepository implements TenantRepositoryInterface {
 
@@ -239,6 +236,22 @@ class TenantRepository implements TenantRepositoryInterface {
             return $tenant;
         }
 
+    }
+
+    public function save(Tenant $tenant): Tenant
+    {
+        $model= new ModelsTenant();
+        $model->id = $tenant->getId()->value();
+        $model->name = $tenant->getName()->value();
+        $model->slug = $tenant->getSlug()->value();
+        $model->status = $tenant->getStatus()->value();
+        $model->timezone = $tenant->getTimezone()->value();
+        $model->currency = $tenant->getCurrency()->code();
+        $model->request = $tenant->getRequest()->value();
+
+        $model->save();
+
+        return $tenant;
     }
 
 

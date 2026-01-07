@@ -28,20 +28,20 @@ const SidebarDashboardComponent = () => {
     <Sidebar aria-label="Default sidebar example" className="hidden lg:block">
       <SidebarItems>
         <SidebarItemGroup>
-            <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
+            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                 Dashboard
             </SidebarItem>
 
             <SidebarItem href="#" icon={HiUser} >
                 My Perfil
             </SidebarItem>
-            <SidebarItem href={`/backoffice/admin/${state.authUser.user_id}/module`} icon={HiUsers} >
+            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers} >
                 Admins
             </SidebarItem>
             <SidebarCollapse icon={LuStore} label="Tenants">
-                <SidebarItem icon={LuUsers} href={`/backoffice/tenant/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
+                <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
                 <SidebarItem icon={LuUserPlus} href="#">Request</SidebarItem>
-                <SidebarItem icon={LuUserRoundSearch} href={`/backoffice/tenant/${state.authUser.user_id}/module/suspended`}>Suspended</SidebarItem>
+                <SidebarItem icon={LuUserRoundSearch} href={`/tenant/backoffice/${state.authUser.user_id}/module/suspended`}>Suspended</SidebarItem>
             </SidebarCollapse>
             {/* <SidebarItem href="#" icon={TbWorldWww} >
                 Domains
