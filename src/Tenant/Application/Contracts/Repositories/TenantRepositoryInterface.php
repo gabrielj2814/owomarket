@@ -5,6 +5,7 @@ namespace Src\Tenant\Application\Contracts\Repositories;
 
 use Src\Shared\Collection\Pagination;
 use Src\Tenant\Domain\Entities\Tenant;
+use Src\Tenant\Domain\ValuesObjects\Slug;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
 interface TenantRepositoryInterface {
@@ -20,6 +21,8 @@ interface TenantRepositoryInterface {
     ): Pagination;
 
     public function consultTenantById(Uuid $uuid):? Tenant;
+
+    public function consultTenantBySlug(Slug $slug):? Tenant;
 
     public function suspended(Tenant $tenant): Tenant;
 

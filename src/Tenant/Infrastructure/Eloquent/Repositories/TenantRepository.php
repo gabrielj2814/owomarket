@@ -156,10 +156,17 @@ class TenantRepository implements TenantRepositoryInterface {
             $create_at = CreatedAt::fromString($modelOwner->created_at);
             $update_at = UpdatedAt::fromString($modelOwner->updated_at);
 
+            $password = null; // No se recupera la contraseña por seguridad
+            $emailVerifiedAt = null;
+            $pin = null;
+
             return TenantOwner::reconstitute(
                 $id,
                 $name,
                 $email,
+                $password,
+                $emailVerifiedAt,
+                $pin,
                 $type,
                 $phone,
                 $avatar,
@@ -250,6 +257,37 @@ class TenantRepository implements TenantRepositoryInterface {
         $model->request = $tenant->getRequest()->value();
 
         $model->save();
+
+        return $tenant;
+    }
+
+    public function consultTenantBySlug(Slug $slug): ?Tenant
+    {
+        $consulta= ModelsTenant::where("slug","=",$slug->value())->first();
+
+        $id          = Uuid::make($consulta->id);
+        $name        = TenantName::make($consulta->name);
+        $slug        = Slug::make($consulta->slug);
+        $status      = TenantStatus::make($consulta->status);
+        $timezone    = Timezone::make($consulta->timezone);
+        $currency    = Currency::make($consulta->currency);
+        $request     = TenantRequest::make($consulta->request);
+        $created_at  = CreatedAt::fromString($consulta->created_at);
+        $updated_at  = UpdatedAt::fromString($consulta->updated_at);
+        $deleted_at  = SoftDeleteAt::fromString($consulta->deleted_at);
+
+        $tenant= Tenant::reconstitute(
+            $id,
+            $name,
+            $slug,
+            $status,
+            $timezone,
+            $currency,
+            $request,
+            $created_at,
+            $updated_at,
+            $deleted_at,
+        );
 
         return $tenant;
     }

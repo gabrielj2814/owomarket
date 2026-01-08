@@ -3,6 +3,7 @@
 
 namespace Src\Tenant\Application\UseCase;
 
+use Exception;
 use Src\Shared\ValuesObjects\Currency;
 use Src\Shared\ValuesObjects\Timezone;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
@@ -19,7 +20,7 @@ class CreateTenantUseCase {
         protected TenantRepositoryInterface $tenantRepository,
     ) {}
 
-    public function execute(string $name){
+    public function execute(string $name): Tenant{
 
         $name= TenantName::make($name);
         $slug= Slug::fromString($name->value());
@@ -35,6 +36,12 @@ class CreateTenantUseCase {
             $currency,
             $request,
         );
+
+        $tenantConSlugEnUso= $this->tenantRepository->consultTenantBySlug($slug);
+
+        if($tenantConSlugEnUso !== null){
+            throw new Exception("Slug already in use", 400);
+        }
 
         return $this->tenantRepository->save($tenant);
     }

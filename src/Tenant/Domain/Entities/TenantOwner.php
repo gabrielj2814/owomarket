@@ -5,7 +5,10 @@ namespace Src\Tenant\Domain\Entities;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
+use Src\Tenant\Domain\ValuesObjects\EmailVerifiedAt;
+use Src\Tenant\Domain\ValuesObjects\Password;
 use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
+use Src\Tenant\Domain\ValuesObjects\PinVerification;
 use Src\Tenant\Domain\ValuesObjects\UserEmail;
 use Src\Tenant\Domain\ValuesObjects\UserName;
 use Src\Tenant\Domain\ValuesObjects\UserStatus;
@@ -16,6 +19,9 @@ class TenantOwner {
     private ?Uuid               $id;
     private UserName            $name;
     private UserEmail           $email;
+    private ?Password           $password;
+    private ?EmailVerifiedAt    $emailVerifiedAt;
+    private ?PinVerification    $pin;
     private UserType            $type;
     private ?PhoneNumber        $phone;
     private ?AvatarUrl          $avatar;
@@ -27,6 +33,9 @@ class TenantOwner {
         ?Uuid               $id,
         UserName            $name,
         UserEmail           $email,
+        ?Password           $password,
+        ?EmailVerifiedAt    $emailVerifiedAt,
+        ?PinVerification    $pin,
         UserType            $type,
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
@@ -37,6 +46,9 @@ class TenantOwner {
         $this->id                = $id;
         $this->name              = $name;
         $this->email             = $email;
+        $this->password          = $password;
+        $this->emailVerifiedAt   = $emailVerifiedAt;
+        $this->pin               = $pin;
         $this->type              = $type;
         $this->phone             = $phone;
         $this->avatar            = $avatar;
@@ -49,6 +61,9 @@ class TenantOwner {
     public static function create(
         UserName            $name,
         UserEmail           $email,
+        ?Password           $password,
+        ?EmailVerifiedAt    $emailVerifiedAt,
+        ?PinVerification    $pin,
         UserType            $type,
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
@@ -58,6 +73,9 @@ class TenantOwner {
             Uuid::generate(),  // ← Auto-generado
             $name,
             $email,
+            $password,
+            $emailVerifiedAt,
+            $pin,
             $type,
             $phone,
             $avatar,
@@ -72,6 +90,9 @@ class TenantOwner {
         Uuid                $id,
         UserName            $name,
         UserEmail           $email,
+        ?Password           $password,
+        ?EmailVerifiedAt    $emailVerifiedAt,
+        ?PinVerification    $pin,
         UserType            $type,
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
@@ -84,6 +105,9 @@ class TenantOwner {
             $id,
             $name,
             $email,
+            $password,
+            $emailVerifiedAt,
+            $pin,
             $type,
             $phone,
             $avatar,
@@ -99,6 +123,10 @@ class TenantOwner {
 
     public function getName(): UserName {
         return $this->name;
+    }
+
+    public function getPassword(): ?Password {
+        return $this->password;
     }
 
     public function getEmail(): UserEmail {
@@ -129,7 +157,6 @@ class TenantOwner {
     public function isActive(): bool {
         return $this->isActive->isActive();
     }
-
 
     public function hasPhone(): bool {
         return $this->phone !== null;
