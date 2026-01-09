@@ -32,6 +32,10 @@ interface TenantRepositoryInterface {
 
     public function save(Tenant $tenant): Tenant;
 
+    public function deleteTenant(Uuid $id): bool;
+
+    public function deleteForceTenant(Uuid $id): bool;
+
 
 }
 

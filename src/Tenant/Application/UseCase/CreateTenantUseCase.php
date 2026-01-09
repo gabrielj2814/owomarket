@@ -4,6 +4,7 @@
 namespace Src\Tenant\Application\UseCase;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use Src\Shared\ValuesObjects\Currency;
 use Src\Shared\ValuesObjects\Timezone;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
@@ -36,6 +37,7 @@ class CreateTenantUseCase {
             $currency,
             $request,
         );
+        Log::info("Creando tenant con slug: ".$slug->value());
 
         $tenantConSlugEnUso= $this->tenantRepository->consultTenantBySlug($slug);
 

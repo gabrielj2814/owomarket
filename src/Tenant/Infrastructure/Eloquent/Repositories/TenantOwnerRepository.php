@@ -4,6 +4,7 @@ namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
+use Src\Tenant\Domain\ValuesObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\User as TenantOwnerModel;
 
 class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
@@ -25,6 +26,24 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
         $record->save();
 
         return $tenantOwner;
+    }
+
+    public function deleteTenantOwner(Uuid $id): bool {
+        $record= TenantOwnerModel::where('id',$id->value())->first();
+        if($record){
+            $record->delete();
+            return true;
+        }
+        return false;
+    }
+
+    public function deleteForceTenantOwner(Uuid $id): bool {
+        $record= TenantOwnerModel::withTrashed()->where('id',$id->value())->first();
+        if($record){
+            $record->forceDelete();
+            return true;
+        }
+        return false;
     }
 
 

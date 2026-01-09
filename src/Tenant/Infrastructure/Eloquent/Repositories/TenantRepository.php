@@ -17,6 +17,7 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Tenant;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
+use Src\Tenant\Domain\ValuesObjects\Domain;
 use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
 use Src\Tenant\Domain\ValuesObjects\Slug;
 use Src\Tenant\Domain\ValuesObjects\TenantName;
@@ -82,7 +83,7 @@ class TenantRepository implements TenantRepositoryInterface {
             $deleted_at  = SoftDeleteAt::fromString($model->deleted_at);
 
             $tenant= Tenant::reconstitute(
-                $id,
+            $id,
                 $name,
                 $slug,
                 $status,
@@ -191,11 +192,7 @@ class TenantRepository implements TenantRepositoryInterface {
         ModelsTenant::where("id","=",$tenant->getId()->value())
         ->update(["status" => $tenant->getStatus()->value()]);
 
-
         return $tenant;
-
-
-
 
     }
 
@@ -247,6 +244,7 @@ class TenantRepository implements TenantRepositoryInterface {
 
     public function save(Tenant $tenant): Tenant
     {
+        Log::info($tenant->getId()->value());
         $model= new ModelsTenant();
         $model->id = $tenant->getId()->value();
         $model->name = $tenant->getName()->value();
@@ -264,6 +262,9 @@ class TenantRepository implements TenantRepositoryInterface {
     public function consultTenantBySlug(Slug $slug): ?Tenant
     {
         $consulta= ModelsTenant::where("slug","=",$slug->value())->first();
+        if($consulta === null ){
+            return null;
+        }
 
         $id          = Uuid::make($consulta->id);
         $name        = TenantName::make($consulta->name);
@@ -290,6 +291,32 @@ class TenantRepository implements TenantRepositoryInterface {
         );
 
         return $tenant;
+    }
+
+     public function deleteTenant(Uuid $id): bool {
+        $record= ModelsTenant::where('id',$id->value())->first();
+        if($record){
+            $record->delete();
+            return true;
+        }
+        return false;
+    }
+
+     public function deleteForceTenant(Uuid $id): bool {
+        $record= ModelsTenant::withTrashed()->where('id',$id->value())->first();
+        if($record){
+            $record->forceDelete();
+            return true;
+        }
+        return false;
+    }
+
+    public function tenantUp(Uuid $id) {
+        $tenant= ModelsTenant::where('id',$id->value())->first();
+        $tenant->domains()->create([
+            'id' => Uuid::generate()->value(),
+            'domain' => Domain::fromString($tenant->slug.'.'.config('tenancy.central_domains.0'))->value()
+        ]);
     }
 
 

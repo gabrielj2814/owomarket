@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\DB;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\CreateTenantOwonerUseCase;
 use Src\Tenant\Application\UseCase\CreateTenantUseCase;
+use Src\Tenant\Application\UseCase\DeleteTenantByUuidUseCase;
+use Src\Tenant\Application\UseCase\DeleteTenantOwnerByUuidUseCase;
+use Src\Tenant\Application\UseCase\ForceDeletedTenantByUuidUseCase;
+use Src\Tenant\Application\UseCase\ForceDeletedTenantOwnerByUuidUseCase;
 use Src\Tenant\Infrastructure\Http\Request\CreateTenantOwnerAccountFormRequest;
 
 class CreateAccountTenantPOSTController extends Controller {
@@ -15,7 +19,11 @@ class CreateAccountTenantPOSTController extends Controller {
 
     public function __construct(
         protected CreateTenantOwonerUseCase $createTenantOwnerUseCase,
-        protected CreateTenantUseCase       $createTenantUseCase
+        protected CreateTenantUseCase       $createTenantUseCase,
+        protected DeleteTenantOwnerByUuidUseCase $deleteTenantOwnerByUuidUseCase,
+        protected ForceDeletedTenantOwnerByUuidUseCase $forceDeletedTenantOwnerByUuidUseCase,
+        protected DeleteTenantByUuidUseCase $deleteTenantByUuidUseCase,
+        protected ForceDeletedTenantByUuidUseCase  $forceDeletedTenantByUuidUseCase
     ) {}
 
 
@@ -26,22 +34,24 @@ class CreateAccountTenantPOSTController extends Controller {
         // 1. Create tenant owner OK
         // 2. Create tenant OK
         // 3. Assign tenant to tenant owner
-        // 4. crear domain para el tenant
-        // 5. crear DB para el tenant
+        // 4. crear domain para el tenant OK
+        // 5. crear DB para el tenant OK
 
 
         // data json de ejemplo
         // {
-        //     "name": "John Doe",
-        //     "email": "john@example.com",
-        //     "phone": "+1234567890",
+        //     "name": "Jaen Doe",
+        //     "email": "jaen@example.com",
+        //     "phone": "12345678901",
         //     "password": "securepassword",
         //     "tenant_name": "Acme Corp"
         // }
 
+        $owner=null;
+        $tenant=null;
         $data=$request->data;
+
         try{
-            // DB::beginTransaction();
 
             $owner=$this->createTenantOwnerUseCase->execute(
                 $data->name,
@@ -54,8 +64,6 @@ class CreateAccountTenantPOSTController extends Controller {
                 $data->tenant_name
             );
 
-            // DB::commit();
-
             return ApiResponse::success(
                 [
                     'owner'=>$owner,
@@ -66,7 +74,16 @@ class CreateAccountTenantPOSTController extends Controller {
             );
         }
         catch (\Exception $e){
-            // DB::rollback();
+
+            if($owner!==null){
+                $this->deleteTenantOwnerByUuidUseCase->execute($owner->getId()->value());
+                $this->forceDeletedTenantOwnerByUuidUseCase->execute($owner->getId()->value());
+            }
+
+            if($tenant!==null){
+                $this->deleteTenantByUuidUseCase->execute($tenant->getId()->value());
+                $this->forceDeletedTenantByUuidUseCase->execute($tenant->getId()->value());
+            }
 
             return ApiResponse::error(
                 "Error al crear la cuenta del tenant",
@@ -74,6 +91,7 @@ class CreateAccountTenantPOSTController extends Controller {
                 $e->getMessage()
             );
         }
+
     }
 
 

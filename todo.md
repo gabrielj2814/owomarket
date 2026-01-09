@@ -1,3 +1,6 @@
+<!-- TODO: ver porque carajo las transacciones no funcionan XD -->
+
+
 proceso de regiisto de tenant
 - registrar usuario
 - regristrar tenant
