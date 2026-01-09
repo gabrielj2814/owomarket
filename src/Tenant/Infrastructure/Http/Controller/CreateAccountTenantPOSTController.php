@@ -30,12 +30,10 @@ class CreateAccountTenantPOSTController extends Controller {
 
     public function index(CreateTenantOwnerAccountFormRequest $request ){
 
-        // TODO: steps
-        // 1. Create tenant owner OK
-        // 2. Create tenant OK
-        // 3. Assign tenant to tenant owner
-        // 4. crear domain para el tenant OK
-        // 5. crear DB para el tenant OK
+        // Assign tenant to tenant owner
+        // crear el VO de RoleTenantUser para poder asignar roles futuros
+        // crear entidad que represente la relacion tenant-owner
+        // persistir la relacion
 
 
         // data json de ejemplo

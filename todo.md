@@ -1,15 +1,8 @@
 <!-- TODO: ver porque carajo las transacciones no funcionan XD -->
-
-
-proceso de regiisto de tenant
-- registrar usuario
-- regristrar tenant
-- crear dominio
-  - validar que el dominio no este en uso
-- asignación de tenant con el propietario
-
-
-- hacer el domain entities
-- hacer los VOs que requiera domain
-- repository de domain
-- validaciones para no tener dominios repetidos
+- enviar datos al backend
+- validar datos del formulario frontend
+- mostrar errores en el formulario o alertas
+- Assign tenant to tenant owner
+- crear el VO de RoleTenantUser
+- crear entidad que represente la relacion tenant-owner
+- persistir la relacion
