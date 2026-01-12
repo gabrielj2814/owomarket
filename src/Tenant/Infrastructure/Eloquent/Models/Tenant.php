@@ -7,10 +7,11 @@ use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends BaseTenant implements TenantWithDatabase
 {
-    use HasDatabase, HasDomains;
+    use HasDatabase, HasDomains, SoftDeletes;
 
     protected $connection = 'central';
 

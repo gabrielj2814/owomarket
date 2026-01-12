@@ -256,6 +256,8 @@ class TenantRepository implements TenantRepositoryInterface {
 
         $model->save();
 
+        $this->tenantUp($tenant->getId());
+
         return $tenant;
     }
 
