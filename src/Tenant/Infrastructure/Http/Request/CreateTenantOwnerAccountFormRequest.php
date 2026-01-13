@@ -73,7 +73,7 @@ class CreateTenantOwnerAccountFormRequest extends FormRequest {
     protected function failedValidation(Validator $validator):JsonResponse
     {
         $errors=$validator->errors();
-        $response=ApiResponse::error("Error",422,$errors);
+        $response=ApiResponse::error("Error al validar los datos",422,$errors);
         throw new HttpResponseException($response);
     }
 

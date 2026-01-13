@@ -1,3 +1,4 @@
+import { FormCreateAccounTenant } from '@/types/FormCreateAccounTenant';
 import Tenant from '@/types/models/Tenant';
 import { ErrorResponse } from '@/types/Response/ErrorResponse';
 import { ApiResponse } from '@/types/ResponseApi';
@@ -82,7 +83,32 @@ const TenantServices = {
         catch(error){
             return error as ApiResponse<void>;
         }
+    },
+
+    createAccountTenant: async (data: FormCreateAccounTenant): Promise<ApiResponse<void, ErrorResponse>> => {
+        try {
+
+            const body={
+                name: data.name,
+                email: data.email,
+                phone: data.phone,
+                password: data.password,
+                confirmPassword: data.confirmPassword,
+                store_name: data.store_name,
+                tenant_name: data.tenant_name
+            }
+
+
+            let respuesta:ApiResponse<void> = await axiosTenant.post(`create/account`, body)
+
+            return respuesta
+
+        } catch (error) {
+            return error as ApiResponse<void>;
+        }
     }
+
+
 
 
 

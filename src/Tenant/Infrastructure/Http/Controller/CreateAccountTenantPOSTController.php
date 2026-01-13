@@ -35,12 +35,6 @@ class CreateAccountTenantPOSTController extends Controller {
 
     public function index(CreateTenantOwnerAccountFormRequest $request ){
 
-        // Assign tenant to tenant owner
-        // crear el VO de RoleTenantUser para poder asignar roles futuros
-        // crear entidad que represente la relacion tenant-owner
-        // persistir la relacion
-
-
         // data json de ejemplo
         // {
         //     "name": "Jaen Doe",
@@ -76,18 +70,13 @@ class CreateAccountTenantPOSTController extends Controller {
             );
 
             return ApiResponse::success(
-                [
-                    'owner'=>$owner,
-                    'tenant'=>$tenant,
-                    'tenant_user'=>$tenantUser
-                ],
+                null,
                 "Cuenta de tenant creada exitosamente",
                 201
             );
         }
         catch (\Exception $e){
             Log::info('Error al crear la cuenta del tenant: '.$e->getMessage());
-
 
             if($owner!==null){
                 $this->deleteTenantOwnerByUuidUseCase->execute($owner->getId()->value());
@@ -103,13 +92,10 @@ class CreateAccountTenantPOSTController extends Controller {
                 $this->deleteTenantUserByUuidUseCase->execute($tenantUser->getId()->value());
             }
 
-
-
-
             return ApiResponse::error(
                 "Error al crear la cuenta del tenant",
                 500,
-                $e->getMessage()
+                [ 'error' => $e->getMessage() ]
             );
         }
 
