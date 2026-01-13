@@ -59,7 +59,7 @@ class CreateAccountTenantPOSTController extends Controller {
             );
 
             $tenant=$this->createTenantUseCase->execute(
-                $data->tenant_name
+                $data->store_name
             );
 
             $tenantUser=$this->assignTenantToUserUseCase->execute(

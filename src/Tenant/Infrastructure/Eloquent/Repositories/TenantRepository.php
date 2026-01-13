@@ -321,8 +321,26 @@ class TenantRepository implements TenantRepositoryInterface {
         ]);
     }
 
+    public function rejectedRequest(Tenant $tenant): Tenant
+    {
+        $tenant->rejectedRequest();
+
+        ModelsTenant::where("id","=",$tenant->getId()->value())
+        ->update(["request" => $tenant->getRequest()->value()]);
+
+        return $tenant;
+    }
+
+    public function approvedRequest(Tenant $tenant): Tenant
+    {
+        $tenant->approvedRequest();
+
+        ModelsTenant::where("id","=",$tenant->getId()->value())
+        ->update(["request" => $tenant->getRequest()->value()]);
+
+        return $tenant;
+    }
+
 
 }
-
-
 ?>

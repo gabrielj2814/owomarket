@@ -489,7 +489,7 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
                     <BreadcrumbItem href={`/admin/backoffice/${user_id}/dashboard`} icon={HiHome}>
                         Home
                     </BreadcrumbItem>
-                    <BreadcrumbItem href={`/tenant/backoffice/${user_id}/module`} >Tenants Suspended</BreadcrumbItem>
+                    <BreadcrumbItem href={`/tenant/backoffice/${user_id}/module/suspended`} >Tenants Suspended</BreadcrumbItem>
                 </Breadcrumb>
 
                 <FiltersModuleTenantSuspendedIndex

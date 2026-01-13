@@ -9,7 +9,7 @@ use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
 use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
-class ViweModuleTenantSuspendedIndexGETController extends Controller {
+class ViewModuleTenantSuspendedIndexGETController extends Controller {
 
 
     public function __construct(

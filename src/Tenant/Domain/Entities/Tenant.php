@@ -177,6 +177,16 @@ class Tenant {
         $this->updatedAt=UpdatedAt::now();
     }
 
+    public function rejectedRequest(){
+        $this->request=TenantRequest::rejected();
+        $this->updatedAt=UpdatedAt::now();
+    }
+
+    public function approvedRequest(){
+        $this->request=TenantRequest::approved();
+        $this->updatedAt=UpdatedAt::now();
+    }
+
 }
 
 

@@ -114,7 +114,7 @@ const NavBarMovilDashboardComponent = () => {
                                         </SidebarItem>
                                         <SidebarCollapse icon={LuStore} label="Tenants">
                                             <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
-                                            <SidebarItem icon={LuUserPlus} href="#">Request</SidebarItem>
+                                            <SidebarItem icon={LuUserPlus} href={`/tenant/backoffice/${state.authUser.user_id}/module/request`}>Request</SidebarItem>
                                             <SidebarItem icon={LuUserRoundSearch} href={`/tenant/backoffice/${state.authUser.user_id}/module/suspended`}>Suspended</SidebarItem>
                                         </SidebarCollapse>
                                         <SidebarItem icon={HiLogout} onClick={logout}>

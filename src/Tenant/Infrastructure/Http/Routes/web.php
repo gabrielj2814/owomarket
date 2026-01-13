@@ -9,7 +9,8 @@ use Src\Tenant\Infrastructure\Http\Controller\InactiveTenantByUuidPATCHControlle
 use Src\Tenant\Infrastructure\Http\Controller\SuspendedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewCreateAccountTenantGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantIndexGETController;
-use Src\Tenant\Infrastructure\Http\Controller\ViweModuleTenantSuspendedIndexGETController;
+use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantRequestIndexGETController;
+use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantSuspendedIndexGETController;
 
 // module tenant
 Route::get('/backoffice/{user_uuid}/module',                       [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware("auth");
@@ -20,7 +21,10 @@ Route::patch('/backoffice/{id}/active',                            [ActiveTenant
 Route::patch('/{id}/inactive',                                     [InactiveTenantByUuidPATCHController::class, 'index'])->middleware("auth");
 
 // module tenant suspended/inactive
-Route::get('/backoffice/{user_uuid}/module/suspended',             [ViweModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware("auth");
+Route::get('/backoffice/{user_uuid}/module/suspended',             [ViewModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware("auth");
+
+// module tenant request
+Route::get('/backoffice/{user_uuid}/module/request',               [ViewModuleTenantRequestIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.request')->middleware("auth");
 
 Route::get('/create/account',                                      [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
 Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);
