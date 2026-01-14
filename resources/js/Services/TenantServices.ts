@@ -85,6 +85,30 @@ const TenantServices = {
         }
     },
 
+    rejected: async (uuid: string): Promise<ApiResponse<void>> => {
+        try{
+
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/rejected`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<void>;
+        }
+    },
+
+    approved: async (uuid: string): Promise<ApiResponse<void>> => {
+        try{
+
+            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/approved`)
+
+            return respuesta
+        }
+        catch(error){
+            return error as ApiResponse<void>;
+        }
+    },
+
     createAccountTenant: async (data: FormCreateAccounTenant): Promise<ApiResponse<void, ErrorResponse>> => {
         try {
 

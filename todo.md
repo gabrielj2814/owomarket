@@ -1,6 +1,9 @@
-<!-- TODO: ver porque carajo las transacciones no funcionan XD -->
-- crear caso de uso para poder rechazar la solicitud
-- crear caso de uso para poder aprobar la solicitud
-- crear modal de confirmación para poder rechazar la solictud
-- crear modal de confirmación para poder aprobar la solictud
-- al rechazar la solicitud hay que borrar el tenant del usuario
+- que el tenant owner pueda hacer login en el login central y mandarlo a su dashboard central
+  - como pantalla principal por ahora sera los estados de sus tenant donde al darle click lo mandara al dashboard principal del tenant
+- login funcional de los tenants (solo si esta aprovado y activo o suspendido) los usuarios inactivos y que no pertenezcan al tenant no pueden entrar y gual con el central
+  - como pantalla principal se mostrar un mensaje de bienvenidad al usuario y ya
+- trabajar en el perfil de usuario
+  - cambiar contraseña
+  - cambiar foto de perfil
+  - cambiar datos personales
+  - dar de baja la cuenta (pasarlo a inactivo)

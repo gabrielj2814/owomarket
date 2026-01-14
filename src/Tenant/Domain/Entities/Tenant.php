@@ -187,6 +187,18 @@ class Tenant {
         $this->updatedAt=UpdatedAt::now();
     }
 
+    public function isInProgressRequest(): bool{
+        return $this->request->equals(TenantRequest::inProgress());
+    }
+
+    public function isApprovedRequest(): bool{
+        return $this->request->equals(TenantRequest::approved());
+    }
+
+    public function isRejectedRequest(): bool{
+        return $this->request->equals(TenantRequest::rejected());
+    }
+
 }
 
 

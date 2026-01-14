@@ -2,10 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Src\Tenant\Infrastructure\Http\Controller\ActiveTenantByUuidPATCHController;
+use Src\Tenant\Infrastructure\Http\Controller\ApprovedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidGETController;
 use Src\Tenant\Infrastructure\Http\Controller\CreateAccountTenantPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\FiltrarTenantsPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\InactiveTenantByUuidPATCHController;
+use Src\Tenant\Infrastructure\Http\Controller\RejectedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\SuspendedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewCreateAccountTenantGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantIndexGETController;
@@ -18,13 +20,15 @@ Route::post('/backoffice/filter',                                  [FiltrarTenan
 Route::get('/backoffice/{id}',                                     [ConsultTenantByUuidGETController::class, 'index'])->middleware("auth");
 Route::patch('/backoffice/{id}/suspended',                         [SuspendedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
 Route::patch('/backoffice/{id}/active',                            [ActiveTenantByUuidPATCHController::class, 'index'])->middleware("auth");
-Route::patch('/{id}/inactive',                                     [InactiveTenantByUuidPATCHController::class, 'index'])->middleware("auth");
+Route::patch('/backoffice/{id}/inactive',                          [InactiveTenantByUuidPATCHController::class, 'index'])->middleware("auth");
 
 // module tenant suspended/inactive
 Route::get('/backoffice/{user_uuid}/module/suspended',             [ViewModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware("auth");
 
 // module tenant request
 Route::get('/backoffice/{user_uuid}/module/request',               [ViewModuleTenantRequestIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.request')->middleware("auth");
+Route::patch('/backoffice/{id}/rejected',                          [RejectedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
+Route::patch('/backoffice/{id}/approved',                          [ApprovedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
 
 Route::get('/create/account',                                      [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
 Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);

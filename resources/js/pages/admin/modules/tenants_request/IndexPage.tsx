@@ -19,7 +19,7 @@ import TableComponent from "@/components/ui/TableComponent";
 import PaginationNavigationCustom from "@/components/ui/PaginationNavigationCustom";
 import ModalDetails from "@/components/ui/ModalDetails";
 import { TenantOwner } from "@/types/models/TenantOwner";
-import { LuArchive, LuArchiveRestore, LuCheck, LuDatabase, LuEye } from "react-icons/lu";
+import { LuArchive, LuCheck, LuDatabase, LuEye, LuX } from "react-icons/lu";
 import ModalAlertConfirmation from "@/components/ui/ModalAlertConfirmation";
 
 interface IndexPageProps {
@@ -44,7 +44,8 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
     const [cargaInicialCompleta, setCargaInicialCompleta] = useState<boolean>(false);
     const [stateLodaer, setStateLodaer] = useState<boolean>(false);
     const [statusModalDetails, setStatusModalDetails] = useState<boolean>(false);
-    const [stateModalConfirmatedSuspended, setStateModalConfirmatedSuspended] = useState<boolean>(false);
+    const [stateModalConfirmatedRejected, setStateModalConfirmatedRejected] = useState<boolean>(false);
+    const [stateModalConfirmatedApproved, setStateModalConfirmatedApproved] = useState<boolean>(false);
     const [uuidTenant, setUuidTenant] = useState<string>("");
 
     const [mapToast, setMapToast] = useState<Map<string, ToastInterface>>(new Map<string, ToastInterface>())
@@ -233,7 +234,10 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                         {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                     </TableCell>
                     <TableCell>
-                        <Button color="red" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
+                        <Button color="green" title="approved" onClick={() => mostrarModalConfirmatedApproved(item.id)}>  <LuCheck className=" w-5 h-5" />  </Button>
+                    </TableCell>
+                    <TableCell>
+                        <Button color="red" title="rejected" onClick={() => mostrarModalConfirmatedRejected(item.id)}>  <LuX className=" w-5 h-5" />  </Button>
                     </TableCell>
                 </TableRow>
             )
@@ -270,7 +274,10 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                             <Button title="See" className="w-full" onClick={() => openModalDetails(item.id)}>  <LuEye className=" w-5 h-5" />  </Button>
                         </div>
                         <div className=" basis-full">
-                            <Button color="red" className="w-full" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchive className=" w-5 h-5" />  </Button>
+                            <Button color="green" className="w-full" title="approved" onClick={() => mostrarModalConfirmatedApproved(item.id)}>  <LuArchive className=" w-5 h-5" />  </Button>
+                        </div>
+                        <div className=" basis-full">
+                            <Button color="red" className="w-full" title="rejected" onClick={() => mostrarModalConfirmatedRejected(item.id)}>  <LuArchive className=" w-5 h-5" />  </Button>
                         </div>
                     </div>
 
@@ -289,6 +296,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 <TableHeadCell>Currency</TableHeadCell>
                 <TableHeadCell>Timezone</TableHeadCell>
                 <TableHeadCell>Created At</TableHeadCell>
+                <TableHeadCell></TableHeadCell>
                 <TableHeadCell></TableHeadCell>
             </TableRow>
         </TableHead>
@@ -365,16 +373,20 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         </TableHead>
     )
 
-    const onCloseModalConfirmatedSuspended = () => {
-        setStateModalConfirmatedSuspended(false)
+    const onCloseModalConfirmatedRejected = () => {
+        setStateModalConfirmatedRejected(false)
     }
 
-    const onSuspended = async () => {
+    const onCloseModalConfirmatedApproved = () => {
+        setStateModalConfirmatedApproved(false)
+    }
+
+    const onRejected = async () => {
         setStateLodaer(true)
 
         const uuid: string = uuidTenant
 
-        const apiResponse = await TenantServices.suspended(uuid)
+        const apiResponse = await TenantServices.rejected(uuid)
 
         if (apiResponse.status != 200) {
             createToast("failure", "Error", apiResponse.response?.data.message, <HiHome />)
@@ -383,15 +395,40 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
 
 
         setStateLodaer(false)
-        setStateModalConfirmatedSuspended(false)
-        createToast("success", "OK", "Suspended Completed", <LuCheck />)
+        setStateModalConfirmatedRejected(false)
+        createToast("success", "OK", "Rejected Completed", <LuCheck />)
         await actualizarTabla();
 
     }
 
-    const mostrarModalConfirmatedSuspended = (uuid: string) => {
+    const onApproved = async () => {
+        setStateLodaer(true)
+
+        const uuid: string = uuidTenant
+
+        const apiResponse = await TenantServices.approved(uuid)
+
+        if (apiResponse.status != 200) {
+            createToast("failure", "Error", apiResponse.response?.data.message, <HiHome />)
+            return
+        }
+
+
+        setStateLodaer(false)
+        setStateModalConfirmatedApproved(false)
+        createToast("success", "OK", "Approved Completed", <LuCheck />)
+        await actualizarTabla();
+
+    }
+
+    const mostrarModalConfirmatedRejected = (uuid: string) => {
         setUuidTenant(uuid);
-        setStateModalConfirmatedSuspended(true)
+        setStateModalConfirmatedRejected(true)
+    }
+
+    const mostrarModalConfirmatedApproved = (uuid: string) => {
+        setUuidTenant(uuid);
+        setStateModalConfirmatedApproved(true)
     }
 
 
@@ -405,16 +442,29 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
             <HeaderToasts list={Array.from(mapToast.values())}/>
 
             <ModalAlertConfirmation
-            openModal={stateModalConfirmatedSuspended}
+            openModal={stateModalConfirmatedRejected}
             size="md"
-            icon={<LuArchive className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
-            text="Are you sure you want to delete?"
+            icon={<LuCheck className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to rejected?"
             buttonTextCancel="No, I want cancel"
-            buttonTextAction="yes, I want suspended"
-            onClose={onCloseModalConfirmatedSuspended}
-            onClickAction={onSuspended}
+            buttonTextAction="yes, I want rejected"
+            onClose={onCloseModalConfirmatedRejected}
+            onClickAction={onRejected}
             colorButtonCancel="alternative"
             colorButtonAction="red"
+            />
+
+            <ModalAlertConfirmation
+            openModal={stateModalConfirmatedApproved}
+            size="md"
+            icon={<LuCheck className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200"  />}
+            text="Are you sure you want to approved?"
+            buttonTextCancel="No, I want cancel"
+            buttonTextAction="yes, I want approved"
+            onClose={onCloseModalConfirmatedApproved}
+            onClickAction={onApproved}
+            colorButtonCancel="alternative"
+            colorButtonAction="green"
             />
 
             <ModalDetails title="Tenant Details" size="2xl"  onClose={setStatusModalDetails} openModal={statusModalDetails} >
@@ -443,7 +493,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
 
 
                 <div className={`overflow-scroll overflow-x-hidden overflow-y-auto`} style={{ height: "calc(100vh - 400px)" }}>
-                    <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={6} />
+                    <TableComponent className="hidden lg:block" TableHead={TableHeaders} TableContent={tableRowContent} colSpan={7} />
                     <div className="block lg:hidden">
                         {movilRowContent}
                     </div>

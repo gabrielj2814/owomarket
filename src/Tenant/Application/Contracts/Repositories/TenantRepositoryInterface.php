@@ -36,9 +36,9 @@ interface TenantRepositoryInterface {
 
     public function deleteForceTenant(Uuid $id): bool;
 
-    public function rejectedRequest(Tenant $tenant): Tenant;
+    public function changedRequestStatus(Tenant $tenant): Tenant;
 
-    public function approvedRequest(Tenant $tenant): Tenant;
+
 
 
 }
