@@ -27,7 +27,7 @@ const SidebarDashboardComponent = () => {
   return (
       <Sidebar aria-label="Default sidebar example" className="hidden lg:block">
         {/* rutas admin */}
-        { state.authUser.user_type == "admin" &&
+        { state.authUser.user_type == "super_admin" &&
             <>
                 <SidebarItems>
                     <SidebarItemGroup>

@@ -102,7 +102,7 @@ const NavBarMovilDashboardComponent = () => {
                                     <TextInput icon={HiSearch} type="search" placeholder="Search" required size={32} />
                                 </form>
                                     {/* rutas admin */}
-                                    { state.authUser.user_type == "admin" &&
+                                    { state.authUser.user_type == "super_admin" &&
                                         <>
                                             <SidebarItems>
                                                 <SidebarItemGroup>
