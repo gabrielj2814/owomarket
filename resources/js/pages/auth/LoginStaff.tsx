@@ -134,11 +134,12 @@ const LoginStaff = () => {
 
     const irHaPorElRol = (rol:string,uuid:string) => {
         const BACKOFICCE_ADMIN_DASHBOARD = `/admin/backoffice/${uuid}/dashboard`;
+        const BACKOFICCE_TENANT_OWNER_DASHBOARD = `/tenant/owner/backoffice/${uuid}/dashboard`;
         if(rol === 'super_admin'){
             window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
         }
         if(rol === 'tenant_owner'){
-            window.location.href = '/auth/pagina-inicial';
+            window.location.href = BACKOFICCE_TENANT_OWNER_DASHBOARD;
         }
         if(rol === 'customer'){
             window.location.href = '/';

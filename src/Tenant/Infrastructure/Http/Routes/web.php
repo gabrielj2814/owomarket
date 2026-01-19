@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Pest\Support\View;
 use Src\Tenant\Infrastructure\Http\Controller\ActiveTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ApprovedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidGETController;
@@ -10,6 +11,7 @@ use Src\Tenant\Infrastructure\Http\Controller\InactiveTenantByUuidPATCHControlle
 use Src\Tenant\Infrastructure\Http\Controller\RejectedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\SuspendedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewCreateAccountTenantGETController;
+use Src\Tenant\Infrastructure\Http\Controller\ViewDashboardCentralTenantOwnerIndexGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantIndexGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantRequestIndexGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantSuspendedIndexGETController;
@@ -32,5 +34,13 @@ Route::patch('/backoffice/{id}/approved',                          [ApprovedTena
 
 Route::get('/create/account',                                      [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
 Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);
+
+
+// Rutas del Tenant Owner Central
+Route::get('/owner/backoffice/{user_uuid}/dashboard',              [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware("auth");
+
+// Rutas del Tenant Staff Central
+// Route::get('/staff/backoffice/{user_uuid}/dashboard',                       [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware("auth");
+
 
 ?>

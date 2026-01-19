@@ -3,7 +3,9 @@
 - login funcional de los tenants (solo si esta aprovado y activo o suspendido) los usuarios inactivos y que no pertenezcan al tenant no pueden entrar y gual con el central
   - como pantalla principal se mostrar un mensaje de bienvenidad al usuario y ya
 - trabajar en el perfil de usuario
-  - cambiar contraseña
-  - cambiar foto de perfil
-  - cambiar datos personales
-  - dar de baja la cuenta (pasarlo a inactivo)
+  - cambiar foto de perfil (hacer de ultimo)
+  - cambiar datos personales (1)
+    - nombre
+    - telefono
+  - cambiar contraseña (2)
+  - dar de baja la cuenta (pasarlo a inactivo) (3)

@@ -33,7 +33,7 @@ class LoginWebPOSTController extends Controller{
         $usuario=$consultaUsuarioApiPorEmail->execute($email);
 
         if(!$usuario){
-            return ApiResponse::error(message: 'El usuario no econtrado', code:401);
+            return ApiResponse::error(message: 'El usuario no encontrado', code:401);
         }
 
         $success=$this->login_web_user_use_case->execute(

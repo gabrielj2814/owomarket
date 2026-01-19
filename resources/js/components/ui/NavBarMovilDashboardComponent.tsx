@@ -101,34 +101,58 @@ const NavBarMovilDashboardComponent = () => {
                                 <form className="pb-3 md:hidden">
                                     <TextInput icon={HiSearch} type="search" placeholder="Search" required size={32} />
                                 </form>
-                                <SidebarItems>
-                                    <SidebarItemGroup>
-                                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
-                                            Dashboard
-                                        </SidebarItem>
-                                        <SidebarItem href="#" icon={HiUser}>
-                                            My Perfil
-                                        </SidebarItem>
-                                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers}>
-                                            Admins
-                                        </SidebarItem>
-                                        <SidebarCollapse icon={LuStore} label="Tenants">
-                                            <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
-                                            <SidebarItem icon={LuUserPlus} href={`/tenant/backoffice/${state.authUser.user_id}/module/request`}>Request</SidebarItem>
-                                            <SidebarItem icon={LuUserRoundSearch} href={`/tenant/backoffice/${state.authUser.user_id}/module/suspended`}>Suspended</SidebarItem>
-                                        </SidebarCollapse>
-                                        <SidebarItem icon={HiLogout} onClick={logout}>
-                                            Log Out
-                                        </SidebarItem>
-                                    </SidebarItemGroup>
-                                    <SidebarItemGroup>
-                                        {/* condiguración global del markeplace  */}
-                                        {/* categorias y etc.., */}
-                                        <SidebarItem icon={TbBuildingStore}>
-                                            Settings Marketplace
-                                        </SidebarItem>
-                                    </SidebarItemGroup>
-                                </SidebarItems>
+                                    {/* rutas admin */}
+                                    { state.authUser.user_type == "admin" &&
+                                        <>
+                                            <SidebarItems>
+                                                <SidebarItemGroup>
+
+                                                    <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
+                                                        Dashboard
+                                                    </SidebarItem>
+                                                    <SidebarItem href="#" icon={HiUser}>
+                                                        My Perfil
+                                                    </SidebarItem>
+                                                    <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers}>
+                                                        Admins
+                                                    </SidebarItem>
+                                                    <SidebarCollapse icon={LuStore} label="Tenants">
+                                                        <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>Tenants</SidebarItem>
+                                                        <SidebarItem icon={LuUserPlus} href={`/tenant/backoffice/${state.authUser.user_id}/module/request`}>Request</SidebarItem>
+                                                        <SidebarItem icon={LuUserRoundSearch} href={`/tenant/backoffice/${state.authUser.user_id}/module/suspended`}>Suspended</SidebarItem>
+                                                    </SidebarCollapse>
+                                                    <SidebarItem icon={HiLogout} onClick={logout}>
+                                                        Log Out
+                                                    </SidebarItem>
+                                                </SidebarItemGroup>
+                                                <SidebarItemGroup>
+                                                    {/* condiguración global del markeplace  */}
+                                                    {/* categorias y etc.., */}
+                                                    <SidebarItem icon={TbBuildingStore}>
+                                                        Settings Marketplace
+                                                    </SidebarItem>
+                                                </SidebarItemGroup>
+                                            </SidebarItems>
+                                        </>
+                                    }
+                                    {/* rutas tenant owner central */}
+                                     { state.authUser.user_type == "tenant_owner" &&
+                                        <>
+                                            <SidebarItems>
+                                                <SidebarItemGroup>
+                                                    <SidebarItem href={`/tenant/owner/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
+                                                        Dashboard
+                                                    </SidebarItem>
+                                                    <SidebarItem href="#" icon={HiUser}>
+                                                        My Perfil
+                                                    </SidebarItem>
+                                                    <SidebarItem icon={HiLogout} onClick={logout}>
+                                                        Log Out
+                                                    </SidebarItem>
+                                                </SidebarItemGroup>
+                                            </SidebarItems>
+                                        </>
+                                    }
                             </div>
                         </div>
                     </Sidebar>
