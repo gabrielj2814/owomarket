@@ -14,6 +14,10 @@ interface TenantOwnerRepositoryInterface {
 
     public function deleteForceTenantOwner(Uuid $id): bool;
 
+    public function consultTenantOwnerByUuid(Uuid $id): TenantOwner;
+
+    public function updatePersonalData(TenantOwner $tenantOwner) :TenantOwner;
+
 }
 
 

@@ -3,6 +3,7 @@
 namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\ValuesObjects\CreatedAt;
+use Src\Shared\ValuesObjects\SoftDeleteAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
 use Src\Tenant\Domain\ValuesObjects\EmailVerifiedAt;
@@ -28,6 +29,7 @@ class TenantOwner {
     private UserStatus          $isActive;
     private ?CreatedAt          $createdAt;
     private ?UpdatedAt          $updatedAt;
+    private ?SoftDeleteAt       $softDeleteAt;
     // Constructor privado
     private function __construct(
         ?Uuid               $id,
@@ -42,6 +44,7 @@ class TenantOwner {
         UserStatus          $isActive,
         ?CreatedAt          $createdAt,
         ?UpdatedAt          $updatedAt,
+        ?SoftDeleteAt       $softDeleteAt
         ) {
         $this->id                = $id;
         $this->name              = $name;
@@ -55,6 +58,7 @@ class TenantOwner {
         $this->isActive          = $isActive;
         $this->createdAt         = $createdAt;
         $this->updatedAt         = $updatedAt;
+        $this->softDeleteAt      = $softDeleteAt;
     }
 
     // Factory method - genera su propio ID
@@ -82,6 +86,7 @@ class TenantOwner {
             $isActive,
             CreatedAt::now(),
             UpdatedAt::now(),
+            null,
         );
     }
 
@@ -99,6 +104,7 @@ class TenantOwner {
         UserStatus          $isActive,
         CreatedAt           $createdAt,
         UpdatedAt           $updatedAt,
+        ?SoftDeleteAt       $softDeleteAt
         ): self {
         // return new self($id, $email, $createdAt);
         return new self(
@@ -114,6 +120,7 @@ class TenantOwner {
             $isActive,
             $createdAt,
             $updatedAt,
+            $softDeleteAt
         );
     }
 
@@ -151,6 +158,10 @@ class TenantOwner {
 
     public function getUpdatedAt(): ?UpdatedAt {
         return $this->updatedAt;
+    }
+
+    public function getSoftDeleteAt(): ?SoftDeleteAt {
+        return $this->softDeleteAt;
     }
 
 
@@ -193,6 +204,12 @@ class TenantOwner {
     public function deactivate(): void {
         $this->isActive = UserStatus::inactive();
         $this->updatedAt = UpdatedAt::now();
+    }
+
+    public function updatePersonalData(UserName $name, PhoneNumber $phone){
+        $this->name= $name;
+        $this->phone= $phone;
+        $this->updatedAt=$this->updatedAt->now();
     }
 
 

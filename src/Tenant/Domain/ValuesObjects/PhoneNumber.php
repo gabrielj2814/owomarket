@@ -15,18 +15,18 @@ final class PhoneNumber extends StringValueObject
     protected function validate(string $value): void
     {
         if (empty(trim($value))) {
-            throw new InvalidArgumentException("El número de teléfono no puede estar vacío");
+            throw new InvalidArgumentException("El número de teléfono no puede estar vacío",400);
         }
 
         // Limpiar y validar formato internacional
         $cleaned = preg_replace('/\D/', '', $value);
 
         if (strlen($cleaned) < 10) {
-            throw new InvalidArgumentException("El número de teléfono debe tener al menos 10 dígitos");
+            throw new InvalidArgumentException("El número de teléfono debe tener al menos 10 dígitos",400);
         }
 
         if (strlen($cleaned) > 15) {
-            throw new InvalidArgumentException("El número de teléfono no puede exceder 15 dígitos");
+            throw new InvalidArgumentException("El número de teléfono no puede exceder 15 dígitos",400);
         }
     }
 
