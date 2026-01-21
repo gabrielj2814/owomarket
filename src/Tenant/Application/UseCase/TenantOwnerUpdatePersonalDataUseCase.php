@@ -8,7 +8,7 @@ use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
 use Src\Tenant\Domain\ValuesObjects\UserName;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
-class UpdatePersonalDataUseCase {
+class TenantOwnerUpdatePersonalDataUseCase {
 
 
 

@@ -7,14 +7,14 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Src\Shared\Helper\ApiResponse;
-use Src\Tenant\Application\UseCase\UpdatePersonalDataUseCase;
+use Src\Tenant\Application\UseCase\TenantOwnerUpdatePersonalDataUseCase;
 use Src\Tenant\Infrastructure\Http\Request\UpdatePersonalDataFormRequest;
 
-class TenantUpdatePersonalDataPUTController extends Controller{
+class TenantOwnerUpdatePersonalDataPUTController extends Controller{
 
 
     public function __construct(
-        protected UpdatePersonalDataUseCase $update_personal_data_use_case,
+        protected TenantOwnerUpdatePersonalDataUseCase $update_personal_data_use_case,
     ){}
 
 

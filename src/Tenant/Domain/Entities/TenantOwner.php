@@ -212,6 +212,10 @@ class TenantOwner {
         $this->updatedAt=$this->updatedAt->now();
     }
 
+    public function setPassword(Password $password): void {
+        $this->password= $password;
+    }
+
 
 
 

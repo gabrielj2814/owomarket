@@ -3,11 +3,13 @@
 use Illuminate\Support\Facades\Route;
 use Src\Tenant\Infrastructure\Http\Controller\CreateAccountTenantPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\FiltrarTenantsPOSTController;
-use Src\Tenant\Infrastructure\Http\Controller\TenantUpdatePersonalDataPUTController;
+use Src\Tenant\Infrastructure\Http\Controller\TenantOwnerUpdatePasswordPUTController;
+use Src\Tenant\Infrastructure\Http\Controller\TenantOwnerUpdatePersonalDataPUTController;
 
 // Route::post('filtrar',                                   [FiltrarTenantsPOSTController::class, 'index']);
 Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);
-Route::put('/owner/update/personal-data/{id}',                     [TenantUpdatePersonalDataPUTController::class, 'index']);
+Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
+Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
 
 
 ?>

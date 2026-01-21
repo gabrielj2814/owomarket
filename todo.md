@@ -2,7 +2,6 @@
   - como pantalla principal se mostrar un mensaje de bienvenidad al usuario y ya
 - trabajar en el perfil de usuario
   - cambiar foto de perfil (hacer de ultimo)
-  - cambiar contraseña (2)
   - dar de baja la cuenta (pasarlo a inactivo) (3)
   - interfaz (4)
     - datos personales

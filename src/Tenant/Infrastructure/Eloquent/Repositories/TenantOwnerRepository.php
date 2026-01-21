@@ -9,6 +9,7 @@ use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
+use Src\Tenant\Domain\ValuesObjects\Password;
 use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
 use Src\Tenant\Domain\ValuesObjects\UserEmail;
 use Src\Tenant\Domain\ValuesObjects\UserName;
@@ -72,7 +73,7 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
         $createdAt=CreatedAt::fromString($record->created_at);
         $updatedAt=UpdatedAt::fromString($record->updated_at);
         $softDeleteAt=($record->deleted_at!=null)?SoftDeleteAt::fromString($record->deleted_at):null;
-        $password=null;
+        $password=Password::fromHash($record->password);
         $emailVerifiedAt=null;
         $pin=null;
 
@@ -101,6 +102,17 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
 
         $record->name=$tenantOwner->getName()->value();
         $record->phone=$tenantOwner->getPhone()->value();
+
+        $record->save();
+
+        return $tenantOwner;
+    }
+
+    public function updatePassword(TenantOwner $tenantOwner): TenantOwner {
+
+        $record= TenantOwnerModel::where('id',$tenantOwner->getId()->value())->where("type","=",UserType::TENANT_OWNER)->first();
+
+        $record->password=$tenantOwner->getPassword()->getHash();
 
         $record->save();
 
