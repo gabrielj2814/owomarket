@@ -11,6 +11,9 @@ class TenantUser extends Model
 
     protected $connection = 'central';
     protected $table = 'tenant_users';
+    public $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = "string";
 
     protected $guarded = [];
 

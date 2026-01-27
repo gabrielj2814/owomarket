@@ -10,7 +10,11 @@ interface TenantUserRepositoryInterface {
 
 
     public function assignTenantToUser(TenantUser $tenantUser): TenantUser;
+
     public function consultTenantUsersByUuid(Uuid $id): ?TenantUser;
+
+    public function consultTenantUsersByUuidTenantOwner(Uuid $id): ?TenantUser;
+
     public function deleteTenantUserByUuid(Uuid $id): bool;
 
 

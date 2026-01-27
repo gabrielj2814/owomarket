@@ -14,6 +14,9 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     use HasDatabase, HasDomains, SoftDeletes;
 
     protected $connection = 'central';
+    public $primaryKey = 'id';
+    public $incrementing = false;
+    protected $keyType = "string";
 
     public function users(): BelongsToMany
     {

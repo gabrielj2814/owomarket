@@ -27,6 +27,7 @@ class TenantDefaultUsersSeeder extends Seeder
         $owners = [
             'tecs'              => 'Kō Yamori',
             'chivostore'        => 'Kyouko Mejiro',
+            // '7-leven'           => 'Kyouko Mejiro',
             'tecno_isekaic'     => 'Nazuna Nanakusa',
             'tematicosvzla'     => 'arturia',
             'cosplay_'          => 'modred',

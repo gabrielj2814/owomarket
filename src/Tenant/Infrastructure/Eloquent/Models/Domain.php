@@ -7,8 +7,9 @@ use Stancl\Tenancy\Database\Models\Domain as ModelsDomain;
 class Domain extends ModelsDomain {
 
     protected $connection = 'central';
+    public $primaryKey = 'id';
     public $incrementing = false;
-    protected $ketType = "string";
+    protected $keyType = "string";
 
     public function tenant()
     {

@@ -54,6 +54,28 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
         return true;
     }
 
+    public function consultTenantUsersByUuidTenantOwner(Uuid $id): ?TenantUser
+    {
+        $record = ModelsTenantUser::where('user_id', $id->value())->first();
+        if (!$record) {
+            return null;
+        }
+        // dump('id en repo '.$id->value());
+        // dump($record);
+        // dump($record->id);
+        // dd($record->id);
+
+        return TenantUser::reconstitute(
+            Uuid::make($record->id),
+            Uuid::make($record->tenant_id),
+            Uuid::make($record->user_id),
+            RoleTenantUser::make($record->role),
+            $record->permissions,
+            CreatedAt::fromString($record->created_at),
+            $record->updated_at ? UpdatedAt::fromString($record->updated_at) : null
+        );
+    }
+
 
 }
 

@@ -156,6 +156,7 @@ class TenantRepository implements TenantRepositoryInterface {
 
             $create_at = CreatedAt::fromString($modelOwner->created_at);
             $update_at = UpdatedAt::fromString($modelOwner->updated_at);
+            $softDelete = ($modelOwner->deleted_at!=null)?SoftDeleteAt::fromString($modelOwner->deleted_at):null;
 
             $password = null; // No se recupera la contraseña por seguridad
             $emailVerifiedAt = null;
@@ -173,7 +174,8 @@ class TenantRepository implements TenantRepositoryInterface {
                 $avatar,
                 $state,
                 $create_at,
-                $update_at
+                $update_at,
+                $softDelete
             );
         });
 
@@ -327,6 +329,60 @@ class TenantRepository implements TenantRepositoryInterface {
         ->update(["request" => $tenant->getRequest()->value()]);
 
         return $tenant;
+    }
+
+    public function consultTenantsByIdOwner(Uuid $uuid, int $prePage=50): Pagination {
+
+        $consulta= ModelsTenant::whereHas('users', function ($query) use ($uuid) {
+            $query->where('tenant_users.user_id', $uuid->value())
+                  ->where('tenant_users.role', 'owner');
+        });
+
+        $respuesta=$consulta->paginate(50);
+
+        $items=$respuesta->items();
+
+        $tenants = collect($items)->map(function ($model) {
+            $id          = Uuid::make($model->id);
+            $name        = TenantName::make($model->name);
+            $slug        = Slug::make($model->slug);
+            $status      = TenantStatus::make($model->status);
+            $timezone    = Timezone::make($model->timezone);
+            $currency    = Currency::make($model->currency);
+            $request     = TenantRequest::make($model->request);
+            $created_at  = CreatedAt::fromString($model->created_at);
+            $updated_at  = UpdatedAt::fromString($model->updated_at);
+            $deleted_at  = SoftDeleteAt::fromString($model->deleted_at);
+
+            $tenant= Tenant::reconstitute(
+            $id,
+                $name,
+                $slug,
+                $status,
+                $timezone,
+                $currency,
+                $request,
+                $created_at,
+                $updated_at,
+                $deleted_at,
+            );
+
+            return $tenant;
+        });
+
+        // 3. Usamos nuestra Collection del dominio
+        $domainCollection = new Collection($tenants->all());
+
+        // 4. Devolvemos nuestro objeto de dominio
+        return new Pagination(
+            $domainCollection,
+            $respuesta->total(),
+            $respuesta->perPage(),
+            $respuesta->currentPage(),
+            $respuesta->lastPage()
+        );
+
+
     }
 
 

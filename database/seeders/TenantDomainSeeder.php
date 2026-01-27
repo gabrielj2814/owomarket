@@ -22,6 +22,7 @@ class TenantDomainSeeder extends Seeder
             'darker',
             'montcord_sc',
             'baymax',
+            // '7-leven',
         ];
 
         $centralDomains = config('tenancy.central_domains', []);
