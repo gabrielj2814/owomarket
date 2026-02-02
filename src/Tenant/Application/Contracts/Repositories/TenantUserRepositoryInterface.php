@@ -13,7 +13,9 @@ interface TenantUserRepositoryInterface {
 
     public function consultTenantUsersByUuid(Uuid $id): ?TenantUser;
 
-    public function consultTenantUsersByUuidTenantOwner(Uuid $id): ?TenantUser;
+    public function consultTenantUsersByUuidTenant(Uuid $id): ?TenantUser;
+
+    public function consultTenantsUserByUuidTenantOwner(Uuid $id): ?array;
 
     public function deleteTenantUserByUuid(Uuid $id): bool;
 

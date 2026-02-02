@@ -20,10 +20,7 @@ baja prioridad
     - dar de baja
 
 
-validaciones
-validar que el numero de telefono no este en uso
+validaciones:
+- validar que el numero de telefono no este en uso
+- validar si el token que me estan pasando por web si no esta caducado
 
-- crear casos de uso
-- crear tenant (crear form request y data)
-- eliminar tenant (agregar validacion que solo puede borrar los tenant que le pertenece al owner)
-- agregar que cuando el owner se de de baja eliminar todos los tenants y validar que los tenant le pertenescan a el

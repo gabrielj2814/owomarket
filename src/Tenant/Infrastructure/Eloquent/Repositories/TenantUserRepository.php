@@ -54,16 +54,37 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
         return true;
     }
 
-    public function consultTenantUsersByUuidTenantOwner(Uuid $id): ?TenantUser
+    public function consultTenantsUserByUuidTenantOwner(Uuid $id): ? array
     {
-        $record = ModelsTenantUser::where('user_id', $id->value())->first();
+
+        $tenantsUsers = [];
+
+        $records = ModelsTenantUser::where('user_id', $id->value())->get();
+        if ($records->count()==0) {
+            return null;
+        }
+
+        for ($index=0; $index < $records->count(); $index++) {
+            $record = $records[$index];
+            $tenantsUsers[] = TenantUser::reconstitute(
+                Uuid::make($record->id),
+                Uuid::make($record->tenant_id),
+                Uuid::make($record->user_id),
+                RoleTenantUser::make($record->role),
+                $record->permissions,
+                CreatedAt::fromString($record->created_at),
+                $record->updated_at ? UpdatedAt::fromString($record->updated_at) : null
+            );
+        }
+
+        return $tenantsUsers;
+    }
+
+    public function consultTenantUsersByUuidTenant(Uuid $id): ? TenantUser {
+        $record = ModelsTenantUser::where('tenant_id', $id->value())->first();
         if (!$record) {
             return null;
         }
-        // dump('id en repo '.$id->value());
-        // dump($record);
-        // dump($record->id);
-        // dd($record->id);
 
         return TenantUser::reconstitute(
             Uuid::make($record->id),

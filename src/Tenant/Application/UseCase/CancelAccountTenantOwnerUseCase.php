@@ -27,17 +27,18 @@ class CancelAccountTenantOwnerUseCase {
         // $tenantOwner=$this->tenant_owner_repository_interface->consultTenantOwnerByUuid($id);
         // $tenant=$this->tenant_repository_interface->consultTenantById($tenanUser->getTenantId());
 
-        $tenanUser=$this->tenant_user_repository_interface->consultTenantUsersByUuidTenantOwner($id);
-        if(!$tenanUser){
+        $tenanUsers=$this->tenant_user_repository_interface->consultTenantsUserByUuidTenantOwner($id);
+        if(!$tenanUsers){
             throw new Exception('Tenant User not found',404);
         }
-        // dd('stop');
 
-        $this->tenant_repository_interface->deleteTenant($tenanUser->getTenantId());
-        // $this->tenant_repository_interface->deleteForceTenant($tenanUser->getTenantId());
+        foreach ($tenanUsers as $tenanUser) {
+            $this->tenant_repository_interface->deleteTenant($tenanUser->getTenantId());
+            // $this->tenant_repository_interface->deleteForceTenant($tenanUser->getTenantId());
 
-        $this->tenant_owner_repository_interface->deleteTenantOwner($tenanUser->getUserId());
-        // $this->tenant_owner_repository_interface->deleteForceTenantOwner($tenanUser->getUserId());
+            $this->tenant_owner_repository_interface->deleteTenantOwner($tenanUser->getUserId());
+            // $this->tenant_owner_repository_interface->deleteForceTenantOwner($tenanUser->getUserId());
+        }
 
     }
 

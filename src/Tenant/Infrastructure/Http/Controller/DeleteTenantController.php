@@ -19,8 +19,9 @@ class DeleteTenantController extends Controller {
     public function index(Request $request): JsonResponse{
         try {
             //code...
-            $id= $request->id;
-            $this->delete_tenant_by_uuid_use_case->execute($id);
+            $idTenant= $request->idTenant;
+            $idTenantOwner= $request->idTenantOwner; // id del owner hay que obtenerlo de la sesion del usuario autenticado
+            $this->delete_tenant_by_uuid_use_case->execute($idTenant, $idTenantOwner);
             return ApiResponse::success(message: 'Tenant deleted successfully', code: 200);
 
         } catch (\Throwable $th) {

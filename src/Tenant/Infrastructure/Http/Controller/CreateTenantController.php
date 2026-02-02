@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\CreateTenantUseCase;
 use Src\Tenant\Application\UseCase\CreateTenantUserUseCase;
+use Src\Tenant\Infrastructure\Http\Request\CreateTenantFormRequest;
 
 class CreateTenantController extends Controller {
 
@@ -19,7 +20,7 @@ class CreateTenantController extends Controller {
         protected CreateTenantUserUseCase $create_tenant_user_use_case
     ){}
 
-    public function index(Request $request): JsonResponse{
+    public function index(CreateTenantFormRequest $request): JsonResponse{
 
         try {
             //code...
