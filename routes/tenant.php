@@ -36,5 +36,6 @@ Route::middleware([
     // Route::get("auth/login-staff", [AuthController::class, 'LoginStaffScreen'])->name('tenant.auth.web.login-staff');
 
     Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/tenant.php"));
+    Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/tenant.php"));
 
 });

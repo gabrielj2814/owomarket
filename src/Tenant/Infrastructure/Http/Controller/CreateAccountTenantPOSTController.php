@@ -78,14 +78,14 @@ class CreateAccountTenantPOSTController extends Controller {
         catch (\Exception $e){
             Log::info('Error al crear la cuenta del tenant: '.$e->getMessage());
 
-            if($owner!==null){
-                $this->deleteTenantOwnerByUuidUseCase->execute($owner->getId()->value());
-                $this->forceDeletedTenantOwnerByUuidUseCase->execute($owner->getId()->value());
+             if($tenant!==null){
+                $this->deleteTenantByUuidUseCase->execute($tenant->getId()->value(),$owner->getId()->value());
+                // $this->forceDeletedTenantByUuidUseCase->execute($tenant->getId()->value());
             }
 
-            if($tenant!==null){
-                $this->deleteTenantByUuidUseCase->execute($tenant->getId()->value());
-                $this->forceDeletedTenantByUuidUseCase->execute($tenant->getId()->value());
+            if($owner!==null){
+                $this->deleteTenantOwnerByUuidUseCase->execute($owner->getId()->value());
+                // $this->forceDeletedTenantOwnerByUuidUseCase->execute($owner->getId()->value());
             }
 
             if($tenantUser!==null){

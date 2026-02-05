@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\DeleteTenantByUuidUseCase;
 
-class DeleteTenantController extends Controller {
+class DeleteTenantDELETEController extends Controller {
 
 
     public function __construct(

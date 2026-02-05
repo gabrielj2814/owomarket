@@ -6,8 +6,8 @@ use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class CorsHeaders
-{
+class CorsHeaders {
+
     /**
      * Handle an incoming request.
      *
@@ -26,4 +26,7 @@ class CorsHeaders
 
         return $response;
     }
+
+
 }
+

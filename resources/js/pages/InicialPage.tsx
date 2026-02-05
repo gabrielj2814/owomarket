@@ -1,12 +1,12 @@
-import Dashboard from "@/components/layouts/Dashboard";
+
 
 const InicialPage = () => {
 
     return (
         <>
-            <Dashboard>
+
                 <h1 className=" dark:text-white">Dashboard</h1>
-            </Dashboard>
+
         </>
     )
 }

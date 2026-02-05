@@ -1,11 +1,13 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Pest\Support\View;
 use Src\Tenant\Infrastructure\Http\Controller\ActiveTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ApprovedTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidGETController;
+use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidOfOwnerPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\CreateAccountTenantPOSTController;
+use Src\Tenant\Infrastructure\Http\Controller\CreateTenantPOSTController;
+use Src\Tenant\Infrastructure\Http\Controller\DeleteTenantDELETEController;
 use Src\Tenant\Infrastructure\Http\Controller\FiltrarTenantsPOSTController;
 use Src\Tenant\Infrastructure\Http\Controller\InactiveTenantByUuidPATCHController;
 use Src\Tenant\Infrastructure\Http\Controller\RejectedTenantByUuidPATCHController;
@@ -41,6 +43,13 @@ Route::get('/owner/backoffice/{user_uuid}/dashboard',              [ViewDashboar
 
 // Rutas del Tenant Staff Central
 // Route::get('/staff/backoffice/{user_uuid}/dashboard',                       [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware("auth");
+
+// Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
+// Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
+// Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);
+Route::post('/owner/filter/tenants',                               [ConsultTenantByUuidOfOwnerPOSTController::class, 'index'])->middleware("auth");
+Route::post('/owner/tenant',                                       [CreateTenantPOSTController::class, 'index'])->middleware("auth");
+Route::delete('/owner/tenant',                                     [DeleteTenantDELETEController::class, 'index'])->middleware("auth");
 
 
 ?>

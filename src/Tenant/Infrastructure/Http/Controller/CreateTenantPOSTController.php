@@ -12,7 +12,7 @@ use Src\Tenant\Application\UseCase\CreateTenantUseCase;
 use Src\Tenant\Application\UseCase\CreateTenantUserUseCase;
 use Src\Tenant\Infrastructure\Http\Request\CreateTenantFormRequest;
 
-class CreateTenantController extends Controller {
+class CreateTenantPOSTController extends Controller {
 
 
     public function __construct(
