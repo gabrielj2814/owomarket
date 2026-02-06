@@ -9,7 +9,7 @@ use Src\Authentication\Domain\ValueObjects\Uuid;
 
 interface AuthUserRepositoryInterface {
 
-    public function crearte(User $user):? AuthUser;
+    public function create(User $user):? AuthUser;
 
     public function consult(Uuid $uuid):? AuthUser;
 

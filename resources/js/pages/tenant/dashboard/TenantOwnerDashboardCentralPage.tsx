@@ -39,7 +39,7 @@ const TenantOwnerDashboardCentralPage:FC<TenantOwnerDashboardCentralPageProps> =
                         <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Empresa 1
                         </h5>
-                         <Button onClick={() => irAlTenant("http://chivostore.owomarket.local/tenant")}>
+                         <Button onClick={() => irAlTenant("http://chivostore.owomarket.local/auth/login")}>
                             Ir
                             <TbLink />
                         </Button>
@@ -50,7 +50,7 @@ const TenantOwnerDashboardCentralPage:FC<TenantOwnerDashboardCentralPageProps> =
                         <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Empresa 2
                         </h5>
-                        <Button>
+                        <Button onClick={() => irAlTenant("http://chivostore.owomarket.local/auth/login")}>
                             Ir
                             <TbLink />
                         </Button>
@@ -61,7 +61,7 @@ const TenantOwnerDashboardCentralPage:FC<TenantOwnerDashboardCentralPageProps> =
                         <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Empresa 3
                         </h5>
-                        <Button>
+                        <Button onClick={() => irAlTenant("http://chivostore.owomarket.local/auth/login")}>
                             Ir
                             <TbLink />
                         </Button>
@@ -72,7 +72,7 @@ const TenantOwnerDashboardCentralPage:FC<TenantOwnerDashboardCentralPageProps> =
                         <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
                         Empresa 4
                         </h5>
-                        <Button>
+                        <Button onClick={() => irAlTenant("http://chivostore.owomarket.local/auth/login")}>
                             Ir
                             <TbLink />
                         </Button>

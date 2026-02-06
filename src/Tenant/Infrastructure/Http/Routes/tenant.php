@@ -1,12 +1,12 @@
 <?php
 
-use App\Http\Middleware\TenantAuthentication;
-use App\Http\Middleware\TenantSanctum;
-use App\Http\Middleware\VerifyCrossDomainAuth;
 use Illuminate\Support\Facades\Route;
-use Src\Tenant\Infrastructure\Http\Controllerl\ViweDashboardTenantGETController;
+use Src\Tenant\Infrastructure\Http\Controller\ViewDashboardTenantGETController;
 
-// Route::get('/',                               [ViweDashboardTenantGETController::class, 'index'])->middleware([VerifyCrossDomainAuth::class,TenantAuthentication::class, TenantSanctum::class]);
+Route::get('/backoffice/{user_uuid}/dashboard',                               [ViewDashboardTenantGETController::class, 'index'])->middleware("auth");
+Route::get('/test', function () {
+    return "Hola desde tenant dashboard";
+});
 
 
 ?>

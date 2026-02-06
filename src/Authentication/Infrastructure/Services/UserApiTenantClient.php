@@ -8,18 +8,18 @@ use Illuminate\Support\Facades\Log;
 use Src\Authentication\Application\Contracts\UserServices;
 use Src\Authentication\Domain\Entities\User;
 
-class UserApiClient extends BaseApiClient implements UserServices {
+class UserApiTenantClient extends BaseApiClient implements UserServices {
 
-    public function consultUserByEmail(string $email): array {
+    public function consultUserByEmail(string $email, string $host = ""): array {
         $body= [
             "email" => $email
         ];
         try {
-            $endpoint="/api/user/interna/consulta-usuario-por-email";
-            $data = $this->post($endpoint,$body);
+            $endpoint="/api-tenant/user/interna/consulta-usuario-por-email";
+            $data = $this->post($endpoint,$body, [], $host);
             if(env("APP_ENV")=="local"){
                 Log::info(" Ok ");
-                Log::info(__METHOD__." Endpoint => ".config("app.url").$endpoint);
+                Log::info(__METHOD__." Endpoint => ".$host.$endpoint);
                 Log::info("body ".json_encode($body));
                 Log::info("response ".json_encode($data));
                 Log::info(" ");
@@ -28,7 +28,7 @@ class UserApiClient extends BaseApiClient implements UserServices {
         } catch (RequestException $error) {
             if(env("APP_ENV")=="local"){
                 Log::info(" ERROR ");
-                Log::info(__METHOD__." Endpoint => ".config("app.url").$endpoint);
+                Log::info(__METHOD__." Endpoint => ".$host.$endpoint);
                 Log::info("body ".json_encode($body));
                 Log::info(" ");
             }

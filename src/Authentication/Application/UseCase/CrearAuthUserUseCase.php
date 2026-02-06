@@ -15,7 +15,7 @@ class CrearAuthUserUseCase {
     ){}
 
     public function execute(User $user):? AuthUser{
-        return $this->auth_user_repository->crearte($user);
+        return $this->auth_user_repository->create($user);
     }
 
 

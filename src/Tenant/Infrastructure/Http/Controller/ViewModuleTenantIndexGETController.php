@@ -20,11 +20,11 @@ class ViewModuleTenantIndexGETController extends Controller {
 
 
     public function index(Request $request) {
-
+        $fullUrl = request()->getSchemeAndHttpHost();
         $user_uuid=$request->user_uuid;
         $uuid=Uuid::make($user_uuid);
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->auth());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid);
+        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authCentral());
+        $usuario=$ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
 
         $type=null;
         $title=null;

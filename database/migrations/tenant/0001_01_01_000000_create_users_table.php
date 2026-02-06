@@ -30,7 +30,7 @@ return new class extends Migration
             $table->string('password');
             $table->string('pin')->nullable();
             // staff
-            $table->enum('type', ['super_admin', 'tenant_owner', 'customer'])->default('customer');
+            $table->enum('type', ['tenant_owner', 'tenant_staff'])->default('tenant_staff');
             $table->string('code_phone')->nullable();
             $table->string('phone')->nullable();
             $table->text('avatar')->nullable();

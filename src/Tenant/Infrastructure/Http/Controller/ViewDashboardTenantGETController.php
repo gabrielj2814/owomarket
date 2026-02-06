@@ -1,7 +1,6 @@
 <?php
 
-
-namespace Src\Tenant\Infrastructure\Http\Controllerl;
+namespace Src\Tenant\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -10,7 +9,7 @@ use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 
-class ViweDashboardTenantGETController extends Controller {
+class ViewDashboardTenantGETController extends Controller {
 
 
     public function __construct(
@@ -19,11 +18,11 @@ class ViweDashboardTenantGETController extends Controller {
 
 
     public function index(Request $request) {
-
+        $fullUrl = request()->getSchemeAndHttpHost();
         $user_uuid=$request->user_uuid;
         $uuid=Uuid::make($user_uuid);
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->auth());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid);
+        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authTenant());
+        $usuario=$ConsultAuthUserApiByUuid->execute($uuid,$fullUrl);
 
         $type=null;
         $title=null;
@@ -43,6 +42,7 @@ class ViweDashboardTenantGETController extends Controller {
                 'title'      => 'Tenant Dashboard - OwOMarket',
                 'user_id'    => $usuario->getUserId()->value(),
                 'host'       => $host,
+                'user_name'  => $usuario->getName()->value(),
             ]
         );
 

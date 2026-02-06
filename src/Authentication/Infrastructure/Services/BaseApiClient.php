@@ -27,6 +27,7 @@ abstract class BaseApiClient {
         if($host==""){
             $host=config("app.url");
         }
+
         $url=$host.$endpoint;
         return Http::timeout(30)
                   ->retry(3, 100)

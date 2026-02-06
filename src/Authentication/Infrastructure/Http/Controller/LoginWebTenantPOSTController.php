@@ -14,7 +14,7 @@ use Src\Authentication\Infrastructure\Services\ApiGateway;
 use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-class LoginWebPOSTController extends Controller{
+class LoginWebTenantPOSTController extends Controller{
 
 
     public function __construct(
@@ -30,8 +30,8 @@ class LoginWebPOSTController extends Controller{
         $credentials = $request->data;
         $email=UserEmail::make($credentials->email);
 
-        $consultaUsuarioApiPorEmail=new ConsultUserApiByEmailUseCase($this->api->usersCentrals());
-        $usuario=$consultaUsuarioApiPorEmail->execute($email,$fullUrl);
+        $consultaUsuarioApiPorEmail=new ConsultUserApiByEmailUseCase($this->api->usersTenants());
+        $usuario=$consultaUsuarioApiPorEmail->execute($email, $fullUrl);
 
         if(!$usuario){
             return ApiResponse::error(message: 'El usuario no encontrado', code:401);
@@ -49,6 +49,8 @@ class LoginWebPOSTController extends Controller{
         $this->eliminar_auth_user_by_uuid_use_case->execute($usuario->getId());
 
         $this->crear_auth_user_use_case->execute($usuario);
+
+
 
 
         $respuesta=[

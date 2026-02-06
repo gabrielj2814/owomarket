@@ -19,8 +19,8 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
 
 
 
-    public function crearte(User $user):? AuthUser{
-        $avatar=($user->getAvatar()->value()!=null)?$user->getAvatar():null;
+    public function create(User $user):? AuthUser{
+        $avatar=($user->getAvatar()?->value())?$user->getAvatar():null;
         $AuthUser=AuthUser::create(
             $user->getId(),
             $user->getName(),
@@ -35,7 +35,7 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
             "user_name"    => $AuthUser->getName()->value(),
             "user_email"   => $AuthUser->getEmail()->value(),
             "user_type"    => $AuthUser->getType()->value(),
-            "user_avatar"  => $AuthUser->getAvatar()->value(),
+            "user_avatar"  => $AuthUser->getAvatar()?->value(),
         ]);
 
         return $AuthUser;

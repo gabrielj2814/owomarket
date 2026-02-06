@@ -41,9 +41,6 @@ Route::post('/create/account',                                     [CreateAccoun
 // Rutas del Tenant Owner Central
 Route::get('/owner/backoffice/{user_uuid}/dashboard',              [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware("auth");
 
-// Rutas del Tenant Staff Central
-// Route::get('/staff/backoffice/{user_uuid}/dashboard',                       [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware("auth");
-
 // Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
 // Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
 // Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);

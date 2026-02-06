@@ -29,7 +29,7 @@ class CurrentUserGETController extends Controller {
                 'user_name' => $authUser->getName()->value(),
                 'user_email' => $authUser->getEmail()->value(),
                 'user_type' => $authUser->getType()->value(),
-                'user_avatar' => $authUser->getAvatar()->value(),
+                'user_avatar' => $authUser->getAvatar()?->value(),
             ],
             message: 'Usuario actual obtenido con éxito',
             code: 200

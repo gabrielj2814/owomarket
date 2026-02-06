@@ -7,11 +7,17 @@ namespace Src\Tenant\Infrastructure\Http\Services;
 class ApiGateway {
 
     public function __construct(
-        private AuthApiClient $authApiClient
+        private AuthTenantApiClient $authApiTenantClient,
+        private AuthCentralApiClient $authApiCentralClient,
+
     ) {}
 
-    public function auth(): AuthApiClient {
-        return $this->authApiClient;
+    public function authCentral(): AuthCentralApiClient {
+        return $this->authApiCentralClient;
+    }
+
+    public function authTenant(): AuthTenantApiClient {
+        return $this->authApiTenantClient;
     }
 }
 

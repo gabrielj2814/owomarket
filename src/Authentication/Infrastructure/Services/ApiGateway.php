@@ -7,11 +7,16 @@ namespace Src\Authentication\Infrastructure\Services;
 class ApiGateway {
 
     public function __construct(
-        private UserApiClient $userApiClient
+        private UserApiCentralClient $userApiCentralClient,
+        private UserApiTenantClient $userApiTenantClient,
     ) {}
 
-    public function users(): UserApiClient {
-        return $this->userApiClient;
+    public function usersCentrals(): UserApiCentralClient {
+        return $this->userApiCentralClient;
+    }
+
+    public function usersTenants(): UserApiTenantClient {
+        return $this->userApiTenantClient;
     }
 }
 

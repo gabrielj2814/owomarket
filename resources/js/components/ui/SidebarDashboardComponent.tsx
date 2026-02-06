@@ -13,7 +13,7 @@ const SidebarDashboardComponent = () => {
         actions.load(true)
         const respuestaAction= await actions.logout()
         if(respuestaAction.data.code==200){
-            window.location.href = '/auth/login-staff';
+            window.location.href = '/auth/login';
         }
         else{
             actions.load(false)

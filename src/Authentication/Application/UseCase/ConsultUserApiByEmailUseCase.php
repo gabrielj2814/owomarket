@@ -21,8 +21,8 @@ class ConsultUserApiByEmailUseCase {
 
 
 
-    public function execute(UserEmail $email):?User {
-        $dataApi=$this->user_services->consultUserByEmail($email->value());
+    public function execute(UserEmail $email,string  $host = ""):?User {
+        $dataApi=$this->user_services->consultUserByEmail($email->value(), $host);
 
         if($dataApi['code']!=200){
             return null;

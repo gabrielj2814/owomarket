@@ -8,17 +8,18 @@ use Illuminate\Support\Facades\Log;
 use Src\Tenant\Application\Contracts\AuthServices;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
-class AuthApiClient extends BaseApiClient implements AuthServices {
+class AuthTenantApiClient extends BaseApiClient implements AuthServices {
 
-    public function consultAuthUserByUuid(Uuid $uuid): array {
+
+    public function consultAuthUserByUuid(Uuid $uuid, string $baseUrl=""): array {
         try {
 
-            $endpoint="/api/auth/interna/user/".$uuid->value();
+            $endpoint="/api-tenant/auth/interna/user/".$uuid->value();
 
-            $data = $this->get($endpoint);
+            $data = $this->get($endpoint,[],$baseUrl);
             if(env("APP_ENV")=="local"){
                 Log::info(" Ok ");
-                Log::info(__METHOD__." Endpoint => ".config("app.url").$endpoint);;
+                Log::info(__METHOD__." Endpoint => ".$baseUrl.$endpoint);;
                 Log::info("response ".json_encode($data));
                 Log::info(" ");
             }
@@ -26,7 +27,7 @@ class AuthApiClient extends BaseApiClient implements AuthServices {
         } catch (RequestException $error) {
             if(env("APP_ENV")=="local"){
                 Log::info(" ERROR ");
-                Log::info(__METHOD__." Endpoint => ".config("app.url").$endpoint);
+                Log::info(__METHOD__." Endpoint => ".$baseUrl.$endpoint);
                 Log::info(" ");
             }
             return $error->response->json();

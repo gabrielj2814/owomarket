@@ -12,7 +12,7 @@ interface PasswordValidationRules {
 
 
 
-const LoginStaff = () => {
+const LoginTenantPage = () => {
 
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
     // console.log("centralDomain:", centralDomain);
@@ -22,8 +22,8 @@ const LoginStaff = () => {
     // ======= States =======
 
     const [statuFormLogin,  setStatuFormLogin] = useState<FormLogin>({
-        email: "root@owomarket.local",
-        password: 'OwO_12345678',
+        email: "admin@chivostore.com",
+        password: 'EndAdmin_12345678',
     });
 
     const [statusLoader,    setStatusLoader]   = useState<boolean>(false);
@@ -133,17 +133,10 @@ const LoginStaff = () => {
 
 
     const irHaPorElRol = (rol:string,uuid:string) => {
-        const BACKOFICCE_ADMIN_DASHBOARD = `/admin/backoffice/${uuid}/dashboard`;
-        const BACKOFICCE_TENANT_OWNER_DASHBOARD = `/tenant/owner/backoffice/${uuid}/dashboard`;
-        if(rol === 'super_admin'){
-            window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
-        }
+        const BACKOFICCE_TENANT_OWNER_DASHBOARD = `/tenant/backoffice/${uuid}/dashboard`;
         if(rol === 'tenant_owner'){
             window.location.href = BACKOFICCE_TENANT_OWNER_DASHBOARD;
         }
-        // if(rol === 'customer'){
-        //     window.location.href = '/';
-        // }
     }
     // ======= Render =======
 
@@ -159,7 +152,7 @@ const LoginStaff = () => {
                             <h3 className="text-xl text-gray-300">Welcomen back. Manage your products, orders, and staff</h3>
                         </div>
                         <div className="w-full lg:w-3/6 ">
-                            <h1 className=" text-2xl text-gray-600 dark:text-gray-400 mb-5 font-bold">Staff Sing In</h1>
+                            <h1 className=" text-2xl text-gray-600 dark:text-gray-400 mb-5 font-bold">Login Tenant Sing In</h1>
                             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                 <div className="">
                                     <div className="mb-2 block">
@@ -195,4 +188,4 @@ const LoginStaff = () => {
 
 }
 
-export default LoginStaff;
+export default LoginTenantPage;

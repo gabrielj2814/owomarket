@@ -7,7 +7,7 @@ use Src\Authentication\Domain\Entities\User;
 
 interface UserServices {
 
-    public function consultUserByEmail(string $email):array;
+    public function consultUserByEmail(string $email, string $host = ""):array;
 
 }
 

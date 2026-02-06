@@ -18,9 +18,8 @@ class ConsultAuthUserApiByUuidUseCase {
         protected AuthServices $auth_services
     ){}
 
-    public function execute(Uuid $uuid):? AuthUser{
-
-        $dataApi= $this->auth_services->consultAuthUserByUuid($uuid);
+    public function execute(Uuid $uuid, string $dominio=""):? AuthUser{
+        $dataApi= $this->auth_services->consultAuthUserByUuid($uuid, $dominio);
 
         if($dataApi['code']!=200){
             return null;
