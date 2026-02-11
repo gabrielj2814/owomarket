@@ -6,18 +6,14 @@
   - admin -> tenant
   - staff -> tenant
 
-- validaciones login:
-  - validaciones en el login 
-    - los usuarios inactivos no pueden entrar
-
-- listar los tenants del owner en su vista principal al usar el login central
-- login tenancy funcional pero con el diseño del login staff hay que usar el diseño tenant
-- que el owner pueda crear otros tenant (vista)
-- el owner podra dar de baja sus tenant (vista)
-  - acceso desde login
-    - funcional
-    - usar el disño que le corresponde
+- vista mobile del dashboard central del tenant owner
+- que el owner pueda crear otros tenant (modal)
+- el login del tenant ya esta funcional pero no tiene el diseño que corresponde
 - pantalla de perfil funcional (vista)
+
+- validaciones login:
+  - los usuarios inactivos no pueden entrar
+  - denegar el acceso al login del tenant si el tenant esta en los siguientes estados (rechazado, en progreso, inactivo)
 
 baja prioridad
 - trabajar en el perfil de usuario
@@ -28,5 +24,14 @@ baja prioridad
     - dar de baja
 - remover el softdelete en tenant y user y manejar estados para el tema de la visibilidad 
 
-validaciones:
+validaciones por hacer:
 - validar que el numero de telefono no este en uso
+- el campo donde ingresa el nombre del tenant contruirte el slug de su negocio
+- validaciones de clave al usar el login y al crear la cuenta del tenant
+- email unicos
+- telefono unico
+
+implementar:
+- docker
+- ci/cd
+- kunbernetes

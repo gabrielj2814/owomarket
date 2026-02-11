@@ -7,7 +7,7 @@ import Dashboard from "@/components/layouts/Dashboard";
 import { Head } from "@inertiajs/react";
 import { Badge, Breadcrumb, BreadcrumbItem, Button, Card } from "flowbite-react";
 import { FC, ReactNode, use, useEffect, useState } from "react";
-import { HiCheck, HiClock, HiHome } from "react-icons/hi";
+import { HiCheck, HiClock, HiDotsVertical, HiHome } from "react-icons/hi";
 import { TbLink, TbPower } from "react-icons/tb";
 import Tenant from "@/types/models/Tenant";
 import { ToastInterface } from "@/types/ToastInterface";
@@ -128,11 +128,14 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
             return (
                  <Card className="max-w-sm d-block">
                     <div>
+                        <div className=" flex flex-nowrap flex-row justify-end">
+                            <HiDotsVertical className=" w-5 h-5" />
+                        </div>
                         <h5 className="text-2xl mb-2 font-bold tracking-tight text-gray-900 dark:text-white">
                             {tenant.name}
                         </h5>
                         <div className="flex flex-wrap gap-2 mb-2">
-                            <div>status:</div>
+                            <div>Status:</div>
                             {tenant.status==="active" &&
                                 <Badge className="" color="green" icon={LuPower}>Activo</Badge>
                             }
