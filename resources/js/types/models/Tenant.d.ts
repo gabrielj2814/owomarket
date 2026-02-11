@@ -1,4 +1,5 @@
 import CurrencyDB from "../CurrencyDB"
+import Domain from "./domain"
 import { TenantOwner } from "./TenantOwner"
 
 export default interface Tenant {
@@ -13,6 +14,7 @@ export default interface Tenant {
        created_at:      DateDB
        updated_at:      DateDB
        deleted_at:      DateDB
+       domain?:         Domain
 
 
 }

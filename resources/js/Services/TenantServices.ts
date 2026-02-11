@@ -130,6 +130,23 @@ const TenantServices = {
         } catch (error) {
             return error as ApiResponse<void>;
         }
+    },
+
+    consultMyCompanies: async (idOwner: string, page: number=1, prePage: number=50): Promise<ApiResponse<Tenant[]>> => {
+        try {
+            const body = {
+                id: idOwner,
+                prePage
+            }
+
+            let respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`owner/filter/tenants?page=${page}`, body)
+
+            return respuesta
+
+
+        } catch (error) {
+            return error as ApiResponse<Tenant[]>;
+        }
     }
 
 

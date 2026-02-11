@@ -1,13 +1,22 @@
-- login funcional de los tenants (solo si esta aprovado y activo o suspendido) los usuarios inactivos y que no pertenezcan al tenant no pueden entrar y gual con el central
-  - como pantalla principal se mostrar un mensaje de bienvenidad al usuario y ya
+- Roles:
+  - super_admin -> central
+  - tenant_owner -> central
+  - customer  -> central
+  - owner -> tenant
+  - admin -> tenant
+  - staff -> tenant
 
+- validaciones login:
+  - validaciones en el login 
+    - los usuarios inactivos no pueden entrar
 
+- listar los tenants del owner en su vista principal al usar el login central
+- login tenancy funcional pero con el diseño del login staff hay que usar el diseño tenant
 - que el owner pueda crear otros tenant (vista)
 - el owner podra dar de baja sus tenant (vista)
-- que el owner pueda entrar a los tenant atravez del login o desde el acceso directo de su dashboard (vista)
-- validar que el acceso al tenant (solo puede entrar el personal que sea empleado del tenant pero si no es se le restringe el acceso)
-  - acceso desde login (vista)
-  - acceso desde dashboard (vista)
+  - acceso desde login
+    - funcional
+    - usar el disño que le corresponde
 - pantalla de perfil funcional (vista)
 
 baja prioridad
@@ -17,10 +26,7 @@ baja prioridad
     - datos personales
     - clave
     - dar de baja
-
+- remover el softdelete en tenant y user y manejar estados para el tema de la visibilidad 
 
 validaciones:
 - validar que el numero de telefono no este en uso
-- validar si el token que me estan pasando por web si no esta caducado
-
-remover el softdelete en tenant y user y manejar estados para el tema de la visibilidad

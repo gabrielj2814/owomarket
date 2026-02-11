@@ -28,6 +28,7 @@ class Tenant {
     private ?CreatedAt      $createdAt;
     private ?UpdatedAt      $updatedAt;
     private ?SoftDeleteAt   $softdeleteAt;
+    private ?Domain         $domain;
 
     private Collection      $owners;
 
@@ -103,6 +104,11 @@ class Tenant {
             $softdeleteAt,
         );
     }
+
+    public function setDomain(?Domain $domain){
+        $this->domain= $domain;
+    }
+
 
     public function setOwners(Collection $owners){
         $this->owners= $owners;
@@ -197,6 +203,11 @@ class Tenant {
 
     public function isRejectedRequest(): bool{
         return $this->request->equals(TenantRequest::rejected());
+    }
+
+    public function getDomain(): ?Domain
+    {
+        return $this->domain;
     }
 
 }

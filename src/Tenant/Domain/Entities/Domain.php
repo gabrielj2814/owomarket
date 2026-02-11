@@ -3,10 +3,11 @@
 
 namespace Src\Tenant\Domain\Entities;
 
-use Src\Shared\ValuesObjects\BoolValueObject;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Domain\ValuesObjects\Domain as ValuesObjectsDomain;
+use Src\Tenant\Domain\ValuesObjects\DomainFallback;
+use Src\Tenant\Domain\ValuesObjects\DomainPrimary;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
 class Domain {
@@ -14,8 +15,8 @@ class Domain {
     private Uuid                     $id;
     private Uuid                     $tenantId;
     private ValuesObjectsDomain      $domain;
-    private BoolValueObject          $is_primary;
-    private BoolValueObject          $is_fallback;
+    private DomainPrimary            $is_primary;
+    private DomainFallback            $is_fallback;
     private ?CreatedAt               $createdAt;
     private ?UpdatedAt               $updatedAt;
 
@@ -23,8 +24,8 @@ class Domain {
         Uuid                    $id,
         Uuid                    $tenantId,
         ValuesObjectsDomain     $domain,
-        BoolValueObject         $is_primary,
-        BoolValueObject         $is_fallback,
+        DomainPrimary         $is_primary,
+        DomainFallback         $is_fallback,
         ?CreatedAt              $createdAt,
         ?UpdatedAt              $updatedAt,
     ){
@@ -40,8 +41,8 @@ class Domain {
     public static function create(
         Uuid                    $tenantId,
         ValuesObjectsDomain     $domain,
-        BoolValueObject         $is_primary,
-        BoolValueObject         $is_fallback,
+        DomainPrimary           $is_primary,
+        DomainFallback           $is_fallback,
     ): self {
         return new self(
             id: Uuid::generate(),
@@ -58,8 +59,8 @@ class Domain {
         Uuid                    $id,
         Uuid                    $tenantId,
         ValuesObjectsDomain     $domain,
-        BoolValueObject         $is_primary,
-        BoolValueObject         $is_fallback,
+        DomainPrimary         $is_primary,
+        DomainFallback         $is_fallback,
         ?CreatedAt              $createdAt,
         ?UpdatedAt              $updatedAt,
     ): self {
@@ -90,12 +91,12 @@ class Domain {
         return $this->domain;
     }
 
-    public function isPrimary(): BoolValueObject
+    public function isPrimary(): DomainPrimary
     {
         return $this->is_primary;
     }
 
-    public function isFallback(): BoolValueObject
+    public function isFallback(): DomainFallback
     {
         return $this->is_fallback;
     }

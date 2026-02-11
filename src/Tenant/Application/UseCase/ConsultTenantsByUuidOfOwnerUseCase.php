@@ -10,7 +10,7 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
-class ConsultTenantByUuidOfOwnerUseCase {
+class ConsultTenantsByUuidOfOwnerUseCase {
 
 
     public function __construct(
@@ -27,7 +27,7 @@ class ConsultTenantByUuidOfOwnerUseCase {
             throw new Exception('Tenant User not found',404);
         }
 
-        return $this->tenant_repository->consultTenantsByIdOwner($uuidOwner, $prePage);
+        return $this->tenant_repository->consultTenantsByIdOwnerPaginate($uuidOwner, $prePage);
     }
 
 

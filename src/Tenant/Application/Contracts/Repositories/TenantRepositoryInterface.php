@@ -22,7 +22,7 @@ interface TenantRepositoryInterface {
 
     public function consultTenantById(Uuid $uuid):? Tenant;
 
-    public function consultTenantsByIdOwner(Uuid $uuid, int $prePage=50): Pagination;
+    public function consultTenantsByIdOwnerPaginate(Uuid $uuid, int $prePage=50): Pagination;
 
     public function consultTenantBySlug(Slug $slug):? Tenant;
 

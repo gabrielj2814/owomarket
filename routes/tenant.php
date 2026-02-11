@@ -27,12 +27,12 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
-    // Route::get('/', function () {
-    //     $domain = request()->getHost();
-    //     return Inertia::render('welcome',[
-    //         'domain' => $domain,
-    //     ]);
-    // })->name('tenant.welcome');
+    Route::get('/', function () {
+        $domain = request()->getHost();
+        return Inertia::render('welcome',[
+            'domain' => $domain,
+        ]);
+    })->name('tenant.welcome');
 
     Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/tenant.php"));
     Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/tenant.php"));

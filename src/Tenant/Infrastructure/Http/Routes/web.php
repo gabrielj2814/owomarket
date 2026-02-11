@@ -44,7 +44,7 @@ Route::get('/owner/backoffice/{user_uuid}/dashboard',              [ViewDashboar
 // Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
 // Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
 // Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);
-Route::post('/owner/filter/tenants',                               [ConsultTenantByUuidOfOwnerPOSTController::class, 'index'])->middleware("auth");
+Route::post('/owner/filter/tenants',                               [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
 Route::post('/owner/tenant',                                       [CreateTenantPOSTController::class, 'index'])->middleware("auth");
 Route::delete('/owner/tenant',                                     [DeleteTenantDELETEController::class, 'index'])->middleware("auth");
 

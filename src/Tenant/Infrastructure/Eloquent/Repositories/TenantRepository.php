@@ -8,16 +8,20 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Src\Shared\Collection\Collection;
 use Src\Shared\Collection\Pagination;
+use Src\Shared\ValuesObjects\BoolValueObject;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\Currency;
 use Src\Shared\ValuesObjects\SoftDeleteAt;
 use Src\Shared\ValuesObjects\Timezone;
 use Src\Shared\ValuesObjects\UpdatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
+use Src\Tenant\Domain\Entities\Domain as EntitiesDomain;
 use Src\Tenant\Domain\Entities\Tenant;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
 use Src\Tenant\Domain\ValuesObjects\Domain;
+use Src\Tenant\Domain\ValuesObjects\DomainFallback;
+use Src\Tenant\Domain\ValuesObjects\DomainPrimary;
 use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
 use Src\Tenant\Domain\ValuesObjects\Slug;
 use Src\Tenant\Domain\ValuesObjects\TenantName;
@@ -28,6 +32,7 @@ use Src\Tenant\Domain\ValuesObjects\UserName;
 use Src\Tenant\Domain\ValuesObjects\UserStatus;
 use Src\Tenant\Domain\ValuesObjects\UserType;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Infrastructure\Eloquent\Models\Domain as ModelsDomain;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 
 class TenantRepository implements TenantRepositoryInterface {
@@ -331,7 +336,7 @@ class TenantRepository implements TenantRepositoryInterface {
         return $tenant;
     }
 
-    public function consultTenantsByIdOwner(Uuid $uuid, int $prePage=50): Pagination {
+    public function consultTenantsByIdOwnerPaginate(Uuid $uuid, int $prePage=50): Pagination {
 
         $consulta= ModelsTenant::whereHas('users', function ($query) use ($uuid) {
             $query->where('tenant_users.user_id', $uuid->value())
@@ -366,6 +371,19 @@ class TenantRepository implements TenantRepositoryInterface {
                 $updated_at,
                 $deleted_at,
             );
+
+            $domain= ModelsDomain::where("tenant_id","=",$tenant->getId()->value())->first();
+            if($domain){
+                $tenant->setDomain(EntitiesDomain::reconstitute(
+                    Uuid::make($domain->id),
+                    Uuid::make($domain->tenant_id),
+                    Domain::fromString($domain->domain),
+                    DomainPrimary::make($domain->is_primary),
+                    DomainFallback::make($domain->is_fallback),
+                    CreatedAt::fromString($domain->created_at),
+                    UpdatedAt::fromString($domain->updated_at),
+                ));
+            }
 
             return $tenant;
         });
