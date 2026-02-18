@@ -126,7 +126,7 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
     const createCardCompanies= (tenants: Tenant[]): ReactNode[] => {
         return tenants.map((tenant: Tenant, index: number) => {
             return (
-                 <Card className="max-w-sm d-block">
+                 <Card className="d-block">
                     <div>
                         <div className=" flex flex-nowrap flex-row justify-end">
                             <HiDotsVertical className=" w-5 h-5" />
@@ -207,10 +207,10 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
                         <LuPlus className="w-4 h-4" />
                     </Button>
                 </div>
-                <div className="w-full flex flex-row flex-wrap gap-4">
+                <div className="w-full flex flex-row flex-wrap">
                     {cardCompanies.length>0 &&
                         cardCompanies.map((card, index) => (
-                            <div key={index} className="w-4/12">
+                            <div key={index} className="w-full sm:w-6/12 md:w-6/12 lg:w-4/12 p-2">
                                 {card}
                             </div>
                         ))

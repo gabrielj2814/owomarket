@@ -6,7 +6,6 @@
   - admin -> tenant
   - staff -> tenant
 
-- vista mobile del dashboard central del tenant owner
 - que el owner pueda crear otros tenant (modal)
 - el login del tenant ya esta funcional pero no tiene el diseño que corresponde
 - pantalla de perfil funcional (vista)
