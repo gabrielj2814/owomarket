@@ -22,14 +22,12 @@ class CreateTenantUserUseCase {
         $role= RoleTenantUser::owner();
         $permisos= null;
         $create_at=CreatedAt::now();
-        $updated_at= null;
         $tenantUser= TenantUser::create(
             $uuid_tenant,
             $uuid_owner,
             $role,
             $permisos,
             $create_at,
-            $updated_at
         );
         return $this->tenant_user_repository->assignTenantToUser($tenantUser);
     }

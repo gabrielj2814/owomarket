@@ -1,6 +1,7 @@
 import { FormCreateAccounTenant } from '@/types/FormCreateAccounTenant';
 import Tenant from '@/types/models/Tenant';
 import { ErrorResponse } from '@/types/Response/ErrorResponse';
+import ResponseOKSendRequestCreateTenant from '@/types/Response/ResponseOKSendRequestCreateTenant';
 import { ApiResponse } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
@@ -146,6 +147,21 @@ const TenantServices = {
 
         } catch (error) {
             return error as ApiResponse<Tenant[]>;
+        }
+    },
+
+    sendRequestCreateTenant: async (idOwner: string, storeName: string): Promise<ApiResponse<ResponseOKSendRequestCreateTenant>> => {
+        try {
+            const body = {
+                id: idOwner,
+                store_name: storeName
+            }
+
+            let respuesta:ApiResponse<ResponseOKSendRequestCreateTenant> = await axiosTenant.post(`owner/tenant`, body)
+
+            return respuesta
+        } catch (error) {
+            return error as ApiResponse<void>;
         }
     }
 

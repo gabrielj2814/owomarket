@@ -9,5 +9,5 @@ export interface Admin {
    avatar:      string
    is_active:   boolean
    created_at:  DateDB
-   updated_at:  DateDB
+   updated_at?:  DateDB
 }

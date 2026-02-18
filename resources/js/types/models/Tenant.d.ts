@@ -12,8 +12,8 @@ export default interface Tenant {
        owners?:         TenantOwner[]
        request:         string
        created_at:      DateDB
-       updated_at:      DateDB
-       deleted_at:      DateDB
+       updated_at?:      DateDB
+       deleted_at?:      DateDB
        domain?:         Domain
 
 

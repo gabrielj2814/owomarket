@@ -5,16 +5,16 @@ import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone";
 import Dashboard from "@/components/layouts/Dashboard";
 import { Head } from "@inertiajs/react";
-import { Badge, Breadcrumb, BreadcrumbItem, Button, Card } from "flowbite-react";
+import { Badge, Breadcrumb, BreadcrumbItem, Button, Card, HelperText, Label, Modal, ModalBody, ModalFooter, ModalHeader, TextInput } from "flowbite-react";
 import { FC, ReactNode, use, useEffect, useState } from "react";
-import { HiCheck, HiClock, HiDotsVertical, HiHome } from "react-icons/hi";
+import { HiCheck, HiClock, HiDotsVertical, HiHome, HiX } from "react-icons/hi";
 import { TbLink, TbPower } from "react-icons/tb";
 import Tenant from "@/types/models/Tenant";
 import { ToastInterface } from "@/types/ToastInterface";
 import LoaderSpinner from "@/components/LoaderSpinner";
 import HeaderToasts from "@/components/HeaderToasts";
 import TenantServices from "@/Services/TenantServices";
-import { LuClock3, LuLink, LuPlus, LuPower, LuPowerOff, LuTrash2, LuX } from "react-icons/lu";
+import { LuClock3, LuLink, LuPlus, LuPower, LuPowerOff, LuStore, LuTrash2, LuX } from "react-icons/lu";
 
 
 interface TenantOwnerDashboardCentralPageProps {
@@ -34,6 +34,11 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
     dayjs.extend(utc);
     dayjs.extend(timezone);
 
+
+    const [modalCreatedTenant, setModalCreatedTenant] = useState<boolean>(false);
+
+    const [storeName, setStoreName] = useState<string>("");
+    const [errorStoreName, setErrorStoreName] = useState<string>("");
 
     const [cargaInicialCompleta, setCargaInicialCompleta] = useState<boolean>(false);
     const [stateLodaer, setStateLodaer] = useState<boolean>(false);
@@ -63,6 +68,13 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
         incializar()
     }, [])
 
+    const actualizarLista = async (page: number) => {
+        setCurrentPage(page);
+        setStateLodaer(true);
+        await consultOwnerCompanies(page);
+        setStateLodaer(false)
+    }
+
 
     const consultOwnerCompanies = async (page:number = 1) => {
         const respuestaApi= await TenantServices.consultMyCompanies(user_id,page, 50);
@@ -81,10 +93,6 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
         setPrePage(pre)
         settotalPage(total)
     }
-
-
-
-
 
     const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
         const uuid = uuidv4();
@@ -113,6 +121,30 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
             newMap.delete(uuid);
             return newMap;
         });
+    }
+
+    const sendRequestCreateTenant = async () => {
+        // alert("hola")
+        if(storeName.trim() === ""){
+            createToast("error", "Store name is required", undefined, <HiClock />)
+            setErrorStoreName("Store name is required")
+            return
+        }
+        setErrorStoreName("")
+        setStateLodaer(true)
+        const respuestaApi= await TenantServices.sendRequestCreateTenant(user_id, storeName);
+
+        if(respuestaApi.data.code!=200){
+            createToast("failure", `Error: ${respuestaApi.data.message}`, undefined, <HiX />)
+            setErrorStoreName(respuestaApi.data.message || "Error")
+            setStateLodaer(false)
+            return
+        }
+
+        await actualizarLista(1);
+
+        setModalCreatedTenant(false)
+        createToast("success", "Request sent successfully", undefined, <HiCheck />)
     }
 
 
@@ -182,6 +214,10 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
         })
     }
 
+    const setOpenModal = (value: boolean) => {
+        setModalCreatedTenant(value)
+    }
+
     const cardCompanies: ReactNode[] = createCardCompanies(tenants)
 
     return (
@@ -190,6 +226,31 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
             <Head>
                 <title>{title}</title>
             </Head>
+
+             <Modal show={modalCreatedTenant} onClose={() => setOpenModal(false)} className="">
+                <ModalHeader>Create Tenant</ModalHeader>
+                    <form onSubmit={(e) => e.preventDefault()}>
+                        <ModalBody>
+                                <div className="w-full">
+                                    <div className="basis-full mb-2">
+                                        <div className="mb-2 block">
+                                            <Label htmlFor="store_name">Store Name</Label>
+                                        </div>
+                                        <TextInput id="store_name" type="text" name="store_name" icon={LuStore} placeholder="Store Name" required value={storeName} onChange={(e) => setStoreName(e.target.value)} />
+                                        {errorStoreName.trim()!=="" &&
+                                            <HelperText color="failure"><span className="font-medium">{errorStoreName}</span></HelperText>
+                                        }
+                                    </div>
+                                </div>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button color="green" onClick={sendRequestCreateTenant}>Send Request</Button>
+                            <Button color="alternative" onClick={() => setOpenModal(false)}>
+                                Cancel
+                            </Button>
+                        </ModalFooter>
+                    </form>
+            </Modal>
 
             <HeaderToasts list={Array.from(mapToast.values())}/>
 
@@ -203,11 +264,11 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
                     <div className=" dark:text-white">Tenant Owner Dashboard Central</div>
                 </Card> */}
                 <div className="w-full flex flex-row justify-end mb-4">
-                    <Button className="" title="Create" onClick={() => alert("mostrar modal para crear tenant")} >
+                    <Button className="" title="Create" onClick={() => setOpenModal(true)} >
                         <LuPlus className="w-4 h-4" />
                     </Button>
                 </div>
-                <div className="w-full flex flex-row flex-wrap">
+                <div className="w-full flex flex-row flex-wrap overflow-scroll overflow-x-hidden overflow-y-auto pb-28" style={{ maxHeight: "calc(100vh - 151px)" }}>
                     {cardCompanies.length>0 &&
                         cardCompanies.map((card, index) => (
                             <div key={index} className="w-full sm:w-6/12 md:w-6/12 lg:w-4/12 p-2">

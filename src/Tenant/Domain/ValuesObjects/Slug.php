@@ -77,33 +77,33 @@ class Slug
     private function ensureIsValidSlug(string $slug): void
     {
         if (empty($slug)) {
-            throw new InvalidArgumentException('El slug no puede estar vacío');
+            throw new InvalidArgumentException('El slug no puede estar vacío',400);
         }
 
         if (strlen($slug) < 3) {
-            throw new InvalidArgumentException('El slug debe tener al menos 3 caracteres');
+            throw new InvalidArgumentException('El slug debe tener al menos 3 caracteres',400);
         }
 
         if (strlen($slug) > 63) {
-            throw new InvalidArgumentException('El slug no puede tener más de 63 caracteres');
+            throw new InvalidArgumentException('El slug no puede tener más de 63 caracteres',400);
         }
 
         // Validar formato: solo letras minúsculas, números y guiones
         if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
             throw new InvalidArgumentException(
                 'El slug solo puede contener letras minúsculas, números y guiones medios. ' .
-                'No puede empezar ni terminar con guión.'
+                'No puede empezar ni terminar con guión.',400
             );
         }
 
         // Validar que no tenga guiones consecutivos
         if (str_contains($slug, '--')) {
-            throw new InvalidArgumentException('El slug no puede tener guiones consecutivos');
+            throw new InvalidArgumentException('El slug no puede tener guiones consecutivos',400);
         }
 
         // Validar que no sea un número
         if (is_numeric($slug)) {
-            throw new InvalidArgumentException('El slug no puede ser solo números');
+            throw new InvalidArgumentException('El slug no puede ser solo números',400);
         }
     }
 
@@ -124,7 +124,7 @@ class Slug
 
         if (in_array($slug, $reservedSubdomains, true)) {
             throw new InvalidArgumentException(
-                "El slug '{$slug}' es una palabra reservada y no puede usarse como subdominio"
+                "El slug '{$slug}' es una palabra reservada y no puede usarse como subdominio",400
             );
         }
 
@@ -133,7 +133,7 @@ class Slug
         foreach ($offensiveWords as $word) {
             if (str_contains($slug, $word)) {
                 throw new InvalidArgumentException(
-                    "El slug contiene palabras no permitidas"
+                    "El slug contiene palabras no permitidas",400
                 );
             }
         }
@@ -142,7 +142,7 @@ class Slug
         $totalLength = strlen($slug) + 1 + strlen(config('app.domain'));
         if ($totalLength > 253) {
             throw new InvalidArgumentException(
-                'El subdominio completo excede la longitud máxima permitida para DNS'
+                'El subdominio completo excede la longitud máxima permitida para DNS',400
             );
         }
     }

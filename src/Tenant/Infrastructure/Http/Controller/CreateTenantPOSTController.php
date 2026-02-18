@@ -33,7 +33,37 @@ class CreateTenantPOSTController extends Controller {
                 $tenant->getId()->value()
             );
 
-            return ApiResponse::success(data: [], message: "Tenant created successfully", code: 201);
+
+            $data= [
+                "tenant"=>[
+                    "id" =>            $tenant->getId()->value(),
+                    "name" =>          $tenant->getName()->value(),
+                    "slug" =>          $tenant->getSlug()->value(),
+                    "status" =>        $tenant->getStatus()->value(),
+                    "timezone" =>      $tenant->getTimezone()->value(),
+                    "currency" =>      [
+                        "code"     =>$tenant->getCurrency()->code(),
+                        "name"     =>$tenant->getCurrency()->name(),
+                        "symbol"   =>$tenant->getCurrency()->symbol(),
+                        "decimals" =>$tenant->getCurrency()->decimals(),
+                        // "country"  =>$tenant->getCurrency()->country(),
+                    ],
+                    "request" =>       $tenant->getRequest()->value(),
+                    "created_at" =>    $tenant->getCreatedAt()->value(),
+                    "updated_at" =>    $tenant->getUpdatedAt()?->value(),
+                    "deleted_at" =>    $tenant->getSoftdeleteAt()?->value(),
+                ],
+                "tenant_user"=>[
+                    "id"=> $tenantUser->getId()->value(),
+                    "user_id"=> $tenantUser->getUserId()->value(),
+                    "tenant_id"=> $tenantUser->getTenantId()->value(),
+                    "role"=> $tenantUser->getRole()->value(),
+                    "created_at"=> $tenantUser->getCreatedAt()->value(),
+                    "updated_at"=> $tenantUser->getUpdatedAt()?->value(),
+                ]
+            ];
+
+            return ApiResponse::success(data: $data, message: "Tenant created successfully", code: 200);
 
         } catch (\Throwable $th) {
             //throw $th;

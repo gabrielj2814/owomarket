@@ -3,5 +3,5 @@ export default interface Domain {
     domain:      string,
     tenant_id:   string,
     created_at:  DateDB,
-    updated_at:  DateDB
+    updated_at?:  DateDB
 }

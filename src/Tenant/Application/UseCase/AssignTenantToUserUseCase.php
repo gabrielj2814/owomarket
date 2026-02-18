@@ -2,7 +2,7 @@
 
 namespace Src\Tenant\Application\UseCase;
 
-
+use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantUser;
 use Src\Tenant\Domain\ValuesObjects\RoleTenantUser;
@@ -24,12 +24,14 @@ class AssignTenantToUserUseCase {
         $userIdVO = Uuid::make($userId);
         $roleVO = RoleTenantUser::make($role);
         $permissionsVO = $permissions;
+        $create_at=CreatedAt::now();
 
         $tenantUser = TenantUser::create(
             tenantId: $tenantIdVO,
             userId: $userIdVO,
             role: $roleVO,
-            permissions: $permissionsVO
+            permissions: $permissionsVO,
+            createdAt: $create_at,
         );
 
         $tenantUser= $this->tenantUserRepository->assignTenantToUser($tenantUser);

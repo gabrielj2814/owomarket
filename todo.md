@@ -6,9 +6,11 @@
   - admin -> tenant
   - staff -> tenant
 
-- que el owner pueda crear otros tenant (modal)
 - el login del tenant ya esta funcional pero no tiene el diseño que corresponde
-- pantalla de perfil funcional (vista)
+- agregar que el VO Slug reciba por parametro el dominio ya que ahorita lo esta obteniendo por la función config
+- docker
+- kunbernetes
+- perfil
 
 - validaciones login:
   - los usuarios inactivos no pueden entrar
@@ -32,5 +34,5 @@ validaciones por hacer:
 
 implementar:
 - docker
-- ci/cd
 - kunbernetes
+- ci/cd

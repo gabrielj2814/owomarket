@@ -44,10 +44,9 @@ class TenantUser {
         RoleTenantUser $role,
         ?array $permissions = null,
         ?CreatedAt $createdAt = null,
-        ?UpdatedAt $updatedAt = null
     ): self {
         $id = Uuid::generate(); // Asumiendo que tienes un método para generar UUIDs
-        return new self($id, $tenantId, $userId, $role, $permissions);
+        return new self($id, $tenantId, $userId, $role, $permissions, $createdAt);
     }
 
         // Factory method - para reconstruir desde BD
