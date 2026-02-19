@@ -1,4 +1,5 @@
 import LoaderSpinner from "@/components/LoaderSpinner";
+import storage from "@/routes/storage";
 import AuthServices from "@/Services/AuthServices";
 import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
@@ -149,9 +150,9 @@ const LoginStaff = () => {
 
     return (
         <>
-            <main className="flex flex-col items-center justify-center h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
+            <main className="flex flex-row h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
                 <LoaderSpinner status={statusLoader} />
-                <Card className="w-11/12 lg:w-8/12">
+                {/* <Card className="w-11/12 lg:w-8/12">
                     <div className="flex flex-row">
                         <div className="w-3/6 hidden lg:flex  flex-col justify-center p-5 text-gray-600 dark:text-gray-400  ">
                             <h3 className="text-xl font-bold mb-7"><LuStore className=" inline-block text-4xl stroke-blue-600"/> Marketplace for business</h3>
@@ -173,16 +174,52 @@ const LoginStaff = () => {
                                     </div>
                                     <TextInput id="password" type="password" name="password" icon={HiLockClosed} placeholder="password" onChange={handlersChangeFormLogin} value={statuFormLogin.password} required />
                                 </div>
-                                {/* <div className="flex items-center gap-2">
-                                    <Checkbox id="remember" />
-                                    <Label htmlFor="remember">Remember me</Label>
-                                </div> */}
                                 <Button type="submit"> <LuSend/>  Submit</Button>
                                 <h6 className=" text-center text-sm text-gray-600 dark:text-gray-400">For authorized personnel only</h6>
                             </form>
                         </div>
                     </div>
-                </Card>
+                </Card> */}
+                <div className=" basis-full lg:basis-1/2 hidden lg:block p-4 h-screen">
+                    <div className=" text-2xl font-bold mb-10"> <LuStore className=" inline-block text-blue-700 w-10 h-10"/>  OwOMarket</div>
+
+                    <div className=" w-full flex flex-col justify-center p-5">
+                        <h2 className="text-xl mb-3 font-bold">Marketplace Management</h2>
+                        {/* <img className=" w-xl h-xl rounded-2xl mb-5" src="https://i.pinimg.com/736x/24/81/d1/2481d19f7d6d2062cc987c2384f0096e.jpg" alt="" /> */}
+                        <img className=" w-full rounded-2xl mb-5" src={storage.local.get("images/imagen_login_admin.jpg").url} alt="" />
+                        <h2 className="text-4xl mb-3 font-bold">Empowering your marketplace ecosystem.</h2>
+                        <div>Manage tenants, track performance, and scale your business from one unified dashboard designed for modern enterprise operations.</div>
+                    </div>
+
+                </div>
+
+                <div className="basis-full lg:basis-1/2 h-screen overflow-y-auto bg-gray-200 text-gray-600 dark:bg-gray-950 dark:text-gray-400 flex flex-col items-center justify-center p-10">
+                    <div className=" text-2xl font-bold mb-10 absolute top-5 left-5 block lg:hidden"> <LuStore className=" inline-block text-blue-700 w-10 h-10"/>  OwOMarket</div>
+                    <div className=" w-full sm:w-10/12 md:w-10/12 lg:w-7/12">
+                        <h1 className="text-2xl text-gray-600 dark:text-gray-400 mb-2 font-bold">Welcome Back</h1>
+                        <div className="mb-5">Please enter your credentials to access the management suite.</div>
+                        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                            <div className="">
+                                <div className="mb-2 block">
+                                    <Label htmlFor="email">Email</Label>
+                                </div>
+                                <TextInput id="email" type="email" name="email" icon={HiMail} placeholder="name@owomarket.com" onChange={handlersChangeFormLogin} value={statuFormLogin.email} required />
+                            </div>
+                            <div className="mb-5">
+                                <div className="mb-2 block">
+                                    <Label htmlFor="password">Password</Label>
+                                </div>
+                                <TextInput id="password" type="password" name="password" icon={HiLockClosed} placeholder="password" onChange={handlersChangeFormLogin} value={statuFormLogin.password} required />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Checkbox id="remember" />
+                                <Label htmlFor="remember">Remember me</Label>
+                            </div>
+                            <Button type="submit"> <LuSend/>  Submit</Button>
+                            <h6 className="text-sm text-gray-600 dark:text-gray-400"><span className="font-bold">Security Notice:</span> Unauthorized access to this management suite is strictly prohibited and monitored. All activities are logged to ensure platform integrity and compliance.</h6>
+                        </form>
+                    </div>
+                </div>
 
             </main>
 

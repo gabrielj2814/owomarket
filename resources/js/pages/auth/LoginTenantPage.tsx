@@ -152,7 +152,7 @@ const LoginTenantPage = () => {
                             <h3 className="text-xl text-gray-300">Welcomen back. Manage your products, orders, and staff</h3>
                         </div>
                         <div className="w-full lg:w-3/6 ">
-                            <h1 className=" text-2xl text-gray-600 dark:text-gray-400 mb-5 font-bold">Login Tenant Sing In</h1>
+                            <h1 className=" text-2xl text-gray-600 dark:text-gray-400 mb-5 font-bold">Login Staff Sing In</h1>
                             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                                 <div className="">
                                     <div className="mb-2 block">

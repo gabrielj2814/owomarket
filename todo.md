@@ -6,7 +6,6 @@
   - admin -> tenant
   - staff -> tenant
 
-- el login del tenant ya esta funcional pero no tiene el diseño que corresponde
 - agregar que el VO Slug reciba por parametro el dominio ya que ahorita lo esta obteniendo por la función config
 - docker
 - kunbernetes
