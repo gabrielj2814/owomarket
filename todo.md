@@ -6,7 +6,7 @@
   - admin -> tenant
   - staff -> tenant
 
-- login cliente (solo pantalla)
+- agregar home basico al dominio central y a los sub dominios
 - agregar que el VO Slug reciba por parametro el dominio ya que ahorita lo esta obteniendo por la función config
 - perfil
 

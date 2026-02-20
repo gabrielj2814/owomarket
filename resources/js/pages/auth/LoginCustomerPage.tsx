@@ -13,7 +13,7 @@ interface PasswordValidationRules {
 
 
 
-const LoginStaff = () => {
+const LoginCustomerPage = () => {
 
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
     // console.log("centralDomain:", centralDomain);
@@ -134,13 +134,11 @@ const LoginStaff = () => {
 
 
     const irHaPorElRol = (rol:string,uuid:string) => {
-        const BACKOFICCE_ADMIN_DASHBOARD = `/admin/backoffice/${uuid}/dashboard`;
-        const BACKOFICCE_TENANT_OWNER_DASHBOARD = `/tenant/owner/backoffice/${uuid}/dashboard`;
-        if(rol === 'super_admin'){
-            window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
-        }
-        if(rol === 'tenant_owner'){
-            window.location.href = BACKOFICCE_TENANT_OWNER_DASHBOARD;
+        // const BACKOFICCE_ADMIN_DASHBOARD = `/admin/backoffice/${uuid}/dashboard`;
+        // const BACKOFICCE_TENANT_OWNER_DASHBOARD = `/tenant/owner/backoffice/${uuid}/dashboard`;
+        if(rol === 'customer'){
+            alert("Login exitoso como cliente");
+            // window.location.href = BACKOFICCE_ADMIN_DASHBOARD;
         }
     }
     // ======= Render =======
@@ -149,24 +147,19 @@ const LoginStaff = () => {
         <>
             <main className="flex flex-row h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400">
                 <LoaderSpinner status={statusLoader} />
-                <div className=" basis-full lg:basis-1/2 hidden lg:block p-4 h-screen">
-                    <div className=" text-2xl font-bold mb-10"> <LuStore className=" inline-block text-blue-700 w-10 h-10"/>  OwOMarket</div>
-
-                    <div className=" w-full flex flex-col justify-center p-5">
-                        <h2 className="text-xl mb-3 font-bold">Marketplace Management</h2>
-                        {/* <img className=" w-xl h-xl rounded-2xl mb-5" src="https://i.pinimg.com/736x/24/81/d1/2481d19f7d6d2062cc987c2384f0096e.jpg" alt="" /> */}
-                        <img className=" w-full rounded-2xl mb-5" src={storage.local.get("images/imagen_login_admin.jpg").url} alt="" />
-                        <h2 className="text-4xl mb-3 font-bold">Empowering your marketplace ecosystem.</h2>
-                        <div>Manage tenants, track performance, and scale your business from one unified dashboard designed for modern enterprise operations.</div>
+                <div className=" basis-full lg:basis-1/2 h-screen hidden lg:block relative ">
+                    <img className=" w-full h-full" src={storage.local.get("images/imagen_login_customer.jpeg").url} alt="" />
+                    <div className=" w-full h-full absolute z-10 top-0 left-0 bg-gradient-to-t from-gray-900/90 to-transparent flex flex-col justify-end p-10">
+                        <h2 className="text-4xl mb-3 font-bold">Discover your next favorite thing.</h2>
                     </div>
-
                 </div>
 
                 <div className="basis-full lg:basis-1/2 h-screen overflow-y-auto bg-gray-200 text-gray-600 dark:bg-gray-950 dark:text-gray-400 flex flex-col items-center justify-center p-10">
-                    <div className=" text-2xl font-bold mb-10 absolute top-5 left-5 block lg:hidden"> <LuStore className=" inline-block text-blue-700 w-10 h-10"/>  OwOMarket</div>
+                    {/* <div className=" text-2xl font-bold mb-10 absolute top-5 left-5 block lg:hidden"> <LuStore className=" inline-block text-blue-700 w-10 h-10"/>  OwOMarket</div> */}
                     <div className=" w-full sm:w-10/12 md:w-10/12 lg:w-7/12">
+                        <div className=" text-3xl font-bold  mb-10"> <LuStore className=" inline-block text-blue-700 w-8 h-8"/>  OwOMarket</div>
                         <h1 className="text-2xl text-gray-600 dark:text-gray-400 mb-2 font-bold">Welcome Back</h1>
-                        <div className="mb-5">Please enter your credentials to access the management suite.</div>
+                        <div className="mb-5">Log in to your account to continue.</div>
                         <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                             <div className="">
                                 <div className="mb-2 block">
@@ -201,4 +194,4 @@ const LoginStaff = () => {
 
 }
 
-export default LoginStaff;
+export default LoginCustomerPage;
