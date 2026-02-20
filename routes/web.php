@@ -7,12 +7,16 @@ use Inertia\Inertia;
 foreach (config('tenancy.central_domains') as $domain) {
 
     Route::domain($domain)->group(function () {
-        Route::get('/', function () {
-            $domain = request()->getHost();
-            return Inertia::render('welcome',[
-                'domain' => $domain,
-            ]);
-        })->name('home');
+        // Route::get('/', function () {
+        //     $domain = request()->getHost();
+        //     return Inertia::render('welcome',[
+        //         'domain' => $domain,
+        //     ]);
+        // })->name('home');
+
+        require base_path("src/Marketplace/Infrastructure/Http/Routes/web.php");
+
+        Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/web.php"));
 
         Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/web.php"));
 

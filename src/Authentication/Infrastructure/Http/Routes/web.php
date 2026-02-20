@@ -6,7 +6,6 @@ use Src\Authentication\Infrastructure\Http\Controller\LoginCustomerScreenGETCont
 use Src\Authentication\Infrastructure\Http\Controller\LoginStaffScreenGETController;
 use Src\Authentication\Infrastructure\Http\Controller\LoginWebPOSTController;
 use Src\Authentication\Infrastructure\Http\Controller\LogoutWebPOSTController;
-use Src\Authentication\Infrastructure\Http\Controller\PaginaInicialTestGETController;
 
 Route::get("/login",               [LoginStaffScreenGETController::class, 'index'])->name('central.web.auth.login-staff');
 Route::get("/customer/login",      [LoginCustomerScreenGETController::class, 'index'])->name('central.web.auth.login-customer');
