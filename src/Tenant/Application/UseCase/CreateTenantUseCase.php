@@ -21,10 +21,10 @@ class CreateTenantUseCase {
         protected TenantRepositoryInterface $tenantRepository,
     ) {}
 
-    public function execute(string $name): Tenant{
+    public function execute(string $name, string $domain): Tenant{
 
         $name= TenantName::make($name);
-        $slug= Slug::fromString($name->value());
+        $slug= Slug::make($name->value(), $domain);
         $status= TenantStatus::active();
         $request= TenantRequest::inProgress();
         $timezone= Timezone::make('UTC');

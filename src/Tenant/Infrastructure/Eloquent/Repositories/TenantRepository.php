@@ -78,7 +78,7 @@ class TenantRepository implements TenantRepositoryInterface {
         $tenants = collect($items)->map(function ($model) {
             $id          = Uuid::make($model->id);
             $name        = TenantName::make($model->name);
-            $slug        = Slug::make($model->slug);
+            $slug        = Slug::make($model->slug, env('APP_CENTRAL_DOMAIN'));
             $status      = TenantStatus::make($model->status);
             $timezone    = Timezone::make($model->timezone);
             $currency    = Currency::make($model->currency);
@@ -123,7 +123,7 @@ class TenantRepository implements TenantRepositoryInterface {
 
         $id          = Uuid::make($consulta->id);
         $name        = TenantName::make($consulta->name);
-        $slug        = Slug::make($consulta->slug);
+        $slug        = Slug::make($consulta->slug, env('APP_CENTRAL_DOMAIN'));
         $status      = TenantStatus::make($consulta->status);
         $timezone    = Timezone::make($consulta->timezone);
         $currency    = Currency::make($consulta->currency);
@@ -277,7 +277,7 @@ class TenantRepository implements TenantRepositoryInterface {
 
         $id          = Uuid::make($consulta->id);
         $name        = TenantName::make($consulta->name);
-        $slug        = Slug::make($consulta->slug);
+        $slug        = Slug::make($consulta->slug, env('APP_CENTRAL_DOMAIN'));
         $status      = TenantStatus::make($consulta->status);
         $timezone    = Timezone::make($consulta->timezone);
         $currency    = Currency::make($consulta->currency);
@@ -346,11 +346,10 @@ class TenantRepository implements TenantRepositoryInterface {
         $respuesta=$consulta->paginate(50);
 
         $items=$respuesta->items();
-
         $tenants = collect($items)->map(function ($model) {
             $id          = Uuid::make($model->id);
             $name        = TenantName::make($model->name);
-            $slug        = Slug::make($model->slug);
+            $slug        = Slug::make($model->slug, env('APP_CENTRAL_DOMAIN'));
             $status      = TenantStatus::make($model->status);
             $timezone    = Timezone::make($model->timezone);
             $currency    = Currency::make($model->currency);

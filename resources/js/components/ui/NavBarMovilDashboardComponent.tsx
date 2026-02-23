@@ -33,7 +33,6 @@ import { TbBuildingStore, TbWorldWww } from "react-icons/tb";
 
 const NavBarMovilDashboardComponent = () => {
 
-    //
 
     const { state, actions } = useDashboard()
 
@@ -136,7 +135,7 @@ const NavBarMovilDashboardComponent = () => {
                                         </>
                                     }
                                     {/* rutas tenant owner central */}
-                                     { state.authUser.user_type == "tenant_owner" &&
+                                    { state.authUser.user_type == "tenant_owner" &&
                                         <>
                                             <SidebarItems>
                                                 <SidebarItemGroup>

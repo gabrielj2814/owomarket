@@ -6,8 +6,10 @@ use InvalidArgumentException;
 
 class Slug
 {
+
     private function __construct(
-        private string $value
+        private string $value,
+        private string $domain,
     ) {
         $this->ensureIsValidSlug($value);
         $this->ensureIsValidSubdomain($value);
@@ -16,18 +18,18 @@ class Slug
     /**
      * Método estático para crear un Slug
      */
-    public static function make(string $value): self
+    public static function make(string $value, string $domain): self
     {
-        return new self($value);
+        return new self($value, $domain);
     }
 
     /**
      * Crea un slug desde un string (ej: "Mi Tienda" -> "mi-tienda")
      */
-    public static function fromString(string $string): self
+    public static function fromString(string $string, string $domain): self
     {
         $slug = self::slugify($string);
-        return new self($slug);
+        return new self($slug, $domain);
     }
 
     /**
@@ -41,10 +43,9 @@ class Slug
     /**
      * Obtiene el slug como subdominio completo
      */
-    public function asSubdomain(string | null $domain): string
+    public function asSubdomain(): string
     {
-        $domain = $domain ?? config('app.domain');
-        return "{$this->value}.{$domain}";
+        return "{$this->value}.{$this->domain}";
     }
 
     /**
@@ -52,7 +53,7 @@ class Slug
      */
     public function tenantUrl(string $protocol = 'https'): string
     {
-        return "{$protocol}://{$this->value}.{config('app.domain')}";
+        return "{$protocol}://{$this->value}.{$this->domain}";
     }
 
     /**
@@ -219,7 +220,7 @@ class Slug
         while (true) {
             $alternative = $base . '-' . $suffix;
             try {
-                new self($alternative);
+                new self($alternative, $this->domain);
                 return $alternative;
             } catch (InvalidArgumentException) {
                 $suffix++;
@@ -228,25 +229,9 @@ class Slug
     }
 
     /**
-     * Valida contra slugs existentes en la base de datos
-     */
-    public static function isAvailable(string $slug, string $modelClass): bool
-    {
-        try {
-            $slugObj = self::make($slug);
-
-            // Verificar en la base de datos
-            return !$modelClass::where('slug', $slugObj->value())->exists();
-
-        } catch (InvalidArgumentException) {
-            return false;
-        }
-    }
-
-    /**
      * Genera un slug aleatorio para pruebas
      */
-    public static function random(): self
+    public static function random(string $domain): self
     {
         $adjectives = ['happy', 'smart', 'quick', 'bright', 'bold', 'calm'];
         $nouns = ['fox', 'wolf', 'bear', 'eagle', 'lion', 'tiger'];
@@ -256,7 +241,7 @@ class Slug
                        '-' . $nouns[array_rand($nouns)] .
                        '-' . $number;
 
-        return self::make($randomString);
+        return self::make($randomString, $domain);
     }
 }
 

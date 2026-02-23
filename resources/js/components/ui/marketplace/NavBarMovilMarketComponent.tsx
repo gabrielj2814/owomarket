@@ -38,6 +38,9 @@ import { TbBuildingStore } from "react-icons/tb";
 
 const NavBarMovilMarketComponent = () => {
 
+    const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
+    const APP_URL = import.meta.env.VITE_APP_URL;
+
     const [isOpen, setIsOpen] = useState(false);
 
     // const { state, actions } = useDashboard()
@@ -94,13 +97,24 @@ const NavBarMovilMarketComponent = () => {
                 </div>
                 <NavbarCollapse>
                     {/* central */}
-                    <NavbarLink href="/">Home</NavbarLink>
-                    <NavbarLink href="#">Shops</NavbarLink>
-                    <NavbarLink href="#">About</NavbarLink>
-                    <NavbarLink href="#">FAQ</NavbarLink>
-                    <NavbarLink href="/tenant/create/account">Create your business</NavbarLink>
-                    <NavbarLink href="/auth/customer/login">Login</NavbarLink>
+                    {window.location.hostname == centralDomain &&
+                        <>
+                            <NavbarLink href="/">Home</NavbarLink>
+                            <NavbarLink href="#">Shops</NavbarLink>
+                            <NavbarLink href="#">About</NavbarLink>
+                            <NavbarLink href="#">FAQ</NavbarLink>
+                            <NavbarLink href="/tenant/create/account">Create your business</NavbarLink>
+                        </>
+                    }
+
                     {/* Tenant */}
+                    {window.location.hostname != centralDomain &&
+                        <>
+                            <NavbarLink href="/">Home</NavbarLink>
+                            <NavbarLink href="#">Products</NavbarLink>
+                        </>
+                    }
+                    <NavbarLink href={APP_URL+"/auth/customer/login"}>Login</NavbarLink>
                 </NavbarCollapse>
             </Navbar>
             <Drawer open={isOpen} onClose={handleClose}>
@@ -113,28 +127,51 @@ const NavBarMovilMarketComponent = () => {
                         <div className="flex h-full flex-col justify-between py-2">
                             <div>
                                 {/* central */}
-                                <SidebarItems>
-                                    <SidebarItemGroup>
+                                {window.location.hostname == centralDomain &&
+                                    <>
+                                     <SidebarItems>
+                                        <SidebarItemGroup>
 
-                                        <SidebarItem href={`/`} icon={HiHome}>
-                                            Home
-                                        </SidebarItem>
-                                        <SidebarItem href="#" icon={HiClock}>
-                                            About
-                                        </SidebarItem>
-                                        <SidebarItem href={`#`} icon={HiClock}>
-                                            FAQ
-                                        </SidebarItem>
+                                            <SidebarItem href={`/`} icon={HiHome}>
+                                                Home
+                                            </SidebarItem>
+                                            <SidebarItem href="#" icon={HiClock}>
+                                                About
+                                            </SidebarItem>
+                                            <SidebarItem href={`#`} icon={HiClock}>
+                                                FAQ
+                                            </SidebarItem>
 
-                                        <SidebarItem href={`/tenant/create/account`} icon={LuStore}>
-                                            Create your business
-                                        </SidebarItem>
-                                        <SidebarItem href={`/auth/customer/login`} icon={HiLogin}>
-                                            Login
-                                        </SidebarItem>
-                                    </SidebarItemGroup>
-                                </SidebarItems>
+                                            <SidebarItem href={`/tenant/create/account`} icon={LuStore}>
+                                                Create your business
+                                            </SidebarItem>
+                                            <SidebarItem href={APP_URL+"/auth/customer/login"} icon={HiLogin}>
+                                                Login
+                                            </SidebarItem>
+                                        </SidebarItemGroup>
+                                    </SidebarItems>
+                                    </>
+                                }
+
                                 {/* Tenant */}
+                                {window.location.hostname !== centralDomain &&
+                                    <>
+                                     <SidebarItems>
+                                        <SidebarItemGroup>
+
+                                            <SidebarItem href={`/`} icon={HiHome}>
+                                                Home
+                                            </SidebarItem>
+                                            <SidebarItem href="#" icon={HiClock}>
+                                                Products
+                                            </SidebarItem>
+                                            <SidebarItem href={APP_URL+"/auth/customer/login"} icon={HiLogin}>
+                                                Login
+                                            </SidebarItem>
+                                        </SidebarItemGroup>
+                                    </SidebarItems>
+                                    </>
+                                }
                             </div>
                         </div>
                     </Sidebar>

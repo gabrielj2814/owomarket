@@ -5,12 +5,12 @@ import { Head } from '@inertiajs/react';
 import React from 'react';
 
 
-interface props {
+interface tenantHomePageProps {
     domain?: String;
 }
 
 
-const tenantHomePage:React.FC<props> = ({domain= null}) => {
+const tenantHomePage:React.FC<tenantHomePageProps> = ({domain= null}) => {
 
     return (
         <>

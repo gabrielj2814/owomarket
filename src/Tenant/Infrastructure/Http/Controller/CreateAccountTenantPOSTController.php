@@ -43,6 +43,7 @@ class CreateAccountTenantPOSTController extends Controller {
         //     "password": "securepassword",
         //     "tenant_name": "Acme Corp"
         // }
+        $centralDomain = env('APP_CENTRAL_DOMAIN', 'owomarket.com');
 
         $owner=null;
         $tenant=null;
@@ -59,7 +60,8 @@ class CreateAccountTenantPOSTController extends Controller {
             );
 
             $tenant=$this->createTenantUseCase->execute(
-                $data->store_name
+                $data->store_name,
+                $centralDomain
             );
 
             $tenantUser=$this->assignTenantToUserUseCase->execute(
