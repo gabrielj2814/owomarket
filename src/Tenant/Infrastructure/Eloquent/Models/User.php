@@ -14,11 +14,11 @@ class User extends Authenticatable
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
-    protected $connection = 'central';
+
     public $table = 'users';
     public $primaryKey = 'id';
     public $incrementing = false;
-    protected $ketType = "string";
+    protected $keyType = "string";
 
 
     /**

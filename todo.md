@@ -6,8 +6,6 @@
   - admin -> tenant
   - staff -> tenant
 
-- agregar que el VO Slug reciba por parametro el dominio ya que ahorita lo esta obteniendo por la función config
-- agregar rol de owner para el tenant owner en sus negocios
 - perfil
 
 - validaciones login:

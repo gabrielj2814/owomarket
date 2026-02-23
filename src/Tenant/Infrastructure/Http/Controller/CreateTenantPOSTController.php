@@ -34,6 +34,8 @@ class CreateTenantPOSTController extends Controller {
                 $tenant->getId()->value()
             );
 
+            // owner
+
 
             $data= [
                 "tenant"=>[

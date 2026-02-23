@@ -118,6 +118,8 @@ return [
     |
     */
 
+    "default_passwords_tenant_owner" => env('DEFAULT_USER_TENANT_OWNER_PASSWORD_DEV', 'EndAdmin_12345678'),
+
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),
         'store' => env('APP_MAINTENANCE_STORE', 'database'),

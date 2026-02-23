@@ -37,7 +37,6 @@ class CreateTenantUseCase {
             $currency,
             $request,
         );
-        Log::info("Creando tenant con slug: ".$slug->value());
 
         $tenantConSlugEnUso= $this->tenantRepository->consultTenantBySlug($slug);
 

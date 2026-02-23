@@ -26,7 +26,7 @@ const SidebarDashboardComponent = () => {
 
   return (
       <Sidebar aria-label="Default sidebar example" className="hidden lg:block">
-        {/* rutas admin */}
+        {/* rutas centrales admin */}
         { state.authUser.user_type == "super_admin" &&
             <>
                 <SidebarItems>
@@ -60,12 +60,32 @@ const SidebarDashboardComponent = () => {
                 </SidebarItems>
             </>
         }
-        {/* rutas tenant owner */}
+        {/* rutas centrales tenant owner */}
         { state.authUser.user_type == "tenant_owner" &&
             <>
                 <SidebarItems>
                     <SidebarItemGroup>
                         <SidebarItem href={`/tenant/owner/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
+                            Dashboard
+                        </SidebarItem>
+
+                        <SidebarItem href="#" icon={HiUser} >
+                            My Perfil
+                        </SidebarItem>
+
+                        <SidebarItem href="#" icon={LuLogOut} onClick={logout}>
+                            Log Out
+                        </SidebarItem>
+                    </SidebarItemGroup>
+                </SidebarItems>
+            </>
+        }
+         {/* rutas tenant owner */}
+        { state.authUser.user_type == "owner" &&
+            <>
+                <SidebarItems>
+                    <SidebarItemGroup>
+                        <SidebarItem href={`/tenant/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                             Dashboard
                         </SidebarItem>
 

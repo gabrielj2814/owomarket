@@ -18,10 +18,13 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Domain as EntitiesDomain;
 use Src\Tenant\Domain\Entities\Tenant;
 use Src\Tenant\Domain\Entities\TenantOwner;
+use Src\Tenant\Domain\Shared\Security\PasswordHasher;
+use Src\Tenant\Domain\Shared\Security\PasswordValidator;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
 use Src\Tenant\Domain\ValuesObjects\Domain;
 use Src\Tenant\Domain\ValuesObjects\DomainFallback;
 use Src\Tenant\Domain\ValuesObjects\DomainPrimary;
+use Src\Tenant\Domain\ValuesObjects\Password;
 use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
 use Src\Tenant\Domain\ValuesObjects\Slug;
 use Src\Tenant\Domain\ValuesObjects\TenantName;
@@ -34,8 +37,15 @@ use Src\Tenant\Domain\ValuesObjects\UserType;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\Domain as ModelsDomain;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 class TenantRepository implements TenantRepositoryInterface {
+
+
+    public function __construct(
+        protected PasswordValidator $validator,
+        protected PasswordHasher $hasher
+    ){}
 
 
 
@@ -322,10 +332,25 @@ class TenantRepository implements TenantRepositoryInterface {
 
     public function tenantUp(Uuid $id) {
         $tenant= ModelsTenant::where('id',$id->value())->first();
-        $tenant->domains()->create([
-            'id' => Uuid::generate()->value(),
-            'domain' => Domain::fromString($tenant->slug.'.'.config('tenancy.central_domains.0'))->value()
-        ]);
+        try {
+            $tenant->domains()->create([
+                'id' => Uuid::generate()->value(),
+                'domain' => Domain::fromString($tenant->slug.'.'.config('tenancy.central_domains.0'))->value()
+            ]);
+
+            tenancy()->initialize($tenant);
+            $user= new User();
+            $user->id = Uuid::generate()->value();
+            $user->name = "Admin";
+            $user->email = "admin@".$tenant->slug.".com";
+            $user->password = $this->hasher->hash(config('app.default_passwords_tenant_owner'));
+            $user->type = "owner";
+            $user->is_active = true;
+            $user->save();
+
+        } finally {
+            tenancy()->end();
+        }
     }
 
     public function changedRequestStatus(Tenant $tenant): Tenant

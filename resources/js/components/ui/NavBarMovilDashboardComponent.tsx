@@ -100,7 +100,7 @@ const NavBarMovilDashboardComponent = () => {
                                 <form className="pb-3 md:hidden">
                                     <TextInput icon={HiSearch} type="search" placeholder="Search" required size={32} />
                                 </form>
-                                    {/* rutas admin */}
+                                    {/* rutas centrales admin */}
                                     { state.authUser.user_type == "super_admin" &&
                                         <>
                                             <SidebarItems>
@@ -134,12 +134,31 @@ const NavBarMovilDashboardComponent = () => {
                                             </SidebarItems>
                                         </>
                                     }
-                                    {/* rutas tenant owner central */}
+                                    {/* rutas central tenant owner */}
                                     { state.authUser.user_type == "tenant_owner" &&
                                         <>
                                             <SidebarItems>
                                                 <SidebarItemGroup>
                                                     <SidebarItem href={`/tenant/owner/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
+                                                        Dashboard
+                                                    </SidebarItem>
+                                                    <SidebarItem href="#" icon={HiUser}>
+                                                        My Perfil
+                                                    </SidebarItem>
+                                                    <SidebarItem icon={HiLogout} onClick={logout}>
+                                                        Log Out
+                                                    </SidebarItem>
+                                                </SidebarItemGroup>
+                                            </SidebarItems>
+                                        </>
+                                    }
+
+                                     {/* rutas tenant owner */}
+                                    { state.authUser.user_type == "owner" &&
+                                        <>
+                                            <SidebarItems>
+                                                <SidebarItemGroup>
+                                                    <SidebarItem href={`/tenant/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                                                         Dashboard
                                                     </SidebarItem>
                                                     <SidebarItem href="#" icon={HiUser}>

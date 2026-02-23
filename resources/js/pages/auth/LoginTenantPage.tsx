@@ -134,7 +134,7 @@ const LoginTenantPage = () => {
 
     const irHaPorElRol = (rol:string,uuid:string) => {
         const BACKOFICCE_TENANT_OWNER_DASHBOARD = `/tenant/backoffice/${uuid}/dashboard`;
-        if(rol === 'tenant_owner'){
+        if(rol === 'owner'){
             window.location.href = BACKOFICCE_TENANT_OWNER_DASHBOARD;
         }
     }
