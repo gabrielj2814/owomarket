@@ -1,16 +1,18 @@
 - Roles:
-  - super_admin -> central
-  - tenant_owner -> central
-  - customer  -> central
-  - owner -> tenant
+  - [x] super_admin -> central
+  - [x] tenant_owner -> central
+  - [x] customer  -> central 
+  - [x] owner -> tenant
   - admin -> tenant
   - staff -> tenant
 
+por hacer
 - perfil
-
-- validaciones login:
+- en la home central listar los tenant activos y al darle click mandarlo a su home
+- validaciones login
   - los usuarios inactivos no pueden entrar
   - denegar el acceso al login del tenant si el tenant esta en los siguientes estados (rechazado, en progreso, inactivo)
+  
 
 baja prioridad
 - trabajar en el perfil de usuario
