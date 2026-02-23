@@ -4,5 +4,4 @@ use Src\Marketplace\Infrastructure\Http\Controller\ViewHomePageCentralGETControl
 
 Route::get("/", [ViewHomePageCentralGETController::class, 'index'])->name('central.home');
 
-
 ?>

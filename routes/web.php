@@ -25,7 +25,7 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         Route::get("/login", function(Request $request) {
             return redirect("/");
-        })->name("login");
+        });
     });
 
 }

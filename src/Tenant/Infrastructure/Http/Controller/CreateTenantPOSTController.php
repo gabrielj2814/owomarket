@@ -21,7 +21,7 @@ class CreateTenantPOSTController extends Controller {
     ){}
 
     public function index(CreateTenantFormRequest $request): JsonResponse{
-        $centralDomain = env('APP_CENTRAL_DOMAIN', 'owomarket.com');
+        $centralDomain = config('tenancy.central_domains.0');
         try {
             //code...
             $tenant=$this->create_tenant_use_case->execute(

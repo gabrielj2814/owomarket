@@ -43,7 +43,7 @@ class CreateAccountTenantPOSTController extends Controller {
         //     "password": "securepassword",
         //     "tenant_name": "Acme Corp"
         // }
-        $centralDomain = env('APP_CENTRAL_DOMAIN', 'owomarket.com');
+        $centralDomain = config('tenancy.central_domains.0');
 
         $owner=null;
         $tenant=null;

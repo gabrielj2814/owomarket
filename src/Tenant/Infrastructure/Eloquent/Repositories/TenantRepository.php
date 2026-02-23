@@ -78,7 +78,7 @@ class TenantRepository implements TenantRepositoryInterface {
         $tenants = collect($items)->map(function ($model) {
             $id          = Uuid::make($model->id);
             $name        = TenantName::make($model->name);
-            $slug        = Slug::make($model->slug, env('APP_CENTRAL_DOMAIN'));
+            $slug        = Slug::make($model->slug, config('tenancy.central_domains.0'));
             $status      = TenantStatus::make($model->status);
             $timezone    = Timezone::make($model->timezone);
             $currency    = Currency::make($model->currency);
@@ -346,10 +346,11 @@ class TenantRepository implements TenantRepositoryInterface {
         $respuesta=$consulta->paginate(50);
 
         $items=$respuesta->items();
+
         $tenants = collect($items)->map(function ($model) {
             $id          = Uuid::make($model->id);
             $name        = TenantName::make($model->name);
-            $slug        = Slug::make($model->slug, env('APP_CENTRAL_DOMAIN'));
+            $slug        = Slug::make($model->slug, config('tenancy.central_domains.0'));
             $status      = TenantStatus::make($model->status);
             $timezone    = Timezone::make($model->timezone);
             $currency    = Currency::make($model->currency);
