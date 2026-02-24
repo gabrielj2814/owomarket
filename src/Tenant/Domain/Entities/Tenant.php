@@ -210,6 +210,10 @@ class Tenant {
         return $this->domain;
     }
 
+    public function loginIsActive(): bool{
+        return $this->status->equals(TenantStatus::active()) && $this->request->equals(TenantRequest::approved());
+    }
+
 }
 
 

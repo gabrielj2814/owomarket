@@ -1,23 +1,25 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Src\Tenant\Infrastructure\Http\Controller\CancelAccountTenantOwnerDELETEController;
-use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantByUuidOfOwnerPOSTController;
-use Src\Tenant\Infrastructure\Http\Controller\CreateAccountTenantPOSTController;
-use Src\Tenant\Infrastructure\Http\Controller\CreateTenantPOSTController;
-use Src\Tenant\Infrastructure\Http\Controller\DeleteTenantDELETEController;
-use Src\Tenant\Infrastructure\Http\Controller\FiltrarTenantsPOSTController;
-use Src\Tenant\Infrastructure\Http\Controller\TenantOwnerUpdatePasswordPUTController;
-use Src\Tenant\Infrastructure\Http\Controller\TenantOwnerUpdatePersonalDataPUTController;
+use Src\Shared\Infrastructure\Http\Middleware\InternalServiceMiddleware;
+use Src\Tenant\Infrastructure\Http\Controller\ConsultTenantLoginIsActiveGETController;
 
-// Route::post('filtrar',                                   [FiltrarTenantsPOSTController::class, 'index']);
-// Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);
-// Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
-// Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
-// Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);
-Route::post('/owner/filter/tenants',                               [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
-Route::post('/owner/tenant',                                       [CreateTenantPOSTController::class, 'index']);
-Route::delete('/owner/tenant',                                     [DeleteTenantDELETEController::class, 'index']);
 
+Route::prefix("public")->group(function () {
+    // Route::post('filtrar',                                             [FiltrarTenantsPOSTController::class, 'index']);
+    // Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);
+    // Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
+    // Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
+    // Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);
+
+});
+
+
+
+Route::middleware(InternalServiceMiddleware::class)->prefix("interna")->group(function () {
+
+    Route::get('/consult/login-is-active/{slug}', [ConsultTenantLoginIsActiveGETController::class, 'index']);
+
+});
 
 ?>

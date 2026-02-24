@@ -10,8 +10,6 @@ Route::prefix("public")->group(function () {
 
 });
 
-
-// Route::post("/consulta-usuario-por-email",       [ConsultUserByEmailPOSTController::class, "index"])->name("interna.api.user.consultUserByEmail");
 Route::middleware(InternalServiceMiddleware::class)->prefix("interna")->group(function () {
 
     Route::post("/consulta-usuario-por-email",       [ConsultUserByEmailPOSTController::class, "index"])->name("interna.api.user.consultUserByEmail");

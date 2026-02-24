@@ -6,7 +6,6 @@ namespace Src\Authentication\Infrastructure\Services;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 use Src\Authentication\Application\Contracts\UserServices;
-use Src\Authentication\Domain\Entities\User;
 
 class UserApiCentralClient extends BaseApiClient implements UserServices {
 

@@ -2,7 +2,7 @@ import LoaderSpinner from "@/components/LoaderSpinner";
 import AuthServices from "@/Services/AuthServices";
 import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
-import React, { useState } from "react";
+import React, { FC, useState } from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { LuSend, LuStore  } from "react-icons/lu";
 
@@ -10,15 +10,17 @@ interface PasswordValidationRules {
   [key: string]: RegExp;
 }
 
+interface LoginTenantPageProps {
+    domain: string;
+}
 
 
-const LoginTenantPage = () => {
+
+const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
 
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
+    alert(`dominio: ${domain}`);
     // console.log("centralDomain:", centralDomain);
-
-
-
     // ======= States =======
 
     const [statuFormLogin,  setStatuFormLogin] = useState<FormLogin>({
