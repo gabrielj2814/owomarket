@@ -7,32 +7,23 @@
   - staff -> tenant
 
 por hacer
-- perfil
-- en la home central listar los tenant activos y al darle click mandarlo a su home
 - validaciones login
   - los usuarios inactivos no pueden entrar
   - denegar el acceso al login del tenant si el tenant esta en los siguientes estados (rechazado, en progreso, inactivo)
   
-
 baja prioridad
-- trabajar en el perfil de usuario
-  - cambiar avartar de usuario (endpoint)
-  - interfaz (4)
-    - datos personales
-    - clave
-    - dar de baja
 - remover el softdelete en tenant y user y manejar estados para el tema de la visibilidad 
-
-validaciones por hacer:
-- validar que el numero de telefono no este en uso
-- validar que el email no este en uso
-- en la pantalla de crear cuanta para el owner y la modal al ingresar el nombre del negocio que el campo de slug del dominio se contralla a medida que escribe el nombre del negocio
-- validaciones de clave al usar el login y al crear la cuenta del tenant
-- email unicos
-- telefono unico
 
 implementar:
 - implementar SSO propio para que el cliente pueda navegar entre sub dominios sin teneque que crear cuentas por cada tienda
 - docker
 - kunbernetes
 - ci/cd
+
+lista de validaciones:
+- validar que el numero de telefono no este en uso
+- validar que el email no este en uso
+- en la pantalla de crear cuanta para el owner y la modal al ingresar el nombre del negocio que el campo de slug del dominio se contralla a medida que escribe el nombre del negocio
+- validaciones de clave al usar el login y al crear la cuenta del tenant
+- email unicos
+- telefono unico
