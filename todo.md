@@ -5,11 +5,24 @@
   - [x] owner -> tenant
   - admin -> tenant
   - staff -> tenant
+  - customer -> tenant (sin password)
 
 por hacer
 - validaciones login
-  - los usuarios inactivos no pueden entrar
-  - denegar el acceso al login del tenant si el tenant esta en los siguientes estados (rechazado, en progreso, inactivo)
+  - ya muestra la pantalla 403 pero hay que agregarle estilos a la vista
+- trello del proyecto para mejorar el flujo de desarrollo del proyecto
+  - anotoar los pendientes y las implementaciones en el trellos
+  - definir los siguiente modulos en el trello
+  
+tenant modules:
+- product 
+- categories
+- CRM
+  - clients
+- orders
+  - new
+  - status
+- invoices 
   
 baja prioridad
 - remover el softdelete en tenant y user y manejar estados para el tema de la visibilidad 

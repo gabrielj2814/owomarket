@@ -19,7 +19,7 @@ interface LoginTenantPageProps {
 const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
 
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
-    alert(`dominio: ${domain}`);
+    // alert(`dominio: ${domain}`);
     // console.log("centralDomain:", centralDomain);
     // ======= States =======
 
