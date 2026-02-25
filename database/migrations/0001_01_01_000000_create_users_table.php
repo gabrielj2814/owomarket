@@ -32,7 +32,7 @@ return new class extends Migration
             // staff
             $table->enum('type', ['super_admin', 'tenant_owner', 'customer'])->default('customer');
             $table->string('code_phone')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('phone')->unique()->nullable();
             $table->text('avatar')->nullable();
             $table->text('cedula_doc')->nullable();
             $table->boolean('is_active')->default(true);

@@ -27,11 +27,11 @@ return new class extends Migration
             $table->string('nacionalidad',1)->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
+            $table->string('password')->nullable();
             $table->string('pin')->nullable();
-            $table->enum('type', ['owner','admin','manager','staff'])->default('staff');
+            $table->enum('type', ['owner','admin','manager','staff', 'customer'])->default('staff');
             $table->string('code_phone')->nullable();
-            $table->string('phone')->nullable();
+            $table->string('phone')->unique()->nullable();
             $table->text('avatar')->nullable();
             $table->text('cedula_doc')->nullable();
             $table->boolean('is_active')->default(true);
