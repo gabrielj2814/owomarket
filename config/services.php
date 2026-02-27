@@ -42,6 +42,7 @@ return [
             'admin-context',
             'user-context',
             'tenant-context',
+            'product-context',
         ],
     ],
 

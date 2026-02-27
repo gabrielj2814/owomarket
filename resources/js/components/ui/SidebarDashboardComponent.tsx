@@ -1,8 +1,9 @@
 import { useDashboard } from "@/contexts/DashboardContext";
 import { Sidebar, SidebarCollapse, SidebarItem, SidebarItemGroup, SidebarItems } from "flowbite-react";
-import { HiArrowSmRight, HiChartPie, HiInbox, HiShoppingBag, HiTable, HiUser, HiUsers, HiViewBoards } from "react-icons/hi";
-import { LuLogOut, LuSettings, LuShield, LuStore, LuUserPlus, LuUserRoundSearch, LuUsers} from "react-icons/lu";
-import { TbBuildingStore, TbWorldWww } from "react-icons/tb";
+import { HiChartPie, HiShoppingBag, HiUser, HiUsers } from "react-icons/hi";
+import { LuLogOut, LuSettings, LuStore, LuUserPlus, LuUserRoundSearch, LuUsers} from "react-icons/lu";
+import { TbBuildingStore } from "react-icons/tb";
+
 
 const SidebarDashboardComponent = () => {
 
@@ -88,10 +89,15 @@ const SidebarDashboardComponent = () => {
                         <SidebarItem href={`/tenant/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                             Dashboard
                         </SidebarItem>
-
                         <SidebarItem href="#" icon={HiUser} >
                             My Perfil
                         </SidebarItem>
+                         <SidebarItem href={`/product/backoffice/${state.authUser.user_id}/module`} icon={HiShoppingBag}>
+                            Products
+                        </SidebarItem>
+                        <SidebarCollapse icon={LuSettings} label="Settings">
+                            <SidebarItem icon={HiShoppingBag} href={`#`}>Products</SidebarItem>
+                        </SidebarCollapse>
 
                         <SidebarItem href="#" icon={LuLogOut} onClick={logout}>
                             Log Out

@@ -1,23 +1,25 @@
 <?php
 
-namespace Src\Tenant\Infrastructure\Http\Controller;
+
+namespace Src\Product\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
-use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
+use Src\Product\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
+use Src\Product\Domain\ValueObjects\Uuid;
+use Src\Product\Infrastructure\Http\Services\ApiGateway;
 
-class ViewDashboardTenantGETController extends Controller {
+class ViewProductFormGETController extends Controller {
+
 
 
     public function __construct(
         protected ApiGateway $apiGateway
     ){}
 
+    public function index(Request $request){
 
-    public function index(Request $request) {
         $fullUrl = request()->getSchemeAndHttpHost();
         $user_uuid=$request->user_uuid;
         $uuid=Uuid::make($user_uuid);
@@ -25,28 +27,27 @@ class ViewDashboardTenantGETController extends Controller {
         $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authTenant());
         $usuario=$ConsultAuthUserApiByUuid->execute($uuid,$fullUrl);
 
-        // $type=null;
-        // $title=null;
-        // $message=null;
-        // if($request->has("type") && $request->has("message") && $request->has("title")){
-        //     $type=$request->query("type");
-        //     $title=$request->query("title");
-        //     $message=$request->query("message");
-        // }
+        $type=null;
+        $title=null;
+        $message=null;
+        if($request->has("type") && $request->has("message") && $request->has("title")){
+            $type=$request->query("type");
+            $title=$request->query("title");
+            $message=$request->query("message");
+        }
 
         $host= $request->getHost();
 
 
         return Inertia::render(
-            component: 'tenant/dashboard/TenantDashboardTenantPage',
+            component: 'tenant/modules/product/FormProductPage',
             props: [
-                'title'      => 'Tenant Dashboard - OwOMarket',
+                'title'      => 'Module Product Form - OwOMarket',
                 'user_id'    => $usuario->getUserId()->value(),
                 'host'       => $host,
                 'user_name'  => $usuario->getName()->value(),
             ]
         );
-
 
     }
 
@@ -54,6 +55,7 @@ class ViewDashboardTenantGETController extends Controller {
 
 
 }
+
 
 
 ?>

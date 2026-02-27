@@ -38,6 +38,7 @@ Route::middleware([
 
     Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/tenant.php"));
     Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/tenant.php"));
+    Route::prefix("product")->group(callback: base_path("src/Product/Infrastructure/Http/Routes/tenant.php"));
 });
 
 

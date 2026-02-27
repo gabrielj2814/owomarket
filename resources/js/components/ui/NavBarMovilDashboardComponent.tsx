@@ -25,11 +25,12 @@ import {
     HiChartPie,
     HiLogout,
     HiSearch,
+    HiShoppingBag,
     HiUser,
     HiUsers,
 } from "react-icons/hi";
-import { LuBell, LuMenu, LuSettings, LuShield, LuStore, LuUserPlus, LuUserRoundSearch, LuUsers } from "react-icons/lu";
-import { TbBuildingStore, TbWorldWww } from "react-icons/tb";
+import { LuBell, LuMenu, LuSettings, LuStore, LuUserPlus, LuUserRoundSearch, LuUsers } from "react-icons/lu";
+import { TbBuildingStore } from "react-icons/tb";
 
 const NavBarMovilDashboardComponent = () => {
 
@@ -39,6 +40,8 @@ const NavBarMovilDashboardComponent = () => {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleClose = () => setIsOpen(false);
+
+    console.log(state.authUser)
 
     const logout = async () => {
         actions.load(true)
@@ -164,6 +167,12 @@ const NavBarMovilDashboardComponent = () => {
                                                     <SidebarItem href="#" icon={HiUser}>
                                                         My Perfil
                                                     </SidebarItem>
+                                                    <SidebarItem href={`/product/backoffice/${state.authUser.user_id}/module`} icon={HiShoppingBag}>
+                                                        Products
+                                                    </SidebarItem>
+                                                    <SidebarCollapse icon={LuSettings} label="Settings">
+                                                        <SidebarItem icon={HiShoppingBag} href={`#`}>Products</SidebarItem>
+                                                    </SidebarCollapse>
                                                     <SidebarItem icon={HiLogout} onClick={logout}>
                                                         Log Out
                                                     </SidebarItem>

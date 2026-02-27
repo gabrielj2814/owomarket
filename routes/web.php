@@ -18,8 +18,6 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/web.php"));
 
-        Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/web.php"));
-
         Route::prefix("admin")->group(callback: base_path("src/Admin/Infrastructure/Http/Routes/web.php"));
         Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/web.php"));
 

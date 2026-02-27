@@ -21,7 +21,7 @@ const TenantDashboardTenantPage:FC<TenantDashboardTenantPageProps> = ({title, ho
             </Head>
             <Dashboard user_uuid={user_id} >
                 <Breadcrumb aria-label="Solid background breadcrumb example" className="hidden lg:block bg-gray-50 px-5 py-3 rounded dark:bg-gray-800 mb-5">
-                    <BreadcrumbItem icon={HiHome}>
+                    <BreadcrumbItem icon={HiHome} href={`/tenant/backoffice/${user_id}/dashboard`}>
                         Home
                     </BreadcrumbItem>
                 </Breadcrumb>
