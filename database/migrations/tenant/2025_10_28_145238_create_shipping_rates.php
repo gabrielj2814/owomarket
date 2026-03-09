@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('shipping_rates', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('shipping_zone_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->string('shipping_zone_id');
+            $table->foreign('shipping_zone_id')->references('id')->on('shipping_zones');
             $table->string('name');
             $table->enum('type', ['flat', 'free', 'price_based', 'weight_based']);
             $table->decimal('min_value', 10, 2)->nullable();

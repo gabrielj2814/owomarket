@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('carts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('customer_id')->nullable()->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->string('customer_id');
+            $table->foreign('customer_id')->references('id')->on('customers');
             $table->string('session_id')->nullable();
             $table->json('cart_data');
             $table->timestamp('expires_at')->nullable();

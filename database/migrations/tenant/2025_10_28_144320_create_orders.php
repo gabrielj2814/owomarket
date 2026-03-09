@@ -12,9 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('orders', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
             $table->string('order_number')->unique();
-            $table->foreignId('customer_id')->nullable()->constrained()->onDelete('set null');
+            $table->string('customer_id');
+            $table->foreign('customer_id')->references('id')->on('customers');
             $table->enum('status', ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'])->default('pending');
             $table->decimal('subtotal', 10, 2);
             $table->decimal('tax_amount', 10, 2)->default(0);

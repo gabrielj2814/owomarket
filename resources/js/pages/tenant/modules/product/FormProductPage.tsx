@@ -35,8 +35,17 @@ const FormProductPage:FC<FormProductPageProps> = ({user_id, title, host, user_na
                 <div className="flex flex-row mb-2">
                     <Button pill color="red" onClick={regresar}><LuArrowBigLeft className=" w-6 h-6 mr-1"/>  Back</Button>
                 </div>
-                <Card className="w-full p-4">
-                    <div className=" dark:text-white">Modulo de producto - formulario</div>
+
+                <h2 className="text-3xl font-bold dark:text-white">Required Fields</h2>
+                <Card className="w-full p-4 mb-3">
+                    <div className=" dark:text-white">Fields</div>
+                </Card>
+
+                <h2 className="text-2xl font-bold dark:text-white">Optional Fields</h2>
+
+                <h2 className="text-1xl font-bold dark:text-white">Dimensions</h2>
+                <Card className="w-full p-4 mb-3">
+                    <div className=" dark:text-white">Fields</div>
                 </Card>
             </Dashboard>
 

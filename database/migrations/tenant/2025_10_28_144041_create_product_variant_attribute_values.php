@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_variant_attribute_values', function (Blueprint $table) {
-            $table->id();
+            $table->uuid("id")->primary();
             // Usamos nombres explícitos para evitar identificadores demasiado largos en MySQL
-            $table->unsignedBigInteger('product_variant_id');
-            $table->unsignedBigInteger('product_attribute_value_id');
+            $table->string('product_variant_id');
+            $table->string('product_attribute_value_id');
             $table->timestamps();
 
             $table->foreign('product_variant_id', 'pvav_variant_fk')

@@ -12,9 +12,11 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('wishlist_items', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('wishlist_id')->constrained()->onDelete('cascade');
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->string('wishlist_id');
+            $table->foreign('wishlist_id')->references('id')->on('wishlists');
+            $table->string('product_id');
+            $table->foreign('product_id')->references('id')->on('products');
             $table->timestamps();
 
             $table->unique(['wishlist_id', 'product_id']);

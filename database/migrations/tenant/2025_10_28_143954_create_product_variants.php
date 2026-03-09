@@ -12,8 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_variants', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->uuid("id")->primary();
+            $table->string('product_id');
+            $table->foreign('product_id')->references('id')->on('products');
             $table->string('sku')->unique();
             $table->decimal('price', 10, 2);
             $table->decimal('compare_price', 10, 2)->nullable();
