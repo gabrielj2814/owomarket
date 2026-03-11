@@ -15,4 +15,5 @@ use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
 Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/apiTenant.php"));
 Route::prefix("user")->group(callback: base_path("src/User/Infrastructure/Http/Routes/apiTenant.php"));
+Route::prefix("product")->group(callback: base_path("src/Product/Infrastructure/Http/Routes/apiTenant.php"));
 // Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/api.php"));
