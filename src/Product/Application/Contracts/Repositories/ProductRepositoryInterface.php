@@ -17,7 +17,7 @@ interface ProductRepositoryInterface {
 
     // public function edit(Product $product): Product;
 
-    // public function delete(Uuid $id): void;
+    public function delete(Uuid $id): void;
 
 
 }

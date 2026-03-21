@@ -48,6 +48,15 @@ class ProductRepository implements ProductRepositoryInterface {
         );
     }
 
+    public function delete(Uuid $id): void
+    {
+        $productModel = ModelsProduct::where('id', $id->value())->first();
+
+        if ($productModel) {
+            $productModel->delete();
+        }
+    }
+
 }
 
 

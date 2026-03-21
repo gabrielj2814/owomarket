@@ -38,7 +38,7 @@ class ConsultProductByUuidGETController extends Controller {
 
             return ApiResponse::success(data: $data, message: 'Product retrieved successfully', code: 200);
         } catch (\Exception $e) {
-            Log::error('Error creating product: ' . $e->getMessage(), ['exception' => $e]);
+            Log::error('Error consult product: ' . $e->getMessage(), ['exception' => $e]);
             return ApiResponse::error(message: $e->getMessage(), code: ($e->getCode()==0 ? 500 : $e->getCode()));
         }
 
