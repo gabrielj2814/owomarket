@@ -5,6 +5,11 @@ namespace Src\Product\Infrastructure\Eloquent\Repositories;
 use Illuminate\Support\Facades\Log;
 use Src\Product\Application\Contracts\Repositories\ProductRepositoryInterface;
 use Src\Product\Domain\Entities\Product;
+use Src\Product\Domain\ValueObjects\NameProduct;
+use Src\Product\Domain\ValueObjects\PriceProduct;
+use Src\Product\Domain\ValueObjects\Sku;
+use Src\Product\Domain\ValueObjects\Slug;
+use Src\Product\Domain\ValueObjects\Uuid;
 use Src\Product\Infrastructure\Eloquent\Models\Product as ModelsProduct;
 
 class ProductRepository implements ProductRepositoryInterface {
@@ -12,8 +17,6 @@ class ProductRepository implements ProductRepositoryInterface {
 
     public function create(Product $product): Product
     {
-
-        // Log::info('Product details: ID=' . $product->getId()->value() . ', Slug=' . $product->getSlug()->value() . ', Price=' . $product->getPrice()->value() . ', Name=' . $product->getName()->value() . ', Sku=' . $product->getSku()->value());
         $productModel = new ModelsProduct();
         $productModel->id = $product->getId()->value();
         $productModel->name = $product->getName()->value();
@@ -26,6 +29,23 @@ class ProductRepository implements ProductRepositoryInterface {
         $productModel->save();
 
         return $product;
+    }
+
+    public function ConsultProductByUuid(Uuid $id): ?Product
+    {
+        $productModel = ModelsProduct::where('id', $id->value())->first();
+
+        if (!$productModel) {
+            return null;
+        }
+
+        return Product::reconstitute(
+            id: Uuid::make($productModel->id),
+            name: NameProduct::make($productModel->name),
+            slug: Slug::make($productModel->slug),
+            price: PriceProduct::make($productModel->price),
+            sku: Sku::create($productModel->sku)
+        );
     }
 
 }
