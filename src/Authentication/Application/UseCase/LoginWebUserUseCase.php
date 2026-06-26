@@ -14,11 +14,20 @@ use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
 class LoginWebUserUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected LoginWebRepositoryInterface $login_web_repository,
         protected UserRepositoryInterface $user_repository,
         protected PasswordHasher $hasher
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(UserEmail $email, string $clave): bool{
         $user=$this->user_repository->consultarPorMail($email);

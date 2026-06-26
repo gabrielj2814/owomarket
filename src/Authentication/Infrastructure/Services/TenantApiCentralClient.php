@@ -9,6 +9,10 @@ use Src\Authentication\Application\Contracts\UserServices;
 
 class TenantApiCentralClient extends BaseApiClient implements TenantServices {
 
+    /**
+     * Método consultTenantLoginIsActive.
+     */
+
     public function consultTenantLoginIsActive(string $slug, string $domain): array {
         try {
             $endpoint="/api/tenant/interna/consult/login-is-active/".$slug;

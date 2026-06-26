@@ -14,7 +14,16 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class LogoutWebPOSTController extends Controller{
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(protected ApiGateway $api){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request):JsonResponse {
         $uuid=Uuid::make($request->uuid);

@@ -12,9 +12,18 @@ use Src\Tenant\Application\UseCase\ConsultTenantsByUuidOfOwnerUseCase;
 class ConsultTenantByUuidOfOwnerPOSTController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ConsultTenantsByUuidOfOwnerUseCase $consult_tenants_by_uuid_of_owner_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request){
 

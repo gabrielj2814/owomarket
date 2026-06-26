@@ -9,9 +9,18 @@ use Src\Tenant\Domain\ValuesObjects\Slug;
 
 class ConsultTenantLoginIsActiveUseCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected TenantRepositoryInterface $tenantRepository
     ) {}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(string $slug, string $domain): bool{

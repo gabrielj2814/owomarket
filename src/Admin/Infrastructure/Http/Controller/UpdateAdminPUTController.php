@@ -21,6 +21,13 @@ class UpdateAdminPUTController extends Controller {
 
 
 
+    /**
+     * Método index.
+     */
+
+
+
+
     public function index(UpdateAdminFormRequest $request): JsonResponse{
         $data=$request->data;
 

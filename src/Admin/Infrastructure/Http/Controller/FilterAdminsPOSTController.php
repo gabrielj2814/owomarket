@@ -13,9 +13,21 @@ class FilterAdminsPOSTController extends Controller {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected FilterAdminsUseCase $filter_admins_use_case
     ){}
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

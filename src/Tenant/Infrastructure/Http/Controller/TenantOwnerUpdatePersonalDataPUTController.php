@@ -13,9 +13,19 @@ use Src\Tenant\Infrastructure\Http\Request\UpdatePersonalDataFormRequest;
 class TenantOwnerUpdatePersonalDataPUTController extends Controller{
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected TenantOwnerUpdatePersonalDataUseCase $update_personal_data_use_case,
     ){}
+
+
+    /**
+     * Método index.
+     */
 
 
     public function index(UpdatePersonalDataFormRequest $request, string $id):JsonResponse{

@@ -10,6 +10,10 @@ use Src\Authentication\Domain\Entities\User;
 
 class UserApiTenantClient extends BaseApiClient implements UserServices {
 
+    /**
+     * Método consultUserByEmail.
+     */
+
     public function consultUserByEmail(string $email, string $host = ""): array {
         $body= [
             "email" => $email

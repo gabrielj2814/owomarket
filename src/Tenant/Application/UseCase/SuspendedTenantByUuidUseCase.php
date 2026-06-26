@@ -10,9 +10,17 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 
 class SuspendedTenantByUuidUseCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $uuid): Tenant{
         $uuid= Uuid::make($uuid);

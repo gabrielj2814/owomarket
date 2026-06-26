@@ -13,10 +13,20 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 class ConsultTenantsByUuidOfOwnerUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository,
         protected TenantUserRepositoryInterface $tenant_user_repository
     ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(string $_uuid_owner_tenant, int $prePage=50): Pagination{

@@ -14,6 +14,10 @@ class ApprovedRequestUseCase {
         protected TenantRepositoryInterface $tenantRepository
     ){}
 
+    /**
+     * Método execute.
+     */
+
     public function execute(string $uuid): void{
         $uuid= Uuid::make($uuid);
 

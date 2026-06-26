@@ -12,6 +12,10 @@ class PersonalAccessTokenRepository implements PersonalAccessTokenRepositoryInte
 {
     //
 
+    /**
+     * Método generarToken.
+     */
+
     public function generarToken(User $user): ?string
     {
         $usuario=ModelsUser::where("id","=",$user->getId()->value())->first();
@@ -19,11 +23,19 @@ class PersonalAccessTokenRepository implements PersonalAccessTokenRepositoryInte
         return $token;
     }
 
+    /**
+     * Método findToken.
+     */
+
     public function findToken(string $token): ?object
     {
         $personalAccessToken = PersonalAccessToken::findToken($token);
         return $personalAccessToken;
     }
+
+    /**
+     * Método deleteToken.
+     */
 
     public function deleteToken(string $token): void
     {

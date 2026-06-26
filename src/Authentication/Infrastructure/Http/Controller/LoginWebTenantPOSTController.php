@@ -17,12 +17,22 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class LoginWebTenantPOSTController extends Controller{
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ApiGateway $api,
         protected LoginWebUserUseCase $login_web_user_use_case,
         protected CrearAuthUserUseCase $crear_auth_user_use_case,
         protected EliminarAuthUserByUuidUseCase $eliminar_auth_user_by_uuid_use_case
         ){}
+
+
+    /**
+     * Método index.
+     */
 
 
     public function index(LoginFormRequest $request):JsonResponse {

@@ -15,6 +15,12 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
 
 
 
+    /**
+     * Método assignTenantToUser.
+     */
+
+
+
     public function assignTenantToUser(TenantUser $tenantUser): TenantUser {
         $record= new ModelsTenantUser();
         $record->id = $tenantUser->getId()->value();
@@ -26,6 +32,10 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
         // Implementación para asignar un tenant a un usuario en la base de datos
         return $tenantUser; // Retorna el TenantUser asignado o null si falla
     }
+
+    /**
+     * Método consultTenantUsersByUuid.
+     */
 
     public function consultTenantUsersByUuid(Uuid $id): ?TenantUser {
         $record = ModelsTenantUser::where('id', $id->value())->first();
@@ -44,6 +54,10 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
         );
     }
 
+    /**
+     * Método deleteTenantUserByUuid.
+     */
+
     public function deleteTenantUserByUuid(Uuid $id): bool {
         $record = ModelsTenantUser::where('id', $id->value())->first();
         if (!$record) {
@@ -53,6 +67,10 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
         $record->delete();
         return true;
     }
+
+    /**
+     * Método consultTenantsUserByUuidTenantOwner.
+     */
 
     public function consultTenantsUserByUuidTenantOwner(Uuid $id): ? array
     {
@@ -79,6 +97,10 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
 
         return $tenantsUsers;
     }
+
+    /**
+     * Método consultTenantUsersByUuidTenant.
+     */
 
     public function consultTenantUsersByUuidTenant(Uuid $id): ? TenantUser {
         $record = ModelsTenantUser::where('tenant_id', $id->value())->first();

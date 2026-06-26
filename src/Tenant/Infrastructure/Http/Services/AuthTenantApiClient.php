@@ -11,6 +11,11 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 class AuthTenantApiClient extends BaseApiClient implements AuthServices {
 
 
+    /**
+     * Método consultAuthUserByUuid.
+     */
+
+
     public function consultAuthUserByUuid(Uuid $uuid, string $baseUrl=""): array {
         try {
 

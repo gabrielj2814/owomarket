@@ -10,9 +10,19 @@ class ForceDeletedTenantOwnerByUuidUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected TenantOwnerRepositoryInterface $tenantOwnerRepository
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $id): bool {
         $uuid= Uuid::make($id);

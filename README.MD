@@ -1,4 +1,4 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<p align="center"><img src="public/logo_transparent.png" width="400" alt="OwOMarket Logo"></p>
 
 ## Objetivo personal del proyecto
 Este proyecto nace de la necesidad de contar con un portafolio profesional que refleje mis capacidades como desarrollador fullstack. Debido a que los proyectos desarrollados para clientes y empresas suelen estar sujetos a acuerdos de confidencialidad que impiden mostrarlos públicamente, he decidido crear mi propio marketplace. Esta plataforma me permitirá demostrar de manera tangible mis habilidades en Laravel, React y arquitectura multi-tenant, así como mi capacidad para diseñar y ejecutar soluciones completas desde cero, manteniendo altos estándares de calidad y buenas prácticas de desarrollo.
@@ -30,24 +30,31 @@ El marketplace tiene como objetivo principal proporcionar una solución integral
 
 ### Backend
 
-1. **Instalar dependencias de PHP**
+1. **Copiar el archivo de configuración y ajustar variables de entorno**
+
+   Copia el archivo `.env.example` a `.env` y configura tus variables antes de continuar (ver el paso 4 para más detalles sobre las variables necesarias):
+   ```shell
+   cp .env.example .env
+   ```
+
+2. **Instalar dependencias de PHP**
    ```shell
    composer install
    ```
 
-2. **Generar clave de la aplicación**
+3. **Generar clave de la aplicación**
    ```shell
    php artisan key:generate
    ```
 
-3. **Crear enlace simbólico para el almacenamiento**
+4. **Crear enlace simbólico para el almacenamiento**
    ```shell
    php artisan storage:link
    ```
 
-4. **Configurar variables de entorno**
+5. **Configurar variables de entorno (.env)**
 
-   Copia el archivo `.env.example` a `.env` y configura las siguientes variables:
+   Asegúrate de que las siguientes variables en tu archivo `.env` estén configuradas correctamente:
 
    **Conexión a la base de datos central:**
    ```env
@@ -74,25 +81,25 @@ El marketplace tiene como objetivo principal proporcionar una solución integral
    TIME_ZONE_SISTEMA=America/Mexico_City
    ```
 
-5. **Crear la base de datos**
+6. **Crear la base de datos**
 
    Crea una base de datos MySQL con el nombre que especificaste en `DB_DATABASE` y `CENTRAL_DB_DATABASE`.
 
-6. **Ejecutar migraciones**
+7. **Ejecutar migraciones**
 
    Este comando creará las tablas necesarias en la base de datos central:
    ```shell
    php artisan migrate
    ```
 
-7. **Poblar la base de datos con datos iniciales**
+8. **Poblar la base de datos con datos iniciales**
 
    Este comando creará el usuario root y otros datos necesarios para el funcionamiento del sistema:
    ```shell
    php artisan db:seed
    ```
 
-8. **Configurar dominios centrales**
+9. **Configurar dominios centrales**
 
    En el archivo `config/tenancy.php`, agrega los dominios que utilizará la aplicación:
    ```php
@@ -126,4 +133,39 @@ El marketplace tiene como objetivo principal proporcionar una solución integral
 
 Una vez completados todos los pasos, podrás acceder a la aplicación a través de tu navegador en la URL configurada y utilizar las credenciales del usuario root creado durante el seeding.
 
-## Instalación con docker
+## Instalación con Docker (docker-compose)
+
+Si prefieres no instalar PHP, Node.js y MySQL directamente en tu máquina local, el proyecto cuenta con archivos `docker-compose.yml` y `Dockerfile` listos para levantar todo el entorno.
+
+### Requisitos previos para Docker:
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) instalado y en ejecución.
+
+### Pasos:
+
+1. **Copiar el archivo de configuración**:
+   ```shell
+   cp .env.example .env
+   ```
+
+2. **Levantar los contenedores**:
+   Este comando construirá la imagen del backend (instalando Composer y dependencias de NPM), levantará Nginx, MySQL y phpMyAdmin.
+   ```shell
+   docker-compose up -d --build
+   ```
+
+3. **Generar la clave de la aplicación**:
+   ```shell
+   docker-compose exec app php artisan key:generate
+   ```
+
+4. **Ejecutar las migraciones y seeders**:
+   ```shell
+   docker-compose exec app php artisan migrate --seed
+   ```
+
+5. **Crear enlace simbólico de Storage**:
+   ```shell
+   docker-compose exec app php artisan storage:link
+   ```
+
+Una vez que los contenedores estén corriendo, podrás acceder a la aplicación en `http://localhost:3001` (según la configuración de Nginx). Además, puedes acceder a phpMyAdmin en `http://localhost:3003`. Puedes detener el entorno en cualquier momento ejecutando `docker-compose down`.

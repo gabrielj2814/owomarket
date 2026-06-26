@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Http;
 
 abstract class BaseApiClient {
 
+    /**
+     * Método get.
+     */
+
     protected function get(string $endpoint, array $headers = [], string $host=""): array {
         if($host==""){
             $host=config("app.url");
@@ -23,6 +27,10 @@ abstract class BaseApiClient {
                   ->throw()
                   ->json();
     }
+
+    /**
+     * Método post.
+     */
 
     protected function post(string $endpoint, array $data = [], array $headers = [],string $host=""): array {
         if($host==""){

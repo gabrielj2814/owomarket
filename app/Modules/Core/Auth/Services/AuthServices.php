@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Log;
 
 class AuthServices implements Auth {
 
+    /**
+     * Constructor del servicio de autenticación.
+     *
+     * @param UserRepository $userRepository Repositorio de usuarios.
+     * @param PersonalAccessTokenRepository $personalAccessTokenRepository Repositorio de tokens.
+     */
     public function __construct(
         protected UserRepository $userRepository,
         protected PersonalAccessTokenRepository $personalAccessTokenRepository
@@ -21,6 +27,12 @@ class AuthServices implements Auth {
     {}
 
 
+    /**
+     * Autentica a un usuario para la aplicación web.
+     *
+     * @param AurhCredencialesData $credentials Credenciales del usuario.
+     * @return bool Retorna true si la autenticación es exitosa, false en caso contrario.
+     */
     public function login(AurhCredencialesData $credentials): bool
     {
         $userMail=new UserEmail($credentials->email);
@@ -38,6 +50,12 @@ class AuthServices implements Auth {
         return true;
     }
 
+    /**
+     * Autentica a un usuario y devuelve un token para API.
+     *
+     * @param AurhCredencialesData $credentials Credenciales del usuario.
+     * @return string|null El token generado, o null si falla la autenticación.
+     */
     public function loginApi(AurhCredencialesData $credentials): ?string
     {
         $userMail=new UserEmail($credentials->email);
@@ -56,11 +74,22 @@ class AuthServices implements Auth {
         return $token;
     }
 
+    /**
+     * Cierra la sesión del usuario actual en la aplicación web.
+     *
+     * @return void
+     */
     public function logout(): void
     {
         FacadesAuth::logout();
     }
 
+    /**
+     * Invalida el token del usuario logueado en la API.
+     *
+     * @param string $token Token de acceso a revocar.
+     * @return void
+     */
     public function logoutApi(string $token): void
     {
         $this->personalAccessTokenRepository->deleteToken($token);

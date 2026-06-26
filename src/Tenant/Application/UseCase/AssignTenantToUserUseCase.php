@@ -11,9 +11,19 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 class AssignTenantToUserUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected TenantUserRepositoryInterface $tenantUserRepository
     ) {}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(

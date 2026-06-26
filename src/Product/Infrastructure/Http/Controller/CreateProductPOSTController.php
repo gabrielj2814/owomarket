@@ -12,9 +12,17 @@ use Src\Shared\Helper\ApiResponse;
 
 class CreateProductPOSTController extends Controller {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected CreateProductUseCase $createProductUseCase
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(CreateProductFormRequest $request): JsonResponse {
         $data= $request->data;

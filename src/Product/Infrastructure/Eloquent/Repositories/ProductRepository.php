@@ -15,6 +15,11 @@ use Src\Product\Infrastructure\Eloquent\Models\Product as ModelsProduct;
 class ProductRepository implements ProductRepositoryInterface {
 
 
+    /**
+     * Método create.
+     */
+
+
     public function create(Product $product): Product
     {
         $productModel = new ModelsProduct();
@@ -30,6 +35,10 @@ class ProductRepository implements ProductRepositoryInterface {
 
         return $product;
     }
+
+    /**
+     * Método ConsultProductByUuid.
+     */
 
     public function ConsultProductByUuid(Uuid $id): ?Product
     {
@@ -48,6 +57,10 @@ class ProductRepository implements ProductRepositoryInterface {
         );
     }
 
+    /**
+     * Método delete.
+     */
+
     public function delete(Uuid $id): void
     {
         $productModel = ModelsProduct::where('id', $id->value())->first();
@@ -55,6 +68,28 @@ class ProductRepository implements ProductRepositoryInterface {
         if ($productModel) {
             $productModel->delete();
         }
+    }
+
+    /**
+     * Método edit.
+     */
+
+    public function edit(Product $product): Product
+    {
+        $productModel = ModelsProduct::where('id', $product->getId()->value())->first();
+
+        if (!$productModel) {
+            throw new \Exception('Product not found', 404);
+        }
+
+        $productModel->name = $product->getName()->value();
+        $productModel->slug = $product->getSlug()->value();
+        $productModel->price = $product->getPrice()->value();
+        $productModel->sku = $product->getSku()->value();
+        $productModel->slug = $product->getSlug()->value();
+        $productModel->save();
+
+        return $product;
     }
 
 }

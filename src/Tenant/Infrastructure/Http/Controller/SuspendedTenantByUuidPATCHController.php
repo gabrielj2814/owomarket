@@ -12,9 +12,18 @@ use Src\Tenant\Application\UseCase\SuspendedTenantByUuidUseCase;
 class SuspendedTenantByUuidPATCHController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected SuspendedTenantByUuidUseCase $suspended_tenant_by_uuid_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request):JsonResponse {
 

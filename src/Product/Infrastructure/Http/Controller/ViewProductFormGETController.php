@@ -14,9 +14,19 @@ class ViewProductFormGETController extends Controller {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected ApiGateway $apiGateway
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request){
 

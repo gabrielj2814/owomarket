@@ -11,6 +11,11 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 interface TenantRepositoryInterface {
 
 
+    /**
+     * Método filter.
+     */
+
+
     public function filter(
         string | null $search,
         string | null $fechaDesdeUTC,
@@ -20,23 +25,63 @@ interface TenantRepositoryInterface {
         int $prePage=50
     ): Pagination;
 
+    /**
+     * Método consultTenantById.
+     */
+
     public function consultTenantById(Uuid $uuid):? Tenant;
+
+    /**
+     * Método consultTenantsByIdOwnerPaginate.
+     */
 
     public function consultTenantsByIdOwnerPaginate(Uuid $uuid, int $prePage=50): Pagination;
 
+    /**
+     * Método consultTenantBySlug.
+     */
+
     public function consultTenantBySlug(Slug $slug):? Tenant;
+
+    /**
+     * Método suspended.
+     */
 
     public function suspended(Tenant $tenant): Tenant;
 
+    /**
+     * Método inactive.
+     */
+
     public function inactive(Tenant $tenant): Tenant;
+
+    /**
+     * Método active.
+     */
 
     public function active(Tenant $tenant): Tenant;
 
+    /**
+     * Método save.
+     */
+
     public function save(Tenant $tenant): Tenant;
+
+    /**
+     * Método deleteTenant.
+     */
 
     public function deleteTenant(Uuid $id): bool;
 
+    /**
+     * Método deleteForceTenant.
+     */
+
     public function deleteForceTenant(Uuid $id): bool;
+
+    /**
+     * Método changedRequestStatus.
+     */
 
     public function changedRequestStatus(Tenant $tenant): Tenant;
 

@@ -9,6 +9,10 @@ use Src\Authentication\Application\Contracts\UserServices;
 
 class UserApiCentralClient extends BaseApiClient implements UserServices {
 
+    /**
+     * Método consultUserByEmail.
+     */
+
     public function consultUserByEmail(string $email, string $host = ""): array {
         $body= [
             "email" => $email

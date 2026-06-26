@@ -14,10 +14,21 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ChangeStatuAdminByUuidPATCHController extends Controller {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected ConsultAdminByUuidUseCase $consult_admin_by_uuid_use_case,
         protected ChangeStatuAdminByUuidUseCase $change_statu_admin_by_uuid_use_case
     ){}
+
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

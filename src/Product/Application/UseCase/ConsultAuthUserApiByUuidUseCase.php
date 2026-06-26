@@ -14,9 +14,18 @@ use Src\Product\Domain\ValueObjects\Uuid;
 class ConsultAuthUserApiByUuidUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected AuthServices $auth_services
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(Uuid $uuid, string $dominio=""):? AuthUser{
         $dataApi= $this->auth_services->consultAuthUserByUuid($uuid, $dominio);

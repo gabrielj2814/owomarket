@@ -19,6 +19,12 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
 
 
 
+    /**
+     * Método create.
+     */
+
+
+
     public function create(User $user):? AuthUser{
         $avatar=($user->getAvatar()?->value())?$user->getAvatar():null;
         $AuthUser=AuthUser::create(
@@ -40,6 +46,10 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
 
         return $AuthUser;
     }
+
+    /**
+     * Método consult.
+     */
 
     public function consult(Uuid $uuid):? AuthUser{
         $respuesta= ModelsAuthUser::query()->where("user_id","=",$uuid->value())->first();
@@ -64,6 +74,10 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
             $user_avatar
         );
     }
+
+    /**
+     * Método delete.
+     */
 
     public function delete(Uuid $uuid): void{
         $registro=ModelsAuthUser::query()->where("user_id","=",$uuid->value())->first();

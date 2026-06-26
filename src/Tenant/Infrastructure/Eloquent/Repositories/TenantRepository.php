@@ -42,10 +42,21 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User;
 class TenantRepository implements TenantRepositoryInterface {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
     ){}
+
+
+
+    /**
+     * Método filter.
+     */
 
 
 
@@ -127,6 +138,10 @@ class TenantRepository implements TenantRepositoryInterface {
 
     }
 
+    /**
+     * Método consultTenantById.
+     */
+
     public function consultTenantById(Uuid $uuid): ?Tenant
     {
         $consulta= ModelsTenant::where("id","=",$uuid->value())->first();
@@ -201,6 +216,10 @@ class TenantRepository implements TenantRepositoryInterface {
 
     }
 
+    /**
+     * Método suspended.
+     */
+
     public function suspended(Tenant $tenant): Tenant
     {
 
@@ -212,6 +231,10 @@ class TenantRepository implements TenantRepositoryInterface {
         return $tenant;
 
     }
+
+    /**
+     * Método inactive.
+     */
 
     public function inactive(Tenant $tenant): Tenant
     {
@@ -230,6 +253,10 @@ class TenantRepository implements TenantRepositoryInterface {
 
         return $tenant;
     }
+
+    /**
+     * Método active.
+     */
 
     public function active(Tenant $tenant): Tenant
     {
@@ -259,6 +286,10 @@ class TenantRepository implements TenantRepositoryInterface {
 
     }
 
+    /**
+     * Método save.
+     */
+
     public function save(Tenant $tenant): Tenant
     {
         Log::info($tenant->getId()->value());
@@ -277,6 +308,10 @@ class TenantRepository implements TenantRepositoryInterface {
 
         return $tenant;
     }
+
+    /**
+     * Método consultTenantBySlug.
+     */
 
     public function consultTenantBySlug(Slug $slug): ?Tenant
     {
@@ -312,6 +347,10 @@ class TenantRepository implements TenantRepositoryInterface {
         return $tenant;
     }
 
+     /**
+      * Método deleteTenant.
+      */
+
      public function deleteTenant(Uuid $id): bool {
         $record= ModelsTenant::where('id',$id->value())->first();
         if($record){
@@ -321,6 +360,10 @@ class TenantRepository implements TenantRepositoryInterface {
         return false;
     }
 
+     /**
+      * Método deleteForceTenant.
+      */
+
      public function deleteForceTenant(Uuid $id): bool {
         $record= ModelsTenant::withTrashed()->where('id',$id->value())->first();
         if($record){
@@ -329,6 +372,10 @@ class TenantRepository implements TenantRepositoryInterface {
         }
         return false;
     }
+
+    /**
+     * Método tenantUp.
+     */
 
     public function tenantUp(Uuid $id) {
         $tenant= ModelsTenant::where('id',$id->value())->first();
@@ -353,6 +400,10 @@ class TenantRepository implements TenantRepositoryInterface {
         }
     }
 
+    /**
+     * Método changedRequestStatus.
+     */
+
     public function changedRequestStatus(Tenant $tenant): Tenant
     {
         ModelsTenant::where("id","=",$tenant->getId()->value())
@@ -360,6 +411,10 @@ class TenantRepository implements TenantRepositoryInterface {
 
         return $tenant;
     }
+
+    /**
+     * Método consultTenantsByIdOwnerPaginate.
+     */
 
     public function consultTenantsByIdOwnerPaginate(Uuid $uuid, int $prePage=50): Pagination {
 

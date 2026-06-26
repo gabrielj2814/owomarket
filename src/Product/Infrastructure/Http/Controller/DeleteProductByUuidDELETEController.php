@@ -11,9 +11,17 @@ use Src\Shared\Helper\ApiResponse;
 
 class DeleteProductByUuidDELETEController extends Controller {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected DeleteProductByUuidUseCase $deleteProductByUuidUseCase
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request){
         try {

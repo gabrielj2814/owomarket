@@ -8,9 +8,17 @@ use Src\Product\Domain\ValueObjects\Uuid;
 
 class DeleteProductByUuidUseCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected ProductRepositoryInterface $productRepository
     ){}
+
+    /**
+     * Método excute.
+     */
 
     public function excute(string $_uuid): void {
         $uuid= Uuid::make($_uuid);

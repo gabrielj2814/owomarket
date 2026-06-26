@@ -13,9 +13,19 @@ class ConsultTenantByUuidGETController extends Controller{
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected ConsultTenantByUuidUseCase $consult_tenant_by_uuid_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request): JsonResponse{
         try {

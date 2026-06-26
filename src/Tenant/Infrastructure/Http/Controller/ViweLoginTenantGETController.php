@@ -15,6 +15,13 @@ class ViweDashboardTenantGETController extends Controller {
 
 
 
+    /**
+     * Método index.
+     */
+
+
+
+
     public function index(Request $request) {
 
 

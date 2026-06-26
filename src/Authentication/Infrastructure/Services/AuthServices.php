@@ -12,7 +12,16 @@ use Src\Authentication\Domain\ValueObjects\UserEmail;
 class AuthServices implements ContractsAuthServices {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct( protected UserRepositoryInterface $userRepository){}
+
+    /**
+     * Método consultUserByEmail.
+     */
 
     public function consultUserByEmail(UserEmail $email): ?User
     {

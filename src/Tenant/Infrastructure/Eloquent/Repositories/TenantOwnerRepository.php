@@ -21,6 +21,11 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User as TenantOwnerModel;
 class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
 
 
+    /**
+     * Método createTenantOwner.
+     */
+
+
     public function createTenantOwner(TenantOwner $tenantOwner): TenantOwner {
 
         $record= new TenantOwnerModel();
@@ -39,6 +44,10 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
         return $tenantOwner;
     }
 
+    /**
+     * Método deleteTenantOwner.
+     */
+
     public function deleteTenantOwner(Uuid $id): bool {
         $record= TenantOwnerModel::where('id',$id->value())->where("type","=",UserType::TENANT_OWNER)->first();
         if($record){
@@ -48,6 +57,10 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
         return false;
     }
 
+    /**
+     * Método deleteForceTenantOwner.
+     */
+
     public function deleteForceTenantOwner(Uuid $id): bool {
         $record= TenantOwnerModel::withTrashed()->where('id',$id->value())->where("type","=",UserType::TENANT_OWNER)->first();
         if($record){
@@ -56,6 +69,10 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
         }
         return false;
     }
+
+    /**
+     * Método consultTenantOwnerByUuid.
+     */
 
     public function consultTenantOwnerByUuid(Uuid $id): TenantOwner
     {
@@ -96,6 +113,10 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
         return $tenantOwner;
     }
 
+    /**
+     * Método updatePersonalData.
+     */
+
     public function updatePersonalData(TenantOwner $tenantOwner): TenantOwner {
 
         $record= TenantOwnerModel::where('id',$tenantOwner->getId()->value())->where("type","=",UserType::TENANT_OWNER)->first();
@@ -107,6 +128,10 @@ class TenantOwnerRepository implements TenantOwnerRepositoryInterface {
 
         return $tenantOwner;
     }
+
+    /**
+     * Método updatePassword.
+     */
 
     public function updatePassword(TenantOwner $tenantOwner): TenantOwner {
 

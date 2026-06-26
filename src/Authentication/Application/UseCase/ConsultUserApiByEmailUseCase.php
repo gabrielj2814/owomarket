@@ -15,9 +15,21 @@ class ConsultUserApiByEmailUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected UserServices $user_services
     ){}
+
+
+
+    /**
+     * Método execute.
+     */
 
 
 

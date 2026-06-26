@@ -20,6 +20,11 @@ use Src\Shared\Helper\ApiResponse;
 class CreateAdminPOSTController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected CreateAdminUseCase $create_admin_use_case
     )
@@ -34,6 +39,12 @@ class CreateAdminPOSTController extends Controller {
         'número' => '/[0-9]/',                         // Al menos un número
         'carácter especial' => '/[!@#$%^&*()\-_=+{};:,<.>]/' // Al menos un carácter especial
     ];
+
+
+
+    /**
+     * Método index.
+     */
 
 
 
@@ -79,6 +90,9 @@ class CreateAdminPOSTController extends Controller {
      * @param int $length Longitud de la contraseña (8-72)
      * @return string Contraseña generada
      * @throws \InvalidArgumentException Si la longitud no está en el rango válido
+     */
+    /**
+     * Método generarContrasena.
      */
     private function generarContrasena(int $length = 12): string
     {
@@ -130,6 +144,9 @@ class CreateAdminPOSTController extends Controller {
      * @param string $password Contraseña a validar
      * @return bool True si cumple todas las reglas
      */
+    /**
+     * Método validarContrasena.
+     */
     public function validarContrasena(string $password): bool
     {
         foreach ($this->rules as $rule => $pattern) {
@@ -147,6 +164,9 @@ class CreateAdminPOSTController extends Controller {
      * @param int $count Cantidad de contraseñas a generar
      * @param int $length Longitud de cada contraseña
      * @return array Array de contraseñas generadas
+     */
+    /**
+     * Método generarMultiplesContrasenas.
      */
     public function generarMultiplesContrasenas(int $count = 5, int $length = 12): array
     {

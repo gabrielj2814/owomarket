@@ -14,10 +14,21 @@ use Src\Shared\Helper\ApiResponse;
 class DeleteAdminByUuidDELETEController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected DeleteAdminByUuidUseCase $delete_admin_by_uuid_use_case,
         protected ConsultAdminByUuidUseCase $consult_admin_by_uuid_use_case
     ){}
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

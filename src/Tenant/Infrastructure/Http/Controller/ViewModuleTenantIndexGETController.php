@@ -13,9 +13,20 @@ use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 class ViewModuleTenantIndexGETController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ApiGateway $apiGateway
     ){}
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

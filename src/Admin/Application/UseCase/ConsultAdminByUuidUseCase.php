@@ -12,10 +12,21 @@ class ConsultAdminByUuidUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected AdminRepositoryInterface $admin_repository
     )
     {}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(Uuid $uuid):? Admin{

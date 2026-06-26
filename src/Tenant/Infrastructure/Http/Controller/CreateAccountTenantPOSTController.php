@@ -20,6 +20,11 @@ use Src\Tenant\Infrastructure\Http\Request\CreateTenantOwnerAccountFormRequest;
 class CreateAccountTenantPOSTController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected CreateTenantOwonerUseCase             $createTenantOwnerUseCase,
         protected CreateTenantUseCase                   $createTenantUseCase,
@@ -30,6 +35,12 @@ class CreateAccountTenantPOSTController extends Controller {
         protected ForceDeletedTenantByUuidUseCase       $forceDeletedTenantByUuidUseCase,
         protected DeleteTenantUserByUuidUseCase         $deleteTenantUserByUuidUseCase
     ) {}
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

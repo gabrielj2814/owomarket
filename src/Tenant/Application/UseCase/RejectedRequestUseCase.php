@@ -15,6 +15,10 @@ class RejectedRequestUseCase {
         protected TenantRepositoryInterface $tenantRepository
     ){}
 
+    /**
+     * Método execute.
+     */
+
     public function execute(string $uuid): Tenant{
         $uuid= Uuid::make($uuid);
 

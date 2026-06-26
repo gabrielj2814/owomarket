@@ -9,12 +9,21 @@ use Src\Tenant\Application\UseCase\ConsultTenantLoginIsActiveUseCase;
 
 class ConsultTenantLoginIsActiveGETController extends Controller {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected ConsultTenantLoginIsActiveUseCase $consultTenantLoginIsActiveUseCase
     ){}
 
 
-    public function index (Request $request, string $slug){
+    /**
+     * Método index.
+     */
+
+
+    public function index(Request $request, string $slug){
 
         try {
             $domain = $request->getHost();

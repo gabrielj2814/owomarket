@@ -13,11 +13,21 @@ class CancelAccountTenantOwnerUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected TenantOwnerRepositoryInterface $tenant_owner_repository_interface,
         protected TenantRepositoryInterface $tenant_repository_interface,
         protected TenantUserRepositoryInterface $tenant_user_repository_interface
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $_id): void{
         $id= Uuid::make($_id);

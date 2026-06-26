@@ -14,9 +14,19 @@ class CancelAccountTenantOwnerDELETEController extends Controller {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected CancelAccountTenantOwnerUseCase $cancel_account_tenant_owner_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request, string $id):JsonResponse {
         try {

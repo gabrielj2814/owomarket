@@ -24,6 +24,12 @@ class AdminRepository implements AdminRepositoryInterface {
 
 
 
+    /**
+     * Método create.
+     */
+
+
+
     public function create(Admin $admin): ?Admin
     {
         $record= new AdminModel();
@@ -41,6 +47,10 @@ class AdminRepository implements AdminRepositoryInterface {
 
         return $admin;
     }
+
+    /**
+     * Método consultByUuid.
+     */
 
     public function consultByUuid(Uuid $uuid): ?Admin
     {
@@ -80,6 +90,10 @@ class AdminRepository implements AdminRepositoryInterface {
 
 
     }
+
+    /**
+     * Método consultByEmail.
+     */
 
     public function consultByEmail(UserEmail $email): ?Admin {
         $record= AdminModel::query()
@@ -122,6 +136,10 @@ class AdminRepository implements AdminRepositoryInterface {
 
     }
 
+    /**
+     * Método editar.
+     */
+
     public function editar(Admin $admin): ?Admin
     {
         $record= AdminModel::query()
@@ -143,6 +161,10 @@ class AdminRepository implements AdminRepositoryInterface {
 
         return $admin;
     }
+
+    /**
+     * Método filter.
+     */
 
     public function filter(
         string | null $search,
@@ -230,6 +252,10 @@ class AdminRepository implements AdminRepositoryInterface {
 
     }
 
+    /**
+     * Método eliminar.
+     */
+
     public function eliminar(Uuid $uuid): void
     {
         $admin=AdminModel::query()
@@ -239,6 +265,10 @@ class AdminRepository implements AdminRepositoryInterface {
             $admin->delete();
         }
     }
+
+    /**
+     * Método changeStatu.
+     */
 
     public function changeStatu(Uuid $uuid, UserStatus $statu): void
     {

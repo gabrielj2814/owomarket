@@ -17,9 +17,18 @@ use Src\Tenant\Domain\ValuesObjects\TenantStatus;
 class CreateTenantUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected TenantRepositoryInterface $tenantRepository,
     ) {}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $name, string $domain): Tenant{
 

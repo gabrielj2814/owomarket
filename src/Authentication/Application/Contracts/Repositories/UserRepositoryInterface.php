@@ -10,6 +10,10 @@ interface UserRepositoryInterface
 {
     //
 
+    /**
+     * Método consultarPorMail.
+     */
+
     public function consultarPorMail(UserEmail $mail): ? User;
 
 

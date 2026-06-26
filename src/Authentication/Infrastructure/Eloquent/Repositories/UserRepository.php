@@ -20,6 +20,11 @@ class UserRepository implements UserRepositoryInterface
     //
 
 
+    /**
+     * Método consultarPorMail.
+     */
+
+
     public function consultarPorMail(UserEmail $mail): ?EntitiesUser
     {
         $respuesta=User::where("email","=",$mail->value())->first();
@@ -40,6 +45,10 @@ class UserRepository implements UserRepositoryInterface
             avatar:             $avatar
         );
     }
+
+    /**
+     * Método generarToken.
+     */
 
     public function generarToken(UserEmail $mail): ? string
     {

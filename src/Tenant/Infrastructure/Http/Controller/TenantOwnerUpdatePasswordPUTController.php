@@ -13,9 +13,21 @@ class TenantOwnerUpdatePasswordPUTController extends Controller {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected UpdatePasswordTenantOwnerUseCase $update_password_tenant_owner_use_case
     ){}
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

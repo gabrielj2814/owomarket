@@ -11,9 +11,18 @@ use Src\Tenant\Application\UseCase\FilterTenantUseCase;
 class FiltrarTenantsPOSTController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected FilterTenantUseCase $filter_tenant_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request){
 

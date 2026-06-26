@@ -14,6 +14,15 @@ use Src\User\Infrastructure\Http\Request\ConsultarUsuarioByEmailFormRequest;
 class ConsultUserByEmailPOSTController extends Controller{
 
 
+    /**
+     * Maneja la solicitud POST para consultar un usuario por su email.
+     *
+     * @param ConsultarUsuarioByEmailFormRequest $request Solicitud HTTP validada.
+     * @return JsonResponse Respuesta en formato JSON.
+     */
+    /**
+     * Método index.
+     */
     public function index(ConsultarUsuarioByEmailFormRequest $request):JsonResponse{
         $body=$request->data;
 

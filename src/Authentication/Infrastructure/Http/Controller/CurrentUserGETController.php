@@ -16,6 +16,11 @@ use Src\Shared\Helper\ApiResponse;
 class CurrentUserGETController extends Controller {
 
 
+    /**
+     * Método index.
+     */
+
+
     public function index(Request $request):JsonResponse {
         $uuid= Uuid::make($request->user_uuid);
         $authUserRepository= new AuthUserRepository();

@@ -10,6 +10,12 @@ class ViewCreateAccountTenantGETController extends Controller {
 
 
 
+    /**
+     * Método index.
+     */
+
+
+
     public function index(){
 
         return Inertia::render(

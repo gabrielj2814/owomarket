@@ -13,9 +13,19 @@ class ConsultProductByUuidGETController extends Controller {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected ConsultProductByUuidUseCase $consultProductByUuidUseCase
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request):JsonResponse{
 

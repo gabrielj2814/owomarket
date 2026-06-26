@@ -9,9 +9,19 @@ use Src\Shared\Collection\Pagination;
 class FilterAdminsUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected AdminRepositoryInterface $admin_repository_interface
     ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(

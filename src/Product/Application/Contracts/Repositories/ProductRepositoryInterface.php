@@ -11,11 +11,27 @@ use Src\Product\Domain\ValueObjects\Uuid;
 
 interface ProductRepositoryInterface {
 
+    /**
+     * Método create.
+     */
+
     public function create(Product $product): Product;
+
+    /**
+     * Método ConsultProductByUuid.
+     */
 
     public function ConsultProductByUuid(Uuid $uuid): ?Product;
 
-    // public function edit(Product $product): Product;
+    /**
+     * Método edit.
+     */
+
+    public function edit(Product $product): Product;
+
+    /**
+     * Método delete.
+     */
 
     public function delete(Uuid $id): void;
 

@@ -12,9 +12,18 @@ use Src\Tenant\Application\UseCase\ActiveTenantByUuidUseCase;
 class ActiveTenantByUuidPATCHController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ActiveTenantByUuidUseCase $active_tenant_by_uuid_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request):JsonResponse {
 

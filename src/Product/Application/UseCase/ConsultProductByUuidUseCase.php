@@ -10,9 +10,18 @@ use Src\Product\Domain\ValueObjects\Uuid;
 class ConsultProductByUuidUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ProductRepositoryInterface $productRepository
     ){}
+
+    /**
+     * Método excute.
+     */
 
     public function excute(string $_uuid): ?Product {
         $uuid= Uuid::make($_uuid);

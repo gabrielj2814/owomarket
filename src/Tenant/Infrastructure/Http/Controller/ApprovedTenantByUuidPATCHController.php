@@ -16,6 +16,10 @@ class ApprovedTenantByUuidPATCHController extends Controller {
         protected ApprovedRequestUseCase $approved_request_use_case
     ){}
 
+    /**
+     * Método index.
+     */
+
     public function index(Request $request, string $id): JsonResponse{
 
         try {

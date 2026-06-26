@@ -14,11 +14,20 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 class UpdatePasswordTenantOwnerUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected TenantOwnerRepositoryInterface $tenant_owner_repository,
         protected PasswordValidator $password_validator,
         protected PasswordHasher $password_hasher
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $_id, string $_claveVieja, string $_claveNueva): TenantOwner{
         $id= Uuid::make($_id);

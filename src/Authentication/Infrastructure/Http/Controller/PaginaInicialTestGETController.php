@@ -11,6 +11,12 @@ class PaginaInicialTestGETController extends Controller {
 
 
 
+    /**
+     * Método index.
+     */
+
+
+
     public function index() {
           return Inertia::render('InicialPage',[
             'user' => Auth::user(),

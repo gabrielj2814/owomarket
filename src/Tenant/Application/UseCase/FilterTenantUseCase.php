@@ -9,9 +9,17 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 
 class FilterTenantUseCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository_interface
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(
         string | null $search,

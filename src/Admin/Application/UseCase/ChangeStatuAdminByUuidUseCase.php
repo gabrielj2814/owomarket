@@ -10,9 +10,19 @@ use Src\Admin\Domain\ValueObjects\Uuid;
 class ChangeStatuAdminByUuidUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected AdminRepositoryInterface $admin_repository
     ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(Uuid $uuid, UserStatus $statu): void{

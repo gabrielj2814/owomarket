@@ -12,10 +12,20 @@ class DeleteTenantByUuidUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository,
         protected TenantUserRepositoryInterface $tenant_user_repository,
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $idTenant ,string $idTenantOwner): bool {
         $uuidTenantOwner= Uuid::make($idTenantOwner);

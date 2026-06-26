@@ -19,11 +19,20 @@ use Src\Shared\ValuesObjects\UpdatedAt;
 class CreateAdminUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected AdminRepositoryInterface $admin_repository,
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $nameUser, string $emailUser, string $phoneUser, string $passwordUser): ?Admin{
         $urlAvatarDefault="https://i.pinimg.com/originals/b0/ce/76/b0ce76f4cdb95ef13afa21a889adfc71.jpg";

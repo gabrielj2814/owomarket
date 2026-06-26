@@ -16,6 +16,10 @@ class RejectedTenantByUuidPATCHController extends Controller {
         protected RejectedRequestUseCase $rejected_request_use_case
     ){}
 
+    /**
+     * Método index.
+     */
+
     public function index(Request $request, string $id): JsonResponse{
 
         try {

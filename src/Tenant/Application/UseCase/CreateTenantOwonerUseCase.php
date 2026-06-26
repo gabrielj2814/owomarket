@@ -23,11 +23,22 @@ class CreateTenantOwonerUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected TenantOwnerRepositoryInterface $repository,
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
     ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(string $nameUser, string $emailUser, string $phoneUser, string $passwordUser){

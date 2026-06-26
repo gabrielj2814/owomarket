@@ -9,6 +9,11 @@ use Inertia\Inertia;
 class LoginCustomerScreenGETController extends Controller{
 
 
+    /**
+     * Método index.
+     */
+
+
     public function index() {
         $host=request()->getHost();
 

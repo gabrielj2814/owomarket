@@ -12,11 +12,20 @@ use Src\Authentication\Domain\ValueObjects\UserEmail;
 
 class LoginApiUserUseCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected UserRepositoryInterface $userRepository,
         protected PersonalAccessTokenRepositoryInterface $personal_access_token_repository,
         protected PasswordHasher $password_hasher
         ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(UserEmail $email, string $clave):? string{

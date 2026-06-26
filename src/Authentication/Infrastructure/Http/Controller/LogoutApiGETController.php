@@ -12,9 +12,17 @@ use Symfony\Component\HttpFoundation\Request;
 
 class LogoutApiGETController extends Controller {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected LogoutApiUserUseCase $logout_api_user_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request): JsonResponse{
 

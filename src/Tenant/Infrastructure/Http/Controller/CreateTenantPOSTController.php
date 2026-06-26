@@ -15,10 +15,19 @@ use Src\Tenant\Infrastructure\Http\Request\CreateTenantFormRequest;
 class CreateTenantPOSTController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected CreateTenantUseCase $create_tenant_use_case,
         protected CreateTenantUserUseCase $create_tenant_user_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(CreateTenantFormRequest $request): JsonResponse{
         $centralDomain = config('tenancy.central_domains.0');

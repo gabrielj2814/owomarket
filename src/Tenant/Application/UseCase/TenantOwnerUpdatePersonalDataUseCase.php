@@ -13,9 +13,21 @@ class TenantOwnerUpdatePersonalDataUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
+
     public function __construct(
         protected TenantOwnerRepositoryInterface $tenant_owner_repository
     ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(string $_id, string $_name, string $_phone): TenantOwner{

@@ -14,6 +14,12 @@ class ConsultAdminByUuidGETController extends Controller {
 
 
 
+    /**
+     * Método index.
+     */
+
+
+
     public function index(Request $request):JsonResponse {
         $uuid= Uuid::make($request->uuid);
 

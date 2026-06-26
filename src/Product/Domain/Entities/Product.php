@@ -63,6 +63,8 @@ class Product{
         );
     }
 
+
+
     public function getId(): Uuid {
         return $this->id;
     }
@@ -71,16 +73,32 @@ class Product{
         return $this->name;
     }
 
+    public function setName(NameProduct $name): void {
+        $this->name = $name;
+    }
+
     public function getSlug(): Slug {
         return $this->slug;
+    }
+
+    public function setSlug(Slug $slug): void {
+        $this->slug = $slug;
     }
 
     public function getPrice(): PriceProduct {
         return $this->price;
     }
 
+    public function setPrice(PriceProduct $price): void {
+        $this->price = $price;
+    }
+
     public function getSku(): Sku {
         return $this->sku;
+    }
+
+    public function setSku(Sku $sku): void {
+        $this->sku = $sku;
     }
 
 

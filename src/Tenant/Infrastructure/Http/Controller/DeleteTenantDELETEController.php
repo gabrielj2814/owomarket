@@ -12,9 +12,18 @@ use Src\Tenant\Application\UseCase\DeleteTenantByUuidUseCase;
 class DeleteTenantDELETEController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected DeleteTenantByUuidUseCase $delete_tenant_by_uuid_use_case
     ){}
+
+    /**
+     * Método index.
+     */
 
     public function index(Request $request): JsonResponse{
         try {

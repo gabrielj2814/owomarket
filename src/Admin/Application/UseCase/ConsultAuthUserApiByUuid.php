@@ -14,9 +14,18 @@ use Src\Admin\Domain\ValueObjects\Uuid;
 class ConsultAuthUserApiByUuid {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected AuthServices $auth_services
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(Uuid $uuid):? AuthUser{
 

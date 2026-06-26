@@ -15,11 +15,21 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 class LoginApiPOSTController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ApiGateway $api,
         protected LoginApiUserUseCase $login_api_user_use_case,
         protected ConsultDataUserByEmailCase $consult_data_user_by_email_case,
         ){}
+
+
+    /**
+     * Método index.
+     */
 
 
     public function index(LoginFormRequest $request): JsonResponse{

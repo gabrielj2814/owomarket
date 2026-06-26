@@ -10,6 +10,10 @@ use Src\Admin\Domain\ValueObjects\Uuid;
 
 class AuthApiClient extends BaseApiClient implements AuthServices {
 
+    /**
+     * Método consultAuthUserByUuid.
+     */
+
     public function consultAuthUserByUuid(Uuid $uuid): array {
         try {
 

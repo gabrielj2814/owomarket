@@ -26,6 +26,16 @@ class UserRepository implements UserRepositoryInterface
     //
 
 
+    /**
+     * Consulta un usuario en la base de datos a partir de su dirección de correo electrónico.
+     * Reconstituye la entidad de dominio completa si lo encuentra.
+     *
+     * @param UserEmail $mail Objeto de valor que contiene el email.
+     * @return EntitiesUser|null La entidad de dominio del usuario, o null si no existe.
+     */
+    /**
+     * Método consultarPorMail.
+     */
     public function consultarPorMail(UserEmail $mail): ?EntitiesUser
     {
         $respuesta=User::where("email","=",$mail->value())->first();

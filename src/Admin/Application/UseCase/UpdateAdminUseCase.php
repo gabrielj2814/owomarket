@@ -16,10 +16,21 @@ class UpdateAdminUseCase {
 
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
+
     public function __construct(
         protected AdminRepositoryInterface $admin_repository
     )
     {}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(string $uuid, string $name, string $email, string $phone):? Admin{

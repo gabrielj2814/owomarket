@@ -13,9 +13,20 @@ use Src\Admin\Infrastructure\Services\ApiGateway;
 class ViewModuleAdminIndexGETController extends Controller {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected ApiGateway $apiGateway
     ){}
+
+
+
+    /**
+     * Método index.
+     */
 
 
 

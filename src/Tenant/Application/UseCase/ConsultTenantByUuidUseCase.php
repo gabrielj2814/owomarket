@@ -12,9 +12,17 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 
 class ConsultTenantByUuidUseCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository_interface
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(Uuid $uuid): Tenant{
         $tenant=$this->tenant_repository_interface->consultTenantById($uuid);

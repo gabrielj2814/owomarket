@@ -8,7 +8,16 @@ use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRep
 class LogoutApiUserUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(protected PersonalAccessTokenRepositoryInterface $personalAccessTokenRepository){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $tokenId): void {
 

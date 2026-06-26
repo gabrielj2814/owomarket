@@ -9,9 +9,18 @@ use Src\Authentication\Domain\ValueObjects\UserEmail;
 
 class ConsultDataUserByEmailCase {
 
+    /**
+     * Constructor de la clase.
+     */
+
     public function __construct(
         protected UserRepositoryInterface $userRepository
     ){}
+
+
+    /**
+     * Método execute.
+     */
 
 
     public function execute(UserEmail $mail): ?User{

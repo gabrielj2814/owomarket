@@ -12,9 +12,18 @@ use Src\Tenant\Domain\ValuesObjects\Uuid;
 class CreateTenantUserUseCase {
 
 
+    /**
+     * Constructor de la clase.
+     */
+
+
     public function __construct(
         protected TenantUserRepositoryInterface $tenant_user_repository
     ){}
+
+    /**
+     * Método execute.
+     */
 
     public function execute(string $_uuid_owner, string $_uuid_tenant): TenantUser{
         $uuid_owner= Uuid::make($_uuid_owner);
