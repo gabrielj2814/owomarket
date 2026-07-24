@@ -27,12 +27,12 @@ Toda la lógica core del negocio vive en la carpeta `src/`. Gran parte de sus co
 Ejemplo con el módulo `Product` (`src/Product/`):
 *   **`Domain/`**:
     *   Contiene **Entities** (Entidades de dominio puro), **ValueObjects** (UUID, Email, Precio) y **Exceptions**.
-    *   *Regla de Oro:* El código en `Domain` **NO DEBE** tener dependencias de Laravel (ni Eloquent, ni Facades). Debe ser PHP puro.
+    *   *Regla de Oro:* El código en `Domain` **NO DEBE** tener dependencias de Laravel (ni Eloquent, ni Facades, ni librerías como `Illuminate\Support\Str`). Debe ser PHP puro. Para utilidades externas (como hashing o generación de UUIDs), se deben definir contratos/interfaces en `Domain/Shared/Security/` y usar Inyección de Dependencias.
 *   **`Application/`**:
     *   Contiene **UseCases** (Casos de uso como `CreateProductUseCase`) y **Contracts** (Interfaces como `ProductRepositoryInterface`).
     *   *Regla de Oro:* Los UseCases orquestan el flujo. Llaman a las entidades de dominio y utilizan los contratos para persistir la información.
 *   **`Infrastructure/`**:
-    *   Contiene **Http** (Controllers, FormRequests) y **Eloquent** (Modelos de BD y Repositorios reales que implementan los Contracts).
+    *   Contiene **Http** (Controllers, FormRequests), **Eloquent** (Modelos de BD y Repositorios reales que implementan los Contracts) y **Security** (Implementaciones concretas de utilidades como `LaravelUuidGenerator` o `LaravelPasswordHasher`).
     *   *Regla de Oro:* Los Controladores no deben contener lógica de negocio; solo validan el Request (vía FormRequest/DTO), llaman a un UseCase y devuelven una respuesta (JSON o renderizado de Inertia).
 
 ### Modelos Base de Laravel
@@ -40,9 +40,9 @@ Los modelos tradicionales de base de datos (Eloquent) se encuentran en `app/Mode
 
 ## 5. Reglas y Convenciones de Código para IA y Desarrolladores
 1.  **Aislamiento de Lógica:** NUNCA escribas lógica de negocio, cálculos o reglas complejas directamente en un Controlador en `src/.../Infrastructure/Http/Controller`. Usa siempre un Caso de Uso (`UseCase`).
-2.  **Inyección de Dependencias:** Utiliza el contenedor de servicios de Laravel para inyectar Repositorios y Casos de Uso. Evita el uso del helper `app()` o instanciar clases directamente con `new` cuando sea posible inyectarlas.
+2.  **Inyección de Dependencias:** Utiliza el contenedor de servicios de Laravel para inyectar Repositorios, Servicios y Casos de Uso. Evita el uso del helper `app()` o instanciar clases directamente con `new` cuando sea posible inyectarlas.
 3.  **Validación de Datos:** Toda entrada HTTP debe ser validada mediante un `FormRequest` antes de llegar al controlador, o mapeada a un DTO (`spatie/laravel-data`) para asegurar el tipado fuerte hacia la capa de Aplicación.
-4.  **Value Objects:** Usa Value Objects para validar primitivas. Por ejemplo, si una función requiere un UUID, pásale una instancia de `UuidValueObject`, no un `string`.
+4.  **Value Objects e Inyección de Servicios Externeos:** Usa Value Objects para validar e inmutabilizar primitivas. Si un Value Object o Entidad requiere generación de UUIDs o hashing, utiliza inyección de dependencias mediante contratos definidos en el dominio (ej. `UuidGenerator`, `PasswordHasher`), cuyas implementaciones vivan en `Infrastructure/Security` y estén vinculadas en su respectivo `ServiceProvider`.
 5.  **Multi-Tenancy:** Ten siempre presente el contexto de ejecución. Si estás consultando/modificando datos de una tienda, asegúrate de estar operando bajo el Tenant correcto o utilizar las relaciones adecuadas.
 
 ## 6. Comandos Útiles y Entorno Local
