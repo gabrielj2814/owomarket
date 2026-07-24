@@ -2,8 +2,8 @@
 
 namespace Src\Authentication\Domain\ValueObjects;
 
-use Illuminate\Support\Str;
-use Src\User\Domain\Exceptions\InvalidUuidException;
+use Src\Authentication\Domain\Exceptions\InvalidUuidException;
+use Src\Authentication\Domain\Shared\Security\UuidGenerator;
 
 final class Uuid {
 
@@ -23,16 +23,16 @@ final class Uuid {
         return $this->value;
     }
 
-    public static function make(string $value):self{
+    public static function make(string $value): self {
         return new self($value);
     }
 
-    public static function generate(): self {
-        return new self(Str::uuid()->toString());
+    public static function generate(UuidGenerator $generator): self {
+        return new self($generator->generate());
     }
 
     public static function isValid(string $uuid): bool {
-        return Str::isUuid($uuid);
+        return preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $uuid) === 1;
     }
 
     public function equals(self $other): bool {
@@ -56,12 +56,5 @@ final class Uuid {
     public function isV4(): bool {
         return $this->getVersion() === 4;
     }
-
-
-
 }
-
-
-
-
 ?>

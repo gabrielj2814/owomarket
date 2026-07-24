@@ -9,6 +9,7 @@ use Src\Shared\ValuesObjects\Currency;
 use Src\Shared\ValuesObjects\SoftDeleteAt;
 use Src\Shared\ValuesObjects\Timezone;
 use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Tenant\Domain\Shared\Security\UuidGenerator;
 use Src\Tenant\Domain\ValuesObjects\Slug;
 use Src\Tenant\Domain\ValuesObjects\TenantName;
 use Src\Tenant\Domain\ValuesObjects\TenantRequest;
@@ -27,36 +28,39 @@ class Tenant {
     private TenantRequest   $request;
     private ?CreatedAt      $createdAt;
     private ?UpdatedAt      $updatedAt;
-    private ?SoftDeleteAt   $softdeleteAt;
-    private ?Domain         $domain;
+    private ?SoftDeleteAt   $deletedAt;
+    private ?Collection     $domains;
 
     private Collection      $owners;
 
     private function __construct(
-        Uuid                    $id,
-        TenantName              $name,
-        Slug                    $slug,
-        TenantStatus            $status,
-        Timezone                $timezone,
-        Currency                $currency,
-        TenantRequest           $request,
-        ?CreatedAt              $createdAt,
-        ?UpdatedAt              $updatedAt,
-        ?SoftDeleteAt           $softdeleteAt,
-    ){
-        $this->id               =$id;
-        $this->name             =$name;
-        $this->slug             =$slug;
-        $this->status           =$status;
-        $this->timezone         =$timezone;
-        $this->currency         =$currency;
-        $this->request          =$request;
-        $this->createdAt        = $createdAt;
-        $this->updatedAt        = $updatedAt;
-        $this->softdeleteAt     = $softdeleteAt;
+        Uuid            $id,
+        TenantName      $name,
+        Slug            $slug,
+        TenantStatus    $status,
+        Timezone        $timezone,
+        Currency        $currency,
+        TenantRequest   $request,
+        ?CreatedAt      $createdAt = null,
+        ?UpdatedAt      $updatedAt = null,
+        ?SoftDeleteAt   $deletedAt = null,
+        ?Collection     $domains   = null
+    ) {
+        $this->id          = $id;
+        $this->name        = $name;
+        $this->slug        = $slug;
+        $this->status      = $status;
+        $this->timezone    = $timezone;
+        $this->currency    = $currency;
+        $this->request     = $request;
+        $this->createdAt   = $createdAt;
+        $this->updatedAt   = $updatedAt;
+        $this->deletedAt   = $deletedAt;
+        $this->domains     = $domains;
     }
 
     public static function create(
+        UuidGenerator   $generator,
         TenantName      $name,
         Slug            $slug,
         TenantStatus    $status,
@@ -65,7 +69,7 @@ class Tenant {
         TenantRequest   $request
     ): self{
         return new self(
-            Uuid::generate(),
+            Uuid::generate($generator),
             $name,
             $slug,
             $status,

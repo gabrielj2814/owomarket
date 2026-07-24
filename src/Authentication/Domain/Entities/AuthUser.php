@@ -3,6 +3,7 @@
 
 namespace Src\Authentication\Domain\Entities;
 
+use Src\Authentication\Domain\Shared\Security\UuidGenerator;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
@@ -38,6 +39,7 @@ class AuthUser {
 
     // Factory method - genera su propio ID
     public static function create(
+        UuidGenerator       $generator,
         Uuid                $user_id,
         UserName            $name,
         UserEmail           $email,
@@ -45,7 +47,7 @@ class AuthUser {
         ?AvatarUrl          $avatar,
         ): self {
         return new self(
-            Uuid::generate(),  // ← Auto-generado
+            Uuid::generate($generator),  // ← Auto-generado
             $user_id,
             $name,
             $email,

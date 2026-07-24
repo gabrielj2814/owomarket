@@ -6,6 +6,7 @@ namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 use Src\Authentication\Application\Contracts\Repositories\AuthUserRepositoryInterface;
 use Src\Authentication\Domain\Entities\AuthUser;
 use Src\Authentication\Domain\Entities\User;
+use Src\Authentication\Domain\Shared\Security\UuidGenerator;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
@@ -17,17 +18,18 @@ use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser as ModelsAuthUser
 
 class AuthUserRepository implements AuthUserRepositoryInterface{
 
-
+    public function __construct(
+        private UuidGenerator $generator
+    ) {}
 
     /**
      * Método create.
      */
 
-
-
     public function create(User $user):? AuthUser{
         $avatar=($user->getAvatar()?->value())?$user->getAvatar():null;
         $AuthUser=AuthUser::create(
+            $this->generator,
             $user->getId(),
             $user->getName(),
             $user->getEmail(),

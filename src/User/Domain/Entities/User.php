@@ -6,6 +6,7 @@ use DateTime;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\SoftDeleteAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\User\Domain\Shared\Security\UuidGenerator;
 use Src\User\Domain\ValueObjects\AvatarUrl;
 use Src\User\Domain\ValueObjects\EmailVerifiedAt;
 use Src\User\Domain\ValueObjects\Password;
@@ -65,6 +66,7 @@ class User {
 
     // Factory method - genera su propio ID
     public static function create(
+        UuidGenerator       $generator,
         UserName            $name,
         UserEmail           $email,
         Password            $password,
@@ -79,7 +81,7 @@ class User {
         ?UpdatedAt          $updatedAt,
         ): self {
         return new self(
-            Uuid::generate(),  // ← Auto-generado
+            Uuid::generate($generator),  // ← Auto-generado
             $name,
             $email,
             $password,

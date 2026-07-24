@@ -3,6 +3,7 @@
 namespace Src\Admin\Domain\Entities;
 
 use DateTime;
+use Src\Admin\Domain\Shared\Security\UuidGenerator;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Admin\Domain\ValueObjects\Password;
@@ -60,6 +61,7 @@ class Admin {
 
     // Factory method - genera su propio ID
     public static function create(
+        UuidGenerator       $generator,
         UserName            $name,
         UserEmail           $email,
         ?Password           $password,
@@ -73,7 +75,7 @@ class Admin {
         ?UpdatedAt          $updatedAt,
         ): self {
         return new self(
-            Uuid::generate(),  // ← Auto-generado
+            Uuid::generate($generator),  // ← Auto-generado
             $name,
             $email,
             $password,

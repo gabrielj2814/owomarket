@@ -8,10 +8,12 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\Shared\Security\PasswordHasher;
 use Src\Tenant\Domain\Shared\Security\PasswordValidator;
+use Src\Tenant\Domain\Shared\Security\UuidGenerator;
 use Src\Tenant\Infrastructure\Eloquent\Repositories\TenantOwnerRepository;
 use Src\Tenant\Infrastructure\Eloquent\Repositories\TenantRepository;
 use Src\Tenant\Infrastructure\Eloquent\Repositories\TenantUserRepository;
 use Src\Tenant\Infrastructure\Security\LaravelPasswordHasher;
+use Src\Tenant\Infrastructure\Security\LaravelUuidGenerator;
 use Src\Tenant\Infrastructure\Security\StrictPasswordValidator;
 
 class TenantServiceProvider extends ServiceProvider
@@ -22,6 +24,7 @@ class TenantServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+        $this->app->bind(UuidGenerator::class, LaravelUuidGenerator::class);
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
         $this->app->bind(TenantRepositoryInterface::class, TenantRepository::class);

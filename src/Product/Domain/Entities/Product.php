@@ -2,6 +2,7 @@
 
 namespace Src\Product\Domain\Entities;
 
+use Src\Product\Domain\Shared\Security\UuidGenerator;
 use Src\Product\Domain\ValueObjects\NameProduct;
 use Src\Product\Domain\ValueObjects\PriceProduct;
 use Src\Product\Domain\ValueObjects\Sku;
@@ -33,13 +34,14 @@ class Product{
     }
 
     public static function create(
+        UuidGenerator    $generator,
         NameProduct      $name,
         Slug             $slug,
         PriceProduct     $price,
         Sku              $sku
     ): self{
         return new self(
-            Uuid::generate(),
+            Uuid::generate($generator),
             $name,
             $slug,
             $price,

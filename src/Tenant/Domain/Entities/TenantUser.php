@@ -5,6 +5,7 @@ namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Tenant\Domain\Shared\Security\UuidGenerator;
 use Src\Tenant\Domain\ValuesObjects\RoleTenantUser;
 use Src\Tenant\Domain\ValuesObjects\Uuid;
 
@@ -39,13 +40,14 @@ class TenantUser {
 
 
     public static function create(
+        UuidGenerator $generator,
         Uuid $tenantId,
         Uuid $userId,
         RoleTenantUser $role,
         ?array $permissions = null,
         ?CreatedAt $createdAt = null,
     ): self {
-        $id = Uuid::generate(); // Asumiendo que tienes un método para generar UUIDs
+        $id = Uuid::generate($generator); // Generar UUID con el generador inyectado
         return new self($id, $tenantId, $userId, $role, $permissions, $createdAt);
     }
 

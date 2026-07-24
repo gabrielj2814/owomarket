@@ -5,6 +5,7 @@ namespace Src\Tenant\Domain\Entities;
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\SoftDeleteAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Tenant\Domain\Shared\Security\UuidGenerator;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
 use Src\Tenant\Domain\ValuesObjects\EmailVerifiedAt;
 use Src\Tenant\Domain\ValuesObjects\Password;
@@ -29,8 +30,8 @@ class TenantOwner {
     private UserStatus          $isActive;
     private ?CreatedAt          $createdAt;
     private ?UpdatedAt          $updatedAt;
-    private ?SoftDeleteAt       $softDeleteAt;
-    // Constructor privado
+    private ?SoftDeleteAt       $softdeleteAt;
+
     private function __construct(
         ?Uuid               $id,
         UserName            $name,
@@ -42,10 +43,10 @@ class TenantOwner {
         ?PhoneNumber        $phone,
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
-        ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt,
-        ?SoftDeleteAt       $softDeleteAt
-        ) {
+        ?CreatedAt          $createdAt = null,
+        ?UpdatedAt          $updatedAt = null,
+        ?SoftDeleteAt       $softdeleteAt = null,
+    ) {
         $this->id                = $id;
         $this->name              = $name;
         $this->email             = $email;
@@ -58,11 +59,12 @@ class TenantOwner {
         $this->isActive          = $isActive;
         $this->createdAt         = $createdAt;
         $this->updatedAt         = $updatedAt;
-        $this->softDeleteAt      = $softDeleteAt;
+        $this->softdeleteAt      = $softdeleteAt;
     }
 
     // Factory method - genera su propio ID
     public static function create(
+        UuidGenerator       $generator,
         UserName            $name,
         UserEmail           $email,
         ?Password           $password,
@@ -74,7 +76,7 @@ class TenantOwner {
         UserStatus          $isActive,
         ): self {
         return new self(
-            Uuid::generate(),  // ← Auto-generado
+            Uuid::generate($generator),  // ← Auto-generado
             $name,
             $email,
             $password,

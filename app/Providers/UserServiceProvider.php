@@ -3,6 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Src\User\Domain\Shared\Security\UuidGenerator;
+use Src\User\Infrastructure\Security\LaravelUuidGenerator;
 
 class UserServiceProvider extends ServiceProvider
 {
@@ -11,7 +13,7 @@ class UserServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(UuidGenerator::class, LaravelUuidGenerator::class);
     }
 
     /**

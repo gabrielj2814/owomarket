@@ -5,6 +5,7 @@ namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\ValuesObjects\CreatedAt;
 use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Tenant\Domain\Shared\Security\UuidGenerator;
 use Src\Tenant\Domain\ValuesObjects\Domain as ValuesObjectsDomain;
 use Src\Tenant\Domain\ValuesObjects\DomainFallback;
 use Src\Tenant\Domain\ValuesObjects\DomainPrimary;
@@ -20,32 +21,34 @@ class Domain {
     private ?CreatedAt               $createdAt;
     private ?UpdatedAt               $updatedAt;
 
+    // Constructor privado
     private function __construct(
         Uuid                    $id,
         Uuid                    $tenantId,
         ValuesObjectsDomain     $domain,
-        DomainPrimary         $is_primary,
-        DomainFallback         $is_fallback,
-        ?CreatedAt              $createdAt,
-        ?UpdatedAt              $updatedAt,
-    ){
-        $this->id               =$id;
-        $this->tenantId         =$tenantId;
-        $this->domain           =$domain;
-        $this->is_primary       =$is_primary;
-        $this->is_fallback      =$is_fallback;
-        $this->createdAt        = $createdAt;
-        $this->updatedAt        = $updatedAt;
+        DomainPrimary           $is_primary,
+        DomainFallback           $is_fallback,
+        ?CreatedAt              $createdAt = null,
+        ?UpdatedAt              $updatedAt = null,
+    ) {
+        $this->id                = $id;
+        $this->tenantId          = $tenantId;
+        $this->domain            = $domain;
+        $this->is_primary        = $is_primary;
+        $this->is_fallback       = $is_fallback;
+        $this->createdAt         = $createdAt;
+        $this->updatedAt         = $updatedAt;
     }
 
     public static function create(
+        UuidGenerator           $generator,
         Uuid                    $tenantId,
         ValuesObjectsDomain     $domain,
         DomainPrimary           $is_primary,
         DomainFallback           $is_fallback,
     ): self {
         return new self(
-            id: Uuid::generate(),
+            id: Uuid::generate($generator),
             tenantId: $tenantId,
             domain: $domain,
             is_primary: $is_primary,

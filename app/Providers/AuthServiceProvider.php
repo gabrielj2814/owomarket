@@ -9,11 +9,13 @@ use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRep
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\Authentication\Domain\Shared\Security\PasswordHasher;
 use Src\Authentication\Domain\Shared\Security\PasswordValidator;
+use Src\Authentication\Domain\Shared\Security\UuidGenerator;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\AuthUserRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\LoginWebRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\PersonalAccessTokenRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
 use Src\Authentication\Infrastructure\Security\LaravelPasswordHasher;
+use Src\Authentication\Infrastructure\Security\LaravelUuidGenerator;
 use Src\Authentication\Infrastructure\Security\StrictPasswordValidator;
 
 class AuthServiceProvider extends ServiceProvider
@@ -25,6 +27,7 @@ class AuthServiceProvider extends ServiceProvider
     {
         //
 
+        $this->app->bind(UuidGenerator::class, LaravelUuidGenerator::class);
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
         $this->app->bind(LoginWebRepositoryInterface::class, LoginWebRepository::class);

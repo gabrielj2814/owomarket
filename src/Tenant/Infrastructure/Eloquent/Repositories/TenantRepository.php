@@ -20,6 +20,7 @@ use Src\Tenant\Domain\Entities\Tenant;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\Shared\Security\PasswordHasher;
 use Src\Tenant\Domain\Shared\Security\PasswordValidator;
+use Src\Tenant\Domain\Shared\Security\UuidGenerator;
 use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
 use Src\Tenant\Domain\ValuesObjects\Domain;
 use Src\Tenant\Domain\ValuesObjects\DomainFallback;
@@ -49,7 +50,8 @@ class TenantRepository implements TenantRepositoryInterface {
 
     public function __construct(
         protected PasswordValidator $validator,
-        protected PasswordHasher $hasher
+        protected PasswordHasher $hasher,
+        protected UuidGenerator $uuidGenerator
     ){}
 
 
@@ -381,13 +383,13 @@ class TenantRepository implements TenantRepositoryInterface {
         $tenant= ModelsTenant::where('id',$id->value())->first();
         try {
             $tenant->domains()->create([
-                'id' => Uuid::generate()->value(),
+                'id' => Uuid::generate($this->uuidGenerator)->value(),
                 'domain' => Domain::fromString($tenant->slug.'.'.config('tenancy.central_domains.0'))->value()
             ]);
 
             tenancy()->initialize($tenant);
             $user= new User();
-            $user->id = Uuid::generate()->value();
+            $user->id = Uuid::generate($this->uuidGenerator)->value();
             $user->name = "Admin";
             $user->email = "admin@".$tenant->slug.".com";
             $user->password = $this->hasher->hash(config('app.default_passwords_tenant_owner'));
