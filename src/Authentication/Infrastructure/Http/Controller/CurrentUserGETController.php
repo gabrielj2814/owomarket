@@ -20,12 +20,14 @@ class CurrentUserGETController extends Controller {
      * Método index.
      */
 
+    public function __construct(
+        protected ConsultarAuthUserByUuidUseCase $consultarAuthUserByUuidUseCase
+    ){}
+
 
     public function index(Request $request):JsonResponse {
         $uuid= Uuid::make($request->user_uuid);
-        $authUserRepository= new AuthUserRepository();
-        $consultarAuthUserByUuidUseCase= new ConsultarAuthUserByUuidUseCase($authUserRepository);
-        $authUser=$consultarAuthUserByUuidUseCase->execute($uuid);
+        $authUser=$this->consultarAuthUserByUuidUseCase->execute($uuid);
 
 
         return ApiResponse::success(

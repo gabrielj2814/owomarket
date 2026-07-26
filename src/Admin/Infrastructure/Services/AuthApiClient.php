@@ -15,9 +15,8 @@ class AuthApiClient extends BaseApiClient implements AuthServices {
      */
 
     public function consultAuthUserByUuid(Uuid $uuid): array {
+        $endpoint="/api/auth/interna/user/".$uuid->value();
         try {
-
-            $endpoint="/api/auth/interna/user/".$uuid->value();
 
             $data = $this->get($endpoint);
             if(env("APP_ENV")=="local"){
