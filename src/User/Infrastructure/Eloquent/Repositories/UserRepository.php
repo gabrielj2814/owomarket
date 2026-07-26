@@ -3,9 +3,9 @@
 namespace Src\User\Infrastructure\Eloquent\Repositories;
 
 use Illuminate\Support\Facades\Log;
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\Timestamps;
-use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\Timestamps;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\User\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\User\Domain\Entities\User as EntitiesUser;
 use Src\User\Domain\ValueObjects\AvatarUrl;

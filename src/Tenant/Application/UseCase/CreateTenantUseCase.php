@@ -5,14 +5,14 @@ namespace Src\Tenant\Application\UseCase;
 
 use Exception;
 use Illuminate\Support\Facades\Log;
-use Src\Shared\ValuesObjects\Currency;
-use Src\Shared\ValuesObjects\Timezone;
+use Src\Shared\Domain\ValueObjects\Currency;
+use Src\Shared\Domain\ValueObjects\Timezone;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Tenant;
-use Src\Tenant\Domain\ValuesObjects\Slug;
-use Src\Tenant\Domain\ValuesObjects\TenantName;
-use Src\Tenant\Domain\ValuesObjects\TenantRequest;
-use Src\Tenant\Domain\ValuesObjects\TenantStatus;
+use Src\Tenant\Domain\ValueObjects\Slug;
+use Src\Tenant\Domain\ValueObjects\TenantName;
+use Src\Tenant\Domain\ValueObjects\TenantRequest;
+use Src\Tenant\Domain\ValueObjects\TenantStatus;
 
 class CreateTenantUseCase {
 

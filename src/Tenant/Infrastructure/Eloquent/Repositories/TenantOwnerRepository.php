@@ -3,19 +3,19 @@
 namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
 use Exception;
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\SoftDeleteAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
-use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
-use Src\Tenant\Domain\ValuesObjects\Password;
-use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
-use Src\Tenant\Domain\ValuesObjects\UserEmail;
-use Src\Tenant\Domain\ValuesObjects\UserName;
-use Src\Tenant\Domain\ValuesObjects\UserStatus;
-use Src\Tenant\Domain\ValuesObjects\UserType;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\AvatarUrl;
+use Src\Tenant\Domain\ValueObjects\Password;
+use Src\Tenant\Domain\ValueObjects\PhoneNumber;
+use Src\Tenant\Domain\ValueObjects\UserEmail;
+use Src\Tenant\Domain\ValueObjects\UserName;
+use Src\Tenant\Domain\ValueObjects\UserStatus;
+use Src\Tenant\Domain\ValueObjects\UserType;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\User as TenantOwnerModel;
 
 class TenantOwnerRepository implements TenantOwnerRepositoryInterface {

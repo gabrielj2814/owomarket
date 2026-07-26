@@ -2,7 +2,7 @@
 
 namespace Src\Product\Domain\ValueObjects;
 
-use Src\Shared\ValuesObjects\StringValueObject;
+use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 /**
  * Clase Sku - Value Object para representar un SKU (Stock Keeping Unit)

@@ -3,7 +3,7 @@ RememberToken<?php
 namespace Src\User\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Shared\ValuesObjects\StringValueObject;
+use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class RememberToken extends StringValueObject
 {

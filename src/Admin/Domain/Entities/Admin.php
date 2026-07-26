@@ -3,7 +3,7 @@
 namespace Src\Admin\Domain\Entities;
 
 use DateTime;
-use Src\Admin\Domain\Shared\Security\UuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Admin\Domain\ValueObjects\Password;
@@ -14,8 +14,8 @@ use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Admin\Domain\ValueObjects\Uuid;
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
 
 class Admin {
     private ?Uuid               $id;

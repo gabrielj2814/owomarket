@@ -3,11 +3,11 @@
 
 namespace Src\Tenant\Domain\Entities;
 
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
-use Src\Tenant\Domain\Shared\Security\UuidGenerator;
-use Src\Tenant\Domain\ValuesObjects\RoleTenantUser;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class TenantUser {
 

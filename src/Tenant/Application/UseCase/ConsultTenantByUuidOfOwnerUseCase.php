@@ -8,7 +8,7 @@ use Exception;
 use Src\Shared\Collection\Pagination;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class ConsultTenantByUuidOfOwnerUseCase {
 

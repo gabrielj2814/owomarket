@@ -2,8 +2,8 @@
 
 namespace Src\Authentication\Domain\ValueObjects;
 
-use Src\Authentication\Domain\Exceptions\InvalidUuidException;
-use Src\Authentication\Domain\Shared\Security\UuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\Exceptions\InvalidUuidException;
 
 final class Uuid {
 

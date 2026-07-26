@@ -4,9 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Src\Product\Application\Contracts\Repositories\ProductRepositoryInterface;
-use Src\Product\Domain\Shared\Security\UuidGenerator;
 use Src\Product\Infrastructure\Eloquent\Repositories\ProductRepository;
-use Src\Product\Infrastructure\Security\LaravelUuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
 
 class ProductServiceProvider extends ServiceProvider
 {

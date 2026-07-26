@@ -4,9 +4,9 @@ namespace Src\Tenant\Application\UseCase;
 
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
-use Src\Tenant\Domain\ValuesObjects\PhoneNumber;
-use Src\Tenant\Domain\ValuesObjects\UserName;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\PhoneNumber;
+use Src\Tenant\Domain\ValueObjects\UserName;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class TenantOwnerUpdatePersonalDataUseCase {
 

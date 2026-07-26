@@ -7,7 +7,7 @@ use Exception;
 use LogicException;
 use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
-use Src\Authentication\Domain\Shared\Security\PasswordHasher;
+use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 
 class LoginApiUserUseCase {

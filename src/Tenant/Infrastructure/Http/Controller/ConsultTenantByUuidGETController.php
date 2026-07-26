@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\ConsultTenantByUuidUseCase;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class ConsultTenantByUuidGETController extends Controller{
 

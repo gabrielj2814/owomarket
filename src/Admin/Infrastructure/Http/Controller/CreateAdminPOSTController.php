@@ -13,8 +13,8 @@ use Illuminate\Support\Str;
 use Src\Admin\Application\UseCase\CreateAdminUseCase;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Http\Request\CreateAdminFormRequest;
-use Src\Admin\Infrastructure\Security\LaravelPasswordHasher;
-use Src\Admin\Infrastructure\Security\StrictPasswordValidator;
+use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
+use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
 use Src\Shared\Helper\ApiResponse;
 
 class CreateAdminPOSTController extends Controller {

@@ -6,7 +6,7 @@ namespace Src\Tenant\Application\UseCase;
 use Exception;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Tenant;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class RejectedRequestUseCase {
 

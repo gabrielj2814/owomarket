@@ -3,11 +3,11 @@
 
 namespace Src\Tenant\Domain\Entities;
 
-use Src\Tenant\Domain\ValuesObjects\AvatarUrl;
-use Src\Tenant\Domain\ValuesObjects\UserEmail;
-use Src\Tenant\Domain\ValuesObjects\UserName;
-use Src\Tenant\Domain\ValuesObjects\UserType;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\AvatarUrl;
+use Src\Tenant\Domain\ValueObjects\UserEmail;
+use Src\Tenant\Domain\ValueObjects\UserName;
+use Src\Tenant\Domain\ValueObjects\UserType;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class AuthUser {
 

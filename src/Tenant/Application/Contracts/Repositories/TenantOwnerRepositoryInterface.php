@@ -4,8 +4,8 @@
 namespace Src\Tenant\Application\Contracts\Repositories;
 
 use Src\Tenant\Domain\Entities\TenantOwner;
-use Src\Tenant\Domain\ValuesObjects\Password;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Password;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 interface TenantOwnerRepositoryInterface {
 

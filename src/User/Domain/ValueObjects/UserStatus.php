@@ -2,7 +2,7 @@
 
 namespace Src\User\Domain\ValueObjects;
 
-use Src\Shared\ValuesObjects\BoolValueObject;
+use Src\Shared\Domain\ValueObjects\BoolValueObject;
 
 final class UserStatus extends BoolValueObject
 {

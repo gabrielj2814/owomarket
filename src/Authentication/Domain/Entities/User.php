@@ -2,7 +2,7 @@
 
 namespace Src\Authentication\Domain\Entities;
 
-use Src\Authentication\Domain\Shared\Security\UuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\Password;
 use Src\Authentication\Domain\ValueObjects\UserEmail;

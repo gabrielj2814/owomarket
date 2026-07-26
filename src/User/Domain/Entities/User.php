@@ -3,10 +3,10 @@
 namespace Src\User\Domain\Entities;
 
 use DateTime;
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\SoftDeleteAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
-use Src\User\Domain\Shared\Security\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\User\Domain\ValueObjects\AvatarUrl;
 use Src\User\Domain\ValueObjects\EmailVerifiedAt;
 use Src\User\Domain\ValueObjects\Password;

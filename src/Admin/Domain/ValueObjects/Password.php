@@ -3,8 +3,8 @@
 namespace Src\Admin\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Admin\Domain\Shared\Security\PasswordHasher;
-use Src\Admin\Domain\Shared\Security\PasswordValidator;
+use Src\Shared\Domain\Contracts\PasswordHasher;
+use Src\Shared\Domain\Contracts\PasswordValidator;
 
 final class Password
 {

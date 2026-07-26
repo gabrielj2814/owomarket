@@ -7,14 +7,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Log;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\AssignTenantToUserUseCase;
-use Src\Tenant\Application\UseCase\CreateTenantOwonerUseCase;
+use Src\Tenant\Application\UseCase\CreateTenantOwnerUseCase;
 use Src\Tenant\Application\UseCase\CreateTenantUseCase;
 use Src\Tenant\Application\UseCase\DeleteTenantByUuidUseCase;
 use Src\Tenant\Application\UseCase\DeleteTenantOwnerByUuidUseCase;
 use Src\Tenant\Application\UseCase\DeleteTenantUserByUuidUseCase;
 use Src\Tenant\Application\UseCase\ForceDeletedTenantByUuidUseCase;
 use Src\Tenant\Application\UseCase\ForceDeletedTenantOwnerByUuidUseCase;
-use Src\Tenant\Domain\ValuesObjects\RoleTenantUser;
+use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
 use Src\Tenant\Infrastructure\Http\Request\CreateTenantOwnerAccountFormRequest;
 
 class CreateAccountTenantPOSTController extends Controller {
@@ -26,7 +26,7 @@ class CreateAccountTenantPOSTController extends Controller {
 
 
     public function __construct(
-        protected CreateTenantOwonerUseCase             $createTenantOwnerUseCase,
+        protected CreateTenantOwnerUseCase              $createTenantOwnerUseCase,
         protected CreateTenantUseCase                   $createTenantUseCase,
         protected AssignTenantToUserUseCase             $assignTenantToUserUseCase,
         protected DeleteTenantOwnerByUuidUseCase        $deleteTenantOwnerByUuidUseCase,

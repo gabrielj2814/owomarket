@@ -3,19 +3,19 @@
 
 namespace Src\Tenant\Domain\Entities;
 
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
-use Src\Tenant\Domain\Shared\Security\UuidGenerator;
-use Src\Tenant\Domain\ValuesObjects\Domain as ValuesObjectsDomain;
-use Src\Tenant\Domain\ValuesObjects\DomainFallback;
-use Src\Tenant\Domain\ValuesObjects\DomainPrimary;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Tenant\Domain\ValueObjects\Domain as ValueObjectsDomain;
+use Src\Tenant\Domain\ValueObjects\DomainFallback;
+use Src\Tenant\Domain\ValueObjects\DomainPrimary;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class Domain {
 
     private Uuid                     $id;
     private Uuid                     $tenantId;
-    private ValuesObjectsDomain      $domain;
+    private ValueObjectsDomain      $domain;
     private DomainPrimary            $is_primary;
     private DomainFallback            $is_fallback;
     private ?CreatedAt               $createdAt;
@@ -25,7 +25,7 @@ class Domain {
     private function __construct(
         Uuid                    $id,
         Uuid                    $tenantId,
-        ValuesObjectsDomain     $domain,
+        ValueObjectsDomain     $domain,
         DomainPrimary           $is_primary,
         DomainFallback           $is_fallback,
         ?CreatedAt              $createdAt = null,
@@ -43,7 +43,7 @@ class Domain {
     public static function create(
         UuidGenerator           $generator,
         Uuid                    $tenantId,
-        ValuesObjectsDomain     $domain,
+        ValueObjectsDomain     $domain,
         DomainPrimary           $is_primary,
         DomainFallback           $is_fallback,
     ): self {
@@ -61,7 +61,7 @@ class Domain {
     public static function reconstitute(
         Uuid                    $id,
         Uuid                    $tenantId,
-        ValuesObjectsDomain     $domain,
+        ValueObjectsDomain     $domain,
         DomainPrimary         $is_primary,
         DomainFallback         $is_fallback,
         ?CreatedAt              $createdAt,
@@ -89,7 +89,7 @@ class Domain {
         return $this->tenantId;
     }
 
-    public function getDomain(): ValuesObjectsDomain
+    public function getDomain(): ValueObjectsDomain
     {
         return $this->domain;
     }

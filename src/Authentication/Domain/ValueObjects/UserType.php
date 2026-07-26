@@ -4,7 +4,7 @@ namespace Src\Authentication\Domain\ValueObjects;
 
 
 use InvalidArgumentException;
-use Src\Shared\ValuesObjects\StringValueObject;
+use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class UserType extends StringValueObject
 {

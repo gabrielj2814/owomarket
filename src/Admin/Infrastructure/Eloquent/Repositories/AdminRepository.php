@@ -17,8 +17,8 @@ use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Models\User as AdminModel;
 use Src\Shared\Collection\Collection;
 use Src\Shared\Collection\Pagination;
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
 
 class AdminRepository implements AdminRepositoryInterface {
 

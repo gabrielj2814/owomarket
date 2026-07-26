@@ -4,7 +4,7 @@
 namespace Src\Tenant\Application\UseCase;
 
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class ForceDeletedTenantOwnerByUuidUseCase {
 

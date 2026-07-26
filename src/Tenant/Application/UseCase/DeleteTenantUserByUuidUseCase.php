@@ -4,7 +4,7 @@
 namespace Src\Tenant\Application\UseCase;
 
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantUser;
 
 class DeleteTenantUserByUuidUseCase {

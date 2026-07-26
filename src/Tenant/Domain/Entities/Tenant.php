@@ -4,17 +4,17 @@
 namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\Collection\Collection;
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\Currency;
-use Src\Shared\ValuesObjects\SoftDeleteAt;
-use Src\Shared\ValuesObjects\Timezone;
-use Src\Shared\ValuesObjects\UpdatedAt;
-use Src\Tenant\Domain\Shared\Security\UuidGenerator;
-use Src\Tenant\Domain\ValuesObjects\Slug;
-use Src\Tenant\Domain\ValuesObjects\TenantName;
-use Src\Tenant\Domain\ValuesObjects\TenantRequest;
-use Src\Tenant\Domain\ValuesObjects\TenantStatus;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\Currency;
+use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
+use Src\Shared\Domain\ValueObjects\Timezone;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Tenant\Domain\ValueObjects\Slug;
+use Src\Tenant\Domain\ValueObjects\TenantName;
+use Src\Tenant\Domain\ValueObjects\TenantRequest;
+use Src\Tenant\Domain\ValueObjects\TenantStatus;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class Tenant {
 

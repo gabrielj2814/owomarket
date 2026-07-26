@@ -6,7 +6,7 @@ namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 use Src\Authentication\Application\Contracts\Repositories\AuthUserRepositoryInterface;
 use Src\Authentication\Domain\Entities\AuthUser;
 use Src\Authentication\Domain\Entities\User;
-use Src\Authentication\Domain\Shared\Security\UuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;

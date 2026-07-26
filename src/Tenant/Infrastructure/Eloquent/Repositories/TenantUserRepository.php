@@ -3,12 +3,12 @@
 
 namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
-use Src\Shared\ValuesObjects\CreatedAt;
-use Src\Shared\ValuesObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantUser;
-use Src\Tenant\Domain\ValuesObjects\RoleTenantUser;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantUser as ModelsTenantUser;
 
 class TenantUserRepository implements TenantUserRepositoryInterface {

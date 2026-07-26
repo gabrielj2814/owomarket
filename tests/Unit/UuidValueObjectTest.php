@@ -1,35 +1,44 @@
 <?php
 
 use Tests\TestCase;
-use Src\Authentication\Domain\Shared\Security\UuidGenerator as AuthUuidGenerator;
+use Src\Shared\Domain\Contracts\PasswordHasher;
+use Src\Shared\Domain\Contracts\PasswordValidator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\Uuid as SharedUuid;
+use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
+use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
+use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
 use Src\Authentication\Domain\ValueObjects\Uuid as AuthUuid;
-use Src\Authentication\Infrastructure\Security\LaravelUuidGenerator as AuthLaravelUuidGenerator;
-use Src\User\Domain\Shared\Security\UuidGenerator as UserUuidGenerator;
 use Src\User\Domain\ValueObjects\Uuid as UserUuid;
-use Src\Tenant\Domain\Shared\Security\UuidGenerator as TenantUuidGenerator;
-use Src\Tenant\Domain\ValuesObjects\Uuid as TenantUuid;
-use Src\Product\Domain\Shared\Security\UuidGenerator as ProductUuidGenerator;
+use Src\Tenant\Domain\ValueObjects\Uuid as TenantUuid;
 use Src\Product\Domain\ValueObjects\Uuid as ProductUuid;
-use Src\Admin\Domain\Shared\Security\UuidGenerator as AdminUuidGenerator;
 use Src\Admin\Domain\ValueObjects\Uuid as AdminUuid;
 
 uses(TestCase::class);
 
+test('Shared Kernel Uuid can be generated using injected LaravelUuidGenerator', function () {
+    $generator = new LaravelUuidGenerator();
+    $uuid = SharedUuid::generate($generator);
+
+    expect($uuid)->toBeInstanceOf(SharedUuid::class);
+    expect(SharedUuid::isValid($uuid->value()))->toBeTrue();
+});
+
+test('Shared Kernel Uuid detects invalid string formats without framework dependency', function () {
+    expect(SharedUuid::isValid('invalid-uuid-string'))->toBeFalse();
+    expect(SharedUuid::isValid('12345678-1234-1234-1234-123456789abc'))->toBeTrue();
+});
+
 test('Authentication Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new AuthLaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator();
     $uuid = AuthUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(AuthUuid::class);
     expect(AuthUuid::isValid($uuid->value()))->toBeTrue();
 });
 
-test('Authentication Uuid detects invalid string formats without framework dependency', function () {
-    expect(AuthUuid::isValid('invalid-uuid-string'))->toBeFalse();
-    expect(AuthUuid::isValid('12345678-1234-1234-1234-123456789abc'))->toBeTrue();
-});
-
 test('User Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new \Src\User\Infrastructure\Security\LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator();
     $uuid = UserUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(UserUuid::class);
@@ -37,7 +46,7 @@ test('User Uuid can be generated using injected LaravelUuidGenerator', function 
 });
 
 test('Tenant Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new \Src\Tenant\Infrastructure\Security\LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator();
     $uuid = TenantUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(TenantUuid::class);
@@ -45,7 +54,7 @@ test('Tenant Uuid can be generated using injected LaravelUuidGenerator', functio
 });
 
 test('Product Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new \Src\Product\Infrastructure\Security\LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator();
     $uuid = ProductUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(ProductUuid::class);
@@ -53,17 +62,15 @@ test('Product Uuid can be generated using injected LaravelUuidGenerator', functi
 });
 
 test('Admin Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new \Src\Admin\Infrastructure\Security\LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator();
     $uuid = AdminUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(AdminUuid::class);
     expect(AdminUuid::isValid($uuid->value()))->toBeTrue();
 });
 
-test('Service Providers bind UuidGenerator interface to LaravelUuidGenerator', function () {
-    expect(app(AuthUuidGenerator::class))->toBeInstanceOf(AuthLaravelUuidGenerator::class);
-    expect(app(UserUuidGenerator::class))->toBeInstanceOf(\Src\User\Infrastructure\Security\LaravelUuidGenerator::class);
-    expect(app(TenantUuidGenerator::class))->toBeInstanceOf(\Src\Tenant\Infrastructure\Security\LaravelUuidGenerator::class);
-    expect(app(ProductUuidGenerator::class))->toBeInstanceOf(\Src\Product\Infrastructure\Security\LaravelUuidGenerator::class);
-    expect(app(AdminUuidGenerator::class))->toBeInstanceOf(\Src\Admin\Infrastructure\Security\LaravelUuidGenerator::class);
+test('AppServiceProvider binds Shared Kernel interfaces to infrastructure implementations', function () {
+    expect(app(UuidGenerator::class))->toBeInstanceOf(LaravelUuidGenerator::class);
+    expect(app(PasswordHasher::class))->toBeInstanceOf(LaravelPasswordHasher::class);
+    expect(app(PasswordValidator::class))->toBeInstanceOf(StrictPasswordValidator::class);
 });

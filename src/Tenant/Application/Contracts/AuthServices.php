@@ -2,7 +2,7 @@
 
 namespace Src\Tenant\Application\Contracts;
 
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 interface AuthServices {
 

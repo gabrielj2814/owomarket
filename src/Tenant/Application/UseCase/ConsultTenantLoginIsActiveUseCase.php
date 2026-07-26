@@ -5,7 +5,7 @@ namespace Src\Tenant\Application\UseCase;
 
 use Exception;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
-use Src\Tenant\Domain\ValuesObjects\Slug;
+use Src\Tenant\Domain\ValueObjects\Slug;
 
 class ConsultTenantLoginIsActiveUseCase {
 

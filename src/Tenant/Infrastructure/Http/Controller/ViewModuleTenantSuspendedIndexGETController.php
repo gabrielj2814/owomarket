@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
 use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class ViewModuleTenantSuspendedIndexGETController extends Controller {
 

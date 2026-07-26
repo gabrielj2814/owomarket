@@ -6,8 +6,8 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
-use Src\Admin\Domain\Shared\Security\PasswordHasher;
-use Src\Admin\Domain\Shared\Security\PasswordValidator;
+use Src\Shared\Domain\Contracts\PasswordHasher;
+use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Admin\Domain\ValueObjects\Password;
 
 class RootUserSeeder extends Seeder

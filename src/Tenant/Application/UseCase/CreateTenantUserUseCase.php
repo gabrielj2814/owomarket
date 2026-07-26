@@ -3,11 +3,11 @@
 
 namespace Src\Tenant\Application\UseCase;
 
-use Src\Shared\ValuesObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantUser;
-use Src\Tenant\Domain\ValuesObjects\RoleTenantUser;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class CreateTenantUserUseCase {
 

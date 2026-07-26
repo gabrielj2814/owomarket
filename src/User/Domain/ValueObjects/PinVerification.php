@@ -4,7 +4,7 @@ namespace Src\User\Domain\ValueObjects;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
-use Src\Shared\ValuesObjects\StringValueObject;
+use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class PinVerification extends StringValueObject
 {

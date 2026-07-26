@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Src\User\Domain\Shared\Security\UuidGenerator;
-use Src\User\Infrastructure\Security\LaravelUuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
 
 class UserServiceProvider extends ServiceProvider
 {

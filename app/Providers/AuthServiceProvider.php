@@ -7,16 +7,16 @@ use Src\Authentication\Application\Contracts\Repositories\AuthUserRepositoryInte
 use Src\Authentication\Application\Contracts\Repositories\LoginWebRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
-use Src\Authentication\Domain\Shared\Security\PasswordHasher;
-use Src\Authentication\Domain\Shared\Security\PasswordValidator;
-use Src\Authentication\Domain\Shared\Security\UuidGenerator;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\AuthUserRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\LoginWebRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\PersonalAccessTokenRepository;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
-use Src\Authentication\Infrastructure\Security\LaravelPasswordHasher;
-use Src\Authentication\Infrastructure\Security\LaravelUuidGenerator;
-use Src\Authentication\Infrastructure\Security\StrictPasswordValidator;
+use Src\Shared\Domain\Contracts\PasswordHasher;
+use Src\Shared\Domain\Contracts\PasswordValidator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
+use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
+use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
 
 class AuthServiceProvider extends ServiceProvider
 {

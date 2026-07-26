@@ -3,7 +3,7 @@
 namespace Src\Product\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Shared\ValuesObjects\FloatValueObject;
+use Src\Shared\Domain\ValueObjects\FloatValueObject;
 
 class PriceProduct extends FloatValueObject {
 

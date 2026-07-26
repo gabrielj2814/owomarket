@@ -2,7 +2,7 @@
 
 namespace Src\Product\Domain\Entities;
 
-use Src\Product\Domain\Shared\Security\UuidGenerator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Product\Domain\ValueObjects\NameProduct;
 use Src\Product\Domain\ValueObjects\PriceProduct;
 use Src\Product\Domain\ValueObjects\Sku;

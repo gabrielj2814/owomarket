@@ -3,7 +3,7 @@
 namespace Src\Admin\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Shared\ValuesObjects\StringValueObject;
+use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class PhoneNumber extends StringValueObject
 {

@@ -6,7 +6,7 @@ namespace Src\Tenant\Infrastructure\Http\Services;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 use Src\Tenant\Application\Contracts\AuthServices;
-use Src\Tenant\Domain\ValuesObjects\Uuid;
+use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class AuthCentralApiClient extends BaseApiClient implements AuthServices {
 
