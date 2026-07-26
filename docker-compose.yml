@@ -1,57 +1,95 @@
-version: "3.8"
+version: '3.8'
 
 services:
+  # ----------------------------------------------------
+  # Contenedor 1: PHP 8.3 FPM (Aplicación Laravel 12)
+  # ----------------------------------------------------
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: owomarket_app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini:ro
+    networks:
+      - owomarket_net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
 
-    app:
-        build:
-            context: .
-            dockerfile: Dockerfile
-        container_name: app
-        environment:
-            - APP_ENV=local
-            - APP_KEY=${APP_KEY}
-            - DB_HOST=${DB_HOST}
-            - DB_PORT=${DB_PORT}
-            - DB_USERNAME=${DB_USERNAME}
-            - DB_PASSWORD=${DB_PASSWORD}
-            - DB_DATABASE=${DB_DATABASE}
-        volumes:
-            - .:/var/www/html
-        depends_on:
-            - services_db_rifa
+  # ----------------------------------------------------
+  # Contenedor 2: Servidor Web Nginx (Subdominios Wildcard Multi-Tenant)
+  # ----------------------------------------------------
+  web:
+    image: nginx:alpine
+    container_name: owomarket_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - .:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - owomarket_net
+    depends_on:
+      - app
 
-    services_db_rifa:
-        image: mysql:8.0
-        container_name: services_db_rifa
-        ports:
-            - "3002:3306"
-        environment:
-            - MYSQL_DATABASE=${DB_DATABASE}
-            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
-        volumes:
-            - db_data:/var/lib/mysql
-    servicio_web:
-        image: nginx:alpine
-        ports:
-            - "3001:80"
-        volumes:
-            - .:/var/www/html
-            - ./nginx_config/nginx.conf:/etc/nginx/conf.d/default.conf
-        depends_on:
-            - app
-    phpmyadmin:
-        image: phpmyadmin:5.2.1-apache
-        ports:
-            - '3003:80'
-        links:
-            - services_db_rifa
-        environment:
-            - PMA_ARBITRARY=1
-            - PMA_HOST=services_db_rifa
-            - PMA_PORT=3306
-            - PMA_USER=${DB_USERNAME}
-            - PMA_PASSWORD=${DB_PASSWORD}
+  # ----------------------------------------------------
+  # Contenedor 3: Base de Datos MySQL 8.0
+  # ----------------------------------------------------
+  db:
+    image: mysql:8.0
+    container_name: owomarket_db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-owomarket}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_USER: ${DB_USERNAME:-owomarket}
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - owomarket_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------
+  # Contenedor 4: Redis (Cache, Sesiones y Colas/Horizon)
+  # ----------------------------------------------------
+  redis:
+    image: redis:alpine
+    container_name: owomarket_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - owomarket_net
+
+networks:
+  owomarket_net:
+    driver: bridge
 
 volumes:
   db_data:
-
+    driver: local
+  redis_data:
+    driver: local

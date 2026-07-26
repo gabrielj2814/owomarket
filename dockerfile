@@ -1,39 +1,66 @@
-FROM php:8.2-fpm-alpine
+# ==========================================
+# Etapa 1: Node.js - Compilar Frontend (Vite/Inertia/React)
+# ==========================================
+FROM node:20-alpine AS frontend-builder
 
-# Instalar dependencias en Alpine, incluyendo nodejs y npm
-RUN apk update && apk add \
-    git \
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci
+
+COPY . .
+RUN npm run build
+
+# ==========================================
+# Etapa 2: PHP Base con Extensiones
+# ==========================================
+FROM php:8.3-fpm-alpine AS base
+
+# Instalar dependencias del sistema y extensiones de PHP necesarias para Laravel
+RUN apk add --no-cache \
     curl \
     libpng-dev \
+    libxml2-dev \
+    zip \
     libzip-dev \
+    unzip \
     oniguruma-dev \
-    postgresql-dev \
-    nodejs \
-    npm \
-    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd zip
+    icu-dev \
+    icu-libs \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    $PHPIZE_DEPS \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl opcache \
+    && pecl install redis \
+    && docker-php-ext-enable redis \
+    && apk del $PHPIZE_DEPS
 
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Directorio de trabajo
-WORKDIR /var/www/html
+WORKDIR /var/www
 
-# Copiar código
+# ==========================================
+# Etapa 3: Producción (Empaquetado Completo para Kubernetes/Cloud)
+# ==========================================
+FROM base AS production
+
+COPY package*.json composer*.json ./
+
+# Copiar el código fuente completo
 COPY . .
 
-# Instalar dependencias de PHP y Node, luego compilar frontend
-RUN composer install --no-dev --optimize-autoloader --no-interaction \
-    && npm install \
-    && npm run build
+# Copiar los activos compilados desde la etapa de frontend
+COPY --from=frontend-builder /app/public/build ./public/build
 
-# Configurar permisos
-RUN chown -R www-data:www-data /var/www/html/storage \
-    && chown -R www-data:www-data /var/www/html/bootstrap/cache \
-    && chmod -R 775 /var/www/html/storage \
-    && chmod -R 775 /var/www/html/bootstrap/cache
+# Instalar dependencias de PHP para producción
+RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
-# Puerto de PHP-FPM
+# Permisos de almacenamiento y cache de Laravel
+RUN chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
 EXPOSE 9000
 
-# Comando para iniciar PHP-FPM
-CMD ["php-fpm", "--nodaemonize"]
+CMD ["php-fpm"]

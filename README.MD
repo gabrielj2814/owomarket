@@ -135,7 +135,7 @@ Una vez completados todos los pasos, podrás acceder a la aplicación a través 
 
 ## Instalación con Docker (docker-compose)
 
-Si prefieres no instalar PHP, Node.js y MySQL directamente en tu máquina local, el proyecto cuenta con archivos `docker-compose.yml` y `Dockerfile` listos para levantar todo el entorno.
+Si prefieres no instalar PHP, Node.js y MySQL directamente en tu máquina local, el proyecto cuenta con un entorno Docker completo y optimizado con Nginx, PHP 8.3 FPM, MySQL 8.0 y Redis.
 
 ### Requisitos previos para Docker:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop) instalado y en ejecución.
@@ -147,25 +147,50 @@ Si prefieres no instalar PHP, Node.js y MySQL directamente en tu máquina local,
    cp .env.example .env
    ```
 
-2. **Levantar los contenedores**:
-   Este comando construirá la imagen del backend (instalando Composer y dependencias de NPM), levantará Nginx, MySQL y phpMyAdmin.
+2. **Configurar el archivo `.env` para Docker**:
+   Asegúrate de ajustar las siguientes variables en tu `.env` para conectarte a los contenedores:
+   ```env
+   DB_HOST=db
+   DB_PORT=3306
+   DB_DATABASE=owomarket
+   DB_USERNAME=owomarket
+   DB_PASSWORD=root
+
+   REDIS_HOST=redis
+   REDIS_PORT=6379
+   ```
+
+3. **Levantar los contenedores**:
    ```shell
    docker-compose up -d --build
    ```
 
-3. **Generar la clave de la aplicación**:
+4. **Generar la clave de la aplicación**:
    ```shell
    docker-compose exec app php artisan key:generate
    ```
 
-4. **Ejecutar las migraciones y seeders**:
+5. **Ejecutar las migraciones y seeders**:
    ```shell
    docker-compose exec app php artisan migrate --seed
    ```
 
-5. **Crear enlace simbólico de Storage**:
+6. **Crear el enlace simbólico de Storage**:
    ```shell
    docker-compose exec app php artisan storage:link
    ```
 
-Una vez que los contenedores estén corriendo, podrás acceder a la aplicación en `http://localhost:3001` (según la configuración de Nginx). Además, puedes acceder a phpMyAdmin en `http://localhost:3003`. Puedes detener el entorno en cualquier momento ejecutando `docker-compose down`.
+### 🌐 Acceso a Subdominios Multi-Tenant en Local:
+Nginx en Docker está configurado con **soporte de subdominios wildcard automático**. Los navegadores modernos apuntan automáticamente cualquier subdominio `.localhost` a `127.0.0.1` sin modificar tu archivo `hosts` de Windows:
+
+- **Dominio Central**: `http://localhost` o `http://app.localhost`
+- **Tienda / Tenant 1**: `http://tienda1.localhost`
+- **Tienda / Tenant 2**: `http://tienda2.localhost`
+
+> 📖 **Guía Completa de Docker y Kubernetes**:  
+> Para más detalles sobre comandos de desarrollo, ejecución de tests en Docker o despliegue en clústeres de **Kubernetes (k8s)**, consulta la guía [DOCKER_K8S_GUIA.md](file:///c:/laragon/www/owomarket/DOCKER_K8S_GUIA.md) y los manifiestos en la carpeta [k8s/](file:///c:/laragon/www/owomarket/k8s).
+
+Puedes detener el entorno local en cualquier momento ejecutando:
+```shell
+docker-compose down
+```

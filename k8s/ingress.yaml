@@ -1,0 +1,43 @@
+# ====================================================
+# Kubernetes Ingress: Subdominios Wildcard Multi-Tenant
+# ====================================================
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: owomarket-ingress
+  namespace: owomarket
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod" # Emisión automática de SSL para subdominios
+    nginx.ingress.kubernetes.io/proxy-body-size: "100m"
+spec:
+  tls:
+    - hosts:
+        - "owomarket.com"
+        - "*.owomarket.com"
+      secretName: owomarket-wildcard-tls
+  rules:
+    # 1. Dominio Central
+    - host: "owomarket.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: owomarket-service
+                port:
+                  number: 80
+
+    # 2. Subdominios Wildcard para Inquilinos (Tenants)
+    - host: "*.owomarket.com"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: owomarket-service
+                port:
+                  number: 80
