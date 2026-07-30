@@ -2,7 +2,6 @@
 
 namespace Src\Admin\Domain\Entities;
 
-use DateTime;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\EmailVerifiedAt;
@@ -30,7 +29,8 @@ class Admin {
     private UserStatus          $isActive;
     private ?CreatedAt          $createdAt;
     private ?UpdatedAt          $updatedAt;
-    // Constructor privado
+
+    // Constructor privado (12 parámetros estrictos)
     private function __construct(
         ?Uuid               $id,
         UserName            $name,
@@ -43,8 +43,8 @@ class Admin {
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
         ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt,
-        ) {
+        ?UpdatedAt          $updatedAt
+    ) {
         $this->id                = $id;
         $this->name              = $name;
         $this->email             = $email;
@@ -59,7 +59,7 @@ class Admin {
         $this->updatedAt         = $updatedAt;
     }
 
-    // Factory method - genera su propio ID
+    // Factory method - genera su propio ID (12 parámetros)
     public static function create(
         UuidGenerator       $generator,
         UserName            $name,
@@ -72,10 +72,10 @@ class Admin {
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
         ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt,
-        ): self {
+        ?UpdatedAt          $updatedAt
+    ): self {
         return new self(
-            Uuid::generate($generator),  // ← Auto-generado
+            Uuid::generate($generator),
             $name,
             $email,
             $password,
@@ -86,16 +86,16 @@ class Admin {
             $avatar,
             $isActive,
             $createdAt,
-            $updatedAt,
+            $updatedAt
         );
     }
 
-    // Factory method - para reconstruir desde BD
+    // Factory method - para reconstruir desde BD (12 parámetros)
     public static function reconstitute(
         ?Uuid               $id,
         UserName            $name,
         UserEmail           $email,
-        ?Password            $password,
+        ?Password           $password,
         ?EmailVerifiedAt    $emailVerifiedAt,
         ?PinVerification    $pin,
         UserType            $type,
@@ -103,9 +103,8 @@ class Admin {
         ?AvatarUrl          $avatar,
         UserStatus          $isActive,
         ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt,
-        ): self {
-        // return new self($id, $email, $createdAt);
+        ?UpdatedAt          $updatedAt
+    ): self {
         return new self(
             $id,
             $name,
@@ -118,7 +117,7 @@ class Admin {
             $avatar,
             $isActive,
             $createdAt,
-            $updatedAt,
+            $updatedAt
         );
     }
 
@@ -148,6 +147,10 @@ class Admin {
 
     public function getAvatar(): ?AvatarUrl {
         return $this->avatar;
+    }
+
+    public function getPin(): ?PinVerification {
+        return $this->pin;
     }
 
     public function getCreatedAt(): ?CreatedAt {
@@ -198,11 +201,6 @@ class Admin {
         return $this->type->canManageUsers();
     }
 
-    // public function verifyEmail(): void { //<- hacer despues
-    //     $this->emailVerifiedAt = EmailVerifiedAt::verifyEmail();
-    //     $this->updatedAt = UpdatedAt::now();
-    // }
-
     public function changePassword(Password $newPassword): void {
         $this->password = $newPassword;
         $this->updatedAt = UpdatedAt::now();
@@ -223,6 +221,39 @@ class Admin {
         $this->updatedAt = UpdatedAt::now();
     }
 
+    public function generateSecurityPin(): PinVerification {
+        $pin = PinVerification::generate();
+        $this->updatePin($pin);
+        return $pin;
+    }
+
+    public function verifySecurityPin(string $inputPin, int $expiryMinutes = 15): bool {
+        if ($this->pin === null || $this->updatedAt === null) {
+            return false;
+        }
+
+        if (!$this->updatedAt->wasRecentlyUpdated($expiryMinutes)) {
+            return false;
+        }
+
+        return $this->pin->verify($inputPin);
+    }
+
+    public function clearSecurityPin(): void {
+        $this->pin = null;
+        $this->updatedAt = UpdatedAt::now();
+    }
+
+    public function updateProfile(UserName $name, ?PhoneNumber $phone): void {
+        $this->name = $name;
+        $this->phone = $phone;
+        $this->updatedAt = UpdatedAt::now();
+    }
+
+    public function updateAvatar(?AvatarUrl $avatar): void {
+        $this->avatar = $avatar;
+        $this->updatedAt = UpdatedAt::now();
+    }
 
     public function setName(UserName $userName): void{
         $this->name=$userName;
@@ -238,11 +269,5 @@ class Admin {
         $this->email=$userEmail;
         $this->updatedAt = UpdatedAt::now();
     }
-
-
-
-
 }
-
-
 ?>

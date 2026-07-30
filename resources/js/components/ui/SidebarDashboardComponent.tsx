@@ -36,7 +36,7 @@ const SidebarDashboardComponent = () => {
                             Dashboard
                         </SidebarItem>
 
-                        <SidebarItem href="#" icon={HiUser} >
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser} >
                             My Perfil
                         </SidebarItem>
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers} >
@@ -70,7 +70,7 @@ const SidebarDashboardComponent = () => {
                             Dashboard
                         </SidebarItem>
 
-                        <SidebarItem href="#" icon={HiUser} >
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser} >
                             My Perfil
                         </SidebarItem>
 
@@ -89,7 +89,7 @@ const SidebarDashboardComponent = () => {
                         <SidebarItem href={`/tenant/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                             Dashboard
                         </SidebarItem>
-                        <SidebarItem href="#" icon={HiUser} >
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser} >
                             My Perfil
                         </SidebarItem>
                          <SidebarItem href={`/product/backoffice/${state.authUser.user_id}/module`} icon={HiShoppingBag}>

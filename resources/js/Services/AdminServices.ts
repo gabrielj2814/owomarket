@@ -1,8 +1,12 @@
+import { FormChangePasswordWithPin } from '@/types/FormChangePasswordWithPin';
 import { FormModuleAdmin } from '@/types/FormModuleAdmin';
+import { FormUpdateProfile } from '@/types/FormUpdateProfile';
 import { Admin } from '@/types/models/Admin';
 import { ErrorResponse } from '@/types/Response/ErrorResponse';
 import { ModuleAdminFormReponseCreate } from '@/types/Response/ModuleAdminFormReponseCreate';
 import { ModuleAdminFormReponseUpdate } from '@/types/Response/ModuleAdminFormReponseUpdate';
+import { ResponseAvatarUpload } from '@/types/Response/ResponseAvatarUpload';
+import { ResponseProfileUpdate } from '@/types/Response/ResponseProfileUpdate';
 import { ApiResponse } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
@@ -112,11 +116,54 @@ const AdminServices = {
         catch(error){
             return error as ApiResponse<void>;
         }
+    },
+
+    updateProfile: async (user_uuid: string, datos: FormUpdateProfile): Promise<ApiResponse<ResponseProfileUpdate, ErrorResponse>> => {
+        try {
+            let respuesta: ApiResponse<ResponseProfileUpdate, ErrorResponse> = await axiosAdmin.put(`backoffice/${user_uuid}/profile`, datos);
+            return respuesta;
+        } catch (error) {
+            return error as ApiResponse<ResponseProfileUpdate, ErrorResponse>;
+        }
+    },
+
+    uploadAvatar: async (user_uuid: string, file: File): Promise<ApiResponse<ResponseAvatarUpload, ErrorResponse>> => {
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+
+            let respuesta: ApiResponse<ResponseAvatarUpload, ErrorResponse> = await axiosAdmin.post(
+                `backoffice/${user_uuid}/profile/avatar`,
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                }
+            );
+            return respuesta;
+        } catch (error) {
+            return error as ApiResponse<ResponseAvatarUpload, ErrorResponse>;
+        }
+    },
+
+    sendSecurityPin: async (user_uuid: string): Promise<ApiResponse<void, ErrorResponse>> => {
+        try {
+            let respuesta: ApiResponse<void, ErrorResponse> = await axiosAdmin.post(`backoffice/${user_uuid}/profile/send-pin`);
+            return respuesta;
+        } catch (error) {
+            return error as ApiResponse<void, ErrorResponse>;
+        }
+    },
+
+    changePasswordWithPin: async (user_uuid: string, datos: FormChangePasswordWithPin): Promise<ApiResponse<void, ErrorResponse>> => {
+        try {
+            let respuesta: ApiResponse<void, ErrorResponse> = await axiosAdmin.put(`backoffice/${user_uuid}/profile/change-password`, datos);
+            return respuesta;
+        } catch (error) {
+            return error as ApiResponse<void, ErrorResponse>;
+        }
     }
-
-
-
-
 }
 
 export default AdminServices;

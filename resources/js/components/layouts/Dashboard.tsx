@@ -17,14 +17,13 @@ const Dashboard:FC<DashboardProps> = ({children, user_uuid}) => {
         <>
         <DashboardProvider user_uuid={user_uuid}>
             <LoaderSpinnerContext/>
-            <div className=" h-screen bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400 overflow-hidden">
+            <div className="h-screen flex flex-col bg-white text-gray-600 dark:bg-gray-900 dark:text-gray-400 overflow-hidden">
                 <NavBarMovilDashboardComponent/>
-                <div className=" flex flex-row p-4 gap-4">
+                <div className="flex flex-row p-4 gap-4 flex-1 overflow-hidden">
                     <SidebarDashboardComponent />
-                    <div className="w-full">
+                    <div className="w-full h-full overflow-y-auto pr-2 pb-16">
                         {children}
                     </div>
-
                 </div>
             </div>
 

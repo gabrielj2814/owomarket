@@ -81,7 +81,7 @@ const NavBarMovilDashboardComponent = () => {
                             <span className="block text-sm">{state.authUser.user_name}</span>
                             <span className="block truncate text-sm font-medium">{state.authUser.user_email}</span>
                         </DropdownHeader>
-                        <DropdownItem>Perfil</DropdownItem>
+                        <DropdownItem href={`/admin/backoffice/${state.authUser.user_id}/profile`}>Perfil</DropdownItem>
                         <DropdownDivider />
                         <DropdownItem onClick={logout}>Sign out</DropdownItem>
                     </Dropdown>
@@ -112,7 +112,7 @@ const NavBarMovilDashboardComponent = () => {
                                                     <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                                                         Dashboard
                                                     </SidebarItem>
-                                                    <SidebarItem href="#" icon={HiUser}>
+                                                    <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser}>
                                                         My Perfil
                                                     </SidebarItem>
                                                     <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers}>
@@ -145,7 +145,7 @@ const NavBarMovilDashboardComponent = () => {
                                                     <SidebarItem href={`/tenant/owner/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                                                         Dashboard
                                                     </SidebarItem>
-                                                    <SidebarItem href="#" icon={HiUser}>
+                                                    <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser}>
                                                         My Perfil
                                                     </SidebarItem>
                                                     <SidebarItem icon={HiLogout} onClick={logout}>
@@ -164,7 +164,7 @@ const NavBarMovilDashboardComponent = () => {
                                                     <SidebarItem href={`/tenant/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                                                         Dashboard
                                                     </SidebarItem>
-                                                    <SidebarItem href="#" icon={HiUser}>
+                                                    <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser}>
                                                         My Perfil
                                                     </SidebarItem>
                                                     <SidebarItem href={`/product/backoffice/${state.authUser.user_id}/module`} icon={HiShoppingBag}>

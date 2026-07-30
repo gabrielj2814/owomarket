@@ -33,6 +33,14 @@ class AdminServiceProvider extends ServiceProvider
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
         $this->app->bind(AdminRepositoryInterface::class, AdminRepository::class);
+        $this->app->bind(
+            \Src\Admin\Application\Contracts\Services\AvatarStorageInterface::class,
+            \Src\Admin\Infrastructure\Services\LaravelAvatarStorageService::class
+        );
+        $this->app->bind(
+            \Src\Admin\Application\Contracts\Services\SecurityPinMailerInterface::class,
+            \Src\Admin\Infrastructure\Services\LaravelSecurityPinMailerService::class
+        );
     }
 
     /**

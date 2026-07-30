@@ -36,6 +36,11 @@ interface AdminRepositoryInterface {
     public function editar(Admin $admin):? Admin;
 
     /**
+     * Método saveProfile (actualiza perfil, avatar, pin y contraseña de cualquier tipo de admin).
+     */
+    public function saveProfile(Admin $admin): ?Admin;
+
+    /**
      * Método filter.
      */
 
