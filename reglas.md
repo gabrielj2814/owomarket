@@ -48,4 +48,4 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 
 1. **Consultar `reglas.md`**: Verificar si existe alguna regla predefinida aplicable a la tarea antes de escribir o modificar código.
 2. **Consultar `ficha_tecnica.md`**: Revisar las versiones de dependencias y librerías disponibles.
-3. **Planificar si la tarea lo requiere**: Crear el plan de implementación correspondiente cuando existan cambios arquitectónicos o nuevas funcionalidades complejas.
+3. **Planificación Obligatoria y Aprobación Previa**: Antes de realizar cualquier cambio o desarrollo, se debe presentar una planificación detallada con las tareas, componentes afectados y pasos de ejecución. **No se iniciará ningún trabajo ni modificación de código sin la aprobación previa y explícita del usuario**.
