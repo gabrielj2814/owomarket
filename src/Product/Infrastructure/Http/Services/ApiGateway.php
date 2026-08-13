@@ -16,9 +16,9 @@ class ApiGateway {
 
     ) {}
 
-    // /**
-  * Método authCentral.
-  */ public function authCentral(): AuthCentralApiClient {
+    
+    // Método authCentral.
+    // public function authCentral(): AuthCentralApiClient {
     //     return $this->authApiCentralClient;
     // }
 
