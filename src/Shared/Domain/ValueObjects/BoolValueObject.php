@@ -6,7 +6,7 @@ abstract class BoolValueObject
 {
     protected bool $value;
 
-    protected function __construct(string $value)
+    public function __construct(bool $value)
     {
         $this->validate($value);
         $this->value = $value;

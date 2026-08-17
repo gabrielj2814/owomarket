@@ -4,6 +4,7 @@ return [
     App\Providers\AdminServiceProvider::class,
     App\Providers\AppServiceProvider::class,
     App\Providers\AuthServiceProvider::class,
+    App\Providers\BrandServiceProvider::class,
     App\Providers\CategoryServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
