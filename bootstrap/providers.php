@@ -7,6 +7,7 @@ return [
     App\Providers\AuthServiceProvider::class,
     App\Providers\BrandServiceProvider::class,
     App\Providers\CategoryServiceProvider::class,
+    App\Providers\CouponServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\RouteServiceProvider::class,

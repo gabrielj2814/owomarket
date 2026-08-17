@@ -19,4 +19,5 @@ Route::prefix("product")->group(callback: base_path("src/Product/Infrastructure/
 Route::prefix("category")->group(callback: base_path("src/Category/Infrastructure/Http/Routes/apiTenant.php"));
 Route::prefix("brand")->group(callback: base_path("src/Brand/Infrastructure/Http/Routes/apiTenant.php"));
 Route::prefix("attribute")->group(callback: base_path("src/Attribute/Infrastructure/Http/Routes/apiTenant.php"));
+Route::prefix("coupon")->group(callback: base_path("src/Coupon/Infrastructure/Http/Routes/apiTenant.php"));
 // Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/api.php"));
