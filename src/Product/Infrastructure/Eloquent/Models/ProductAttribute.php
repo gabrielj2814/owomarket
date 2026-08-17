@@ -16,4 +16,3 @@ class ProductAttribute extends Model
         return $this->hasMany(ProductAttributeValue::class);
     }
 }
-

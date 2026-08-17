@@ -5,9 +5,8 @@ namespace Src\Product\Domain\ValueObjects;
 use InvalidArgumentException;
 use Src\Shared\Domain\ValueObjects\FloatValueObject;
 
-class PriceProduct extends FloatValueObject {
-
-
+class PriceProduct extends FloatValueObject
+{
     public static function make(float $value): self
     {
         return new self($value);
@@ -15,19 +14,12 @@ class PriceProduct extends FloatValueObject {
 
     public function validate(float $value): void
     {
-        if($value){
+        if ($value) {
             if ($value < 0) {
                 throw new InvalidArgumentException('El precio del producto no puede ser negativo.', 400);
             }
-        }
-        else {
+        } else {
             throw new InvalidArgumentException('El precio del producto no puede estar vacío.', 400);
         }
     }
-
-
-
 }
-
-
-?>

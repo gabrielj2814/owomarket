@@ -31,10 +31,11 @@ class Sku extends StringValueObject
     /**
      * Constructor de la clase Sku
      *
-     * @param string $value El valor del SKU
+     * @param  string  $value  El valor del SKU
+     *
      * @throws InvalidArgumentException Si el SKU no pasa las validaciones
      */
-    function __construct(string $value)
+    public function __construct(string $value)
     {
         parent::__construct(strtoupper($value)); // Convertir a mayúsculas automáticamente
     }
@@ -42,8 +43,9 @@ class Sku extends StringValueObject
     /**
      * Método factory para crear una instancia de Sku
      *
-     * @param string $value El valor del SKU
+     * @param  string  $value  El valor del SKU
      * @return self Nueva instancia de Sku
+     *
      * @throws InvalidArgumentException Si el SKU no pasa las validaciones
      */
     public static function create(string $value): self
@@ -59,7 +61,8 @@ class Sku extends StringValueObject
      * - Debe tener entre MIN_LENGTH y MAX_LENGTH caracteres
      * - Solo puede contener letras mayúsculas, números, guiones y guiones bajos
      *
-     * @param string $value El valor del SKU a validar
+     * @param  string  $value  El valor del SKU a validar
+     *
      * @throws InvalidArgumentException Si alguna validación falla
      */
     protected function validate(string $value): void
@@ -72,7 +75,8 @@ class Sku extends StringValueObject
     /**
      * Verifica que el SKU no esté vacío
      *
-     * @param string $value El valor del SKU a validar
+     * @param  string  $value  El valor del SKU a validar
+     *
      * @throws InvalidArgumentException Si el SKU está vacío
      */
     private function ensureNotEmpty(string $value): void
@@ -85,7 +89,8 @@ class Sku extends StringValueObject
     /**
      * Verifica que el SKU tenga una longitud válida
      *
-     * @param string $value El valor del SKU a validar
+     * @param  string  $value  El valor del SKU a validar
+     *
      * @throws InvalidArgumentException Si la longitud no está dentro del rango permitido
      */
     private function ensureValidLength(string $value): void
@@ -110,12 +115,13 @@ class Sku extends StringValueObject
     /**
      * Verifica que el SKU tenga un formato válido
      *
-     * @param string $value El valor del SKU a validar
+     * @param  string  $value  El valor del SKU a validar
+     *
      * @throws InvalidArgumentException Si el formato no es válido
      */
     private function ensureValidFormat(string $value): void
     {
-        if (!preg_match(self::VALID_PATTERN, $value)) {
+        if (! preg_match(self::VALID_PATTERN, $value)) {
             throw new \InvalidArgumentException(
                 'El SKU solo puede contener letras mayúsculas, números, guiones y guiones bajos', 400
             );
@@ -131,6 +137,7 @@ class Sku extends StringValueObject
     public function getProductCode(): ?string
     {
         $parts = explode('-', $this->value);
+
         return $parts[0] ?? null;
     }
 
@@ -143,13 +150,14 @@ class Sku extends StringValueObject
     public function getVariants(): ?string
     {
         $parts = explode('-', $this->value, 2);
+
         return $parts[1] ?? null;
     }
 
     /**
      * Verifica si el SKU pertenece a una categoría específica
      *
-     * @param string $categoryPrefix El prefijo de la categoría a verificar
+     * @param  string  $categoryPrefix  El prefijo de la categoría a verificar
      * @return bool True si el SKU comienza con el prefijo especificado
      */
     public function belongsToCategory(string $categoryPrefix): bool

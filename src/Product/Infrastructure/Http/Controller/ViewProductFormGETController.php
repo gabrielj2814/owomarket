@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Product\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
@@ -10,62 +9,48 @@ use Src\Product\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
 use Src\Product\Domain\ValueObjects\Uuid;
 use Src\Product\Infrastructure\Http\Services\ApiGateway;
 
-class ViewProductFormGETController extends Controller {
-
-
-
+class ViewProductFormGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
-
     public function __construct(
         protected ApiGateway $apiGateway
-    ){}
+    ) {}
 
     /**
      * Método index.
      */
-
-    public function index(Request $request){
+    public function index(Request $request)
+    {
 
         $fullUrl = request()->getSchemeAndHttpHost();
-        $user_uuid=$request->user_uuid;
-        $uuid=Uuid::make($user_uuid);
+        $user_uuid = $request->user_uuid;
+        $uuid = Uuid::make($user_uuid);
 
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authTenant());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid,$fullUrl);
+        $ConsultAuthUserApiByUuid = new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authTenant());
+        $usuario = $ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
 
-        $type=null;
-        $title=null;
-        $message=null;
-        if($request->has("type") && $request->has("message") && $request->has("title")){
-            $type=$request->query("type");
-            $title=$request->query("title");
-            $message=$request->query("message");
+        $type = null;
+        $title = null;
+        $message = null;
+        if ($request->has('type') && $request->has('message') && $request->has('title')) {
+            $type = $request->query('type');
+            $title = $request->query('title');
+            $message = $request->query('message');
         }
 
-        $host= $request->getHost();
-
+        $host = $request->getHost();
 
         return Inertia::render(
             component: 'tenant/modules/product/FormProductPage',
             props: [
-                'title'      => 'Module Product Form - OwOMarket',
-                'user_id'    => $usuario->getUserId()->value(),
-                'host'       => $host,
-                'user_name'  => $usuario->getName()->value(),
+                'title' => 'Module Product Form - OwOMarket',
+                'user_id' => $usuario->getUserId()->value(),
+                'host' => $host,
+                'user_name' => $usuario->getName()->value(),
             ]
         );
 
     }
-
-
-
-
 }
-
-
-
-?>

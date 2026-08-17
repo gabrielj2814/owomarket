@@ -6,7 +6,6 @@ use InvalidArgumentException;
 
 class Slug
 {
-
     private function __construct(
         private string $value,
         // private string $domain,
@@ -29,6 +28,7 @@ class Slug
     public static function fromString(string $string): self
     {
         $slug = self::slugify($string);
+
         return new self($slug);
     }
 
@@ -62,36 +62,35 @@ class Slug
     private function ensureIsValidSlug(string $slug): void
     {
         if (empty($slug)) {
-            throw new InvalidArgumentException('El slug no puede estar vacío',400);
+            throw new InvalidArgumentException('El slug no puede estar vacío', 400);
         }
 
         if (strlen($slug) < 3) {
-            throw new InvalidArgumentException('El slug debe tener al menos 3 caracteres',400);
+            throw new InvalidArgumentException('El slug debe tener al menos 3 caracteres', 400);
         }
 
         if (strlen($slug) > 63) {
-            throw new InvalidArgumentException('El slug no puede tener más de 63 caracteres',400);
+            throw new InvalidArgumentException('El slug no puede tener más de 63 caracteres', 400);
         }
 
         // Validar formato: solo letras minúsculas, números y guiones
-        if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
+        if (! preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
             throw new InvalidArgumentException(
-                'El slug solo puede contener letras minúsculas, números y guiones medios. ' .
-                'No puede empezar ni terminar con guión.',400
+                'El slug solo puede contener letras minúsculas, números y guiones medios. '.
+                'No puede empezar ni terminar con guión.', 400
             );
         }
 
         // Validar que no tenga guiones consecutivos
         if (str_contains($slug, '--')) {
-            throw new InvalidArgumentException('El slug no puede tener guiones consecutivos',400);
+            throw new InvalidArgumentException('El slug no puede tener guiones consecutivos', 400);
         }
 
         // Validar que no sea un número
         if (is_numeric($slug)) {
-            throw new InvalidArgumentException('El slug no puede ser solo números',400);
+            throw new InvalidArgumentException('El slug no puede ser solo números', 400);
         }
     }
-
 
     /**
      * Convierte un string en slug
@@ -119,7 +118,7 @@ class Slug
 
         // Si el slug queda vacío, generar uno aleatorio
         if (empty($slug)) {
-            $slug = 'tenant-' . substr(md5($string), 0, 8);
+            $slug = 'tenant-'.substr(md5($string), 0, 8);
         }
 
         return $slug;
@@ -134,9 +133,10 @@ class Slug
         $suffix = 1;
 
         while (true) {
-            $alternative = $base . '-' . $suffix;
+            $alternative = $base.'-'.$suffix;
             try {
                 new self($alternative);
+
                 return $alternative;
             } catch (InvalidArgumentException) {
                 $suffix++;
@@ -153,12 +153,10 @@ class Slug
         $nouns = ['fox', 'wolf', 'bear', 'eagle', 'lion', 'tiger'];
         $number = rand(1, 999);
 
-        $randomString = $adjectives[array_rand($adjectives)] .
-                       '-' . $nouns[array_rand($nouns)] .
-                       '-' . $number;
+        $randomString = $adjectives[array_rand($adjectives)].
+                       '-'.$nouns[array_rand($nouns)].
+                       '-'.$number;
 
         return self::make($randomString);
     }
 }
-
-?>

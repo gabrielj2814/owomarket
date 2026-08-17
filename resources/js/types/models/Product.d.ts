@@ -1,0 +1,40 @@
+import { ProductImage } from './ProductImage';
+import { ProductVariant } from './ProductVariant';
+
+export interface Product {
+    id: string;
+    name: string;
+    slug: string;
+    sku: string;
+    price: number;
+    compare_price?: number | null;
+    cost_price?: number | null;
+    quantity: number;
+    min_quantity: number;
+    max_quantity: number;
+    track_quantity: boolean;
+    is_in_stock: boolean;
+    is_visible: boolean;
+    is_featured: boolean;
+    is_digital: boolean;
+    digital_product_url?: string | null;
+    description?: string | null;
+    short_description?: string | null;
+    barcode?: string | null;
+    weight?: number | null;
+    height?: number | null;
+    width?: number | null;
+    length?: number | null;
+    category_id?: number | null;
+    category_name?: string | null;
+    brand_id?: number | null;
+    brand_name?: string | null;
+    published_at?: string | null;
+    seo?: Record<string, any> | null;
+    specifications?: Record<string, any> | null;
+    metadata?: Record<string, any> | null;
+    images?: ProductImage[];
+    variants?: ProductVariant[];
+    created_at?: string;
+    updated_at?: string;
+}

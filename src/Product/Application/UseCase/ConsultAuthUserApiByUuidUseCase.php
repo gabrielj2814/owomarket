@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Product\Application\UseCase;
 
 use Src\Product\Application\Contracts\AuthServices;
@@ -11,35 +10,31 @@ use Src\Product\Domain\ValueObjects\UserName;
 use Src\Product\Domain\ValueObjects\UserType;
 use Src\Product\Domain\ValueObjects\Uuid;
 
-class ConsultAuthUserApiByUuidUseCase {
-
-
+class ConsultAuthUserApiByUuidUseCase
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected AuthServices $auth_services
-    ){}
+    ) {}
 
     /**
      * Método execute.
      */
+    public function execute(Uuid $uuid, string $dominio = ''): ?AuthUser
+    {
+        $dataApi = $this->auth_services->consultAuthUserByUuid($uuid, $dominio);
 
-    public function execute(Uuid $uuid, string $dominio=""):? AuthUser{
-        $dataApi= $this->auth_services->consultAuthUserByUuid($uuid, $dominio);
-
-        if($dataApi['code']!=200){
+        if ($dataApi['code'] != 200) {
             return null;
         }
 
-        $user_id= Uuid::make($dataApi["data"]["user_id"]);
-        $user_name= UserName::make($dataApi["data"]["user_name"]);
-        $user_email= UserEmail::make($dataApi["data"]["user_email"]);
-        $user_type= UserType::make($dataApi["data"]["user_type"]);
-        $user_avatar=($dataApi["data"]["user_avatar"]!=null && $dataApi["data"]["user_avatar"]!="" )? AvatarUrl::make($dataApi["data"]["user_avatar"]) :null;
-
+        $user_id = Uuid::make($dataApi['data']['user_id']);
+        $user_name = UserName::make($dataApi['data']['user_name']);
+        $user_email = UserEmail::make($dataApi['data']['user_email']);
+        $user_type = UserType::make($dataApi['data']['user_type']);
+        $user_avatar = ($dataApi['data']['user_avatar'] != null && $dataApi['data']['user_avatar'] != '') ? AvatarUrl::make($dataApi['data']['user_avatar']) : null;
 
         return AuthUser::reconstitute(
             $user_id,
@@ -50,10 +45,4 @@ class ConsultAuthUserApiByUuidUseCase {
         );
 
     }
-
-
-
 }
-
-
-?>
