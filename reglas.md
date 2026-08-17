@@ -49,3 +49,20 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 1. **Consultar `reglas.md`**: Verificar si existe alguna regla predefinida aplicable a la tarea antes de escribir o modificar código.
 2. **Consultar `ficha_tecnica.md`**: Revisar las versiones de dependencias y librerías disponibles.
 3. **Planificar si la tarea lo requiere**: Crear el plan de implementación correspondiente cuando existan cambios arquitectónicos o nuevas funcionalidades complejas.
+
+---
+
+## 🔒 4. Reglas de Control de Versiones y Commits (Testing Obligatorio)
+
+1. **Pruebas Obligatorias Previas al Commit:**
+   * Cada vez que se implemente una funcionalidad, componente, caso de uso, repositorio o cambio de código, se debe ejecutar la suite de pruebas automatizadas correspondiente (`php artisan test` / `composer test` y `npm run types` si afecta al frontend).
+   * **PROHIBIDO hacer commit si existe algún test fallido, error de compilación o error de tipado.**
+
+2. **Creación de Commit tras Validación Exitosa:**
+   * **SI Y SOLO SI** todas las pruebas pasan exitosamente al 100%, se debe proceder a crear un commit en Git para guardar los cambios de forma incremental.
+   * Los mensajes de commit deben seguir el estándar de **Conventional Commits**:
+     * `feat({modulo}): {descripción del cambio}`
+     * `fix({modulo}): {descripción del fix}`
+     * `test({modulo}): {descripción de las pruebas añadidas}`
+     * `refactor({modulo}): {descripción de la refactorización}`
+
