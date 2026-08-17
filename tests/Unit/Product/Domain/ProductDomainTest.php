@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use InvalidArgumentException;
 use Src\Product\Domain\Entities\Product;
 use Src\Product\Domain\Entities\ProductImage;
 use Src\Product\Domain\Entities\ProductVariant;

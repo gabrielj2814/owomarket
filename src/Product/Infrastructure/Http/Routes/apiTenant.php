@@ -6,11 +6,18 @@ use Illuminate\Support\Facades\Route;
 use Src\Product\Infrastructure\Http\Controller\ConsultProductGETController;
 use Src\Product\Infrastructure\Http\Controller\CreateProductPOSTController;
 use Src\Product\Infrastructure\Http\Controller\DeleteProductDELETEController;
+use Src\Product\Infrastructure\Http\Controller\DeleteProductImageDELETEController;
 use Src\Product\Infrastructure\Http\Controller\EditProductPUTController;
 use Src\Product\Infrastructure\Http\Controller\FilterProductsPOSTController;
 use Src\Product\Infrastructure\Http\Controller\ToggleProductVisibilityPATCHController;
 use Src\Product\Infrastructure\Http\Controller\UpdateProductStockPATCHController;
+use Src\Product\Infrastructure\Http\Controller\UploadProductImagePOSTController;
 
+// Media Upload endpoints
+Route::post('/media/upload', UploadProductImagePOSTController::class);
+Route::delete('/media/delete', DeleteProductImageDELETEController::class);
+
+// Product CRUD endpoints
 Route::post('/create', CreateProductPOSTController::class);
 Route::post('/filter', FilterProductsPOSTController::class);
 Route::get('/{id}', ConsultProductGETController::class);

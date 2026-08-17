@@ -30,6 +30,14 @@ export interface ProductFilterParams {
     per_page?: number;
 }
 
+export interface UploadMediaResult {
+    url: string;
+    image_path: string;
+    path: string;
+    filename: string;
+    alt_text?: string;
+}
+
 const ProductServices = {
     filtrar: async (params: ProductFilterParams = {}): Promise<ApiResponse<Product[]>> => {
         try {
@@ -141,6 +149,55 @@ const ProductServices = {
                     status: 'error',
                     code: 500,
                     message: 'Error de conexión al actualizar el stock',
+                    data: null,
+                }
+            );
+        }
+    },
+
+    uploadImage: async (file: File, altText: string = ''): Promise<ApiResponse<UploadMediaResult>> => {
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            if (altText) {
+                formData.append('alt_text', altText);
+            }
+
+            const response = await axios.post<ApiResponse<UploadMediaResult>>(
+                '/api-tenant/product/media/upload',
+                formData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                        'X-CSRF-TOKEN': getCSRFToken(),
+                    },
+                }
+            );
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error de conexión al subir la imagen',
+                    data: null as any,
+                }
+            );
+        }
+    },
+
+    deleteImage: async (imagePath: string): Promise<ApiResponse<null>> => {
+        try {
+            const response = await axiosProduct.delete<ApiResponse<null>>('media/delete', {
+                data: { image_path: imagePath },
+            });
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error de conexión al eliminar la imagen',
                     data: null,
                 }
             );

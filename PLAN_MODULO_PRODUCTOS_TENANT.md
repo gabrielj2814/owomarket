@@ -246,18 +246,18 @@ graph LR
 
 > **Objetivo:** Permitir al comerciante adjuntar múltiples imágenes a sus productos, seleccionar la foto de portada y ordenar la galería.
 
-- [ ] **Backend Media:**
-  - Endpoint para subida de imágenes con almacenamiento en `storage/app/tenants/{tenant_id}/products/`.
-  - Asignación de imagen `is_default` y eliminación individual de fotos.
-- [ ] **Frontend Media Component:**
-  - Dropzone / Selector de archivos múltiples de Flowbite.
-  - Miniaturas con opción de marcar como "Principal" y botón para eliminar foto.
+- [x] **Backend Media:**
+  - Endpoint para subida de imágenes con almacenamiento en `storage/app/tenants/{tenant_id}/products/` vía `ProductMediaStorageInterface` y `LaravelProductMediaStorageService`.
+  - Asignación de imagen `is_default` y eliminación física de fotos con `DeleteProductImageDELETEController`.
+- [x] **Frontend Media Component:**
+  - Dropzone interactivo `ProductImageDropzone.tsx` con drag & drop y selector múltiple.
+  - Miniaturas con opción de marcar como "Principal" y botón para eliminar foto en vivo y del storage.
 
 #### 🧪 Pruebas de la Fase 6 (Media Upload):
-* [ ] **Integración HTTP API:** `tests/Feature/Tenant/ProductMediaApiTest.php`
+* [x] **Integración HTTP API:** `tests/Feature/Tenant/ProductMediaApiTest.php`
   * Subida de imágenes válidas (JPEG/PNG/WebP).
   * Rechazo de formatos no permitidos o archivos mayores al límite.
-  * Asignación correcta de imagen por defecto.
+  * Asignación correcta de imagen por defecto y borrado físico del disco.
 
 ---
 
@@ -301,7 +301,7 @@ graph LR
   - [x] Sidebar/Navbar con Catálogo y Configuración + ProductIndexPage reactivo con Filtros, Paginación y Modales ➔ `commit: 0041663`
 - [x] **Fase 5: Formulario de Productos (Crear / Editar)**
   - [x] FormProductPage reactivo con auto-slug, variantes, galería, validaciones y modo edición ➔ `commit: f74a43e`
-- [ ] **Fase 6: Galería de Imágenes (Media Upload)**
-  - [ ] Upload API + Dropzone UI + Tests ➔ `commit: feat(product): implement product media gallery and upload`
+- [x] **Fase 6: Galería de Imágenes (Media Upload)**
+  - [x] Upload API + Dropzone UI + Storage Service + Tests ➔ `commit: feat(product): implement product media gallery and storage upload`
 - [ ] **Fase 7: Testing Integral & QA**
   - [ ] Suite completa de Pest + Pint + Linter ➔ `commit: test(product): full tenant test suite and code styling`

@@ -1,4 +1,5 @@
 import Dashboard from "@/components/layouts/Dashboard";
+import ProductImageDropzone from "@/components/ui/ProductImageDropzone";
 import BrandServices from "@/Services/BrandServices";
 import CategoryServices from "@/Services/CategoryServices";
 import ProductServices from "@/Services/ProductServices";
@@ -598,65 +599,25 @@ const FormProductPage: FC<FormProductPageProps> = ({
                             </div>
                         </Card>
 
-                        {/* 4. Galería de Imágenes */}
+                        {/* 4. Galería de Imágenes y Media Upload */}
                         <Card className="shadow-sm border-gray-100 dark:border-gray-700">
-                            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
-                                <LuImage className="w-5 h-5 text-cyan-500" />
-                                4. Galería de Imágenes
-                            </h2>
-                            <div className="flex gap-2 mb-4">
-                                <TextInput
-                                    placeholder="URL de la imagen (ej: https://dominio.com/foto.jpg)"
-                                    value={newImageUrl}
-                                    onChange={(e) => setNewImageUrl(e.target.value)}
-                                    className="flex-1"
-                                />
-                                <Button color="blue" onClick={handleAddImage} type="button">
-                                    <HiPlus className="w-4 h-4 mr-1" />
-                                    Agregar Imagen
-                                </Button>
+                            <div className="flex justify-between items-center mb-1">
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                                    <LuImage className="w-5 h-5 text-cyan-500" />
+                                    4. Galería de Imágenes
+                                </h2>
+                                <span className="text-xs text-gray-500">
+                                    {(form.images || []).length} / 8 imágenes cargadas
+                                </span>
                             </div>
-
-                            {form.images && form.images.length > 0 ? (
-                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                                    {form.images.map((img, i) => (
-                                        <div
-                                            key={i}
-                                            className={`relative group rounded-xl border p-1 ${
-                                                img.is_default ? "border-blue-500 ring-2 ring-blue-400" : "border-gray-200 dark:border-gray-700"
-                                            }`}
-                                        >
-                                            <img
-                                                src={img.image_path}
-                                                alt={`Foto ${i + 1}`}
-                                                className="w-full h-24 object-cover rounded-lg"
-                                            />
-                                            <div className="flex justify-between items-center mt-1 px-1 text-xs">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleSetDefaultImage(i)}
-                                                    className={`font-semibold ${
-                                                        img.is_default ? "text-blue-600" : "text-gray-400 hover:text-gray-700"
-                                                    }`}
-                                                >
-                                                    {img.is_default ? "Portada" : "Marcar"}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveImage(i)}
-                                                    className="text-red-500 hover:text-red-700"
-                                                >
-                                                    <HiTrash className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <div className="text-center py-6 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl text-gray-400 text-sm">
-                                    No has agregado imágenes aún para este producto
-                                </div>
-                            )}
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                Sube fotos directamente al almacenamiento de tu tienda o arrastra los archivos. La imagen con la etiqueta "Portada" se mostrará como imagen principal en el catálogo.
+                            </p>
+                            <ProductImageDropzone
+                                images={form.images || []}
+                                onChange={(updatedImages) => setForm({ ...form, images: updatedImages })}
+                                maxFiles={8}
+                            />
                         </Card>
 
                         {/* 5. Variantes de Producto */}
