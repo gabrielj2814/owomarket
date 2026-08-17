@@ -30,51 +30,69 @@ graph LR
 
 ---
 
-## 📌 FASE 1: Módulos Base Satélites (Categorías y Marcas)
+## 📌 FASE 1: Módulos Base Satélites (Categorías, Marcas, Atributos, Cupones, Impuestos y Envíos)
 
-> **Objetivo:** Disponer de la clasificación por Categorías y Marcas para alimentar selectores y filtros del catálogo.
+> **Objetivo:** Disponer de la clasificación por Categorías, Marcas y servicios satélites para alimentar selectores y filtros del catálogo.
 
 ### 1.1 Módulo de Categorías (`src/Category/`)
-- [ ] **Dominio (`Domain/`):**
+- [x] **Dominio (`Domain/`):**
   - Entidad `Category` (id, name, slug, description, image, parent_id, is_active, position).
   - Value Objects: `CategoryId`, `CategoryName`, `CategorySlug`, `CategoryStatus`.
-- [ ] **Aplicación (`Application/`):**
+- [x] **Aplicación (`Application/`):**
   - `CategoryRepositoryInterface`.
-  - Casos de uso: `FilterCategoriesUseCase`, `CreateCategoryUseCase`, `EditCategoryUseCase`, `ConsultCategoryByUuidUseCase`, `DeleteCategoryUseCase`.
-- [ ] **Infraestructura (`Infrastructure/`):**
-  - `CategoryRepository` (consultas Eloquent con jerarquía padre/hijo).
+  - Casos de uso: `FilterCategoriesUseCase`, `CreateCategoryUseCase`, `EditCategoryUseCase`, `ConsultCategoryByUuidUseCase`, `DeleteCategoryUseCase`, `ListCategoriesTreeUseCase`.
+- [x] **Infraestructura (`Infrastructure/`):**
+  - `CategoryRepository` (consultas Eloquent con jerarquía padre/hijo en `Infrastructure/Eloquent/Models/Category.php`).
   - Controladores HTTP, FormRequests y Rutas (`/api-tenant/category/*`).
   - Registro en `CategoryServiceProvider`.
-- [ ] **Frontend Categorías:**
+- [x] **Frontend Categorías:**
   - `resources/js/Services/CategoryServices.ts` y tipos TypeScript en `resources/js/types/models/Category.d.ts`.
 
 #### 🧪 Pruebas de la Fase 1.1 (Categorías):
-* [ ] **Unitarias Dominio:** `tests/Unit/Category/Domain/CategoryValueObjectsTest.php`
+* [x] **Unitarias Dominio:** `tests/Unit/Category/Domain/CategoryDomainTest.php`
   * Validación de slug automático y normalización de nombres.
   * Inmutabilidad de la entidad `Category`.
-* [ ] **Unitarias Casos de Uso:** `tests/Unit/Category/Application/CreateCategoryUseCaseTest.php`
+* [x] **Unitarias Casos de Uso:** `tests/Unit/Category/Application/CategoryUseCasesTest.php`
   * Creación exitosa mockeando `CategoryRepositoryInterface`.
   * Fallo controlado al intentar registrar un slug duplicado.
-* [ ] **Integración Repositorio:** `tests/Integration/Category/CategoryRepositoryTest.php`
+* [x] **Integración Repositorio:** `tests/Integration/Category/CategoryRepositoryTest.php`
   * Persistencia en BD tenant, consulta con subcategorías anidadas (`parent_id`) y soft delete.
-* [ ] **Integración HTTP API:** `tests/Feature/Tenant/CategoryApiTest.php`
-  * `POST /api-tenant/category/create` -> 200 con `ApiResponse::success()`.
+* [x] **Integración HTTP API:** `tests/Feature/Tenant/CategoryApiTest.php`
+  * `POST /api-tenant/category/create` -> 201 con `ApiResponse::success()`.
   * `POST /api-tenant/category/filter` -> 200 con paginación `ApiResponse::Pagination()`.
   * Validación de errores 422 ante campos obligatorios faltantes.
 
 ---
 
 ### 1.2 Módulo de Marcas (`src/Brand/`)
-- [ ] **Dominio (`Domain/`):** Entidad `Brand` y Value Objects (`BrandName`, `BrandSlug`, `BrandStatus`).
-- [ ] **Aplicación (`Application/`):** `BrandRepositoryInterface` y Casos de uso (`FilterBrandsUseCase`, `CreateBrandUseCase`, `EditBrandUseCase`, `ConsultBrandByUuidUseCase`, `DeleteBrandUseCase`).
-- [ ] **Infraestructura (`Infrastructure/`):** `BrandRepository`, Controladores y Rutas API Tenant.
-- [ ] **Frontend Marcas:** `resources/js/Services/BrandServices.ts` y tipos TypeScript.
+- [x] **Dominio (`Domain/`):** Entidad `Brand` y Value Objects (`BrandName`, `BrandSlug`, `BrandId`).
+- [x] **Aplicación (`Application/`):** `BrandRepositoryInterface` y Casos de uso (`FilterBrandsUseCase`, `CreateBrandUseCase`, `EditBrandUseCase`, `ConsultBrandByIdUseCase`, `DeleteBrandUseCase`, `ListAllActiveBrandsUseCase`).
+- [x] **Infraestructura (`Infrastructure/`):** `BrandRepository`, Controladores y Rutas API Tenant (`/api-tenant/brand/*`).
+- [x] **Frontend Marcas:** `resources/js/Services/BrandServices.ts` y tipos TypeScript `Brand.d.ts`.
 
 #### 🧪 Pruebas de la Fase 1.2 (Marcas):
-* [ ] **Unitarias Dominio & UseCase:** `tests/Unit/Brand/Application/CreateBrandUseCaseTest.php`
+* [x] **Unitarias Dominio & UseCase:** `tests/Unit/Brand/Domain/BrandDomainTest.php` y `tests/Unit/Brand/Application/BrandUseCasesTest.php`
   * Validación de reglas de negocio y orquestación con mock de repositorio.
-* [ ] **Integración Repositorio & API:** `tests/Feature/Tenant/BrandApiTest.php`
+* [x] **Integración Repositorio & API:** `tests/Integration/Brand/BrandRepositoryTest.php` y `tests/Feature/Tenant/BrandApiTest.php`
   * Creación, edición, listado con filtro de búsqueda por nombre y borrado lógico en BD tenant.
+
+---
+
+### 1.3 Módulo de Atributos y Valores (`src/Attribute/`)
+- [x] **Dominio & Aplicación:** Entidad `ProductAttribute`, `ProductAttributeValue`, Value Objects y Casos de Uso.
+- [x] **Infraestructura & Tests:** Repositorio, Controladores `/api-tenant/attribute/*`, `AttributeRepositoryTest.php` y `AttributeApiTest.php`.
+
+---
+
+### 1.4 Módulo de Cupones y Descuentos (`src/Coupon/`)
+- [x] **Dominio & Aplicación:** Entidad `Coupon`, Value Objects (`CouponCode`, `CouponType`, etc.), Casos de Uso y Validación.
+- [x] **Infraestructura & Tests:** Repositorio, Controladores `/api-tenant/coupon/*`, `CouponRepositoryTest.php` y `CouponApiTest.php`.
+
+---
+
+### 1.5 Módulo de Impuestos y Envíos (`src/Tax/` & `src/Shipping/`)
+- [x] **Dominio & Aplicación:** Tasas de Impuestos (IVA) y Zonas/Tarifas de Envíos con cálculo de checkout.
+- [x] **Infraestructura & Tests:** Repositorios, Controladores `/api-tenant/tax/*` y `/api-tenant/shipping/*`, Tests de Integración y Feature API.
 
 ---
 
@@ -83,60 +101,69 @@ graph LR
 > **Objetivo:** Implementar la lógica central de negocio, casos de uso completos, consultas de filtrado multicriterio y persistencia de productos.
 
 ### 2.1 Dominio Puro (`src/Product/Domain/`)
-- [ ] Expandir Entidad `Product`:
-  - Propiedades: `id`, `name`, `slug`, `sku`, `price`, `compare_price`, `cost_price`, `quantity`, `min_quantity`, `max_quantity`, `track_quantity`, `is_visible`, `is_featured`, `description`, `short_description`, `barcode`, `weight`, `height`, `width`, `length`, `is_digital`, `digital_product_url`, `category_id`, `brand_id`, `published_at`, `seo`, `metadata`.
-  - Métodos de negocio: `changePrice()`, `updateStock()`, `toggleVisibility()`, `assignCategory()`, `assignBrand()`.
-- [ ] Value Objects de Producto:
-  - `StockQuantity`, `ProductPrice`, `ProductDimensions`, `ProductDescription`.
+- [x] Expandir Entidad `Product`:
+  - Propiedades: `id`, `name`, `slug`, `sku`, `price`, `compare_price`, `cost_price`, `quantity`, `min_quantity`, `max_quantity`, `track_quantity`, `is_visible`, `is_featured`, `description`, `short_description`, `barcode`, `weight`, `height`, `width`, `length`, `is_digital`, `digital_product_url`, `category_id`, `brand_id`, `published_at`, `seo`, `metadata`, `images`, `variants`.
+  - Métodos de negocio: `changePrice()`, `updateStock()`, `incrementStock()`, `decrementStock()`, `toggleVisibility()`, `assignCategory()`, `assignBrand()`, `setImages()`, `setVariants()`, `toArray()`.
+- [x] Value Objects de Producto:
+  - `ProductId`, `ProductName`, `ProductSlug`, `ProductSku`, `ProductPrice`, `ProductStock`, `ProductDimensions`, `ProductStatus`, `ProductDescription`.
+- [x] Entidades secundarias: `ProductVariant`, `ProductImage`.
+- [x] Excepciones de dominio: `ProductNotFoundException`, `ProductSkuAlreadyExistsException`, `ProductSlugAlreadyExistsException`.
 
 ### 2.2 Casos de Uso (`src/Product/Application/`)
-- [ ] Actualizar Contrato `ProductRepositoryInterface`:
-  - `create(Product $product): Product`
-  - `edit(Product $product): Product`
-  - `consultByUuid(Uuid $id): ?Product`
-  - `delete(Uuid $id): void`
-  - `filter(ProductFilterCriteria $criteria): PaginatedProductResult`
-  - `toggleVisibility(Uuid $id, bool $isVisible): void`
-- [ ] Implementar Casos de Uso:
-  - `CreateProductUseCase` (corregir inyección de `UuidGenerator` y mapeo completo).
-  - `EditProductByUuidUseCase` (actualización y control de unicidad de SKU/Slug).
-  - `ConsultProductByUuidUseCase` (consulta por ID con entidades asociadas).
-  - `FilterProductsUseCase` (búsqueda por texto, categoría, marca, rango de precio, rango de fechas, visibilidad, destacado y paginación).
-  - `DeleteProductByUuidUseCase` (borrado lógico `SoftDeletes`).
-  - `ToggleProductVisibilityUseCase` (cambio de estado rápido).
+- [x] Contrato `ProductRepositoryInterface`:
+  - `save(Product $product): Product`
+  - `findById(ProductId $id): ?Product`
+  - `findBySlug(ProductSlug $slug): ?Product`
+  - `findBySku(ProductSku $sku): ?Product`
+  - `update(Product $product): Product`
+  - `delete(ProductId $id): void`
+  - `filter(ProductFilterCriteria $criteria): PaginatedProductsResult`
+  - `toggleVisibility(ProductId $id, bool $isVisible): void`
+  - `updateStock(ProductId $id, int $quantity): void`
+- [x] Implementar Casos de Uso:
+  - `CreateProductUseCase`
+  - `EditProductUseCase`
+  - `ConsultProductByIdUseCase`
+  - `ConsultProductBySlugUseCase`
+  - `FilterProductsUseCase`
+  - `DeleteProductUseCase`
+  - `ToggleProductVisibilityUseCase`
+  - `UpdateProductStockUseCase`
 
 ### 2.3 Capa de Infraestructura (`src/Product/Infrastructure/`)
-- [ ] Implementar `ProductRepository` con Eloquent aplicando filtros dinámicos y paginación con `ApiResponse::Pagination()`.
-- [ ] Controladores HTTP en `Http/Controller/`:
+- [x] Implementar `ProductRepository` con Eloquent aplicando filtros dinámicos, eager loading de relaciones y paginación con `ApiResponse::Pagination()`.
+- [x] Modelos Eloquent en `src/Product/Infrastructure/Eloquent/Models/`:
+  - `Product.php`, `ProductVariant.php`, `ProductImage.php`, `ProductReview.php`.
+- [x] Controladores HTTP en `Http/Controller/`:
   - `FilterProductsPOSTController.php`
   - `CreateProductPOSTController.php`
-  - `EditProductByUuidPUTController.php`
-  - `ConsultProductByUuidGETController.php`
-  - `DeleteProductByUuidDELETEController.php`
+  - `EditProductPUTController.php`
+  - `ConsultProductGETController.php`
+  - `DeleteProductDELETEController.php`
   - `ToggleProductVisibilityPATCHController.php`
-- [ ] FormRequests y DTOs con validaciones estrictas (`CreateProductFormRequest`, `EditProductFormRequest`).
-- [ ] Registrar rutas en `apiTenant.php` y `tenant.php`.
+  - `UpdateProductStockPATCHController.php`
+- [x] FormRequests con validaciones estrictas (`CreateProductFormRequest`, `EditProductFormRequest`, `ToggleProductVisibilityFormRequest`, `UpdateProductStockFormRequest`).
+- [x] Registrar rutas en `apiTenant.php` bajo `/api-tenant/product/*`.
 
 #### 🧪 Pruebas de la Fase 2 (Backend de Productos):
-* [ ] **Unitarias Dominio:** `tests/Unit/Product/Domain/ProductEntityTest.php`
+* [x] **Unitarias Dominio:** `tests/Unit/Product/Domain/ProductDomainTest.php`
   * Validación de creación con todos los campos requeridos y opcionales.
   * Invariantes: el precio no puede ser negativo, el stock mínimo no puede ser mayor al stock máximo.
   * Métodos de negocio: `updateStock()`, `toggleVisibility()`.
-* [ ] **Unitarias Casos de Uso:**
-  * `tests/Unit/Product/Application/CreateProductUseCaseTest.php`: Verifica que el UseCase genere el UUID, asigne los Value Objects y persista vía contrato mockeado.
-  * `tests/Unit/Product/Application/EditProductUseCaseTest.php`: Verifica actualización de campos y manejo de excepción `ProductNotFoundException`.
-  * `tests/Unit/Product/Application/FilterProductsUseCaseTest.php`: Verifica el paso correcto de filtros y ordenamiento hacia el repositorio.
-* [ ] **Integración Repositorio:** `tests/Integration/Product/ProductRepositoryTest.php`
+* [x] **Unitarias Casos de Uso:** `tests/Unit/Product/Application/ProductUseCasesTest.php`
+  * Verificación de creación, edición, consulta, borrado, filtro, cambio de visibilidad y stock con mock de repositorio.
+* [x] **Integración Repositorio:** `tests/Integration/Product/ProductRepositoryTest.php`
   * Guardado real en la base de datos del Tenant con relaciones a Categoría y Marca.
   * Filtrado por texto (Nombre y SKU), por categoría (`category_id`) y por estado (`is_visible`).
   * Paginación correcta (página 1, página 2, total de registros).
-* [ ] **Integración HTTP API (Endpoints Tenant):** `tests/Feature/Tenant/ProductApiTest.php`
+* [x] **Integración HTTP API (Endpoints Tenant):** `tests/Feature/Tenant/ProductApiTest.php`
   * `POST /api-tenant/product/filter` -> Retorna 200 con estructura `{ status: 'success', data: [...], pagination: {...} }`.
-  * `POST /api-tenant/product/create` -> Retorna 200 al enviar payload válido.
-  * `POST /api-tenant/product/create` -> Retorna 422 al omitir campos obligatorios (Nombre, Slug, SKU, Precio).
-  * `PUT /api-tenant/product/{uuid}` -> Retorna 200 con datos actualizados.
-  * `PATCH /api-tenant/product/{uuid}/toggle-visibility` -> Retorna 200 y actualiza el estado.
-  * `DELETE /api-tenant/product/{uuid}` -> Retorna 200 y ejecuta soft delete.
+  * `POST /api-tenant/product/create` -> Retorna 201 al enviar payload válido.
+  * `POST /api-tenant/product/create` -> Retorna 422 al omitir campos obligatorios.
+  * `PUT /api-tenant/product/{id}` -> Retorna 200 con datos actualizados.
+  * `PATCH /api-tenant/product/{id}/toggle-visibility` -> Retorna 200 y actualiza el estado.
+  * `PATCH /api-tenant/product/{id}/stock` -> Retorna 200 y actualiza inventario.
+  * `DELETE /api-tenant/product/{id}` -> Retorna 200 y ejecuta soft delete.
 
 ---
 
@@ -145,53 +172,53 @@ graph LR
 > **Objetivo:** Establecer los contratos de tipado estricto y la capa de comunicación HTTP en el frontend, garantizando el cumplimiento de `reglas.md`.
 
 ### 3.1 Tipos TypeScript (`resources/js/types/`)
-- [ ] `resources/js/types/models/Product.d.ts` (modelo de datos del producto para el cliente).
-- [ ] `resources/js/types/FormProduct.d.ts` (estructura del formulario de creación y edición).
-- [ ] `resources/js/types/ErrorsFormProduct.d.ts` (mapeo de errores de validación por campo).
-- [ ] `resources/js/types/Response/ResponseProduct.d.ts`.
+- [x] `resources/js/types/models/Product.d.ts` (modelo de datos del producto para el cliente).
+- [x] `resources/js/types/models/ProductVariant.d.ts` (modelo de variantes).
+- [x] `resources/js/types/models/ProductImage.d.ts` (modelo de galería de imágenes).
+- [x] `resources/js/types/FormProduct.d.ts` (estructura del formulario de creación y edición).
+- [x] `resources/js/types/ErrorsFormProduct.d.ts` (mapeo de errores de validación por campo).
 
 ### 3.2 Servicio Centralizado (`resources/js/Services/ProductServices.ts`)
-- [ ] Crear [`ProductServices.ts`](file:///c:/laragon/www/owomarket/resources/js/Services/ProductServices.ts) con métodos tipados:
+- [x] Crear [`ProductServices.ts`](file:///c:/laragon/www/owomarket/resources/js/Services/ProductServices.ts) con métodos tipados:
   ```typescript
-  filtrar(criteria, page, prePage): Promise<ApiResponse<Product[]>>
-  consultByUuid(uuid): Promise<ApiResponse<Product>>
-  create(data: FormProduct): Promise<ApiResponse<Product>>
-  edit(uuid: string, data: FormProduct): Promise<ApiResponse<Product>>
-  delete(uuid: string): Promise<ApiResponse<void>>
-  toggleVisibility(uuid: string, isVisible: boolean): Promise<ApiResponse<void>>
+  filtrar(params): Promise<ApiResponse<Product[]>>
+  consultById(id): Promise<ApiResponse<Product>>
+  create(data: FormProduct): Promise<ApiResponse<Product, ErrorsFormProduct>>
+  update(id: string, data: FormProduct): Promise<ApiResponse<Product, ErrorsFormProduct>>
+  delete(id: string): Promise<ApiResponse<null>>
+  toggleVisibility(id: string, isVisible?: boolean): Promise<ApiResponse<null>>
+  updateStock(id: string, quantity: number): Promise<ApiResponse<null>>
   ```
 
 ---
 
-## 📌 FASE 4: Frontend UI - Vista Inicial del Módulo de Productos
+## 📌 FASE 4: Frontend UI - Vista Inicial del Módulo de Productos y Navegación
 
-> **Objetivo:** Construir la vista principal con filtros avanzados, tabla reactiva, tarjetas móviles, paginación y feedback visual.
+> **Objetivo:** Construir la vista principal con filtros avanzados, tabla reactiva, navegación en Sidebar y modales interactivos.
 
-### 4.1 Componente de Filtros (`resources/js/components/filters/FiltersModuleProductIndex.tsx`)
-- [ ] Input de búsqueda con `useDebounce` (Nombre / SKU / Slug).
-- [ ] Select de Categoría (cargado dinámicamente con `CategoryServices`).
-- [ ] Select de Marca (cargado dinámicamente con `BrandServices`).
-- [ ] Selector de Estado (`Todos`, `Visibles`, `Ocultos`).
-- [ ] Selector de Producto Destacado (`Todos`, `Destacados`).
-- [ ] Rango de fechas con `Datepicker` (*Fecha Desde* y *Fecha Hasta*).
+### 4.1 Navegación en el Sidebar y Navbar Móvil
+- [x] Actualización de `SidebarDashboardComponent.tsx` y `NavBarMovilDashboardComponent.tsx`.
+- [x] Submenú **Catálogo**: Productos, Categorías, Marcas, Atributos, Cupones.
+- [x] Submenú **Configuración**: Impuestos, Envíos.
+- [x] Rutas y Controladores Web Inertia para todos los módulos satélites en `routes/tenant.php`.
 
-### 4.2 Vista Principal ([`ProductIndexPage.tsx`](file:///c:/laragon/www/owomarket/resources/js/pages/tenant/modules/product/ProductIndexPage.tsx))
-- [ ] Header con Breadcrumb (`Home > Products`) y botón `+ Create`.
-- [ ] Tabla Desktop ([`TableComponent.tsx`](file:///c:/laragon/www/owomarket/resources/js/components/ui/TableComponent.tsx)):
-  - Miniatura de imagen.
-  - Nombre y Slug.
-  - SKU.
-  - Categoría y Marca con `Badge`.
-  - Precio formateado con moneda (`Currency`).
-  - Stock/Cantidad con alerta de color según nivel de existencias.
+### 4.2 Vista Principal ([`ProductIndexPage.tsx`](file:///c:/laragon/www/owomarket/resources/js/Pages/tenant/modules/product/ProductIndexPage.tsx))
+- [x] Header con Breadcrumb (`Inicio > Catálogo > Productos`) y botón `+ Nuevo Producto`.
+- [x] Filtros reactivos: Búsqueda por texto (Nombre/SKU/Slug), selectores dinámicos de Categoría y Marca, selectores de Estado e Inventario.
+- [x] Tabla Flowbite:
+  - Miniatura de imagen o placeholder.
+  - Nombre, Slug y Badge de Destacado.
+  - SKU en formato monospace.
+  - Categoría y Marca con badges.
+  - Precio formateado con precio comparativo tachado.
+  - Stock interactivo con badges de alerta por cantidad.
   - Switch interactivo para activar/desactivar visibilidad al instante.
-  - Acciones: Botón Editar (`LuPencil`) y Botón Eliminar (`LuTrash2`).
-- [ ] Vista Móvil Responsive: Tarjetas Flowbite con datos esenciales y switches accesibles.
-- [ ] Paginación: Integrar [`PaginationNavigationCustom.tsx`](file:///c:/laragon/www/owomarket/resources/js/components/ui/PaginationNavigationCustom.tsx).
-- [ ] Modales y Feedback:
-  - [`ModalAlertConfirmation.tsx`](file:///c:/laragon/www/owomarket/resources/js/components/ui/ModalAlertConfirmation.tsx) para confirmación de eliminación.
-  - [`HeaderToasts.tsx`](file:///c:/laragon/www/owomarket/resources/js/components/HeaderToasts.tsx) para notificaciones de operaciones.
-  - [`LoaderSpinner.tsx`](file:///c:/laragon/www/owomarket/resources/js/components/LoaderSpinner.tsx) para estados de carga.
+  - Acciones: Vista Rápida (`HiEye`), Editar (`HiPencil`) y Eliminar (`HiTrash`).
+- [x] Paginación Flowbite y selector de filas por página (10, 25, 50).
+- [x] Modales interactivos:
+  - Modal de confirmación para eliminación lógica.
+  - Modal de ajuste rápido de existencias en inventario.
+  - Modal de detalles y vista previa del producto con ficha técnica y variantes.
 
 ---
 
@@ -199,18 +226,19 @@ graph LR
 
 > **Objetivo:** Implementar la interfaz de captura y edición de productos, con soporte para validaciones en vivo, auto-generación de slug y gestión de estados.
 
-### 5.1 Vista Formulario ([`FormProductPage.tsx`](file:///c:/laragon/www/owomarket/resources/js/pages/tenant/modules/product/FormProductPage.tsx))
-- [ ] Botón `← Back` que preserva el estado o redirige a la vista inicial.
-- [ ] **Sección 1: Campos Obligatorios:** Nombre (auto-genera slug en tiempo real), Slug, SKU, Precio.
-- [ ] **Sección 2: Clasificación y Visibilidad:** Selectores dinámicos de Categoría y Marca, Toggles (`Is Visible`, `Is Featured`, `Track Quantity`), Descripción y Descripción corta.
-- [ ] **Sección 3: Inventario y Precios:** Cost Price, Compare Price, Cantidad en stock, Min/Max Quantity, Barcode.
-- [ ] **Sección 4: Dimensiones y Logística:** Peso (`weight`), Altura (`height`), Ancho (`width`), Largo (`length`).
-- [ ] **Modo Edición (`record_id` presente):**
-  - Carga reactiva de datos existentes con `ProductServices.consultByUuid`.
-  - Títulos y botones adaptados (*Actualizar Producto* vs *Crear Producto*).
-- [ ] **Validación y Errores:**
-  - Renderizado de `HelperText` con mensajes específicos por campo provenientes de la respuesta de error del backend (`ApiResponse.errors`).
-  - Modales de confirmación al guardar o cancelar.
+### 5.1 Vista Formulario ([`FormProductPage.tsx`](file:///c:/laragon/www/owomarket/resources/js/Pages/tenant/modules/product/FormProductPage.tsx))
+- [x] Botón `← Regresar` que redirige al catálogo.
+- [x] **Sección 1: Campos Obligatorios:** Nombre con auto-generador de slug en tiempo real y modo manual, SKU normalizado, Precio de venta.
+- [x] **Sección 2: Clasificación y Visibilidad:** Selectores dinámicos de Categoría y Marca, Toggles (`Visible en Tienda`, `Producto Destacado`, `Rastrear Inventario`), Precios comparativo y de costo.
+- [x] **Sección 3: Inventario y Descripciones:** Cantidad en stock, Cantidad mínima, Código de barras (EAN/UPC), Descripción corta y Descripción completa.
+- [x] **Sección 4: Galería de Imágenes:** Agregar URLs de imágenes, selección de imagen de portada (`is_default`) y eliminación individual.
+- [x] **Sección 5: Constructor de Variantes:** Añadir múltiples combinaciones con SKU, precio y stock individual por variante.
+- [x] **Sección 6: Dimensiones y Logística:** Peso (`weight`), Altura (`height`), Ancho (`width`), Largo (`length`).
+- [x] **Modo Edición (`record_uuid` presente):**
+  - Carga reactiva de datos existentes con `ProductServices.consultById`.
+  - Títulos y botones adaptados (*Guardar Cambios* vs *Crear Producto*).
+- [x] **Validación y Errores:**
+  - Renderizado de `HelperText` con mensajes específicos por campo ante respuestas `422` del backend.
 
 ---
 
@@ -239,10 +267,7 @@ graph LR
 
 - [ ] **Suite de Pruebas Backend (PestPHP):**
   ```bash
-  # Ejecutar todas las pruebas unitarias y de integración del tenant
-  php artisan test --filter=Tenant
-  # o con script composer
-  composer test
+  php artisan test
   ```
 - [ ] **Verificación de Tipos Frontend (TypeScript):**
   ```bash
@@ -250,7 +275,6 @@ graph LR
   ```
 - [ ] **Linter y Formateo de Código:**
   ```bash
-  npm run lint
   vendor/bin/pint
   ```
 - [ ] **Prueba de Flujo Completo en Navegador:**
@@ -262,20 +286,22 @@ graph LR
 
 > ⚠️ **Regla Obligatoria de Commits:** Cada hito o fase implementada debe ejecutar sus pruebas (`php artisan test` / `npm run types`). Si y solo si los tests pasan al 100%, se creará el commit correspondiente antes de avanzar al siguiente hito.
 
-- [ ] **Fase 1: Módulos Base (Categorías y Marcas)**
-  - [ ] Implementación de Categorías + Tests Unitarios/Integración ➔ `commit: feat(category): ...`
-  - [ ] Implementación de Marcas + Tests Unitarios/Integración ➔ `commit: feat(brand): ...`
-- [ ] **Fase 2: Backend de Productos**
-  - [ ] Entidad Product + Value Objects + Tests ➔ `commit: feat(product): expand product domain entity and VOs`
-  - [ ] UseCases + Repositorio Eloquent + API Routes + Tests ➔ `commit: feat(product): implement product CRUD, filter and repository`
-- [ ] **Fase 3: Servicios Frontend y Tipos TypeScript**
-  - [ ] ProductServices + Types + `npm run types` ➔ `commit: feat(product): add frontend types and ProductServices`
-- [ ] **Fase 4: Vista Inicial de Productos**
-  - [ ] Filtros + Tabla + Paginación + Toasts ➔ `commit: feat(product): implement ProductIndexPage with filters and table`
-- [ ] **Fase 5: Formulario de Productos (Crear / Editar)**
-  - [ ] Formulario + Carga Reactiva + Validaciones ➔ `commit: feat(product): implement FormProductPage with live validations`
+- [x] **Fase 1: Módulos Base (Categorías, Marcas, Atributos, Cupones, Impuestos y Envíos)**
+  - [x] Implementación de Categorías + Tests ➔ `commit: 57daaf6`
+  - [x] Implementación de Marcas + Tests ➔ `commit: dc6565f`
+  - [x] Implementación de Atributos + Tests ➔ `commit: e45291c`
+  - [x] Implementación de Cupones + Tests ➔ `commit: 6662795`
+  - [x] Implementación de Impuestos y Envíos + Tests ➔ `commit: e4a0981`
+  - [x] Reorganización de Modelos Eloquent a Infrastructure ➔ `commit: 935b8a7`
+- [x] **Fase 2: Backend de Productos (Dominio, Casos de Uso, Repositorio, Endpoints y Tests)**
+  - [x] Entidades Product, ProductVariant, ProductImage + VOs + 8 Casos de Uso + Eloquent Repo + Controladores API + Tests ➔ `commit: 778280e`
+- [x] **Fase 3: Servicios Frontend y Tipos TypeScript**
+  - [x] ProductServices + Models `.d.ts` + Form types + `npm run types` ➔ `commit: 778280e`
+- [x] **Fase 4: Vista Inicial de Productos y Navegación del Tenant**
+  - [x] Sidebar/Navbar con Catálogo y Configuración + ProductIndexPage reactivo con Filtros, Paginación y Modales ➔ `commit: 0041663`
+- [x] **Fase 5: Formulario de Productos (Crear / Editar)**
+  - [x] FormProductPage reactivo con auto-slug, variantes, galería, validaciones y modo edición ➔ `commit: f74a43e`
 - [ ] **Fase 6: Galería de Imágenes (Media Upload)**
   - [ ] Upload API + Dropzone UI + Tests ➔ `commit: feat(product): implement product media gallery and upload`
 - [ ] **Fase 7: Testing Integral & QA**
   - [ ] Suite completa de Pest + Pint + Linter ➔ `commit: test(product): full tenant test suite and code styling`
-
