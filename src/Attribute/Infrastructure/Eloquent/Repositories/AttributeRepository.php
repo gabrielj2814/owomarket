@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Attribute\Infrastructure\Eloquent\Repositories;
 
-use App\Models\ProductAttribute as EloquentAttribute;
-use App\Models\ProductAttributeValue as EloquentAttributeValue;
 use Src\Attribute\Application\Contracts\AttributeRepositoryInterface;
 use Src\Attribute\Application\DTOs\AttributeFilterCriteria;
 use Src\Attribute\Application\DTOs\PaginatedAttributesResult;
@@ -19,6 +17,8 @@ use Src\Attribute\Domain\ValueObjects\AttributeValueColor;
 use Src\Attribute\Domain\ValueObjects\AttributeValueId;
 use Src\Attribute\Domain\ValueObjects\AttributeValueImage;
 use Src\Attribute\Domain\ValueObjects\AttributeValueText;
+use Src\Attribute\Infrastructure\Eloquent\Models\ProductAttribute as EloquentAttribute;
+use Src\Attribute\Infrastructure\Eloquent\Models\ProductAttributeValue as EloquentAttributeValue;
 
 final class AttributeRepository implements AttributeRepositoryInterface
 {

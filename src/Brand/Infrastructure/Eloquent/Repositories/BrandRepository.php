@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Brand\Infrastructure\Eloquent\Repositories;
 
-use App\Models\Brand as EloquentBrand;
 use Src\Brand\Application\Contracts\BrandRepositoryInterface;
 use Src\Brand\Application\DTOs\BrandFilterCriteria;
 use Src\Brand\Application\DTOs\PaginatedBrandsResult;
@@ -15,6 +14,7 @@ use Src\Brand\Domain\ValueObjects\BrandLogo;
 use Src\Brand\Domain\ValueObjects\BrandName;
 use Src\Brand\Domain\ValueObjects\BrandSlug;
 use Src\Brand\Domain\ValueObjects\BrandStatus;
+use Src\Brand\Infrastructure\Eloquent\Models\Brand as EloquentBrand;
 
 final class BrandRepository implements BrandRepositoryInterface
 {

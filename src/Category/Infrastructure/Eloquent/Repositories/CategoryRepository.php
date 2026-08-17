@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Category\Infrastructure\Eloquent\Repositories;
 
-use App\Models\Category as EloquentCategory;
 use Src\Category\Application\Contracts\CategoryRepositoryInterface;
 use Src\Category\Application\DTOs\CategoryFilterCriteria;
 use Src\Category\Application\DTOs\PaginatedCategoriesResult;
@@ -15,6 +14,7 @@ use Src\Category\Domain\ValueObjects\CategoryName;
 use Src\Category\Domain\ValueObjects\CategorySlug;
 use Src\Category\Domain\ValueObjects\CategoryStatus;
 use Src\Category\Domain\ValueObjects\ParentCategoryId;
+use Src\Category\Infrastructure\Eloquent\Models\Category as EloquentCategory;
 
 class CategoryRepository implements CategoryRepositoryInterface
 {

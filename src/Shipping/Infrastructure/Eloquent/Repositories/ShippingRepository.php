@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Shipping\Infrastructure\Eloquent\Repositories;
 
-use App\Models\ShippingRate as EloquentShippingRate;
-use App\Models\ShippingZone as EloquentShippingZone;
 use Src\Shipping\Application\Contracts\ShippingRepositoryInterface;
 use Src\Shipping\Application\DTOs\PaginatedShippingZonesResult;
 use Src\Shipping\Application\DTOs\ShippingZoneFilterCriteria;
@@ -18,6 +16,8 @@ use Src\Shipping\Domain\ValueObjects\ShippingRateType;
 use Src\Shipping\Domain\ValueObjects\ShippingStatus;
 use Src\Shipping\Domain\ValueObjects\ShippingZoneId;
 use Src\Shipping\Domain\ValueObjects\ShippingZoneName;
+use Src\Shipping\Infrastructure\Eloquent\Models\ShippingRate as EloquentShippingRate;
+use Src\Shipping\Infrastructure\Eloquent\Models\ShippingZone as EloquentShippingZone;
 
 final class ShippingRepository implements ShippingRepositoryInterface
 {

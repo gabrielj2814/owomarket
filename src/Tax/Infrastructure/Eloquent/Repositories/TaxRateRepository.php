@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Tax\Infrastructure\Eloquent\Repositories;
 
-use App\Models\TaxRate as EloquentTaxRate;
 use Src\Tax\Application\Contracts\TaxRateRepositoryInterface;
 use Src\Tax\Application\DTOs\PaginatedTaxRatesResult;
 use Src\Tax\Application\DTOs\TaxRateFilterCriteria;
@@ -14,6 +13,7 @@ use Src\Tax\Domain\ValueObjects\TaxRateName;
 use Src\Tax\Domain\ValueObjects\TaxRatePercentage;
 use Src\Tax\Domain\ValueObjects\TaxRatePriority;
 use Src\Tax\Domain\ValueObjects\TaxRateStatus;
+use Src\Tax\Infrastructure\Eloquent\Models\TaxRate as EloquentTaxRate;
 
 final class TaxRateRepository implements TaxRateRepositoryInterface
 {

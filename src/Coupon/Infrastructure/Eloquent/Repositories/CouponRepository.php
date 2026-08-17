@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Coupon\Infrastructure\Eloquent\Repositories;
 
-use App\Models\Coupon as EloquentCoupon;
 use Src\Coupon\Application\Contracts\CouponRepositoryInterface;
 use Src\Coupon\Application\DTOs\CouponFilterCriteria;
 use Src\Coupon\Application\DTOs\PaginatedCouponsResult;
@@ -17,6 +16,7 @@ use Src\Coupon\Domain\ValueObjects\CouponStatus;
 use Src\Coupon\Domain\ValueObjects\CouponType;
 use Src\Coupon\Domain\ValueObjects\CouponUsageLimit;
 use Src\Coupon\Domain\ValueObjects\CouponValue;
+use Src\Coupon\Infrastructure\Eloquent\Models\Coupon as EloquentCoupon;
 
 final class CouponRepository implements CouponRepositoryInterface
 {
