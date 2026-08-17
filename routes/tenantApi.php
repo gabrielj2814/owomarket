@@ -20,4 +20,6 @@ Route::prefix("category")->group(callback: base_path("src/Category/Infrastructur
 Route::prefix("brand")->group(callback: base_path("src/Brand/Infrastructure/Http/Routes/apiTenant.php"));
 Route::prefix("attribute")->group(callback: base_path("src/Attribute/Infrastructure/Http/Routes/apiTenant.php"));
 Route::prefix("coupon")->group(callback: base_path("src/Coupon/Infrastructure/Http/Routes/apiTenant.php"));
+Route::prefix("tax")->group(callback: base_path("src/Tax/Infrastructure/Http/Routes/apiTenant.php"));
+Route::prefix("shipping")->group(callback: base_path("src/Shipping/Infrastructure/Http/Routes/apiTenant.php"));
 // Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/api.php"));
