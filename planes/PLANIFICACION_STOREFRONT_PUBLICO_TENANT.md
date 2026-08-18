@@ -135,18 +135,18 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 6: Checkout Completo, Control de Autenticación en Pago y Confirmación (`/checkout`)
-- **Controlador Inertia**: `ViewCheckoutTenantGETController.php` y `ViewOrderConfirmationTenantGETController.php`.
-- **Vista**: [resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx):
-  - **Paso 1: Datos del Comprador y Contacto**: Nombre, Email, Teléfono, RUT/DNI (permite ingreso libre como invitado para cotizar).
-  - **Paso 2: Dirección de Entrega y Cotización de Envío**: Selección de Región/Comuna con cálculo automático de tarifas según zona (`ShippingZones`).
-  - **Paso 3: Bloqueo de Seguridad y Login Obligatorio para Pago**:
-    - El comprador puede completar los pasos 1 y 2 libremente para simular el costo total con envío e impuestos.
-    - Al avanzar al **Paso de Pago / Pasarela**, si el usuario no tiene sesión iniciada, se despliega un **Modal / Paso de Login o Registro Rápido** para que inicie sesión con su cuenta de cliente antes de procesar el pago y emitir la orden.
-    - *En las pruebas automatizadas (Tests Feature/E2E), se realiza la autenticación correspondiente para validar el ciclo de orden.*
-  - **Paso 4: Selección de Método de Pago y Creación Atómica del Pedido**: Transferencia Bancaria Directa o Pasarela, invocando `POST /api-tenant/order/create` con el cliente autenticado.
-- **Vista**: [resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx):
-  - Pantalla de éxito con número de orden, resumen detallado de productos, instrucciones de pago/despacho y enlace para seguimiento de tracking.
+### 🔹 Fase 6: Checkout Completo, Control de Autenticación en Pago y Confirmación (`/checkout`) ✅
+- [x] **Controlador de Checkout y Creación de Orden**: [ViewCheckoutTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewCheckoutTenantGETController.php) y [CreateStorefrontOrderPOSTController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/CreateStorefrontOrderPOSTController.php) con cálculo de envío por zonas, aplicación de cupones, descuento de stock y creación transaccional del pedido en la base de datos del inquilino.
+- [x] **Controlador de Confirmación**: [ViewOrderConfirmationTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewOrderConfirmationTenantGETController.php) para visualización y tracking de la orden.
+- [x] **Rutas Tenant**: [src/Marketplace/Infrastructure/Http/Routes/tenant.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Routes/tenant.php) registradas (`tenant.checkout`, `tenant.checkout.create-order` y `tenant.order.confirmation`).
+- [x] **Servicio de Storefront**: [resources/js/Services/StorefrontServices.ts](file:///c:/laragon/www/owomarket/resources/js/Services/StorefrontServices.ts) con tipado estricto `createOrder(payload)`.
+- [x] **Vista de Checkout**: [resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx):
+  - **Paso 1: Datos Personales y Contacto**: Nombre, Correo, Teléfono, RUT/DNI con prellenado para usuarios autenticados.
+  - **Paso 2: Despacho y Envío**: Dirección, Comuna/Ciudad, Código Postal, Indicaciones y selector de tarifas de envío en tiempo real.
+  - **Paso 3: Login Gate Obligatorio en Pasarela de Pago**: Despliegue de modal/bloqueo de autenticación para que el cliente ingrese con su cuenta antes de realizar el pago definitivo y emitir la orden.
+  - **Paso 4: Selección de Forma de Pago**: Transferencia bancaria directa con datos de cuenta, Webpay o Pago contra entrega.
+- [x] **Vista de Confirmación de Pedido**: [resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx):
+  - Tarjeta de celebración con número de orden oficial, tabla de ítems adquiridos, desglose de costos, instrucciones de pago/transferencia, datos de entrega y botón de impresión de comprobante.
 - ➔ `commit: feat(storefront): implement complete checkout flow and order confirmation`
 
 ---
@@ -175,5 +175,5 @@ flowchart TD
 | **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ✅ Completado | `feat(storefront): implement tenant catalog with faceted filters and search` |
 | **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ✅ Completado | `feat(storefront): implement product detail page with variants selector and reviews system` |
 | **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ✅ Completado | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
-| **Fase 6** | Checkout (`/checkout`), Cálculo de Envíos, Creación de Pedido y Confirmación | ⏳ Pendiente | `feat(storefront): implement complete checkout flow and order confirmation` |
+| **Fase 6** | Checkout (`/checkout`), Cálculo de Envíos, Creación de Pedido y Confirmación | ✅ Completado | `feat(storefront): implement complete checkout flow and order confirmation` |
 | **Fase 7** | Testing Integral E2E, QA, Laravel Pint y Suite Completa | ⏳ Pendiente | `test(storefront): complete tenant storefront end-to-end test suite and quality assurance` |

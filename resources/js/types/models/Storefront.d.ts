@@ -181,3 +181,82 @@ export interface StorefrontCartPageProps {
         email: string;
     } | null;
 }
+
+export interface StorefrontShippingMethod {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+}
+
+export interface StorefrontPaymentMethod {
+    id: string;
+    name: string;
+    description: string;
+    instructions?: string;
+}
+
+export interface StorefrontCheckoutPageProps {
+    domain: string;
+    store_settings: StoreSettingsMap;
+    categories: StorefrontCategory[];
+    shipping_methods: StorefrontShippingMethod[];
+    payment_methods: StorefrontPaymentMethod[];
+    auth_user?: {
+        id: string;
+        name: string;
+        email: string;
+    } | null;
+}
+
+export interface StorefrontOrderItemDetail {
+    id: string;
+    product_id: string;
+    product_name: string;
+    sku: string;
+    price: number;
+    quantity: number;
+    total: number;
+    attributes?: Record<string, string> | null;
+}
+
+export interface StorefrontOrderConfirmationDetails {
+    id: string;
+    order_number: string;
+    status: string;
+    payment_method: string;
+    payment_status: string;
+    shipping_method: string;
+    subtotal: number;
+    tax_amount: number;
+    shipping_amount: number;
+    discount_amount: number;
+    total: number;
+    currency: string;
+    created_at: string;
+    customer: {
+        name: string;
+        email: string;
+        phone?: string;
+    };
+    shipping_address?: {
+        address?: string;
+        city?: string;
+        state?: string;
+        zip?: string;
+        notes?: string;
+    } | null;
+    items: StorefrontOrderItemDetail[];
+}
+
+export interface StorefrontOrderConfirmationPageProps {
+    domain: string;
+    store_settings: StoreSettingsMap;
+    categories: StorefrontCategory[];
+    order: StorefrontOrderConfirmationDetails;
+    auth_user?: {
+        id: string;
+        name: string;
+        email: string;
+    } | null;
+}
