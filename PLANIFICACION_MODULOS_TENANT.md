@@ -261,11 +261,11 @@ flowchart TD
 - [x] Tests unitarios de dominio: `ProductReviewDomainTest.php` y `ReviewValueObjectsTest.php` (9 tests, 44 aserciones).
 - ➔ `commit: feat(review): implement product review domain entities, value objects and unit tests`
 
-#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Review/Application/`)
-- [ ] Contrato `ReviewRepositoryInterface`.
-- [ ] DTOs: `CreateReviewData`, `ModerateReviewData`, `RespondReviewData`, `FilterReviewsCriteria`, `PaginatedReviewResult`, `ProductRatingSummaryData`.
-- [ ] Casos de uso: `CreateProductReviewUseCase`, `ModerateReviewUseCase`, `RespondReviewUseCase`, `ConsultReviewByIdUseCase`, `FilterReviewsUseCase`, `GetProductRatingSummaryUseCase`, `DeleteReviewUseCase`.
-- [ ] Tests unitarios de aplicación con Mockery.
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Review/Application/`) ✅
+- [x] Contrato `ReviewRepositoryInterface`.
+- [x] DTOs: `CreateReviewData`, `ModerateReviewData`, `RespondReviewData`, `UpdateReviewData`, `FilterReviewsCriteria`, `PaginatedReviewResult`, `ProductRatingSummaryData`.
+- [x] Casos de uso: `CreateProductReviewUseCase`, `ModerateReviewUseCase`, `RespondReviewUseCase`, `UpdateProductReviewUseCase`, `ConsultReviewByIdUseCase`, `FilterReviewsUseCase`, `GetProductRatingSummaryUseCase`, `DeleteProductReviewUseCase`.
+- [x] Tests unitarios de aplicación con Mockery (`ReviewUseCasesTest.php`, 9 tests, 33 aserciones).
 - ➔ `commit: feat(review): implement product review use cases, dtos and repository interface`
 
 #### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Review/Infrastructure/`)
