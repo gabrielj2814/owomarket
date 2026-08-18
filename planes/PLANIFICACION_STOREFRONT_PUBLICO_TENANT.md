@@ -105,7 +105,10 @@ flowchart TD
   - Pestaña de Especificaciones y Atributos del producto.
   - **Módulo de Reseñas y Calificaciones**:
     - Score global promedio (ej. 4.8 / 5.0) y desglose de estrellas (1 a 5).
-    - Listado de opiniones aprobadas con fecha, nombre del comprador y respuesta oficial de la tienda.
+    - **Reseñas Anónimas y Verificadas**:
+      - Cualquier usuario puede enviar una reseña con estrellas de forma anónima o como invitado sin obligatoriedad de cuenta previa.
+      - En el escaparate del inquilino y en el dominio principal se muestran y destacan las reseñas de usuarios con cuenta registrada / comprador verificado.
+    - Listado de opiniones aprobadas con fecha, badge de usuario verificado y respuesta oficial de la tienda.
     - **Formulario interactivo para Calificar**: Selector de 1 a 5 estrellas interactivas, nombre, correo y comentario (conecta con `ReviewServices.createReview`).
 - ➔ `commit: feat(storefront): implement product detail page with variants selector and reviews system`
 
@@ -122,13 +125,16 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 6: Checkout Completo, Selección de Envío y Confirmación de Pedido (`/checkout`)
+### 🔹 Fase 6: Checkout Completo, Control de Autenticación en Pago y Confirmación (`/checkout`)
 - **Controlador Inertia**: `ViewTenantCheckoutGETController.php` y `ViewTenantOrderConfirmationGETController.php`.
 - **Vista**: `resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx`:
-  - **Paso 1: Datos del Comprador**: Nombre, Email, Teléfono, RUT/DNI (integrado con `Customer`).
-  - **Paso 2: Dirección de Entrega y Selección de Envío**: Selección de Región/Comuna con cotización dinámica de tarifas de envío según zona (`ShippingZones`).
-  - **Paso 3: Método de Pago**: Transferencia Bancaria Directa (con datos de cuenta) o Pasarela de Pago.
-  - **Paso 4: Creación Atómica del Pedido**: Invoca `POST /api-tenant/order/create` registrando el pedido con ítems, impuestos, descuento y envío.
+  - **Paso 1: Datos del Comprador y Contacto**: Nombre, Email, Teléfono, RUT/DNI (permite ingreso libre como invitado para cotizar).
+  - **Paso 2: Dirección de Entrega y Cotización de Envío**: Selección de Región/Comuna con cálculo automático de tarifas según zona (`ShippingZones`).
+  - **Paso 3: Bloqueo de Seguridad y Login Obligatorio para Pago**:
+    - El comprador puede completar los pasos 1 y 2 libremente para simular el costo total con envío e impuestos.
+    - Al avanzar al **Paso de Pago / Pasarela**, si el usuario no tiene sesión iniciada, se despliega un **Modal / Paso de Login o Registro Rápido** para que inicie sesión con su cuenta de cliente antes de procesar el pago y emitir la orden.
+    - *En las pruebas automatizadas (Tests Feature/E2E), se realiza la autenticación correspondiente para validar el ciclo de orden.*
+  - **Paso 4: Selección de Método de Pago y Creación Atómica del Pedido**: Transferencia Bancaria Directa o Pasarela, invocando `POST /api-tenant/order/create` con el cliente autenticado.
 - **Vista**: `resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx`:
   - Pantalla de éxito con número de orden, resumen detallado de productos, instrucciones de pago/despacho y enlace para seguimiento de tracking.
 - ➔ `commit: feat(storefront): implement complete checkout flow and order confirmation`
