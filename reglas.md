@@ -66,6 +66,9 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
      * `test({modulo}): {descripción de las pruebas añadidas}`
      * `refactor({modulo}): {descripción de la refactorización}`
 
+3. **Push Automático a Origin en la Rama Activa:**
+   * Inmediatamente después de crear cada commit en Git (tras haber superado las validaciones y pruebas), se debe ejecutar `git push origin <rama_actual>` para mantener el repositorio remoto actualizado y respaldado en todo momento.
+
 ---
 
 ## 📁 5. Ubicación y Gestión de Documentos de Planificación
