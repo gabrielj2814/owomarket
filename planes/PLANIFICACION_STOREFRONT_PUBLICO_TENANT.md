@@ -105,21 +105,19 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 4: Detalle de Producto, Variantes y Sistema de Reseñas (`/product/{slug}`)
-- **Controlador Inertia**: `ViewProductDetailTenantGETController.php`.
-- **Vista**: [resources/js/pages/marketplace/product/TenantProductDetailPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/product/TenantProductDetailPage.tsx):
-  - Galería de imágenes interactiva con zoom y miniaturas.
-  - Información principal: Marca, Título, SKU, Precio base y badge de ahorro.
-  - **Selector de Variantes**: Tallas, Colores y Atributos con actualización instantánea de precio, imagen y stock disponible.
-  - Selector de cantidad (+/-) con control de stock máximo y botón "Agregar al Carrito".
-  - Pestaña de Especificaciones y Atributos del producto.
-  - **Módulo de Reseñas y Calificaciones**:
-    - Score global promedio (ej. 4.8 / 5.0) y desglose de estrellas (1 a 5).
-    - **Reseñas Anónimas y Verificadas**:
-      - Cualquier usuario puede enviar una reseña con estrellas de forma anónima o como invitado sin obligatoriedad de cuenta previa.
-      - En el escaparate del inquilino y en el dominio principal se muestran y destacan las reseñas de usuarios con cuenta registrada / comprador verificado.
-    - Listado de opiniones aprobadas con fecha, badge de usuario verificado y respuesta oficial de la tienda.
-    - **Formulario interactivo para Calificar**: Selector de 1 a 5 estrellas interactivas, nombre, correo y comentario (conecta con `ReviewServices.createReview`).
+### 🔹 Fase 4: Detalle de Producto, Variantes y Sistema de Reseñas (`/product/{slug}`) ✅
+- [x] **Controlador Inertia**: [ViewProductDetailTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewProductDetailTenantGETController.php) con carga de imágenes, variantes y atributos, cálculo estadístico de calificaciones (1-5 estrellas), listado de opiniones aprobadas y productos relacionados.
+- [x] **Rutas Tenant**: [src/Marketplace/Infrastructure/Http/Routes/tenant.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Routes/tenant.php) registrada como `tenant.product.detail`.
+- [x] **Vista Detalle de Producto**: [resources/js/pages/marketplace/product/TenantProductDetailPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/product/TenantProductDetailPage.tsx):
+  - Galería de imágenes interactiva con miniaturas seleccionables.
+  - Selector dinámico de variantes (tallas, colores) con sincronización en tiempo real de precio, SKU y stock disponible.
+  - Controles de cantidad reactivos (+/-) y botones de acción ("Añadir al Carrito" y "Comprar Ahora").
+  - Pestañas de Descripción completa y Especificaciones técnicas estructuradas.
+  - **Módulo de Reseñas Comunitarias**:
+    - Tarjeta KPI de calificación promedio con barras de progreso por cada estrella (1★ a 5★).
+    - Lista de reseñas aprobadas con autor, fecha, estrellas, insignia de "Comprador Verificado" y cuadro de respuesta oficial del comercio.
+    - Modal de calificación interactivo (1-5 estrellas interactivas, título, nombre, correo y comentario) conectado al backend de reseñas.
+  - Sección de Productos Relacionados ("También te podría interesar").
 - ➔ `commit: feat(storefront): implement product detail page with variants selector and reviews system`
 
 ---
@@ -173,7 +171,7 @@ flowchart TD
 | **Fase 1** | Layout Storefront, Navbar dinámico, Footer, CartContext y Mini-Cart Drawer | ✅ Completado | `feat(storefront): implement storefront layout, navbar, footer and cart context` |
 | **Fase 2** | Home Page (`/`) con Hero Banner, Categorías, Novedades y Cards de Producto | ✅ Completado | `feat(storefront): implement dynamic tenant storefront home page` |
 | **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ✅ Completado | `feat(storefront): implement tenant catalog with faceted filters and search` |
-| **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ⏳ Pendiente | `feat(storefront): implement product detail page with variants selector and reviews system` |
+| **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ✅ Completado | `feat(storefront): implement product detail page with variants selector and reviews system` |
 | **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ⏳ Pendiente | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
 | **Fase 6** | Checkout (`/checkout`), Cálculo de Envíos, Creación de Pedido y Confirmación | ⏳ Pendiente | `feat(storefront): implement complete checkout flow and order confirmation` |
 | **Fase 7** | Testing Integral E2E, QA, Laravel Pint y Suite Completa | ⏳ Pendiente | `test(storefront): complete tenant storefront end-to-end test suite and quality assurance` |
