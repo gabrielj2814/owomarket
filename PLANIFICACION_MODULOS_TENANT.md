@@ -118,45 +118,48 @@ flowchart TD
 
 ### 📌 Desglose por Fases - Módulo Pedidos:
 
-#### 🔹 Fase 1: Dominio Core de Pedidos e Ítems (`src/Order/Domain/`)
-- [ ] Entidad `Order` (Aggregate Root) con métodos de máquina de estados (`confirm`, `markAsPaid`, `startProcessing`, `markAsShipped`, `markAsDelivered`, `cancel`).
-- [ ] Entidad `OrderItem` con cálculo inmutable de subtotales, descuentos y tasas impositivas.
-- [ ] Value Objects: `OrderId`, `OrderNumber` (ej. `ORD-2026-0001`), `OrderStatus`, `PaymentStatus`, `ShippingMethod`.
-- [ ] Eventos de Dominio: `OrderCreatedDomainEvent`, `OrderPaidDomainEvent`, `OrderCancelledDomainEvent`.
-- [ ] Tests unitarios de dominio.
-- ➔ `commit: feat(order): implement order domain aggregate, items and state transitions`
+#### 🔹 Fase 1: Dominio Core de Pedidos e Ítems (`src/Order/Domain/`) ✅
+- [x] Entidad `Order` (Aggregate Root) con métodos de máquina de estados (`confirm`, `process`, `markAsShipped`, `markAsDelivered`, `cancel`, `refund`, `markPaymentPaid`, `markPaymentFailed`).
+- [x] Entidad `OrderItem` con cálculo inmutable de subtotales y cantidades mínimas.
+- [x] Value Objects: `OrderId`, `OrderNumber` (ej. `ORD-20260818-XXXX`), `OrderStatus`, `PaymentStatus`, `Money`, `Currency`, `OrderItemId`.
+- [x] Excepciones de dominio: `OrderNotFoundException`, `InvalidOrderStateTransitionException`, `EmptyOrderItemsException`, `InvalidOrderAmountException`.
+- [x] Tests unitarios de dominio (`OrderDomainTest.php`, `OrderItemDomainTest.php`, `OrderStatusDomainTest.php`).
+- ➔ `commit: feat(order): implement order domain entities, value objects and unit tests`
 
-#### 🔹 Fase 2: Capa de Aplicación y Casos de Uso (`src/Order/Application/`)
-- [ ] Contrato `OrderRepositoryInterface`.
-- [ ] Casos de uso:
-  - `CreateManualOrderUseCase`
-  - `ConsultOrderByIdUseCase`
+#### 🔹 Fase 2: Capa de Aplicación y Casos de Uso (`src/Order/Application/`) ✅
+- [x] Contrato `OrderRepositoryInterface`.
+- [x] DTOs de entrada y salida: `CreateOrderData`, `OrderItemInputData`, `FilterOrdersCriteria`, `PaginatedOrderResult`, `OrderMetricsData`.
+- [x] Casos de uso:
+  - `CreateOrderUseCase`
+  - `ConsultOrderByIdUseCase` & `ConsultOrderByOrderNumberUseCase`
   - `FilterOrdersUseCase` (por estado, cliente, rango de fechas, montos, método de pago)
-  - `UpdateOrderStatusUseCase`
-  - `CancelOrderUseCase`
-  - `GenerateInvoiceFromOrderUseCase` (invoca caso de uso del módulo Billing)
+  - `ConfirmOrderUseCase`, `ProcessOrderUseCase`, `ShipOrderUseCase`, `DeliverOrderUseCase`
+  - `CancelOrderUseCase` & `RefundOrderUseCase`
+  - `UpdateOrderPaymentStatusUseCase`
   - `GetOrderMetricsUseCase` (Ventas totales, pedidos pendientes, completados)
-- [ ] Tests unitarios de aplicación.
-- ➔ `commit: feat(order): implement order application use cases and business rules`
+- [x] Tests unitarios de aplicación con Mockery (`OrderUseCasesTest.php`).
+- ➔ `commit: feat(order): implement order application use cases, dtos and repository contract`
 
-#### 🔹 Fase 3: Infraestructura, Eloquent y Repositorios (`src/Order/Infrastructure/`)
-- [ ] Modelos Eloquent en `src/Order/Infrastructure/Eloquent/Models/`: `Order.php`, `OrderItem.php`.
-- [ ] Repositorio `EloquentOrderRepository.php` transaccional con generación de correlativos atómicos.
-- [ ] `OrderServiceProvider.php` registrado en `bootstrap/providers.php`.
-- [ ] Tests de integración.
-- ➔ `commit: feat(order): implement order eloquent models, repository and bindings`
+#### 🔹 Fase 3: Infraestructura, Eloquent y Repositorios (`src/Order/Infrastructure/`) ✅
+- [x] Modelos Eloquent en `src/Order/Infrastructure/Eloquent/Models/`: `Order.php`, `OrderItem.php`.
+- [x] Repositorio `EloquentOrderRepository.php` transaccional con sincronización de ítems y consultas agregadas.
+- [x] `OrderServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [x] Tests de integración (`OrderRepositoryTest.php`).
+- ➔ `commit: feat(order): implement order eloquent models, repository and service provider`
 
-#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Order/Infrastructure/Http/`)
-- [ ] FormRequests: `CreateManualOrderFormRequest`, `UpdateOrderStatusFormRequest`, `FilterOrdersFormRequest`.
-- [ ] Controladores API:
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Order/Infrastructure/Http/`) ✅
+- [x] FormRequests: `CreateOrderFormRequest`, `UpdateOrderStatusFormRequest`, `UpdateOrderPaymentStatusFormRequest`, `FilterOrdersFormRequest`.
+- [x] Controladores API:
+  - `GET  /api-tenant/order/metrics`
   - `GET  /api-tenant/order/{id}`
+  - `GET  /api-tenant/order/number/{orderNumber}`
   - `POST /api-tenant/order/create`
   - `POST /api-tenant/order/{id}/status`
   - `POST /api-tenant/order/{id}/cancel`
-  - `POST /api-tenant/order/{id}/generate-invoice`
+  - `POST /api-tenant/order/{id}/payment-status`
   - `POST /api-tenant/order/filter`
-  - `GET  /api-tenant/order/metrics`
-- [ ] Tests de Feature API Tenant.
+- [x] Rutas registradas en `src/Order/Infrastructure/Http/Routes/apiTenant.php` y `routes/tenantApi.php`.
+- [x] Tests de Feature API Tenant (`OrderApiTest.php`).
 - ➔ `commit: feat(order): implement order api controllers, routes and feature tests`
 
 #### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
