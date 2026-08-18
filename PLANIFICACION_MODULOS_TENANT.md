@@ -325,11 +325,11 @@ flowchart TD
 - [x] Tests unitarios de dominio: `SettingValueObjectsTest.php`, `TenantSettingDomainTest.php`, `StoreSettingsDomainTest.php` (12 tests, 50 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings domain entities, value objects and unit tests`
 
-#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/TenantSettings/Application/`)
-- [ ] Contrato `TenantSettingsRepositoryInterface`.
-- [ ] DTOs: `UpdateStoreSettingsData`, `SettingData`, `StoreSettingsData`.
-- [ ] Casos de uso: `GetStoreSettingsUseCase`, `UpdateStoreSettingsUseCase`, `GetSettingByKeyUseCase`, `SaveSettingUseCase`, `ListSettingsByGroupUseCase`.
-- [ ] Tests unitarios de aplicación con Mockery.
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/TenantSettings/Application/`) ✅
+- [x] Contrato `TenantSettingsRepositoryInterface`.
+- [x] DTOs: `SaveSettingData.php`, `UpdateStoreSettingsData.php`.
+- [x] Casos de uso: `GetStoreSettingsUseCase`, `UpdateStoreSettingsUseCase`, `GetSettingByKeyUseCase`, `SaveSettingUseCase`, `ListSettingsByGroupUseCase`, `ListAllSettingsUseCase`, `DeleteSettingUseCase`.
+- [x] Tests unitarios de aplicación con Mockery (`TenantSettingsUseCasesTest.php`, 8 tests, 25 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings use cases, dtos and repository interface`
 
 #### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/TenantSettings/Infrastructure/Eloquent/`)
