@@ -352,9 +352,9 @@ flowchart TD
 - [x] Tests de Feature API Tenant (`TenantSettingsApiTest.php`, 6 tests, 29 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings api controllers, routes and feature tests`
 
-#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
-- [ ] Tipos: `resources/js/types/models/TenantSettings.d.ts`, `FormTenantSettings.d.ts`.
-- [ ] Servicio Axios `resources/js/Services/TenantSettingsServices.ts`.
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`) ✅
+- [x] Tipos: `resources/js/types/models/TenantSettings.d.ts`, `FormTenantSettings.d.ts`, `ErrorsFormTenantSettings.d.ts`.
+- [x] Servicio Axios `resources/js/Services/TenantSettingsServices.ts` con tipado estricto `ApiResponse`, consultas por ID, lectura agrupada y plana, mutaciones atómicas y CRUD de parámetros individuales.
 - ➔ `commit: feat(settings): implement frontend tenant settings types and services`
 
 #### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/settings/`)
