@@ -235,7 +235,7 @@ Schema::create('invoice_items', function (Blueprint $table) {
 
 ---
 
-## 🏗️ 5. Estructura de Directorios del Módulo (`src/Billing/`)
+## 🏗️ 5. Estructura de Directorios del Módulo (`src/Billing/` y `src/Payment/`)
 
 ```text
 src/Billing/
@@ -276,6 +276,7 @@ src/Billing/
 │       ├── ConsultInvoiceByIdUseCase.php
 │       ├── FilterInvoicesUseCase.php
 │       ├── CancelInvoiceUseCase.php
+│       ├── GetBillingMetricsUseCase.php
 │       ├── GenerateInvoicePdfUseCase.php
 │       ├── ResendInvoiceMailUseCase.php
 │       ├── ConsultBillingProfileUseCase.php
@@ -292,16 +293,21 @@ src/Billing/
     ├── Services/
     │   ├── DomPdfInvoiceGeneratorService.php
     │   └── LaravelInvoiceMailerService.php
+    ├── Mail/
+    │   └── InvoiceMail.php
     └── Http/
         ├── Controller/
         │   ├── ViewBillingIndexGETController.php
         │   ├── ViewBillingSettingsGETController.php
         │   ├── ViewInvoiceDetailGETController.php
         │   ├── CreateDirectInvoicePOSTController.php
+        │   ├── ConsultInvoiceGETController.php
         │   ├── FilterInvoicesPOSTController.php
+        │   ├── GetBillingMetricsGETController.php
         │   ├── DownloadInvoicePdfGETController.php
         │   ├── CancelInvoicePOSTController.php
         │   ├── ResendInvoiceMailPOSTController.php
+        │   ├── ConsultBillingProfileGETController.php
         │   └── UpdateBillingProfilePUTController.php
         ├── Request/
         │   ├── CreateDirectInvoiceFormRequest.php
@@ -351,61 +357,62 @@ src/Billing/
 
 ## 📋 7. Plan de Implementación por Fases
 
-### 📌 FASE 1: Base de Datos y Perfil Fiscal del Tenant
-- [ ] Migraciones en `database/migrations/tenant/`:
-  - `create_billing_profiles_table.php`
-  - `create_invoices_table.php`
-  - `create_invoice_items_table.php`
-- [ ] Entidad `BillingProfile` + Value Objects (`TaxId`, `BillingAddress`).
-- [ ] Repositorio Eloquent `BillingProfileRepository` + Casos de Uso `ConsultBillingProfileUseCase` y `UpdateBillingProfileUseCase`.
-- [ ] Endpoint `/api-tenant/billing/profile` + Tests unitarios y de integración.
-- ➔ `commit: feat(billing): implement billing profiles and database migrations`
+### ✅ FASE 1: Base de Datos y Perfil Fiscal del Tenant
+- [x] Migraciones en `database/migrations/tenant/`:
+  - `2026_08_18_000001_create_billing_profiles.php`
+  - `2026_08_18_000002_create_invoices.php`
+  - `2026_08_18_000003_create_invoice_items.php`
+- [x] Entidad `BillingProfile` + Value Objects (`TaxId`, `BillingAddress`, `BillingEmail`).
+- [x] Repositorio Eloquent `BillingProfileRepository` + Casos de Uso `ConsultBillingProfileUseCase` y `UpdateBillingProfileUseCase`.
+- [x] Endpoint `/api-tenant/billing/profile` + Tests unitarios y de integración.
+- ➔ `commit: feat(billing): implement billing profiles and database migrations` (`dd707ee`)
 
-### 📌 FASE 2: Dominio Core de Facturación y Emisión Manual
-- [ ] Entidades `Invoice` y `InvoiceItem` con invariantes de cálculo matemático (subtotal, IVA, descuento, total).
-- [ ] Value Objects `InvoiceId`, `InvoiceNumber`, `InvoiceStatus`, `InvoiceAmount`, `InvoiceDate`.
-- [ ] Casos de Uso `CreateDirectInvoiceUseCase`, `ConsultInvoiceByIdUseCase`, `FilterInvoicesUseCase`, `CancelInvoiceUseCase`.
-- [ ] Tests unitarios de Dominio y Casos de Uso.
-- ➔ `commit: feat(billing): implement invoice domain entities, value objects and core use cases`
+### ✅ FASE 2: Dominio Core de Facturación y Emisión Manual
+- [x] Entidades `Invoice` y `InvoiceItem` con invariantes de cálculo matemático (subtotal, IVA, descuento, total).
+- [x] Value Objects `InvoiceId`, `InvoiceNumber`, `InvoiceStatus`, `InvoiceDate`, `CustomerFiscalData`, `IssuerFiscalData`.
+- [x] Casos de Uso `CreateDirectInvoiceUseCase`, `ConsultInvoiceByIdUseCase`, `FilterInvoicesUseCase`, `CancelInvoiceUseCase`.
+- [x] Tests unitarios de Dominio y Casos de Uso.
+- ➔ `commit: feat(billing): implement invoice domain entities, value objects and core use cases` (`59585e2`)
 
-### 📌 FASE 3: Infraestructura, Repositorios Eloquent y Endpoints API
-- [ ] Modelos Eloquent en `src/Billing/Infrastructure/Eloquent/Models/` (`Invoice.php`, `InvoiceItem.php`, `BillingProfile.php`).
-- [ ] `EloquentInvoiceRepository` con soporte para filtros multicriterio, correlativos atómicos y paginación.
-- [ ] Controladores HTTP y FormRequests en `src/Billing/Infrastructure/Http/`.
-- [ ] Rutas API registradas en `routes/tenantApi.php` (`/api-tenant/billing/*`).
-- [ ] Tests de Integración y Feature con PestPHP (`BillingApiTest.php`).
-- ➔ `commit: feat(billing): implement billing eloquent repositories, controllers and api tests`
+### ✅ FASE 3: Infraestructura, Repositorios Eloquent y Endpoints API
+- [x] Modelos Eloquent en `src/Billing/Infrastructure/Eloquent/Models/` (`Invoice.php`, `InvoiceItem.php`, `BillingProfile.php`).
+- [x] `EloquentInvoiceRepository` con soporte para filtros multicriterio, correlativos atómicos y paginación.
+- [x] Controladores HTTP y FormRequests en `src/Billing/Infrastructure/Http/`.
+- [x] Rutas API registradas en `routes/tenantApi.php` (`/api-tenant/billing/*`).
+- [x] Tests de Integración y Feature con PestPHP (`BillingInvoiceApiTest.php`).
+- ➔ `commit: feat(billing): implement billing eloquent repositories, controllers and api tests` (`c019de8`)
 
-### 📌 FASE 4: Servicios de Generación de PDF (DomPdf) y Envío de Correo
-- [ ] Instalación/configuración de `barryvdh/laravel-dompdf`.
-- [ ] Plantilla Blade elegante de documento fiscal en `resources/views/invoices/pdf.blade.php`.
-- [ ] Implementación de `DomPdfInvoiceGeneratorService` y `LaravelInvoiceMailerService`.
-- [ ] Controlador de descarga directa `DownloadInvoicePdfGETController` y reenvío por correo `ResendInvoiceMailPOSTController`.
-- [ ] Tests de generación de PDF y Mailer.
-- ➔ `commit: feat(billing): implement invoice pdf generation and mailer services`
+### ✅ FASE 4: Servicios de Generación de PDF (DomPdf) y Envío de Correo
+- [x] Instalación/configuración de `barryvdh/laravel-dompdf`.
+- [x] Plantilla Blade elegante de documento fiscal en `resources/views/invoices/pdf.blade.php`.
+- [x] Implementación de `DomPdfInvoiceGeneratorService` y `LaravelInvoiceMailerService`.
+- [x] Controlador de descarga directa `DownloadInvoicePdfGETController` y reenvío por correo `ResendInvoiceMailPOSTController`.
+- [x] Tests de generación de PDF y Mailer.
+- ➔ `commit: feat(billing): implement invoice pdf generation and mailer services` (`3daaf7b`)
 
-### 📌 FASE 5: Contrato Polimórfico de Métodos de Pago (`src/Payment/`)
-- [ ] Contrato `PaymentGatewayInterface` con métodos estándar `charge()`, `refund()`, `handleWebhook()`.
-- [ ] Fábrica `PaymentGatewayFactory` con registro dinámico y soporte para inyección de dependencias.
-- [ ] Adaptadores iniciales:
-  - `ManualBankTransferGateway` (Transferencia bancaria / Pago manual).
-  - `CashOnDeliveryGateway` (Pago contra entrega / Efectivo).
-- [ ] Integración para que pagos completados generen o marquen facturas como pagadas.
-- [ ] Tests unitarios y de integración de pasarelas.
-- ➔ `commit: feat(payment): implement polymorphic payment gateway interface, factory and manual adapters`
+### ✅ FASE 5: Contrato Polimórfico de Métodos de Pago (`src/Payment/`)
+- [x] Contrato `PaymentGatewayInterface` con métodos estándar `charge()`, `refund()`, `handleWebhook()`.
+- [x] Fábrica `PaymentGatewayFactory` con registro dinámico y soporte para inyección de dependencias.
+- [x] Adaptadores iniciales:
+  - `ManualBankTransferPaymentGateway` (Transferencia bancaria / Pago manual).
+  - `CashOnDeliveryPaymentGateway` (Pago contra entrega / Efectivo).
+- [x] Casos de Uso `ProcessPaymentUseCase`, `RefundPaymentUseCase`, `ListAvailablePaymentGatewaysUseCase`.
+- [x] Tests unitarios y de integración de pasarelas.
+- ➔ `commit: feat(payment): implement polymorphic payment gateway interface, factory and manual adapters` (`3e2e9b4`)
 
-### 📌 FASE 6: Servicios Frontend y Vistas en el Dashboard del Tenant
-- [ ] Tipos TypeScript (`Invoice.d.ts`, `InvoiceItem.d.ts`, `BillingProfile.d.ts`, `FormInvoice.d.ts`).
-- [ ] `BillingServices.ts` con todos los métodos Axios tipados.
-- [ ] Vistas React Flowbite:
+### ✅ FASE 6: Servicios Frontend y Vistas en el Dashboard del Tenant
+- [x] Tipos TypeScript (`Invoice.d.ts`, `BillingProfile.d.ts`, `PaymentGateway.d.ts`, `FormBillingProfile.d.ts`, `FormDirectInvoice.d.ts`).
+- [x] `BillingServices.ts` con todos los métodos Axios tipados.
+- [x] Vistas React Flowbite:
   - `BillingIndexPage.tsx` (KPIs, tabla reactiva, filtros, modales de anulación y emisión directa).
   - `ShowInvoiceDetailPage.tsx` (Vista previa de documento fiscal e impresión).
   - `BillingSettingsPage.tsx` (Formulario de datos fiscales).
-- [ ] Enlace en Sidebar y Navbar móvil del Tenant.
-- ➔ `commit: feat(billing-ui): implement tenant billing dashboard, index, printable invoice view and fiscal settings`
+- [x] Enlace en Sidebar y Navbar móvil del Tenant.
+- ➔ `commit: feat(billing): implement frontend billing services, types, tenant dashboard views and navigation` (`3a2ed30`)
 
-### 📌 FASE 7: Testing Integral, QA y Validación Final
-- [ ] Ejecución de suite completa de pruebas: `php artisan test`.
-- [ ] Verificación de tipos: `npm run types`.
-- [ ] Formateo con Pint: `vendor/bin/pint`.
+### ✅ FASE 7: Testing Integral, QA y Validación Final
+- [x] Prueba Integral End-to-End de ciclo de vida completo (`BillingLifecycleEndToEndTest.php` con 46 aserciones).
+- [x] Ejecución de suite completa de pruebas: `php artisan test` (206 tests pasando al 100%, 906 aserciones).
+- [x] Verificación de tipos: `npm run types` (0 errores).
+- [x] Formateo con Pint: `vendor/bin/pint`.
 - ➔ `commit: test(billing): full billing test suite and code styling`
