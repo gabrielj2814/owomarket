@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Dashboard from '@/components/layouts/Dashboard';
 import BillingServices from '@/Services/BillingServices';
 import OrderServices from '@/Services/OrderServices';
+import ShipmentServices from '@/Services/ShipmentServices';
 import { FormDirectInvoice } from '@/types/FormDirectInvoice';
+import { FormCreateShipment, FormUpdateTracking } from '@/types/FormShipment';
 import { Order, OrderStatusType, PaymentStatusType } from '@/types/models/Order';
+import { Shipment, ShipmentStatusType } from '@/types/models/Shipment';
 import { Head, Link } from '@inertiajs/react';
 import {
     Badge,
@@ -38,7 +41,9 @@ import {
     HiHome,
     HiMail,
     HiPhone,
+    HiPlus,
     HiPrinter,
+    HiRefresh,
     HiShoppingCart,
     HiTruck,
     HiUser,
@@ -79,6 +84,18 @@ const paymentStatusBadgeColorMap: Record<PaymentStatusType, string> = {
     refunded: 'dark',
 };
 
+const shipmentStatusBadgeColorMap: Record<ShipmentStatusType, string> = {
+    pending: 'warning',
+    in_transit: 'purple',
+    delivered: 'success',
+};
+
+const shipmentStatusLabels: Record<ShipmentStatusType, string> = {
+    pending: 'Preparación / Pendiente',
+    in_transit: 'En Tránsito / Despachado',
+    delivered: 'Entregado al Destinatario',
+};
+
 export default function ShowOrderDetailPage({
     title,
     user_id,
@@ -87,11 +104,13 @@ export default function ShowOrderDetailPage({
     user_name,
 }: ShowOrderDetailPageProps) {
     const [order, setOrder] = useState<Order | null>(null);
+    const [shipments, setShipments] = useState<Shipment[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
+    const [loadingShipments, setLoadingShipments] = useState<boolean>(false);
     const [loadingAction, setLoadingAction] = useState<boolean>(false);
     const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    // Modal state for status change
+    // Modal state for order status change
     const [isStatusModalOpen, setIsStatusModalOpen] = useState<boolean>(false);
     const [targetStatus, setTargetStatus] = useState<string>('confirmed');
     const [shippingMethodInput, setShippingMethodInput] = useState<string>('');
@@ -99,6 +118,29 @@ export default function ShowOrderDetailPage({
 
     // State for invoice generation
     const [invoiceCreatedSuccess, setInvoiceCreatedSuccess] = useState<string | null>(null);
+
+    // Modal state for Shipments
+    const [isCreateShipmentModalOpen, setIsCreateShipmentModalOpen] = useState<boolean>(false);
+    const [formShipment, setFormShipment] = useState<FormCreateShipment>({
+        order_id: order_id,
+        carrier: 'Chilexpress',
+        service: 'Express 24h',
+        cost: 0,
+        tracking_number: '',
+        notes: '',
+        estimated_delivery: '',
+    });
+
+    const [isUpdateTrackingModalOpen, setIsUpdateTrackingModalOpen] = useState<boolean>(false);
+    const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+    const [formTracking, setFormTracking] = useState<FormUpdateTracking>({
+        tracking_number: '',
+        carrier: '',
+        service: '',
+        cost: 0,
+        estimated_delivery: '',
+        notes: '',
+    });
 
     const showToast = (type: 'success' | 'error', text: string) => {
         setToastMessage({ type, text });
@@ -111,6 +153,11 @@ export default function ShowOrderDetailPage({
             const response = await OrderServices.consultById(order_id);
             if (response.data && response.data.code === 200 && response.data.data) {
                 setOrder(response.data.data);
+                setFormShipment((prev) => ({
+                    ...prev,
+                    cost: Number(response.data.data?.shipping_amount || 0),
+                    carrier: response.data.data?.shipping_method || 'Chilexpress',
+                }));
             } else {
                 showToast('error', response.data?.message || 'Error al consultar la orden.');
             }
@@ -121,8 +168,23 @@ export default function ShowOrderDetailPage({
         }
     };
 
+    const fetchShipments = async () => {
+        setLoadingShipments(true);
+        try {
+            const response = await ShipmentServices.consultByOrderId(order_id);
+            if (response.data && (response.data.code === 200 || response.data.status === 'success')) {
+                setShipments(response.data.data || []);
+            }
+        } catch (e) {
+            // Silently fail or minimal feedback
+        } finally {
+            setLoadingShipments(false);
+        }
+    };
+
     useEffect(() => {
         fetchOrder();
+        fetchShipments();
     }, [order_id]);
 
     const handleOpenStatusModal = (status: string) => {
@@ -153,6 +215,7 @@ export default function ShowOrderDetailPage({
                 showToast('success', `Estado actualizado a "${statusLabels[targetStatus as OrderStatusType]}".`);
                 setIsStatusModalOpen(false);
                 fetchOrder();
+                fetchShipments();
             } else {
                 showToast('error', response.data?.message || 'Error al actualizar estado.');
             }
@@ -224,6 +287,89 @@ export default function ShowOrderDetailPage({
             }
         } catch (e) {
             showToast('error', 'Error al emitir la factura fiscal.');
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
+    // Shipment Creation Handler
+    const handleCreateShipment = async () => {
+        if (!order) return;
+        setLoadingAction(true);
+
+        try {
+            const payload: FormCreateShipment = {
+                ...formShipment,
+                order_id: order.id,
+                cost: Number(formShipment.cost || 0),
+            };
+
+            const response = await ShipmentServices.create(payload);
+            if (response.data && (response.data.code === 201 || response.data.status === 'success')) {
+                showToast('success', '¡Guía de despacho registrada exitosamente!');
+                setIsCreateShipmentModalOpen(false);
+                fetchOrder();
+                fetchShipments();
+            } else {
+                showToast('error', response.data?.message || 'Error al registrar el envío.');
+            }
+        } catch (e) {
+            showToast('error', 'Error al comunicarse con el servidor.');
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
+    // Open Update Tracking Modal
+    const handleOpenUpdateTracking = (shipment: Shipment) => {
+        setSelectedShipment(shipment);
+        setFormTracking({
+            tracking_number: shipment.tracking_number || '',
+            carrier: shipment.carrier,
+            service: shipment.service,
+            cost: Number(shipment.cost),
+            estimated_delivery: shipment.estimated_delivery ? shipment.estimated_delivery.split('T')[0] : '',
+            notes: shipment.notes || '',
+        });
+        setIsUpdateTrackingModalOpen(true);
+    };
+
+    // Execute Tracking Update
+    const handleExecuteUpdateTracking = async () => {
+        if (!selectedShipment) return;
+        setLoadingAction(true);
+
+        try {
+            const response = await ShipmentServices.updateTracking(selectedShipment.id, formTracking);
+            if (response.data && (response.data.code === 200 || response.data.status === 'success')) {
+                showToast('success', 'Seguimiento de despacho actualizado correctamente.');
+                setIsUpdateTrackingModalOpen(false);
+                fetchOrder();
+                fetchShipments();
+            } else {
+                showToast('error', response.data?.message || 'Error al actualizar el tracking.');
+            }
+        } catch (e) {
+            showToast('error', 'Error de conexión.');
+        } finally {
+            setLoadingAction(false);
+        }
+    };
+
+    // Execute Mark Shipment as Delivered
+    const handleMarkShipmentDelivered = async (shipmentId: string) => {
+        setLoadingAction(true);
+        try {
+            const response = await ShipmentServices.markAsDelivered(shipmentId);
+            if (response.data && (response.data.code === 200 || response.data.status === 'success')) {
+                showToast('success', 'El envío ha sido marcado como ENTREGADO.');
+                fetchOrder();
+                fetchShipments();
+            } else {
+                showToast('error', response.data?.message || 'Error al actualizar el envío.');
+            }
+        } catch (e) {
+            showToast('error', 'Error de conexión.');
         } finally {
             setLoadingAction(false);
         }
@@ -350,6 +496,16 @@ export default function ShowOrderDetailPage({
                                     <Button
                                         color="blue"
                                         size="sm"
+                                        onClick={() => setIsCreateShipmentModalOpen(true)}
+                                        disabled={loadingAction || order.status === 'cancelled'}
+                                    >
+                                        <HiTruck className="mr-1 h-4 w-4" />
+                                        Nueva Guía Despacho
+                                    </Button>
+
+                                    <Button
+                                        color="purple"
+                                        size="sm"
                                         onClick={handleGenerateInvoice}
                                         disabled={loadingAction}
                                     >
@@ -434,7 +590,7 @@ export default function ShowOrderDetailPage({
 
                         {/* Main Grid Content */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left Column (Items & Financial Summary) - 2 Cols */}
+                            {/* Left Column (Items, Shipments & Financial Summary) - 2 Cols */}
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Order Items Table */}
                                 <Card className="shadow-sm">
@@ -503,6 +659,149 @@ export default function ShowOrderDetailPage({
                                             </div>
                                         </div>
                                     </div>
+                                </Card>
+
+                                {/* Physical Shipments Section */}
+                                <Card className="shadow-sm">
+                                    <div className="flex justify-between items-center border-b pb-3">
+                                        <div className="flex items-center gap-2">
+                                            <HiTruck className="h-6 w-6 text-indigo-600" />
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                                    Guías de Despacho y Seguimiento ({shipments.length})
+                                                </h3>
+                                                <p className="text-xs text-gray-500">
+                                                    Control logístico de envíos físicos, couriers y números de tracking.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            color="blue"
+                                            size="xs"
+                                            onClick={() => setIsCreateShipmentModalOpen(true)}
+                                            disabled={loadingAction || order.status === 'cancelled'}
+                                        >
+                                            <HiPlus className="mr-1 h-3.5 w-3.5" />
+                                            Nueva Guía
+                                        </Button>
+                                    </div>
+
+                                    {loadingShipments ? (
+                                        <div className="py-8 text-center">
+                                            <Spinner size="md" />
+                                            <p className="text-xs text-gray-500 mt-2">Cargando envíos...</p>
+                                        </div>
+                                    ) : shipments.length === 0 ? (
+                                        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+                                            <HiTruck className="mx-auto h-10 w-10 text-gray-400" />
+                                            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">
+                                                Aún no se han generado guías de despacho para este pedido.
+                                            </p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                                Emite la primera guía para registrar la empresa de transporte y número de tracking.
+                                            </p>
+                                            <Button
+                                                color="blue"
+                                                size="sm"
+                                                className="mt-4 mx-auto"
+                                                onClick={() => setIsCreateShipmentModalOpen(true)}
+                                            >
+                                                Crear Guía de Despacho
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {shipments.map((ship) => (
+                                                <div
+                                                    key={ship.id}
+                                                    className="p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-col md:flex-row justify-between gap-4"
+                                                >
+                                                    <div className="space-y-2">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="font-bold text-gray-900 dark:text-white text-base">
+                                                                {ship.carrier}
+                                                            </span>
+                                                            <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded font-medium">
+                                                                {ship.service}
+                                                            </span>
+                                                            <Badge
+                                                                color={shipmentStatusBadgeColorMap[ship.status] || 'gray'}
+                                                                size="sm"
+                                                            >
+                                                                {shipmentStatusLabels[ship.status] || ship.status}
+                                                            </Badge>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-300">
+                                                            <div>
+                                                                <span className="font-semibold text-gray-500">N° Tracking: </span>
+                                                                {ship.tracking_number ? (
+                                                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded">
+                                                                        {ship.tracking_number}
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="text-amber-600 font-semibold italic">
+                                                                        Pendiente de asignar
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div>
+                                                                <span className="font-semibold text-gray-500">Costo Despacho: </span>
+                                                                <span className="font-bold text-gray-900 dark:text-white">
+                                                                    ${Number(ship.cost).toFixed(2)} USD
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="font-semibold text-gray-500">Fecha Despacho: </span>
+                                                                <span>{ship.shipped_at ? new Date(ship.shipped_at).toLocaleString() : 'No despachado'}</span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="font-semibold text-gray-500">Entrega Estimada: </span>
+                                                                <span>{ship.estimated_delivery ? new Date(ship.estimated_delivery).toLocaleDateString() : 'No especificada'}</span>
+                                                            </div>
+                                                            {ship.delivered_at && (
+                                                                <div className="sm:col-span-2 text-emerald-600 font-semibold flex items-center gap-1">
+                                                                    <HiCheckCircle className="h-4 w-4" />
+                                                                    <span>Entregado el: {new Date(ship.delivered_at).toLocaleString()}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+
+                                                        {ship.notes && (
+                                                            <p className="text-xs text-gray-500 italic mt-1 bg-gray-50 dark:bg-gray-700/50 p-2 rounded">
+                                                                Nota: {ship.notes}
+                                                            </p>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Actions per shipment */}
+                                                    <div className="flex md:flex-col justify-end gap-2 shrink-0">
+                                                        <Button
+                                                            color="gray"
+                                                            size="xs"
+                                                            onClick={() => handleOpenUpdateTracking(ship)}
+                                                            disabled={loadingAction || ship.status === 'delivered'}
+                                                        >
+                                                            <HiRefresh className="mr-1 h-3.5 w-3.5" />
+                                                            {ship.tracking_number ? 'Modificar Tracking' : 'Asignar Tracking'}
+                                                        </Button>
+
+                                                        {ship.status !== 'delivered' && (
+                                                            <Button
+                                                                color="success"
+                                                                size="xs"
+                                                                onClick={() => handleMarkShipmentDelivered(ship.id)}
+                                                                disabled={loadingAction}
+                                                            >
+                                                                <HiCheckCircle className="mr-1 h-3.5 w-3.5" />
+                                                                Marcar Entregado
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </Card>
 
                                 {/* Notes Section */}
@@ -640,7 +939,7 @@ export default function ShowOrderDetailPage({
                 )}
             </div>
 
-            {/* Modal: Cambiar Estado / Anulación */}
+            {/* Modal: Cambiar Estado / Anulación del Pedido */}
             <Modal
                 show={isStatusModalOpen}
                 onClose={() => setIsStatusModalOpen(false)}
@@ -694,6 +993,169 @@ export default function ShowOrderDetailPage({
                     >
                         {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                         Confirmar
+                    </Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Modal: Crear Nueva Guía de Despacho */}
+            <Modal
+                show={isCreateShipmentModalOpen}
+                onClose={() => setIsCreateShipmentModalOpen(false)}
+                size="lg"
+            >
+                <ModalHeader>
+                    <div className="flex items-center gap-2">
+                        <HiTruck className="h-6 w-6 text-blue-600" />
+                        <span>Generar Guía de Despacho y Envío</span>
+                    </div>
+                </ModalHeader>
+                <ModalBody className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <Label htmlFor="ship_carrier">Empresa de Transporte / Courier (*)</Label>
+                            <TextInput
+                                id="ship_carrier"
+                                value={formShipment.carrier}
+                                onChange={(e) => setFormShipment({ ...formShipment, carrier: e.target.value })}
+                                placeholder="Ej. Chilexpress, Starken, DHL, FedEx..."
+                                required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="ship_service">Tipo de Servicio (*)</Label>
+                            <TextInput
+                                id="ship_service"
+                                value={formShipment.service}
+                                onChange={(e) => setFormShipment({ ...formShipment, service: e.target.value })}
+                                placeholder="Ej. Express 24h, Estándar, Same Day..."
+                                required
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="ship_cost">Costo Real de Despacho ($ USD)</Label>
+                            <TextInput
+                                id="ship_cost"
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                value={formShipment.cost}
+                                onChange={(e) => setFormShipment({ ...formShipment, cost: parseFloat(e.target.value) || 0 })}
+                                placeholder="0.00"
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="ship_tracking">Número de Tracking / Seguimiento</Label>
+                            <TextInput
+                                id="ship_tracking"
+                                value={formShipment.tracking_number || ''}
+                                onChange={(e) => setFormShipment({ ...formShipment, tracking_number: e.target.value })}
+                                placeholder="Ej. CHI-99887766 (opcional)"
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <Label htmlFor="ship_est_delivery">Fecha Estimada de Entrega</Label>
+                            <TextInput
+                                id="ship_est_delivery"
+                                type="date"
+                                value={formShipment.estimated_delivery || ''}
+                                onChange={(e) => setFormShipment({ ...formShipment, estimated_delivery: e.target.value })}
+                            />
+                        </div>
+                        <div className="sm:col-span-2">
+                            <Label htmlFor="ship_notes">Instrucciones / Notas de Despacho</Label>
+                            <Textarea
+                                id="ship_notes"
+                                value={formShipment.notes || ''}
+                                onChange={(e) => setFormShipment({ ...formShipment, notes: e.target.value })}
+                                placeholder="Notas internas para el equipo de despacho o conductor..."
+                                rows={3}
+                            />
+                        </div>
+                    </div>
+                </ModalBody>
+                <ModalFooter className="flex justify-end gap-2">
+                    <Button color="gray" onClick={() => setIsCreateShipmentModalOpen(false)}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        color="blue"
+                        onClick={handleCreateShipment}
+                        disabled={loadingAction || !formShipment.carrier || !formShipment.service}
+                    >
+                        {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
+                        Registrar Guía de Despacho
+                    </Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Modal: Actualizar Tracking / Courier */}
+            <Modal
+                show={isUpdateTrackingModalOpen}
+                onClose={() => setIsUpdateTrackingModalOpen(false)}
+                size="md"
+            >
+                <ModalHeader>
+                    Actualizar Seguimiento de Despacho
+                </ModalHeader>
+                <ModalBody className="space-y-4">
+                    <div>
+                        <Label htmlFor="upd_tracking">Número de Tracking (*)</Label>
+                        <TextInput
+                            id="upd_tracking"
+                            value={formTracking.tracking_number}
+                            onChange={(e) => setFormTracking({ ...formTracking, tracking_number: e.target.value })}
+                            placeholder="Ej. CHI-99887766"
+                            required
+                        />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                        <div>
+                            <Label htmlFor="upd_carrier">Courier</Label>
+                            <TextInput
+                                id="upd_carrier"
+                                value={formTracking.carrier || ''}
+                                onChange={(e) => setFormTracking({ ...formTracking, carrier: e.target.value })}
+                            />
+                        </div>
+                        <div>
+                            <Label htmlFor="upd_service">Servicio</Label>
+                            <TextInput
+                                id="upd_service"
+                                value={formTracking.service || ''}
+                                onChange={(e) => setFormTracking({ ...formTracking, service: e.target.value })}
+                            />
+                        </div>
+                    </div>
+                    <div>
+                        <Label htmlFor="upd_est_delivery">Fecha Estimada de Entrega</Label>
+                        <TextInput
+                            id="upd_est_delivery"
+                            type="date"
+                            value={formTracking.estimated_delivery || ''}
+                            onChange={(e) => setFormTracking({ ...formTracking, estimated_delivery: e.target.value })}
+                        />
+                    </div>
+                    <div>
+                        <Label htmlFor="upd_notes">Notas de Despacho</Label>
+                        <Textarea
+                            id="upd_notes"
+                            value={formTracking.notes || ''}
+                            onChange={(e) => setFormTracking({ ...formTracking, notes: e.target.value })}
+                            rows={2}
+                        />
+                    </div>
+                </ModalBody>
+                <ModalFooter className="flex justify-end gap-2">
+                    <Button color="gray" onClick={() => setIsUpdateTrackingModalOpen(false)}>
+                        Cancelar
+                    </Button>
+                    <Button
+                        color="blue"
+                        onClick={handleExecuteUpdateTracking}
+                        disabled={loadingAction || !formTracking.tracking_number}
+                    >
+                        {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
+                        Guardar Cambios
                     </Button>
                 </ModalFooter>
             </Modal>

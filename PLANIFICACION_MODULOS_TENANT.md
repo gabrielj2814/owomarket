@@ -231,8 +231,10 @@ flowchart TD
 - [x] Servicio Axios `resources/js/Services/ShipmentServices.ts` con tipado estricto `ApiResponse`, consultas por ID, orden, actualización de tracking, entrega y métricas.
 - ➔ `commit: feat(shipment): implement frontend shipment types and services`
 
-#### 🔹 Fase 6: Modal/Pestaña de Despachos en el Backoffice y Detalle de Pedido
-- [ ] Integración en `ShowOrderDetailPage.tsx` con modal interactivo para generar guía de despacho y tracking en vivo.
+#### 🔹 Fase 6: Modal/Pestaña de Despachos en el Backoffice y Detalle de Pedido (`ShowOrderDetailPage.tsx`) ✅
+- [x] Sección y listado interactivo de Guías de Despacho en `ShowOrderDetailPage.tsx` con soporte de couriers, número de tracking con badges, costos reales, timeline de entrega y botón para marcar como entregado.
+- [x] Modal interactivo "+ Generar Guía de Despacho" con selección de courier, servicio, costo, número de seguimiento opcional y notas.
+- [x] Modal de actualización de tracking y courier en caliente con feedback visual inmediato.
 - ➔ `commit: feat(shipment): implement shipment tracking ui and integration in order detail`
 
 #### 🔹 Fase 7: Testing Integral, QA y Validación Final
