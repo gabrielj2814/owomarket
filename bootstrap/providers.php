@@ -10,6 +10,7 @@ return [
     App\Providers\CategoryServiceProvider::class,
     App\Providers\CouponServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
+    App\Providers\PaymentServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\RouteServiceProvider::class,
     App\Providers\ShippingServiceProvider::class,
