@@ -268,11 +268,11 @@ flowchart TD
 - [x] Tests unitarios de aplicación con Mockery (`ReviewUseCasesTest.php`, 9 tests, 33 aserciones).
 - ➔ `commit: feat(review): implement product review use cases, dtos and repository interface`
 
-#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Review/Infrastructure/`)
-- [ ] Modelo Eloquent `src/Review/Infrastructure/Eloquent/Models/ProductReview.php` con relaciones a `Product`, `Customer` y `Order`.
-- [ ] Repositorio `EloquentReviewRepository.php` transaccional con cálculo de promedios de calificación.
-- [ ] Proveedor `ReviewServiceProvider.php` registrado en `bootstrap/providers.php`.
-- [ ] Tests de integración con base de datos tenant.
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Review/Infrastructure/`) ✅
+- [x] Modelo Eloquent `src/Review/Infrastructure/Eloquent/Models/ProductReview.php` con relaciones a `Product`, `Customer` y `Order`.
+- [x] Repositorio `EloquentReviewRepository.php` transaccional con filtrado multicriterio y cálculo automático de promedios y desglose de estrellas.
+- [x] Proveedor `ReviewServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [x] Tests de integración con base de datos tenant (`ReviewRepositoryTest.php`, 2 tests, 16 aserciones).
 - ➔ `commit: feat(review): implement product review eloquent model, repository and service provider`
 
 #### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Review/Infrastructure/Http/`)
