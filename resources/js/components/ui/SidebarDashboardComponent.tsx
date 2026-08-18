@@ -124,6 +124,10 @@ const SidebarDashboardComponent = () => {
                             </SidebarItem>
                         </SidebarCollapse>
 
+                        <SidebarItem icon={HiUsers} href={`/customer/backoffice/${state.authUser.user_id}/module`}>
+                            Clientes
+                        </SidebarItem>
+
                         <SidebarCollapse icon={LuReceipt} label="Facturación">
                             <SidebarItem icon={HiDocumentText} href={`/billing/backoffice/${state.authUser.user_id}/module`}>
                                 Facturas

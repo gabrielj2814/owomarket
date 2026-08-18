@@ -36,4 +36,5 @@ Route::middleware([
     Route::prefix('tax')->group(callback: base_path('src/Tax/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('shipping')->group(callback: base_path('src/Shipping/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('billing')->group(callback: base_path('src/Billing/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('customer')->group(callback: base_path('src/Customer/Infrastructure/Http/Routes/tenant.php'));
 });
