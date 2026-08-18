@@ -5,6 +5,7 @@ return [
     App\Providers\AppServiceProvider::class,
     App\Providers\AttributeServiceProvider::class,
     App\Providers\AuthServiceProvider::class,
+    App\Providers\BillingServiceProvider::class,
     App\Providers\BrandServiceProvider::class,
     App\Providers\CategoryServiceProvider::class,
     App\Providers\CouponServiceProvider::class,
