@@ -92,17 +92,15 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 3: Catálogo, Búsqueda Avanzada y Filtros Facetados (`/catalog`)
-- **Controlador Inertia**: `ViewCatalogTenantGETController.php`.
-- **Vista**: [resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx):
-  - Buscador reactivo con autocompletado y debounce.
-  - **Filtros Facetados Laterales**:
-    - Categorías (con conteo de productos).
-    - Marcas comerciales activas.
-    - Rango de precio con slider/inputs interactivos.
-    - Filtro de "Solo en oferta" y "Con stock disponible".
-  - **Ordenamiento**: Más recientes, Menor precio, Mayor precio, Mejor calificados.
-  - Selector de vista en Cuadrícula (Grid) o Lista con paginación integrada.
+### 🔹 Fase 3: Catálogo, Búsqueda Avanzada y Filtros Facetados (`/catalog`) ✅
+- [x] **Controlador Inertia**: [ViewCatalogTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewCatalogTenantGETController.php) con búsqueda full-text multimodelo, filtros facetados (categorías, marcas, precios, oferta, stock), ordenamiento dinámico y paginación con query string preservation.
+- [x] **Rutas Tenant**: [src/Marketplace/Infrastructure/Http/Routes/tenant.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Routes/tenant.php) registrada como `tenant.catalog`.
+- [x] **Vista Catálogo**: [resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx):
+  - Buscador con soporte de búsqueda reactiva.
+  - Filtros facetados laterales: Árbol de categorías y marcas con conteo dinámico de productos, inputs de rango de precio y badges de filtros activos removibles con un clic.
+  - Selector de ordenamiento (precio, novedades, alfabético).
+  - Grid responsivo de cards de producto con estado vacío amigable y paginación numérica.
+  - Drawer de filtros móvil deslizable.
 - ➔ `commit: feat(storefront): implement tenant catalog with faceted filters and search`
 
 ---
@@ -174,7 +172,7 @@ flowchart TD
 | :--- | :--- | :---: | :--- |
 | **Fase 1** | Layout Storefront, Navbar dinámico, Footer, CartContext y Mini-Cart Drawer | ✅ Completado | `feat(storefront): implement storefront layout, navbar, footer and cart context` |
 | **Fase 2** | Home Page (`/`) con Hero Banner, Categorías, Novedades y Cards de Producto | ✅ Completado | `feat(storefront): implement dynamic tenant storefront home page` |
-| **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ⏳ Pendiente | `feat(storefront): implement tenant catalog with faceted filters and search` |
+| **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ✅ Completado | `feat(storefront): implement tenant catalog with faceted filters and search` |
 | **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ⏳ Pendiente | `feat(storefront): implement product detail page with variants selector and reviews system` |
 | **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ⏳ Pendiente | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
 | **Fase 6** | Checkout (`/checkout`), Cálculo de Envíos, Creación de Pedido y Confirmación | ⏳ Pendiente | `feat(storefront): implement complete checkout flow and order confirmation` |
