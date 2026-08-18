@@ -275,9 +275,19 @@ flowchart TD
 - [x] Tests de integración con base de datos tenant (`ReviewRepositoryTest.php`, 2 tests, 16 aserciones).
 - ➔ `commit: feat(review): implement product review eloquent model, repository and service provider`
 
-#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Review/Infrastructure/Http/`)
-- [ ] FormRequests de validación y Controladores API (`/api-tenant/review/*`).
-- [ ] Tests de Feature API Tenant.
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Review/Infrastructure/Http/`) ✅
+- [x] FormRequests de validación: `CreateProductReviewFormRequest.php`, `ModerateReviewFormRequest.php`, `RespondReviewFormRequest.php`, `UpdateProductReviewFormRequest.php`, `FilterReviewsFormRequest.php`.
+- [x] Controladores API REST (`src/Review/Infrastructure/Http/Controller/`):
+  - `POST   /api-tenant/review/filter`
+  - `GET    /api-tenant/review/summary/{productId?}`
+  - `POST   /api-tenant/review/create`
+  - `GET    /api-tenant/review/{id}`
+  - `POST   /api-tenant/review/{id}/moderate`
+  - `POST   /api-tenant/review/{id}/respond`
+  - `PUT    /api-tenant/review/{id}`
+  - `DELETE /api-tenant/review/{id}`
+- [x] Rutas registradas en `src/Review/Infrastructure/Http/Routes/apiTenant.php` y `routes/tenantApi.php`.
+- [x] Tests de Feature API Tenant (`ReviewApiTest.php`, 9 tests, 33 aserciones).
 - ➔ `commit: feat(review): implement product review api controllers, routes and feature tests`
 
 #### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)

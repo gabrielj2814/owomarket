@@ -24,3 +24,4 @@ Route::prefix('payment')->group(callback: base_path('src/Payment/Infrastructure/
 Route::prefix('customer')->group(callback: base_path('src/Customer/Infrastructure/Http/Routes/apiTenant.php'));
 Route::prefix('order')->group(callback: base_path('src/Order/Infrastructure/Http/Routes/apiTenant.php'));
 Route::prefix('shipment')->group(callback: base_path('src/Shipment/Infrastructure/Http/Routes/apiTenant.php'));
+Route::prefix('review')->group(callback: base_path('src/Review/Infrastructure/Http/Routes/apiTenant.php'));
