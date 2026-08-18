@@ -205,11 +205,11 @@ flowchart TD
 - [x] Tests unitarios de aplicación con Mockery (`ShipmentUseCasesTest.php`, 8 tests, 31 aserciones).
 - ➔ `commit: feat(shipment): implement shipment application use cases, dtos and repository contract`
 
-#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Shipment/Infrastructure/`)
-- [ ] Modelo Eloquent `src/Shipment/Infrastructure/Eloquent/Models/Shipment.php`.
-- [ ] Repositorio `EloquentShipmentRepository.php` y sincronización con el estado de `Order`.
-- [ ] Proveedor `ShipmentServiceProvider.php` registrado en `bootstrap/providers.php`.
-- [ ] Tests de integración con base de datos tenant.
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Shipment/Infrastructure/`) ✅
+- [x] Modelo Eloquent `src/Shipment/Infrastructure/Eloquent/Models/Shipment.php`.
+- [x] Repositorio `EloquentShipmentRepository.php` transaccional con sincronización automática de estado con el modelo `Order` (`shipped` y `delivered`).
+- [x] Proveedor `ShipmentServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [x] Tests de integración con base de datos tenant (`ShipmentRepositoryTest.php`, 2 tests, 23 aserciones).
 - ➔ `commit: feat(shipment): implement shipment eloquent model, repository and service provider`
 
 #### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Shipment/Infrastructure/Http/`)

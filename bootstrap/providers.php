@@ -15,6 +15,7 @@ return [
     App\Providers\PaymentServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\RouteServiceProvider::class,
+    App\Providers\ShipmentServiceProvider::class,
     App\Providers\ShippingServiceProvider::class,
     App\Providers\TaxServiceProvider::class,
     App\Providers\TenancyServiceProvider::class,
