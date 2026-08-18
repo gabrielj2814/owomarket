@@ -66,3 +66,12 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
      * `test({modulo}): {descripción de las pruebas añadidas}`
      * `refactor({modulo}): {descripción de la refactorización}`
 
+---
+
+## 📁 5. Ubicación y Gestión de Documentos de Planificación
+
+1. **Carpeta `planes/` Centralizada:**
+   * Todos los planes maestros, desgloses de desarrollo por fases, especificaciones de módulos y hojas de ruta (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`) deben almacenarse, crearse y consultarse exclusivamente dentro del directorio `planes/` en la raíz del proyecto.
+   * Cada vez que se complete una fase de desarrollo, se debe actualizar el archivo de planificación correspondiente en `planes/` marcando el checking `[x]` para registrar el avance de la implementación.
+
+
