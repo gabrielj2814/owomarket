@@ -2,14 +2,11 @@
 
 namespace Src\Admin\Infrastructure\Services;
 
-
-
-class ApiGateway {
-
+class ApiGateway
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         private AuthApiClient $authApiClient
     ) {}
@@ -17,11 +14,8 @@ class ApiGateway {
     /**
      * Método auth.
      */
-
-    public function auth(): AuthApiClient {
+    public function auth(): AuthApiClient
+    {
         return $this->authApiClient;
     }
 }
-
-
-?>

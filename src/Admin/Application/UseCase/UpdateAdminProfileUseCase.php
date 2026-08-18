@@ -23,8 +23,8 @@ class UpdateAdminProfileUseCase
         $adminUuid = Uuid::make($uuid);
         $admin = $this->repository->consultByUuid($adminUuid);
 
-        if (!$admin) {
-            throw new InvalidArgumentException("Administrador no encontrado");
+        if (! $admin) {
+            throw new InvalidArgumentException('Administrador no encontrado');
         }
 
         $userName = UserName::make($name);
@@ -34,8 +34,8 @@ class UpdateAdminProfileUseCase
 
         $updatedAdmin = $this->repository->saveProfile($admin);
 
-        if (!$updatedAdmin) {
-            throw new InvalidArgumentException("No se pudo actualizar el perfil del administrador");
+        if (! $updatedAdmin) {
+            throw new InvalidArgumentException('No se pudo actualizar el perfil del administrador');
         }
 
         return $updatedAdmin;

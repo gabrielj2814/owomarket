@@ -1,39 +1,26 @@
 <?php
 
-
 namespace Src\Tenant\Application\UseCase;
 
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-class ForceDeletedTenantByUuidUseCase {
-
-
-
+class ForceDeletedTenantByUuidUseCase
+{
     /**
      * Constructor de la clase.
      */
-
-
-
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository
-    ){}
+    ) {}
 
     /**
      * Método execute.
      */
+    public function execute(string $id): bool
+    {
+        $uuid = Uuid::make($id);
 
-    public function execute(string $id): bool {
-        $uuid= Uuid::make($id);
         return $this->tenant_repository->deleteForceTenant($uuid);
     }
-
-
-
-
 }
-
-
-
-?>

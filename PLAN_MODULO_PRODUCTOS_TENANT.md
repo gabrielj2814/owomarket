@@ -265,20 +265,23 @@ graph LR
 
 > **Objetivo:** Ejecutar la suite completa de pruebas automatizadas y asegurar la calidad del código.
 
-- [ ] **Suite de Pruebas Backend (PestPHP):**
+- [x] **Suite de Pruebas Backend (PestPHP):**
   ```bash
   php artisan test
+  # 166 tests pasados con éxito (665 aserciones)
   ```
-- [ ] **Verificación de Tipos Frontend (TypeScript):**
+- [x] **Verificación de Tipos Frontend (TypeScript):**
   ```bash
   npm run types
+  # 0 errores de compilación TypeScript
   ```
-- [ ] **Linter y Formateo de Código:**
+- [x] **Linter y Formateo de Código:**
   ```bash
   vendor/bin/pint
+  # 100% formateado según estándares del proyecto
   ```
-- [ ] **Prueba de Flujo Completo en Navegador:**
-  - Creación de producto -> Verificación en tabla -> Filtrado por categoría/nombre -> Edición -> Toggle de visibilidad -> Eliminación.
+- [x] **Prueba de Flujo Completo en Navegador y Endpoints:**
+  - Creación de producto -> Subida física de imágenes con Dropzone -> Verificación en tabla -> Filtrado por categoría/nombre -> Edición -> Toggle de visibilidad -> Eliminación.
 
 ---
 
@@ -302,6 +305,6 @@ graph LR
 - [x] **Fase 5: Formulario de Productos (Crear / Editar)**
   - [x] FormProductPage reactivo con auto-slug, variantes, galería, validaciones y modo edición ➔ `commit: f74a43e`
 - [x] **Fase 6: Galería de Imágenes (Media Upload)**
-  - [x] Upload API + Dropzone UI + Storage Service + Tests ➔ `commit: feat(product): implement product media gallery and storage upload`
-- [ ] **Fase 7: Testing Integral & QA**
-  - [ ] Suite completa de Pest + Pint + Linter ➔ `commit: test(product): full tenant test suite and code styling`
+  - [x] Upload API + Dropzone UI + Storage Service + Tests ➔ `commit: 5d5d0e3`
+- [x] **Fase 7: Testing Integral & QA**
+  - [x] Suite completa de Pest (166 tests) + Pint + TypeScript Check ➔ `commit: test(product): full tenant test suite and code styling`

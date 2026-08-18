@@ -11,4 +11,3 @@ class TenantSetting extends Model
 
     protected $guarded = [];
 }
-

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Modules\Core\Auth\Services;
 
 use App\Modules\Core\Auth\Contracts\Auth;
@@ -12,36 +11,34 @@ use Illuminate\Support\Facades\Auth as FacadesAuth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
-class AuthServices implements Auth {
-
+class AuthServices implements Auth
+{
     /**
      * Constructor del servicio de autenticación.
      *
-     * @param UserRepository $userRepository Repositorio de usuarios.
-     * @param PersonalAccessTokenRepository $personalAccessTokenRepository Repositorio de tokens.
+     * @param  UserRepository  $userRepository  Repositorio de usuarios.
+     * @param  PersonalAccessTokenRepository  $personalAccessTokenRepository  Repositorio de tokens.
      */
     public function __construct(
         protected UserRepository $userRepository,
         protected PersonalAccessTokenRepository $personalAccessTokenRepository
-    )
-    {}
-
+    ) {}
 
     /**
      * Autentica a un usuario para la aplicación web.
      *
-     * @param AurhCredencialesData $credentials Credenciales del usuario.
+     * @param  AurhCredencialesData  $credentials  Credenciales del usuario.
      * @return bool Retorna true si la autenticación es exitosa, false en caso contrario.
      */
     public function login(AurhCredencialesData $credentials): bool
     {
-        $userMail=new UserEmail($credentials->email);
-        $user=$this->userRepository->consultarPorMail($userMail);
-         if(!$user){
+        $userMail = new UserEmail($credentials->email);
+        $user = $this->userRepository->consultarPorMail($userMail);
+        if (! $user) {
             return false;
         }
 
-        if(!Hash::check($credentials->password,$user->password)){
+        if (! Hash::check($credentials->password, $user->password)) {
             return false;
         }
 
@@ -53,31 +50,29 @@ class AuthServices implements Auth {
     /**
      * Autentica a un usuario y devuelve un token para API.
      *
-     * @param AurhCredencialesData $credentials Credenciales del usuario.
+     * @param  AurhCredencialesData  $credentials  Credenciales del usuario.
      * @return string|null El token generado, o null si falla la autenticación.
      */
     public function loginApi(AurhCredencialesData $credentials): ?string
     {
-        $userMail=new UserEmail($credentials->email);
-        $user=$this->userRepository->consultarPorMail($userMail);
-        Log::info("User fetched: ", ['user' => $user]);
-         if(!$user){
+        $userMail = new UserEmail($credentials->email);
+        $user = $this->userRepository->consultarPorMail($userMail);
+        Log::info('User fetched: ', ['user' => $user]);
+        if (! $user) {
             return false;
         }
 
-        if(!Hash::check($credentials->password,$user->password)){
+        if (! Hash::check($credentials->password, $user->password)) {
             return false;
         }
 
-        $token=$this->personalAccessTokenRepository->generarToken($user);
+        $token = $this->personalAccessTokenRepository->generarToken($user);
 
         return $token;
     }
 
     /**
      * Cierra la sesión del usuario actual en la aplicación web.
-     *
-     * @return void
      */
     public function logout(): void
     {
@@ -87,19 +82,10 @@ class AuthServices implements Auth {
     /**
      * Invalida el token del usuario logueado en la API.
      *
-     * @param string $token Token de acceso a revocar.
-     * @return void
+     * @param  string  $token  Token de acceso a revocar.
      */
     public function logoutApi(string $token): void
     {
         $this->personalAccessTokenRepository->deleteToken($token);
     }
-
-
-
 }
-
-
-
-
-?>

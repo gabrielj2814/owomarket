@@ -10,10 +10,12 @@ class TenantSetting extends Model
     use HasFactory;
 
     protected $connection = 'central';
+
     public $primaryKey = 'id';
+
     public $incrementing = false;
-    protected $keyType = "string";
+
+    protected $keyType = 'string';
 
     protected $guarded = [];
 }
-

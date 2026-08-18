@@ -1,7 +1,5 @@
 <?php
 
-
-
 namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
@@ -19,55 +17,43 @@ class UserRepository implements UserRepositoryInterface
 {
     //
 
-
     /**
      * Método consultarPorMail.
      */
-
-
     public function consultarPorMail(UserEmail $mail): ?EntitiesUser
     {
-        $respuesta=User::where("email","=",$mail->value())->first();
+        $respuesta = User::where('email', '=', $mail->value())->first();
 
-        if(!$respuesta){
+        if (! $respuesta) {
             return null;
         }
 
-        $avatar=($respuesta->avatar!=null && $respuesta->avatar!="")?AvatarUrl::make($respuesta->avatar) :null;
+        $avatar = ($respuesta->avatar != null && $respuesta->avatar != '') ? AvatarUrl::make($respuesta->avatar) : null;
 
         return EntitiesUser::reconstitute(
-            id:                 Uuid::make($respuesta->id),
-            name:               UserName::make($respuesta->name),
-            email:              UserEmail::make($respuesta->email),
-            password:           Password::fromHash($respuesta->password),
-            type:               UserType::make($respuesta->type),
-            isActive:           UserStatus::make($respuesta->is_active),
-            avatar:             $avatar
+            id: Uuid::make($respuesta->id),
+            name: UserName::make($respuesta->name),
+            email: UserEmail::make($respuesta->email),
+            password: Password::fromHash($respuesta->password),
+            type: UserType::make($respuesta->type),
+            isActive: UserStatus::make($respuesta->is_active),
+            avatar: $avatar
         );
     }
 
     /**
      * Método generarToken.
      */
-
-    public function generarToken(UserEmail $mail): ? string
+    public function generarToken(UserEmail $mail): ?string
     {
-        $user=User::where("email","=",$mail->value())->first();
+        $user = User::where('email', '=', $mail->value())->first();
 
-        if(!$user){
+        if (! $user) {
             return null;
         }
 
-        $token=$user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('auth_token')->plainTextToken;
 
         return $token;
     }
-
-
-
-
 }
-
-
-
-?>

@@ -7,8 +7,8 @@ use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class RememberToken extends StringValueObject
 {
-
-    public static function make(string $value):self{
+    public static function make(string $value): self
+    {
         return new self($value);
     }
 
@@ -19,11 +19,11 @@ final class RememberToken extends StringValueObject
         }
 
         if (strlen($value) !== 100) {
-            throw new InvalidArgumentException("El remember token debe tener 100 caracteres", 400);
+            throw new InvalidArgumentException('El remember token debe tener 100 caracteres', 400);
         }
 
-        if (!preg_match('/^[a-zA-Z0-9]+$/', $value)) {
-            throw new InvalidArgumentException("El remember token contiene caracteres inválidos", 400);
+        if (! preg_match('/^[a-zA-Z0-9]+$/', $value)) {
+            throw new InvalidArgumentException('El remember token contiene caracteres inválidos', 400);
         }
     }
 
@@ -42,7 +42,7 @@ final class RememberToken extends StringValueObject
 
     public function isValid(): bool
     {
-        return !empty($this->value);
+        return ! empty($this->value);
     }
 
     public static function empty(): self

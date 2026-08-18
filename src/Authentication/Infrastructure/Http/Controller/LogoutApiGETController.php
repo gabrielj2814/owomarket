@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
@@ -10,23 +9,22 @@ use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 
-class LogoutApiGETController extends Controller {
-
+class LogoutApiGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected LogoutApiUserUseCase $logout_api_user_use_case
-    ){}
+    ) {}
 
     /**
      * Método index.
      */
+    public function index(Request $request): JsonResponse
+    {
 
-    public function index(Request $request): JsonResponse{
-
-        $token= request()->bearerToken();
+        $token = request()->bearerToken();
 
         // $repository= new PersonalAccessTokenRepository();
 
@@ -34,12 +32,6 @@ class LogoutApiGETController extends Controller {
 
         $this->logout_api_user_use_case->execute($token);
 
-
-        return ApiResponse::success(message: 'Logout exitoso', code:200);
+        return ApiResponse::success(message: 'Logout exitoso', code: 200);
     }
-
-
 }
-
-
-?>

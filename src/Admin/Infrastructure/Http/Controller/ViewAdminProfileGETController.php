@@ -23,8 +23,8 @@ class ViewAdminProfileGETController extends Controller
         $adminUuid = Uuid::make($user_uuid);
         $admin = $this->repository->consultByUuid($adminUuid);
 
-        if (!$admin) {
-            abort(404, "Administrador no encontrado");
+        if (! $admin) {
+            abort(404, 'Administrador no encontrado');
         }
 
         $profileData = [

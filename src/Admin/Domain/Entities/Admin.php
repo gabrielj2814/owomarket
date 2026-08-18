@@ -2,7 +2,6 @@
 
 namespace Src\Admin\Domain\Entities;
 
-use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Admin\Domain\ValueObjects\Password;
@@ -13,66 +12,79 @@ use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 
-class Admin {
-    private ?Uuid               $id;
-    private UserName            $name;
-    private UserEmail           $email;
-    private ?Password           $password;
-    private ?EmailVerifiedAt    $emailVerifiedAt;
-    private ?PinVerification    $pin;
-    private UserType            $type;
-    private ?PhoneNumber        $phone;
-    private ?AvatarUrl          $avatar;
-    private UserStatus          $isActive;
-    private ?CreatedAt          $createdAt;
-    private ?UpdatedAt          $updatedAt;
+class Admin
+{
+    private ?Uuid $id;
+
+    private UserName $name;
+
+    private UserEmail $email;
+
+    private ?Password $password;
+
+    private ?EmailVerifiedAt $emailVerifiedAt;
+
+    private ?PinVerification $pin;
+
+    private UserType $type;
+
+    private ?PhoneNumber $phone;
+
+    private ?AvatarUrl $avatar;
+
+    private UserStatus $isActive;
+
+    private ?CreatedAt $createdAt;
+
+    private ?UpdatedAt $updatedAt;
 
     // Constructor privado (12 parámetros estrictos)
     private function __construct(
-        ?Uuid               $id,
-        UserName            $name,
-        UserEmail           $email,
-        ?Password           $password,
-        ?EmailVerifiedAt    $emailVerifiedAt,
-        ?PinVerification    $pin,
-        UserType            $type,
-        ?PhoneNumber        $phone,
-        ?AvatarUrl          $avatar,
-        UserStatus          $isActive,
-        ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt
+        ?Uuid $id,
+        UserName $name,
+        UserEmail $email,
+        ?Password $password,
+        ?EmailVerifiedAt $emailVerifiedAt,
+        ?PinVerification $pin,
+        UserType $type,
+        ?PhoneNumber $phone,
+        ?AvatarUrl $avatar,
+        UserStatus $isActive,
+        ?CreatedAt $createdAt,
+        ?UpdatedAt $updatedAt
     ) {
-        $this->id                = $id;
-        $this->name              = $name;
-        $this->email             = $email;
-        $this->password          = $password;
-        $this->emailVerifiedAt   = $emailVerifiedAt;
-        $this->pin               = $pin;
-        $this->type              = $type;
-        $this->phone             = $phone;
-        $this->avatar            = $avatar;
-        $this->isActive          = $isActive;
-        $this->createdAt         = $createdAt;
-        $this->updatedAt         = $updatedAt;
+        $this->id = $id;
+        $this->name = $name;
+        $this->email = $email;
+        $this->password = $password;
+        $this->emailVerifiedAt = $emailVerifiedAt;
+        $this->pin = $pin;
+        $this->type = $type;
+        $this->phone = $phone;
+        $this->avatar = $avatar;
+        $this->isActive = $isActive;
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
     }
 
     // Factory method - genera su propio ID (12 parámetros)
     public static function create(
-        UuidGenerator       $generator,
-        UserName            $name,
-        UserEmail           $email,
-        ?Password           $password,
-        ?EmailVerifiedAt    $emailVerifiedAt,
-        ?PinVerification    $pin,
-        UserType            $type,
-        ?PhoneNumber        $phone,
-        ?AvatarUrl          $avatar,
-        UserStatus          $isActive,
-        ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt
+        UuidGenerator $generator,
+        UserName $name,
+        UserEmail $email,
+        ?Password $password,
+        ?EmailVerifiedAt $emailVerifiedAt,
+        ?PinVerification $pin,
+        UserType $type,
+        ?PhoneNumber $phone,
+        ?AvatarUrl $avatar,
+        UserStatus $isActive,
+        ?CreatedAt $createdAt,
+        ?UpdatedAt $updatedAt
     ): self {
         return new self(
             Uuid::generate($generator),
@@ -92,18 +104,18 @@ class Admin {
 
     // Factory method - para reconstruir desde BD (12 parámetros)
     public static function reconstitute(
-        ?Uuid               $id,
-        UserName            $name,
-        UserEmail           $email,
-        ?Password           $password,
-        ?EmailVerifiedAt    $emailVerifiedAt,
-        ?PinVerification    $pin,
-        UserType            $type,
-        ?PhoneNumber        $phone,
-        ?AvatarUrl          $avatar,
-        UserStatus          $isActive,
-        ?CreatedAt          $createdAt,
-        ?UpdatedAt          $updatedAt
+        ?Uuid $id,
+        UserName $name,
+        UserEmail $email,
+        ?Password $password,
+        ?EmailVerifiedAt $emailVerifiedAt,
+        ?PinVerification $pin,
+        UserType $type,
+        ?PhoneNumber $phone,
+        ?AvatarUrl $avatar,
+        UserStatus $isActive,
+        ?CreatedAt $createdAt,
+        ?UpdatedAt $updatedAt
     ): self {
         return new self(
             $id,
@@ -121,153 +133,185 @@ class Admin {
         );
     }
 
-    public function getId(): Uuid {
+    public function getId(): Uuid
+    {
         return $this->id;
     }
 
-    public function getName(): UserName {
+    public function getName(): UserName
+    {
         return $this->name;
     }
 
-    public function getEmail(): UserEmail {
+    public function getEmail(): UserEmail
+    {
         return $this->email;
     }
 
-    public function getPassword(): ?Password {
+    public function getPassword(): ?Password
+    {
         return $this->password;
     }
 
-    public function getType(): UserType {
+    public function getType(): UserType
+    {
         return $this->type;
     }
 
-    public function getPhone(): ?PhoneNumber {
+    public function getPhone(): ?PhoneNumber
+    {
         return $this->phone;
     }
 
-    public function getAvatar(): ?AvatarUrl {
+    public function getAvatar(): ?AvatarUrl
+    {
         return $this->avatar;
     }
 
-    public function getPin(): ?PinVerification {
+    public function getPin(): ?PinVerification
+    {
         return $this->pin;
     }
 
-    public function getCreatedAt(): ?CreatedAt {
+    public function getCreatedAt(): ?CreatedAt
+    {
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?UpdatedAt {
+    public function getUpdatedAt(): ?UpdatedAt
+    {
         return $this->updatedAt;
     }
 
-    public function isEmailVerified(): bool {
+    public function isEmailVerified(): bool
+    {
         return $this->emailVerifiedAt !== null && $this->emailVerifiedAt->isVerified();
     }
 
-    public function isActive(): bool {
+    public function isActive(): bool
+    {
         return $this->isActive->isActive();
     }
 
-    public function hasPin(): bool {
+    public function hasPin(): bool
+    {
         return $this->pin !== null;
     }
 
-    public function hasPhone(): bool {
+    public function hasPhone(): bool
+    {
         return $this->phone !== null;
     }
 
-    public function hasAvatar(): bool {
-        return $this->avatar !== null && !$this->avatar->isDefault();
+    public function hasAvatar(): bool
+    {
+        return $this->avatar !== null && ! $this->avatar->isDefault();
     }
 
-    public function canLogin(): bool {
+    public function canLogin(): bool
+    {
         return $this->isActive() && $this->isEmailVerified();
     }
 
-    public function isSuperAdmin(): bool {
+    public function isSuperAdmin(): bool
+    {
         return $this->type->isSuperAdmin();
     }
 
-    public function isTenantOwner(): bool {
+    public function isTenantOwner(): bool
+    {
         return $this->type->isTenantOwner();
     }
 
-    public function isCustomer(): bool {
+    public function isCustomer(): bool
+    {
         return $this->type->isCustomer();
     }
 
-    public function canManageUsers(): bool {
+    public function canManageUsers(): bool
+    {
         return $this->type->canManageUsers();
     }
 
-    public function changePassword(Password $newPassword): void {
+    public function changePassword(Password $newPassword): void
+    {
         $this->password = $newPassword;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function activate(): void {
+    public function activate(): void
+    {
         $this->isActive = UserStatus::active();
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function deactivate(): void {
+    public function deactivate(): void
+    {
         $this->isActive = UserStatus::inactive();
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function updatePin(?PinVerification $pin): void {
+    public function updatePin(?PinVerification $pin): void
+    {
         $this->pin = $pin;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function generateSecurityPin(): PinVerification {
+    public function generateSecurityPin(): PinVerification
+    {
         $pin = PinVerification::generate();
         $this->updatePin($pin);
+
         return $pin;
     }
 
-    public function verifySecurityPin(string $inputPin, int $expiryMinutes = 15): bool {
+    public function verifySecurityPin(string $inputPin, int $expiryMinutes = 15): bool
+    {
         if ($this->pin === null || $this->updatedAt === null) {
             return false;
         }
 
-        if (!$this->updatedAt->wasRecentlyUpdated($expiryMinutes)) {
+        if (! $this->updatedAt->wasRecentlyUpdated($expiryMinutes)) {
             return false;
         }
 
         return $this->pin->verify($inputPin);
     }
 
-    public function clearSecurityPin(): void {
+    public function clearSecurityPin(): void
+    {
         $this->pin = null;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function updateProfile(UserName $name, ?PhoneNumber $phone): void {
+    public function updateProfile(UserName $name, ?PhoneNumber $phone): void
+    {
         $this->name = $name;
         $this->phone = $phone;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function updateAvatar(?AvatarUrl $avatar): void {
+    public function updateAvatar(?AvatarUrl $avatar): void
+    {
         $this->avatar = $avatar;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function setName(UserName $userName): void{
-        $this->name=$userName;
+    public function setName(UserName $userName): void
+    {
+        $this->name = $userName;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function setPhone(PhoneNumber $userPhone): void{
-        $this->phone=$userPhone;
+    public function setPhone(PhoneNumber $userPhone): void
+    {
+        $this->phone = $userPhone;
         $this->updatedAt = UpdatedAt::now();
     }
 
-    public function setEmail(UserEmail $userEmail): void{
-        $this->email=$userEmail;
+    public function setEmail(UserEmail $userEmail): void
+    {
+        $this->email = $userEmail;
         $this->updatedAt = UpdatedAt::now();
     }
 }
-?>

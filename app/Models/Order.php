@@ -54,4 +54,3 @@ class Order extends Model
         return $this->morphOne(Address::class, 'addressable')->where('type', 'billing');
     }
 }
-

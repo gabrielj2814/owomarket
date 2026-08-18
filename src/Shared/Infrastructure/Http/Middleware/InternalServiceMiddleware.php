@@ -9,7 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class InternalServiceMiddleware
 {
-
     /**
      * Handle an incoming request.
      *
@@ -20,8 +19,8 @@ class InternalServiceMiddleware
         $serviceName = $request->header('X-Internal-Service');
         $serviceSecret = $request->header('X-Internal-Secret');
 
-        if (!$this->isValidInternalRequest($serviceName, $serviceSecret)) {
-            return ApiResponse::error("Unauthorized internal request",403);
+        if (! $this->isValidInternalRequest($serviceName, $serviceSecret)) {
+            return ApiResponse::error('Unauthorized internal request', 403);
         }
 
         return $next($request);
@@ -29,8 +28,8 @@ class InternalServiceMiddleware
 
     private function isValidInternalRequest($serviceName, $secret): bool
     {
-        $validSecret = config("services.internal.secret");
-        $allowedServices = config("services.internal.allowed_services");
+        $validSecret = config('services.internal.secret');
+        $allowedServices = config('services.internal.allowed_services');
 
         return in_array($serviceName, $allowedServices) &&
                hash_equals($validSecret, $secret);

@@ -2,7 +2,6 @@
 
 namespace Src\Authentication\Domain\ValueObjects;
 
-
 use InvalidArgumentException;
 use Src\Shared\Domain\ValueObjects\StringValueObject;
 
@@ -10,11 +9,14 @@ final class UserType extends StringValueObject
 {
     // CENTRAL TYPES
     public const SUPER_ADMIN = 'super_admin';
+
     public const TENANT_OWNER = 'tenant_owner';
+
     public const CUSTOMER = 'customer';
 
     // TENANT TYPES
     public const OWNER = 'owner';
+
     public const STAFF = 'staff';
 
     private const ALLOWED_TYPES = [
@@ -33,13 +35,14 @@ final class UserType extends StringValueObject
         self::CUSTOMER => 0,
     ];
 
-    public static function make(string $value):self{
+    public static function make(string $value): self
+    {
         return new self($value);
     }
 
     protected function validate(string $value): void
     {
-        if (!in_array($value, self::ALLOWED_TYPES)) {
+        if (! in_array($value, self::ALLOWED_TYPES)) {
             throw new InvalidArgumentException("Tipo de usuario no válido: {$value}");
         }
     }

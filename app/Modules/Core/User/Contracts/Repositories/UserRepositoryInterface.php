@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Modules\Core\User\Contracts\Repositories;
 
 use App\Modules\Core\Shared\VOs\UserEmail;
@@ -11,10 +10,4 @@ interface UserRepositoryInterface
     //
 
     public function consultarPorMail(UserEmail $mail): ?User;
-
-
 }
-
-
-
-?>

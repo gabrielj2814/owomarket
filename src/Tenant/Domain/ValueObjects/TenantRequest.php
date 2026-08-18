@@ -1,19 +1,19 @@
 <?php
+
 declare(strict_types=1);
 
 namespace Src\Tenant\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Shared\Domain\ValueObjects\BoolValueObject;
 use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class TenantRequest extends StringValueObject
 {
+    public const STATUS_APPROVED = 'approved';
 
+    public const STATUS_REJECTED = 'rejected';
 
-    public const STATUS_APPROVED       = 'approved';
-    public const STATUS_REJECTED       = 'rejected';
-    public const STATUS_IN_PROGRESS    = 'in progress';
+    public const STATUS_IN_PROGRESS = 'in progress';
 
     private const ALLOWED_REQUEST = [
         self::STATUS_APPROVED,
@@ -21,13 +21,14 @@ final class TenantRequest extends StringValueObject
         self::STATUS_IN_PROGRESS,
     ];
 
-    public static function make(string $value):self{
+    public static function make(string $value): self
+    {
         return new self($value);
     }
 
     protected function validate(string $value): void
     {
-        if (!in_array($value, self::ALLOWED_REQUEST)) {
+        if (! in_array($value, self::ALLOWED_REQUEST)) {
             throw new InvalidArgumentException("Tipo de solicitud no válido: {$value}", 400);
         }
     }
@@ -37,27 +38,33 @@ final class TenantRequest extends StringValueObject
         return $this->value;
     }
 
-    public function isApproved(): bool {
+    public function isApproved(): bool
+    {
         return $this->value === self::STATUS_APPROVED;
     }
 
-    public function isRejected(): bool {
+    public function isRejected(): bool
+    {
         return $this->value === self::STATUS_REJECTED;
     }
 
-    public function isInProgress(): bool {
+    public function isInProgress(): bool
+    {
         return $this->value === self::STATUS_IN_PROGRESS;
     }
 
-    public static function approved(): self{
+    public static function approved(): self
+    {
         return new self(self::STATUS_APPROVED);
     }
 
-    public static function rejected(): self{
+    public static function rejected(): self
+    {
         return new self(self::STATUS_REJECTED);
     }
 
-    public static function inProgress(): self{
+    public static function inProgress(): self
+    {
         return new self(self::STATUS_IN_PROGRESS);
     }
 }

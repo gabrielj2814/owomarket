@@ -1,51 +1,56 @@
 <?php
 
-
 namespace Src\Tenant\Domain\Entities;
 
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
-use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Tenant\Domain\ValueObjects\Domain as ValueObjectsDomain;
 use Src\Tenant\Domain\ValueObjects\DomainFallback;
 use Src\Tenant\Domain\ValueObjects\DomainPrimary;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-class Domain {
+class Domain
+{
+    private Uuid $id;
 
-    private Uuid                     $id;
-    private Uuid                     $tenantId;
-    private ValueObjectsDomain      $domain;
-    private DomainPrimary            $is_primary;
-    private DomainFallback            $is_fallback;
-    private ?CreatedAt               $createdAt;
-    private ?UpdatedAt               $updatedAt;
+    private Uuid $tenantId;
+
+    private ValueObjectsDomain $domain;
+
+    private DomainPrimary $is_primary;
+
+    private DomainFallback $is_fallback;
+
+    private ?CreatedAt $createdAt;
+
+    private ?UpdatedAt $updatedAt;
 
     // Constructor privado
     private function __construct(
-        Uuid                    $id,
-        Uuid                    $tenantId,
-        ValueObjectsDomain     $domain,
-        DomainPrimary           $is_primary,
-        DomainFallback           $is_fallback,
-        ?CreatedAt              $createdAt = null,
-        ?UpdatedAt              $updatedAt = null,
+        Uuid $id,
+        Uuid $tenantId,
+        ValueObjectsDomain $domain,
+        DomainPrimary $is_primary,
+        DomainFallback $is_fallback,
+        ?CreatedAt $createdAt = null,
+        ?UpdatedAt $updatedAt = null,
     ) {
-        $this->id                = $id;
-        $this->tenantId          = $tenantId;
-        $this->domain            = $domain;
-        $this->is_primary        = $is_primary;
-        $this->is_fallback       = $is_fallback;
-        $this->createdAt         = $createdAt;
-        $this->updatedAt         = $updatedAt;
+        $this->id = $id;
+        $this->tenantId = $tenantId;
+        $this->domain = $domain;
+        $this->is_primary = $is_primary;
+        $this->is_fallback = $is_fallback;
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
     }
 
     public static function create(
-        UuidGenerator           $generator,
-        Uuid                    $tenantId,
-        ValueObjectsDomain     $domain,
-        DomainPrimary           $is_primary,
-        DomainFallback           $is_fallback,
+        UuidGenerator $generator,
+        Uuid $tenantId,
+        ValueObjectsDomain $domain,
+        DomainPrimary $is_primary,
+        DomainFallback $is_fallback,
     ): self {
         return new self(
             id: Uuid::generate($generator),
@@ -59,13 +64,13 @@ class Domain {
     }
 
     public static function reconstitute(
-        Uuid                    $id,
-        Uuid                    $tenantId,
-        ValueObjectsDomain     $domain,
-        DomainPrimary         $is_primary,
-        DomainFallback         $is_fallback,
-        ?CreatedAt              $createdAt,
-        ?UpdatedAt              $updatedAt,
+        Uuid $id,
+        Uuid $tenantId,
+        ValueObjectsDomain $domain,
+        DomainPrimary $is_primary,
+        DomainFallback $is_fallback,
+        ?CreatedAt $createdAt,
+        ?UpdatedAt $updatedAt,
     ): self {
         return new self(
             id: $id,
@@ -77,7 +82,6 @@ class Domain {
             updatedAt: $updatedAt
         );
     }
-
 
     public function getId(): Uuid
     {
@@ -113,8 +117,4 @@ class Domain {
     {
         return $this->updatedAt;
     }
-
 }
-
-
-?>

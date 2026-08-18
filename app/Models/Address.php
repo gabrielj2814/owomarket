@@ -16,4 +16,3 @@ class Address extends Model
         return $this->morphTo();
     }
 }
-

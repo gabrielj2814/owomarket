@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Src\Authentication\Domain\ValueObjects;
-
 
 final class UserEmail
 {
@@ -14,13 +12,15 @@ final class UserEmail
         $this->email = $email;
     }
 
-    private static function validate(string $email){
-         if(filter_var($email, FILTER_VALIDATE_EMAIL) === false){
-            throw new \InvalidArgumentException("Correo invalido: " . $email);
+    private static function validate(string $email)
+    {
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new \InvalidArgumentException('Correo invalido: '.$email);
         }
     }
 
-    public static function make(string $email):self{
+    public static function make(string $email): self
+    {
         self::validate($email);
 
         return new self($email);
@@ -31,7 +31,3 @@ final class UserEmail
         return $this->email;
     }
 }
-
-
-
-?>

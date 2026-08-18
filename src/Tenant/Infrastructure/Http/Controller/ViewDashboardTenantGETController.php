@@ -9,31 +9,26 @@ use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 
-class ViewDashboardTenantGETController extends Controller {
-
-
+class ViewDashboardTenantGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected ApiGateway $apiGateway
-    ){}
-
+    ) {}
 
     /**
      * Método index.
      */
-
-
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $fullUrl = request()->getSchemeAndHttpHost();
-        $user_uuid=$request->user_uuid;
-        $uuid=Uuid::make($user_uuid);
+        $user_uuid = $request->user_uuid;
+        $uuid = Uuid::make($user_uuid);
 
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authTenant());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid,$fullUrl);
+        $ConsultAuthUserApiByUuid = new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authTenant());
+        $usuario = $ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
 
         // $type=null;
         // $title=null;
@@ -44,26 +39,17 @@ class ViewDashboardTenantGETController extends Controller {
         //     $message=$request->query("message");
         // }
 
-        $host= $request->getHost();
-
+        $host = $request->getHost();
 
         return Inertia::render(
             component: 'tenant/dashboard/TenantDashboardTenantPage',
             props: [
-                'title'      => 'Tenant Dashboard - OwOMarket',
-                'user_id'    => $usuario->getUserId()->value(),
-                'host'       => $host,
-                'user_name'  => $usuario->getName()->value(),
+                'title' => 'Tenant Dashboard - OwOMarket',
+                'user_id' => $usuario->getUserId()->value(),
+                'host' => $host,
+                'user_name' => $usuario->getName()->value(),
             ]
         );
 
-
     }
-
-
-
-
 }
-
-
-?>

@@ -10,10 +10,14 @@ class TenantUser extends Model
     use HasFactory;
 
     protected $connection = 'central';
+
     protected $table = 'tenant_users';
+
     public $primaryKey = 'id';
+
     public $incrementing = false;
-    protected $keyType = "string";
+
+    protected $keyType = 'string';
 
     protected $guarded = [];
 
@@ -31,4 +35,3 @@ class TenantUser extends Model
         return $this->belongsTo(User::class);
     }
 }
-

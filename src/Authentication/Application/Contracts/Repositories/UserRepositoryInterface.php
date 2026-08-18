@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Authentication\Application\Contracts\Repositories;
 
 use Src\Authentication\Domain\Entities\User;
@@ -13,12 +12,5 @@ interface UserRepositoryInterface
     /**
      * Método consultarPorMail.
      */
-
-    public function consultarPorMail(UserEmail $mail): ? User;
-
-
+    public function consultarPorMail(UserEmail $mail): ?User;
 }
-
-
-
-?>

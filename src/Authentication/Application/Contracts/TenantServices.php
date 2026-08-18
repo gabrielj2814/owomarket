@@ -1,19 +1,11 @@
 <?php
 
-
 namespace Src\Authentication\Application\Contracts;
 
-interface TenantServices {
-
+interface TenantServices
+{
     /**
      * Método consultTenantLoginIsActive.
      */
-
-    public function consultTenantLoginIsActive(string $slug, string $domain):array;
-
-
+    public function consultTenantLoginIsActive(string $slug, string $domain): array;
 }
-
-
-
-?>

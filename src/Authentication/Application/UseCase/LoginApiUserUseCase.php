@@ -1,48 +1,44 @@
 <?php
 
-
 namespace Src\Authentication\Application\UseCase;
 
 use Exception;
 use LogicException;
 use Src\Authentication\Application\Contracts\Repositories\PersonalAccessTokenRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
-use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\Contracts\PasswordHasher;
 
-class LoginApiUserUseCase {
-
+class LoginApiUserUseCase
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected UserRepositoryInterface $userRepository,
         protected PersonalAccessTokenRepositoryInterface $personal_access_token_repository,
         protected PasswordHasher $password_hasher
-        ){}
-
+    ) {}
 
     /**
      * Método execute.
      */
-
-
-    public function execute(UserEmail $email, string $clave):? string{
+    public function execute(UserEmail $email, string $clave): ?string
+    {
 
         try {
-            $user=$this->userRepository->consultarPorMail($email);
+            $user = $this->userRepository->consultarPorMail($email);
 
-            if(!$user){
-                throw new LogicException("Usuario no encontrado");
+            if (! $user) {
+                throw new LogicException('Usuario no encontrado');
             }
 
-            if(!$user->canLogin()){
-                throw new Exception("Usuario no autorizado para iniciar sesion");
+            if (! $user->canLogin()) {
+                throw new Exception('Usuario no autorizado para iniciar sesion');
             }
 
-            if(!$user->getPassword()->verify($clave,$this->password_hasher)){
-                throw new LogicException("clave invalida");
+            if (! $user->getPassword()->verify($clave, $this->password_hasher)) {
+                throw new LogicException('clave invalida');
             }
 
             $token = $this->personal_access_token_repository->generarToken($user);
@@ -52,11 +48,4 @@ class LoginApiUserUseCase {
             return null;
         }
     }
-
-
-
-
 }
-
-
-?>

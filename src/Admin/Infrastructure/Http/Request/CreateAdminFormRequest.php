@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Admin\Infrastructure\Http\Request;
 
 use Illuminate\Contracts\Validation\Validator;
@@ -8,67 +7,63 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
 use Src\Admin\Infrastructure\Http\Data\CreateAdminData;
-use Src\Admin\Infrastructure\Http\Data\UpdateAdminData;
 use Src\Shared\Helper\ApiResponse;
 
-class CreateAdminFormRequest extends FormRequest {
-
+class CreateAdminFormRequest extends FormRequest
+{
     public CreateAdminData $data;
 
     /**
-    * Determine if the user is authorized to make this request.
-    */
+     * Determine if the user is authorized to make this request.
+     */
     public function authorize(): bool
     {
         return true;
     }
 
-     /**
-    * Get the validation rules that apply to the request.
-    *
-    * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-    */
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
     public function rules(): array
     {
         return [
-            'name'     => 'required|min:2',
-            'email'    => 'required|email|unique:Src\Admin\Infrastructure\Eloquent\Models\User,email',
-            'phone'    => 'required|min:11|max:11',
+            'name' => 'required|min:2',
+            'email' => 'required|email|unique:Src\Admin\Infrastructure\Eloquent\Models\User,email',
+            'phone' => 'required|min:11|max:11',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required'     => 'El campo name es obligatorio.',
-            'name.min'          => 'El campo tiene que tener minimo de 2 caracteres',
+            'name.required' => 'El campo name es obligatorio.',
+            'name.min' => 'El campo tiene que tener minimo de 2 caracteres',
 
-            'email.required'    => 'El campo email es obligatorio.',
-            'email.email'       => 'El campo email debe ser una dirección de correo electrónico válida.',
-            'email.unique'      => 'No se puede usar un correo que ya esta en uso.',
+            'email.required' => 'El campo email es obligatorio.',
+            'email.email' => 'El campo email debe ser una dirección de correo electrónico válida.',
+            'email.unique' => 'No se puede usar un correo que ya esta en uso.',
 
-            'phone.required'     => 'El campo phone es obligatorio.',
-            'phone.min'          => 'El campo tiene que tener minimo de 11 caracteres',
-            'phone.max'          => 'El campo solo permite un  maximo de 11 caracteres',
+            'phone.required' => 'El campo phone es obligatorio.',
+            'phone.min' => 'El campo tiene que tener minimo de 11 caracteres',
+            'phone.max' => 'El campo solo permite un  maximo de 11 caracteres',
         ];
     }
 
-    protected function failedValidation(Validator $validator):JsonResponse
+    protected function failedValidation(Validator $validator): JsonResponse
     {
-        $errors=$validator->errors();
-        $response=ApiResponse::error("Error",422,$errors);
+        $errors = $validator->errors();
+        $response = ApiResponse::error('Error', 422, $errors);
         throw new HttpResponseException($response);
     }
 
     protected function passedValidation()
     {
-        $this->data=CreateAdminData::from([
-            'name'     => $this->name,
-            'email'    => $this->email,
-            'phone'    => $this->phone,
+        $this->data = CreateAdminData::from([
+            'name' => $this->name,
+            'email' => $this->email,
+            'phone' => $this->phone,
         ]);
     }
-
 }
-
-?>

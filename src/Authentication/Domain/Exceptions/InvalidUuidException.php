@@ -4,10 +4,12 @@ namespace Src\Authentication\Domain\Exceptions;
 
 use DomainException;
 
-class InvalidUuidException extends DomainException {
-   protected $message = 'The provided UUID is invalid.';
+class InvalidUuidException extends DomainException
+{
+    protected $message = 'The provided UUID is invalid.';
 
-    public function __construct(?string $message = null, ?string $uuid = null) {
+    public function __construct(?string $message = null, ?string $uuid = null)
+    {
         if ($message) {
             $this->message = $message;
         } elseif ($uuid) {
@@ -16,8 +18,4 @@ class InvalidUuidException extends DomainException {
 
         parent::__construct($this->message);
     }
-
 }
-
-
-?>

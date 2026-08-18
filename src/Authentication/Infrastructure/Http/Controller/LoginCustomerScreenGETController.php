@@ -1,29 +1,21 @@
 <?php
 
-
 namespace Src\Authentication\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
 use Inertia\Inertia;
 
-class LoginCustomerScreenGETController extends Controller{
-
-
+class LoginCustomerScreenGETController extends Controller
+{
     /**
      * Método index.
      */
+    public function index()
+    {
+        $host = request()->getHost();
 
-
-    public function index() {
-        $host=request()->getHost();
-
-        return Inertia::render('auth/LoginCustomerPage',[
+        return Inertia::render('auth/LoginCustomerPage', [
             'domain' => $host,
         ]);
     }
-
-
 }
-
-
-?>

@@ -2,7 +2,6 @@
 
 namespace Src\Authentication\Domain\Entities;
 
-use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\Password;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
@@ -10,44 +9,53 @@ use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserStatus;
 use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Authentication\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 
-class User {
-    private ?Uuid               $id;
-    private UserName            $name;
-    private UserEmail           $email;
-    private ?Password           $password;
-    private UserType            $type;
-    private UserStatus          $isActive;
-    private ?AvatarUrl          $avatar;
+class User
+{
+    private ?Uuid $id;
+
+    private UserName $name;
+
+    private UserEmail $email;
+
+    private ?Password $password;
+
+    private UserType $type;
+
+    private UserStatus $isActive;
+
+    private ?AvatarUrl $avatar;
+
     // Constructor privado
     private function __construct(
-        ?Uuid               $id,
-        UserName            $name,
-        UserEmail           $email,
-        ?Password           $password,
-        UserType            $type,
-        UserStatus          $isActive,
-        ?AvatarUrl          $avatar,
-        ) {
-        $this->id                = $id;
-        $this->name              = $name;
-        $this->email             = $email;
-        $this->password          = $password;
-        $this->type              = $type;
-        $this->isActive          = $isActive;
-        $this->avatar            = $avatar;
+        ?Uuid $id,
+        UserName $name,
+        UserEmail $email,
+        ?Password $password,
+        UserType $type,
+        UserStatus $isActive,
+        ?AvatarUrl $avatar,
+    ) {
+        $this->id = $id;
+        $this->name = $name;
+        $this->email = $email;
+        $this->password = $password;
+        $this->type = $type;
+        $this->isActive = $isActive;
+        $this->avatar = $avatar;
     }
 
     // Factory method - genera su propio ID
     public static function create(
-        UuidGenerator       $generator,
-        UserName            $name,
-        UserEmail           $email,
-        ?Password           $password,
-        UserType            $type,
-        UserStatus          $isActive,
-        ?AvatarUrl          $avatar,
-        ): self {
+        UuidGenerator $generator,
+        UserName $name,
+        UserEmail $email,
+        ?Password $password,
+        UserType $type,
+        UserStatus $isActive,
+        ?AvatarUrl $avatar,
+    ): self {
         return new self(
             Uuid::generate($generator),  // ← Auto-generado
             $name,
@@ -61,14 +69,14 @@ class User {
 
     // Factory method - para reconstruir desde BD
     public static function reconstitute(
-        ?Uuid               $id,
-        UserName            $name,
-        UserEmail           $email,
-        ?Password            $password,
-        UserType            $type,
-        UserStatus          $isActive,
-        ?AvatarUrl          $avatar,
-        ): self {
+        ?Uuid $id,
+        UserName $name,
+        UserEmail $email,
+        ?Password $password,
+        UserType $type,
+        UserStatus $isActive,
+        ?AvatarUrl $avatar,
+    ): self {
         // return new self($id, $email, $createdAt);
         return new self(
             $id,
@@ -81,58 +89,63 @@ class User {
         );
     }
 
-    public function getId(): Uuid {
+    public function getId(): Uuid
+    {
         return $this->id;
     }
 
-    public function getName(): UserName {
+    public function getName(): UserName
+    {
         return $this->name;
     }
 
-    public function getEmail(): UserEmail {
+    public function getEmail(): UserEmail
+    {
         return $this->email;
     }
 
-    public function getPassword(): Password {
+    public function getPassword(): Password
+    {
         return $this->password;
     }
 
-    public function getType(): UserType {
+    public function getType(): UserType
+    {
         return $this->type;
     }
 
-    public function isActive(): bool {
+    public function isActive(): bool
+    {
         return $this->isActive->isActive();
     }
 
-    public function getAvatar(): ?AvatarUrl {
+    public function getAvatar(): ?AvatarUrl
+    {
         return $this->avatar;
     }
 
-    public function canLogin(): bool {
+    public function canLogin(): bool
+    {
         return $this->isActive->canLogin();
     }
 
-    public function isSuperAdmin(): bool {
+    public function isSuperAdmin(): bool
+    {
         return $this->type->isSuperAdmin();
     }
 
-    public function isTenantOwner(): bool {
+    public function isTenantOwner(): bool
+    {
         return $this->type->isTenantOwner();
     }
 
-    public function isCustomer(): bool {
+    public function isCustomer(): bool
+    {
         return $this->type->isCustomer();
     }
 
-    public function canManageUsers(): bool {
+    public function canManageUsers(): bool
+    {
         return $this->type->canManageUsers();
     }
-
-
-
-
 }
-
-
-?>

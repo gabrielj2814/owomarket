@@ -11,7 +11,7 @@ final class Uuid
 
     private function __construct(string $value)
     {
-        if (!self::isValid($value)) {
+        if (! self::isValid($value)) {
             throw new InvalidUuidException(
                 message: null,
                 uuid: $value
@@ -52,11 +52,12 @@ final class Uuid
 
     public function getVersion(): ?int
     {
-        if (!self::isValid($this->value)) {
+        if (! self::isValid($this->value)) {
             return null;
         }
 
         $parts = explode('-', $this->value);
+
         return isset($parts[3]) ? (int) substr($parts[3], 0, 1) : null;
     }
 

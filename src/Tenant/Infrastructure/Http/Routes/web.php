@@ -19,34 +19,30 @@ use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantRequestIndexGETCon
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantSuspendedIndexGETController;
 
 // module tenant
-Route::get('/backoffice/{user_uuid}/module',                       [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware("auth");
-Route::post('/backoffice/filter',                                  [FiltrarTenantsPOSTController::class, 'index'])->middleware("auth");
-Route::get('/backoffice/{id}',                                     [ConsultTenantByUuidGETController::class, 'index'])->middleware("auth");
-Route::patch('/backoffice/{id}/suspended',                         [SuspendedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
-Route::patch('/backoffice/{id}/active',                            [ActiveTenantByUuidPATCHController::class, 'index'])->middleware("auth");
-Route::patch('/backoffice/{id}/inactive',                          [InactiveTenantByUuidPATCHController::class, 'index'])->middleware("auth");
+Route::get('/backoffice/{user_uuid}/module', [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware('auth');
+Route::post('/backoffice/filter', [FiltrarTenantsPOSTController::class, 'index'])->middleware('auth');
+Route::get('/backoffice/{id}', [ConsultTenantByUuidGETController::class, 'index'])->middleware('auth');
+Route::patch('/backoffice/{id}/suspended', [SuspendedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
+Route::patch('/backoffice/{id}/active', [ActiveTenantByUuidPATCHController::class, 'index'])->middleware('auth');
+Route::patch('/backoffice/{id}/inactive', [InactiveTenantByUuidPATCHController::class, 'index'])->middleware('auth');
 
 // module tenant suspended/inactive
-Route::get('/backoffice/{user_uuid}/module/suspended',             [ViewModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware("auth");
+Route::get('/backoffice/{user_uuid}/module/suspended', [ViewModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware('auth');
 
 // module tenant request
-Route::get('/backoffice/{user_uuid}/module/request',               [ViewModuleTenantRequestIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.request')->middleware("auth");
-Route::patch('/backoffice/{id}/rejected',                          [RejectedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
-Route::patch('/backoffice/{id}/approved',                          [ApprovedTenantByUuidPATCHController::class, 'index'])->middleware("auth");
+Route::get('/backoffice/{user_uuid}/module/request', [ViewModuleTenantRequestIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.request')->middleware('auth');
+Route::patch('/backoffice/{id}/rejected', [RejectedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
+Route::patch('/backoffice/{id}/approved', [ApprovedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
 
-Route::get('/create/account',                                      [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
-Route::post('/create/account',                                     [CreateAccountTenantPOSTController::class, 'index']);
-
+Route::get('/create/account', [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
+Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index']);
 
 // Rutas del Tenant Owner Central
-Route::get('/owner/backoffice/{user_uuid}/dashboard',              [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware("auth");
+Route::get('/owner/backoffice/{user_uuid}/dashboard', [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware('auth');
 
 // Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
 // Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
 // Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);
-Route::post('/owner/filter/tenants',                               [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
-Route::post('/owner/tenant',                                       [CreateTenantPOSTController::class, 'index'])->middleware("auth");
-Route::delete('/owner/tenant',                                     [DeleteTenantDELETEController::class, 'index'])->middleware("auth");
-
-
-?>
+Route::post('/owner/filter/tenants', [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
+Route::post('/owner/tenant', [CreateTenantPOSTController::class, 'index'])->middleware('auth');
+Route::delete('/owner/tenant', [DeleteTenantDELETEController::class, 'index'])->middleware('auth');

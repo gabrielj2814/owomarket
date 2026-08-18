@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Stancl\JobPipeline\JobPipeline;
+use Stancl\Tenancy\DatabaseConfig;
 use Stancl\Tenancy\Events;
 use Stancl\Tenancy\Jobs;
 use Stancl\Tenancy\Listeners;
 use Stancl\Tenancy\Middleware;
-use Stancl\Tenancy\DatabaseConfig;
 
 class TenancyServiceProvider extends ServiceProvider
 {

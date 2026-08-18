@@ -12,7 +12,7 @@ final class CreatedAt
 
     private function __construct(?DateTimeImmutable $value = null)
     {
-        $this->value = $value ?? new DateTimeImmutable();
+        $this->value = $value ?? new DateTimeImmutable;
     }
 
     public static function fromString(string $value): self
@@ -32,7 +32,7 @@ final class CreatedAt
 
     public static function now(): self
     {
-        return new self(new DateTimeImmutable());
+        return new self(new DateTimeImmutable);
     }
 
     public function value(): DateTimeImmutable
@@ -52,12 +52,12 @@ final class CreatedAt
 
     public function isFuture(): bool
     {
-        return $this->value > new DateTimeImmutable();
+        return $this->value > new DateTimeImmutable;
     }
 
     public function isPast(): bool
     {
-        return $this->value < new DateTimeImmutable();
+        return $this->value < new DateTimeImmutable;
     }
 
     public function diffInSeconds(DateTimeImmutable $other): int
@@ -67,7 +67,7 @@ final class CreatedAt
 
     public function isOlderThan(int $minutes): bool
     {
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $diff = $now->getTimestamp() - $this->value->getTimestamp();
 
         return $diff > ($minutes * 60);
@@ -75,7 +75,7 @@ final class CreatedAt
 
     public function isNewerThan(int $minutes): bool
     {
-        return !$this->isOlderThan($minutes);
+        return ! $this->isOlderThan($minutes);
     }
 
     public function equals(self $other): bool

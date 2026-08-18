@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Illuminate\Support\Facades\Auth;
@@ -10,34 +9,29 @@ use Src\Authentication\Domain\ValueObjects\Uuid;
 use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser;
 use Src\Authentication\Infrastructure\Eloquent\Models\User;
 
-class LoginWebRepository implements LoginWebRepositoryInterface {
-
+class LoginWebRepository implements LoginWebRepositoryInterface
+{
     /**
      * Método loginWebUser.
      */
-
-    public function loginWebUser(UserEmail $email): void{
-        $user= User::where('email', $email->value())->first();
+    public function loginWebUser(UserEmail $email): void
+    {
+        $user = User::where('email', $email->value())->first();
         Auth::login($user);
     }
 
     /**
      * Método logoutWebUser.
      */
-
-    public function logoutWebUser(Uuid $uuid): bool{
-        $authUser= AuthUser::query()->where("user_id","=",$uuid->value())->first();
-        if(!$authUser){
+    public function logoutWebUser(Uuid $uuid): bool
+    {
+        $authUser = AuthUser::query()->where('user_id', '=', $uuid->value())->first();
+        if (! $authUser) {
             return false;
         }
         $authUser->delete();
         Auth::logout();
+
         return true;
     }
-
-
-
 }
-
-
-?>

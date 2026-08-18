@@ -6,8 +6,8 @@ use Src\Shared\Domain\ValueObjects\BoolValueObject;
 
 final class DomainPrimary extends BoolValueObject
 {
-
-    public static function make(bool $value):self{
+    public static function make(bool $value): self
+    {
         return new self($value);
     }
 
@@ -30,6 +30,4 @@ final class DomainPrimary extends BoolValueObject
     {
         return $this->value;
     }
-
-
 }

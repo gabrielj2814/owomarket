@@ -12,6 +12,7 @@ use Src\Admin\Domain\ValueObjects\Uuid;
 class UploadAdminAvatarUseCase
 {
     private AdminRepositoryInterface $repository;
+
     private AvatarStorageInterface $storageService;
 
     public function __construct(
@@ -27,8 +28,8 @@ class UploadAdminAvatarUseCase
         $adminUuid = Uuid::make($uuid);
         $admin = $this->repository->consultByUuid($adminUuid);
 
-        if (!$admin) {
-            throw new InvalidArgumentException("Administrador no encontrado");
+        if (! $admin) {
+            throw new InvalidArgumentException('Administrador no encontrado');
         }
 
         $oldAvatarUrl = $admin->getAvatar()?->value();
@@ -39,8 +40,8 @@ class UploadAdminAvatarUseCase
 
         $updatedAdmin = $this->repository->saveProfile($admin);
 
-        if (!$updatedAdmin) {
-            throw new InvalidArgumentException("Error al guardar la foto de perfil en la base de datos");
+        if (! $updatedAdmin) {
+            throw new InvalidArgumentException('Error al guardar la foto de perfil en la base de datos');
         }
 
         return $updatedAdmin;

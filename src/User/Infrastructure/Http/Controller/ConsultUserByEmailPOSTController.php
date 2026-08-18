@@ -4,60 +4,53 @@ namespace Src\User\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\User\Application\Data\EmailUserData;
 use Src\User\Application\UseCase\ConsultUserByEmailUseCase;
 use Src\User\Infrastructure\Eloquent\Repositories\UserRepository;
 use Src\User\Infrastructure\Http\Request\ConsultarUsuarioByEmailFormRequest;
 
-class ConsultUserByEmailPOSTController extends Controller{
-
-
+class ConsultUserByEmailPOSTController extends Controller
+{
     /**
      * Maneja la solicitud POST para consultar un usuario por su email.
      *
-     * @param ConsultarUsuarioByEmailFormRequest $request Solicitud HTTP validada.
+     * @param  ConsultarUsuarioByEmailFormRequest  $request  Solicitud HTTP validada.
      * @return JsonResponse Respuesta en formato JSON.
      */
     /**
      * Método index.
      */
-    public function index(ConsultarUsuarioByEmailFormRequest $request):JsonResponse{
-        $body=$request->data;
+    public function index(ConsultarUsuarioByEmailFormRequest $request): JsonResponse
+    {
+        $body = $request->data;
 
-        $userRepository=new UserRepository();
+        $userRepository = new UserRepository;
 
-        $consultUseCase=new ConsultUserByEmailUseCase($userRepository);
+        $consultUseCase = new ConsultUserByEmailUseCase($userRepository);
 
-        $dto=new EmailUserData($body->email);
+        $dto = new EmailUserData($body->email);
 
         $respuesta = $consultUseCase->execute($dto);
 
-        if(!$respuesta){
-            return ApiResponse::error("El usuario no fue encontrado",404);
+        if (! $respuesta) {
+            return ApiResponse::error('El usuario no fue encontrado', 404);
         }
 
-        $data=[
-            "id" => $respuesta->getId()->value(),
-            "name" => $respuesta->getName()->value(),
-            "email" => $respuesta->getEmail()->value(),
+        $data = [
+            'id' => $respuesta->getId()->value(),
+            'name' => $respuesta->getName()->value(),
+            'email' => $respuesta->getEmail()->value(),
             // "password" => $respuesta->getPassword()->getHash(),
-            "type" => $respuesta->getType()->value(),
-            "phone" => $respuesta->getPhone()?->value(),
-            "avatar" => $respuesta->getAvatar()?->value(),
-            "is_active" => $respuesta->isActive(),
-            "createdAt" => $respuesta->getCreatedAt()->value(),
-            "updatedAt" => $respuesta->getUpdatedAt()->value(),
+            'type' => $respuesta->getType()->value(),
+            'phone' => $respuesta->getPhone()?->value(),
+            'avatar' => $respuesta->getAvatar()?->value(),
+            'is_active' => $respuesta->isActive(),
+            'createdAt' => $respuesta->getCreatedAt()->value(),
+            'updatedAt' => $respuesta->getUpdatedAt()->value(),
         ];
 
-        return ApiResponse::success($data,"usuario consultado",200);
+        return ApiResponse::success($data, 'usuario consultado', 200);
 
     }
-
-
-
-
 }
-
-?>

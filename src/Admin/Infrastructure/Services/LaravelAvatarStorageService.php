@@ -15,7 +15,7 @@ class LaravelAvatarStorageService implements AvatarStorageInterface
             $this->deleteAvatar($oldAvatarUrl);
         }
 
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+        $filename = time().'_'.uniqid().'.'.$file->getClientOriginalExtension();
         $path = $file->storeAs('avatars', $filename, 'public');
 
         $url = Storage::disk('public')->url($path);

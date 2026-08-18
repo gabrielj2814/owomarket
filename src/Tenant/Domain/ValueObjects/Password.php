@@ -9,6 +9,7 @@ use Src\Shared\Domain\Contracts\PasswordValidator;
 final class Password
 {
     private const MIN_LENGTH = 8;
+
     private const MAX_LENGTH = 72;
 
     private string $hash;
@@ -34,7 +35,7 @@ final class Password
     // Factory method para reconstruir desde hash
     public static function fromHash(string $hash): self
     {
-        if (!self::isValidHash($hash)) {
+        if (! self::isValidHash($hash)) {
             throw new InvalidArgumentException('Hash inválido');
         }
 
@@ -152,27 +153,27 @@ final class Password
 //     private static function getHashManager(): HashManager
 //     {
 //         if (!isset(self::$hashManager)) {
-            // // Configuración por defecto del hashing
-            // $config = new Repository([
-            //     'hashing' => [
-            //         'driver' => 'bcrypt',  // Algoritmo por defecto
-            //         'bcrypt' => [
-            //             'rounds' => 12,    // Coste computacional (12 es seguro)
-            //         ],
-            //         'argon' => [           // Configuración alternativa para Argon2
-            //             'memory' => 1024,  // Memoria en KB
-            //             'threads' => 2,    // Número de hilos
-            //             'time' => 2,       // Coste en tiempo
-            //         ],
-            //     ],
-            // ]);
+// // Configuración por defecto del hashing
+// $config = new Repository([
+//     'hashing' => [
+//         'driver' => 'bcrypt',  // Algoritmo por defecto
+//         'bcrypt' => [
+//             'rounds' => 12,    // Coste computacional (12 es seguro)
+//         ],
+//         'argon' => [           // Configuración alternativa para Argon2
+//             'memory' => 1024,  // Memoria en KB
+//             'threads' => 2,    // Número de hilos
+//             'time' => 2,       // Coste en tiempo
+//         ],
+//     ],
+// ]);
 
-            // // Configurar el contenedor de dependencias
-            // $container = new Container;
-            // $container->instance('config', $config);
+// // Configurar el contenedor de dependencias
+// $container = new Container;
+// $container->instance('config', $config);
 
-            // // Crear el gestor de hashing
-            // self::$hashManager = new HashManager($container);
+// // Crear el gestor de hashing
+// self::$hashManager = new HashManager($container);
 //         }
 //         return self::$hashManager;
 //     }

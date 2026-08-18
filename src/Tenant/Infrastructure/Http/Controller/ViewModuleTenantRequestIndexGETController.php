@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Tenant\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
@@ -10,61 +9,45 @@ use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 
-class ViewModuleTenantRequestIndexGETController extends Controller {
-
-
+class ViewModuleTenantRequestIndexGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected ApiGateway $apiGateway
-    ){}
+    ) {}
 
     /**
      * Método index.
      */
-
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $fullUrl = request()->getSchemeAndHttpHost();
-        $user_uuid=$request->user_uuid;
-        $uuid=Uuid::make($user_uuid);
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authCentral());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
+        $user_uuid = $request->user_uuid;
+        $uuid = Uuid::make($user_uuid);
+        $ConsultAuthUserApiByUuid = new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authCentral());
+        $usuario = $ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
 
-        $type=null;
-        $title=null;
-        $message=null;
-        if($request->has("type") && $request->has("message") && $request->has("title")){
-            $type=$request->query("type");
-            $title=$request->query("title");
-            $message=$request->query("message");
+        $type = null;
+        $title = null;
+        $message = null;
+        if ($request->has('type') && $request->has('message') && $request->has('title')) {
+            $type = $request->query('type');
+            $title = $request->query('title');
+            $message = $request->query('message');
         }
-
 
         return Inertia::render(
             component: 'admin/modules/tenants_request/IndexPage',
             props: [
-                'title'      => 'Modulo Tenant Request - OwOMarket',
-                'user_id'    => $usuario->getUserId()->value(),
-                'type'       => $type,
+                'title' => 'Modulo Tenant Request - OwOMarket',
+                'user_id' => $usuario->getUserId()->value(),
+                'type' => $type,
                 'titleToast' => $title,
-                'message'    => $message,
+                'message' => $message,
             ]
         );
 
-
     }
-
-
-
-
-
-
 }
-
-
-
-
-?>

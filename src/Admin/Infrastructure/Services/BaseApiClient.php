@@ -1,53 +1,52 @@
 <?php
 
-
 namespace Src\Admin\Infrastructure\Services;
 
 use Illuminate\Support\Facades\Http;
 
-abstract class BaseApiClient {
-
+abstract class BaseApiClient
+{
     /**
      * Método get.
      */
-
-    protected function get(string $endpoint, array $headers = [], string $host=""): array {
-        if($host==""){
-            $host=config("app.url");
+    protected function get(string $endpoint, array $headers = [], string $host = ''): array
+    {
+        if ($host == '') {
+            $host = config('app.url');
         }
-        $url=$host.$endpoint;
+        $url = $host.$endpoint;
+
         return Http::timeout(30)
-                  ->retry(3, 100)
-                  ->withHeaders(array_merge([
-                    'Content-Type' => 'application/json',
-                    'X-Internal-Service' => 'admin-context',
-                    'X-Internal-Secret' => config('services.internal.secret'),
-                ],$headers))
-                  ->get($url)
-                  ->throw()
-                  ->json();
+            ->retry(3, 100)
+            ->withHeaders(array_merge([
+                'Content-Type' => 'application/json',
+                'X-Internal-Service' => 'admin-context',
+                'X-Internal-Secret' => config('services.internal.secret'),
+            ], $headers))
+            ->get($url)
+            ->throw()
+            ->json();
     }
 
     /**
      * Método post.
      */
-
-    protected function post(string $endpoint, array $data = [], array $headers = [],string $host=""): array {
-        if($host==""){
-            $host=config("app.url");
+    protected function post(string $endpoint, array $data = [], array $headers = [], string $host = ''): array
+    {
+        if ($host == '') {
+            $host = config('app.url');
         }
-        $url=$host.$endpoint;
+        $url = $host.$endpoint;
+
         return Http::timeout(30)
-                  ->retry(3, 100)
-                  ->withHeaders(array_merge([
-                    'Content-Type' => 'application/json',
-                    'X-Internal-Service' => 'admin-context',
-                    'X-Internal-Secret' => config('services.internal.secret'),
-                ],$headers))
-                  ->post($url,$data)
-                  ->throw()
-                  ->json();
+            ->retry(3, 100)
+            ->withHeaders(array_merge([
+                'Content-Type' => 'application/json',
+                'X-Internal-Service' => 'admin-context',
+                'X-Internal-Secret' => config('services.internal.secret'),
+            ], $headers))
+            ->post($url, $data)
+            ->throw()
+            ->json();
     }
 }
-
-?>

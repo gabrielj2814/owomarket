@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Laravel\Sanctum\PersonalAccessToken;
@@ -15,28 +14,27 @@ class PersonalAccessTokenRepository implements PersonalAccessTokenRepositoryInte
     /**
      * Método generarToken.
      */
-
     public function generarToken(User $user): ?string
     {
-        $usuario=ModelsUser::where("id","=",$user->getId()->value())->first();
+        $usuario = ModelsUser::where('id', '=', $user->getId()->value())->first();
         $token = $usuario->createToken($user->getId()->value(), ['*'], now()->addWeek())->plainTextToken;
+
         return $token;
     }
 
     /**
      * Método findToken.
      */
-
     public function findToken(string $token): ?object
     {
         $personalAccessToken = PersonalAccessToken::findToken($token);
+
         return $personalAccessToken;
     }
 
     /**
      * Método deleteToken.
      */
-
     public function deleteToken(string $token): void
     {
         $personalAccessToken = PersonalAccessToken::findToken($token);
@@ -44,9 +42,4 @@ class PersonalAccessTokenRepository implements PersonalAccessTokenRepositoryInte
             $personalAccessToken->delete();
         }
     }
-
 }
-
-
-
-?>

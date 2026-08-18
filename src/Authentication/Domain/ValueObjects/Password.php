@@ -9,6 +9,7 @@ use Src\Shared\Domain\Contracts\PasswordValidator;
 final class Password
 {
     private const MIN_LENGTH = 8;
+
     private const MAX_LENGTH = 72;
 
     private string $hash;
@@ -34,7 +35,7 @@ final class Password
     // Factory method para reconstruir desde hash
     public static function fromHash(string $hash): self
     {
-        if (!self::isValidHash($hash)) {
+        if (! self::isValidHash($hash)) {
             throw new InvalidArgumentException('Hash inválido');
         }
 

@@ -6,7 +6,6 @@ use InvalidArgumentException;
 
 class Slug
 {
-
     private function __construct(
         private string $value,
         private string $domain,
@@ -29,6 +28,7 @@ class Slug
     public static function fromString(string $string, string $domain): self
     {
         $slug = self::slugify($string);
+
         return new self($slug, $domain);
     }
 
@@ -78,33 +78,33 @@ class Slug
     private function ensureIsValidSlug(string $slug): void
     {
         if (empty($slug)) {
-            throw new InvalidArgumentException('El slug no puede estar vacío',400);
+            throw new InvalidArgumentException('El slug no puede estar vacío', 400);
         }
 
         if (strlen($slug) < 3) {
-            throw new InvalidArgumentException('El slug debe tener al menos 3 caracteres',400);
+            throw new InvalidArgumentException('El slug debe tener al menos 3 caracteres', 400);
         }
 
         if (strlen($slug) > 63) {
-            throw new InvalidArgumentException('El slug no puede tener más de 63 caracteres',400);
+            throw new InvalidArgumentException('El slug no puede tener más de 63 caracteres', 400);
         }
 
         // Validar formato: solo letras minúsculas, números y guiones
-        if (!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
+        if (! preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
             throw new InvalidArgumentException(
-                'El slug solo puede contener letras minúsculas, números y guiones medios. ' .
-                'No puede empezar ni terminar con guión.',400
+                'El slug solo puede contener letras minúsculas, números y guiones medios. '.
+                'No puede empezar ni terminar con guión.', 400
             );
         }
 
         // Validar que no tenga guiones consecutivos
         if (str_contains($slug, '--')) {
-            throw new InvalidArgumentException('El slug no puede tener guiones consecutivos',400);
+            throw new InvalidArgumentException('El slug no puede tener guiones consecutivos', 400);
         }
 
         // Validar que no sea un número
         if (is_numeric($slug)) {
-            throw new InvalidArgumentException('El slug no puede ser solo números',400);
+            throw new InvalidArgumentException('El slug no puede ser solo números', 400);
         }
     }
 
@@ -120,12 +120,12 @@ class Slug
             'ns1', 'ns2', 'smtp', 'pop', 'imap', 'test', 'stage',
             'static', 'assets', 'cdn', 'm', 'mobile', 'support',
             'help', 'docs', 'status', 'shop', 'store', 'dashboard',
-            'central', 'marketplace', 'login', 'auth', 'register'
+            'central', 'marketplace', 'login', 'auth', 'register',
         ];
 
         if (in_array($slug, $reservedSubdomains, true)) {
             throw new InvalidArgumentException(
-                "El slug '{$slug}' es una palabra reservada y no puede usarse como subdominio",400
+                "El slug '{$slug}' es una palabra reservada y no puede usarse como subdominio", 400
             );
         }
 
@@ -134,7 +134,7 @@ class Slug
         foreach ($offensiveWords as $word) {
             if (str_contains($slug, $word)) {
                 throw new InvalidArgumentException(
-                    "El slug contiene palabras no permitidas",400
+                    'El slug contiene palabras no permitidas', 400
                 );
             }
         }
@@ -143,7 +143,7 @@ class Slug
         $totalLength = strlen($slug) + 1 + strlen(config('app.domain'));
         if ($totalLength > 253) {
             throw new InvalidArgumentException(
-                'El subdominio completo excede la longitud máxima permitida para DNS',400
+                'El subdominio completo excede la longitud máxima permitida para DNS', 400
             );
         }
     }
@@ -174,7 +174,7 @@ class Slug
 
         // Si el slug queda vacío, generar uno aleatorio
         if (empty($slug)) {
-            $slug = 'tenant-' . substr(md5($string), 0, 8);
+            $slug = 'tenant-'.substr(md5($string), 0, 8);
         }
 
         return $slug;
@@ -188,7 +188,7 @@ class Slug
         return [
             'admin', 'administrator', 'root', 'sysadmin',
             'fuck', 'shit', 'ass', 'bitch', 'bastard',
-            'sex', 'porn', 'xxx', 'adult', 'nsfw'
+            'sex', 'porn', 'xxx', 'adult', 'nsfw',
         ];
     }
 
@@ -203,6 +203,7 @@ class Slug
     {
         try {
             $this->ensureIsValidSubdomain($this->value);
+
             return true;
         } catch (InvalidArgumentException) {
             return false;
@@ -218,9 +219,10 @@ class Slug
         $suffix = 1;
 
         while (true) {
-            $alternative = $base . '-' . $suffix;
+            $alternative = $base.'-'.$suffix;
             try {
                 new self($alternative, $this->domain);
+
                 return $alternative;
             } catch (InvalidArgumentException) {
                 $suffix++;
@@ -237,12 +239,10 @@ class Slug
         $nouns = ['fox', 'wolf', 'bear', 'eagle', 'lion', 'tiger'];
         $number = rand(1, 999);
 
-        $randomString = $adjectives[array_rand($adjectives)] .
-                       '-' . $nouns[array_rand($nouns)] .
-                       '-' . $number;
+        $randomString = $adjectives[array_rand($adjectives)].
+                       '-'.$nouns[array_rand($nouns)].
+                       '-'.$number;
 
         return self::make($randomString, $domain);
     }
 }
-
-?>

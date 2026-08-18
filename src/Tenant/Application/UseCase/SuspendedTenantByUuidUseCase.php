@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Tenant\Application\UseCase;
 
 use Exception;
@@ -8,33 +7,27 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Tenant;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-class SuspendedTenantByUuidUseCase {
-
+class SuspendedTenantByUuidUseCase
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected TenantRepositoryInterface $tenant_repository
-    ){}
+    ) {}
 
     /**
      * Método execute.
      */
-
-    public function execute(string $uuid): Tenant{
-        $uuid= Uuid::make($uuid);
-        $tenant=$this->tenant_repository->consultTenantById($uuid);
-        if(!$tenant){
-            throw new Exception("No pudo suspender el tenant por que no se encotro en la DB",404);
+    public function execute(string $uuid): Tenant
+    {
+        $uuid = Uuid::make($uuid);
+        $tenant = $this->tenant_repository->consultTenantById($uuid);
+        if (! $tenant) {
+            throw new Exception('No pudo suspender el tenant por que no se encotro en la DB', 404);
         }
         $this->tenant_repository->suspended($tenant);
+
         return $tenant;
     }
-
-
-
 }
-
-
-?>

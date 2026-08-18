@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Admin\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
@@ -10,31 +9,27 @@ use Src\Admin\Application\UseCase\ConsultAuthUserApiByUuid;
 use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Services\ApiGateway;
 
-class ViewDashboardAdminGETController extends Controller{
-
-
+class ViewDashboardAdminGETController extends Controller
+{
     // public function
 
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected ApiGateway $apiGateway
-    ){}
-
+    ) {}
 
     /**
      * Método index.
      */
+    public function index(Request $request)
+    {
 
-
-    public function index(Request $request) {
-
-        $user_uuid=$request->user_uuid;
-        $uuid=Uuid::make($user_uuid);
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuid($this->apiGateway->auth());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid);
+        $user_uuid = $request->user_uuid;
+        $uuid = Uuid::make($user_uuid);
+        $ConsultAuthUserApiByUuid = new ConsultAuthUserApiByUuid($this->apiGateway->auth());
+        $usuario = $ConsultAuthUserApiByUuid->execute($uuid);
 
         return Inertia::render(
             component: 'admin/dashboard/AdminDashboardPage',
@@ -48,10 +43,4 @@ class ViewDashboardAdminGETController extends Controller{
             ]
         );
     }
-
-
-
 }
-
-
-?>

@@ -8,6 +8,7 @@ use Src\Shared\Domain\Contracts\PasswordValidator;
 class StrictPasswordValidator implements PasswordValidator
 {
     private const MIN_LENGTH = 8;
+
     private const MAX_LENGTH = 72;
 
     public function validate(string $plainPassword): void
@@ -28,11 +29,11 @@ class StrictPasswordValidator implements PasswordValidator
             'mayúscula' => '/[A-Z]/',
             'minúscula' => '/[a-z]/',
             'número' => '/[0-9]/',
-            'carácter especial' => '/[!@#$%^&*()\-_=+{};:,<.>]/'
+            'carácter especial' => '/[!@#$%^&*()\-_=+{};:,<.>]/',
         ];
 
         foreach ($rules as $tipo => $patron) {
-            if (!preg_match($patron, $plainPassword)) {
+            if (! preg_match($patron, $plainPassword)) {
                 throw new InvalidArgumentException(
                     "La contraseña debe contener al menos un $tipo"
                 );
