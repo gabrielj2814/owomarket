@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
@@ -25,13 +24,6 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
-    // Route::get('/', function () {
-    //     $domain = request()->getHost();
-    //     return Inertia::render('welcome',[
-    //         'domain' => $domain,
-    //     ]);
-    // })->name('tenant.welcome');
-
     require base_path('src/Marketplace/Infrastructure/Http/Routes/tenant.php');
 
     Route::prefix('auth')->group(callback: base_path('src/Authentication/Infrastructure/Http/Routes/tenant.php'));
@@ -43,4 +35,5 @@ Route::middleware([
     Route::prefix('coupon')->group(callback: base_path('src/Coupon/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('tax')->group(callback: base_path('src/Tax/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('shipping')->group(callback: base_path('src/Shipping/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('billing')->group(callback: base_path('src/Billing/Infrastructure/Http/Routes/tenant.php'));
 });

@@ -23,6 +23,8 @@ import {
     HiAdjustments,
     HiBookmark,
     HiChartPie,
+    HiDocumentText,
+    HiIdentification,
     HiLogout,
     HiReceiptTax,
     HiSearch,
@@ -37,6 +39,7 @@ import {
     LuBell,
     LuFolderTree,
     LuMenu,
+    LuReceipt,
     LuSettings,
     LuStore,
     LuUserPlus,
@@ -180,6 +183,15 @@ const NavBarMovilDashboardComponent = () => {
                                                 </SidebarItem>
                                                 <SidebarItem icon={HiTicket} href={`/coupon/backoffice/${state.authUser.user_id}/module`}>
                                                     Cupones
+                                                </SidebarItem>
+                                            </SidebarCollapse>
+
+                                            <SidebarCollapse icon={LuReceipt} label="Facturación">
+                                                <SidebarItem icon={HiDocumentText} href={`/billing/backoffice/${state.authUser.user_id}/module`}>
+                                                    Facturas
+                                                </SidebarItem>
+                                                <SidebarItem icon={HiIdentification} href={`/billing/backoffice/${state.authUser.user_id}/settings`}>
+                                                    Datos Fiscales
                                                 </SidebarItem>
                                             </SidebarCollapse>
 
