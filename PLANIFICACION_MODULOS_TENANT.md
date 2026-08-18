@@ -318,14 +318,45 @@ flowchart TD
 ---
 
 ### 📌 Desglose por Fases - Módulo Configuración:
-- [ ] **Fase 1**: Entidad `TenantSettings`, Value Objects.
-- [ ] **Fase 2**: Casos de uso (`ConsultTenantSettingsUseCase`, `UpdateTenantSettingsUseCase`).
-- [ ] **Fase 3**: Modelo Eloquent `TenantSetting.php`, Repositorio y Service Provider.
-- [ ] **Fase 4**: Controladores API (`GET /api-tenant/settings`, `PUT /api-tenant/settings`) y tests.
-- [ ] **Fase 5**: Tipos TypeScript y `TenantSettingsServices.ts`.
-- [ ] **Fase 6**: Vista `TenantSettingsPage.tsx` organizada por pestañas (General, Moneda, Redes, SEO).
-- [ ] **Fase 7**: Testing integral y QA.
-- ➔ `commit: feat(settings): implement tenant store general settings module`
+#### 🔹 Fase 1: Dominio Core de Configuración General (`src/TenantSettings/Domain/`) ✅
+- [x] Entidad `TenantSetting` (Aggregate Root individual) y `StoreSettings` (Modelo agrupado de parámetros comerciales: nombre, email, moneda, teléfono, dirección, logo, banner, redes sociales y SEO).
+- [x] Value Objects inmutables: `SettingId` (UUID), `SettingKey` (formato alfanumérico estricto), `SettingType` (string, boolean, json, integer, float con auto-casting), `SettingGroup` (general, appearance, social, seo, notifications).
+- [x] Excepciones de dominio: `SettingNotFoundException`, `InvalidSettingKeyException`.
+- [x] Tests unitarios de dominio: `SettingValueObjectsTest.php`, `TenantSettingDomainTest.php`, `StoreSettingsDomainTest.php` (12 tests, 50 aserciones).
+- ➔ `commit: feat(settings): implement tenant settings domain entities, value objects and unit tests`
+
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/TenantSettings/Application/`)
+- [ ] Contrato `TenantSettingsRepositoryInterface`.
+- [ ] DTOs: `UpdateStoreSettingsData`, `SettingData`, `StoreSettingsData`.
+- [ ] Casos de uso: `GetStoreSettingsUseCase`, `UpdateStoreSettingsUseCase`, `GetSettingByKeyUseCase`, `SaveSettingUseCase`, `ListSettingsByGroupUseCase`.
+- [ ] Tests unitarios de aplicación con Mockery.
+- ➔ `commit: feat(settings): implement tenant settings use cases, dtos and repository interface`
+
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/TenantSettings/Infrastructure/Eloquent/`)
+- [ ] Modelo Eloquent `src/TenantSettings/Infrastructure/Eloquent/Models/TenantSetting.php`.
+- [ ] Repositorio `EloquentTenantSettingsRepository.php` con transacciones e hidratación bidireccional.
+- [ ] Proveedor `TenantSettingsServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [ ] Tests de integración con base de datos tenant.
+- ➔ `commit: feat(settings): implement tenant settings eloquent model, repository and service provider`
+
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/TenantSettings/Infrastructure/Http/`)
+- [ ] FormRequests de validación y Controladores API (`GET /api-tenant/settings`, `PUT /api-tenant/settings`, `GET /api-tenant/settings/{key}`, `POST /api-tenant/settings`).
+- [ ] Tests de Feature API Tenant.
+- ➔ `commit: feat(settings): implement tenant settings api controllers, routes and feature tests`
+
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
+- [ ] Tipos: `resources/js/types/models/TenantSettings.d.ts`, `FormTenantSettings.d.ts`.
+- [ ] Servicio Axios `resources/js/Services/TenantSettingsServices.ts`.
+- ➔ `commit: feat(settings): implement frontend tenant settings types and services`
+
+#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/settings/`)
+- [ ] Vista `TenantSettingsPage.tsx` organizada por pestañas Flowbite (General, Apariencia & Marca, Redes Sociales, SEO & Metadatos).
+- [ ] Controlador Web Inertia y rutas.
+- ➔ `commit: feat(settings): implement tenant settings backoffice ui with flowbite tabs`
+
+#### 🔹 Fase 7: Testing Integral, QA y Validación Final
+- [ ] Prueba End-to-End (`TenantSettingsLifecycleEndToEndTest.php`) y suite completa.
+- ➔ `commit: test(settings): complete tenant settings module test suite and quality assurance`
 
 ---
 
