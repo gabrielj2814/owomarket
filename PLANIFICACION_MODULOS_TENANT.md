@@ -290,9 +290,9 @@ flowchart TD
 - [x] Tests de Feature API Tenant (`ReviewApiTest.php`, 9 tests, 33 aserciones).
 - ➔ `commit: feat(review): implement product review api controllers, routes and feature tests`
 
-#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
-- [ ] Tipos: `resources/js/types/models/ProductReview.d.ts`, `FormProductReview.d.ts`.
-- [ ] Servicio Axios `resources/js/Services/ReviewServices.ts`.
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`) ✅
+- [x] Tipos: `resources/js/types/models/ProductReview.d.ts`, `FormProductReview.d.ts`, `ErrorsFormProductReview.d.ts`.
+- [x] Servicio Axios `resources/js/Services/ReviewServices.ts` con tipado estricto `ApiResponse`, consultas por ID, resumen de ratings, moderación, respuestas, edición y eliminación.
 - ➔ `commit: feat(review): implement frontend review types and services`
 
 #### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/review/`)
