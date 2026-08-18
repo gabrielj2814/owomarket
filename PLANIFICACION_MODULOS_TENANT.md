@@ -12,8 +12,8 @@ flowchart TD
     subgraph CoreCommerce ["🛍️ Ecosistema Core del Tenant"]
         PROD["📦 Catálogo de Productos (Completado)"]
         BILL["🧾 Facturación y Pagos (Completado)"]
+        CUST["👥 Módulo 1: Clientes y CRM (Completado)"]
         
-        CUST["👥 Módulo 1: Clientes y CRM (customers & addresses)"]
         ORD["📦 Módulo 2: Pedidos y Ventas (orders & order_items)"]
         SHIP["🚚 Módulo 3: Envíos y Tracking (shipments)"]
         REV["⭐ Módulo 4: Reseñas y Moderación (product_reviews)"]
@@ -29,50 +29,51 @@ flowchart TD
 
 ---
 
-# 👥 MÓDULO 1: Clientes y CRM (`src/Customer/`)
+# 👥 MÓDULO 1: Clientes y CRM (`src/Customer/`) ✅ COMPLETADO
 **Tablas:** `customers`, `addresses`
 
 ### 🎯 Objetivos:
 - Directorio de clientes con datos demográficos, contacto, RUT/RFC y preferencias de marketing.
 - Libreta de múltiples direcciones (despacho, facturación, casa, oficina) por cliente.
-- Consulta de métricas por cliente: Total gastado ($), cantidad de pedidos y facturas emitidas.
+- Consulta de métricas por cliente: Total clientes, activos, suscritos y nuevos este mes.
 
 ---
 
 ### 📌 Desglose por Fases - Módulo Clientes:
 
-#### 🔹 Fase 1: Dominio Core de Clientes y Direcciones (`src/Customer/Domain/`)
-- [ ] Entidad `Customer` (Aggregate Root) con métodos de ciclo de vida (`updateProfile`, `toggleActive`, `setMarketingPreference`).
-- [ ] Entidad `Address` vinculada al cliente (`is_default`, tipo de dirección).
-- [ ] Value Objects inmutables: `CustomerId`, `CustomerEmail`, `CustomerPhone`, `CustomerName`, `BirthDate`, `TaxId`, `AddressId`.
-- [ ] Excepciones de dominio: `CustomerNotFoundException`, `DuplicateCustomerEmailException`.
-- [ ] Tests unitarios de dominio.
+#### 🔹 Fase 1: Dominio Core de Clientes y Direcciones (`src/Customer/Domain/`) ✅
+- [x] Entidad `Customer` (Aggregate Root) con métodos de ciclo de vida (`updateProfile`, `toggleActive`, `setMarketingPreference`).
+- [x] Entidad `CustomerAddress` vinculada al cliente (`is_default`, tipo de dirección).
+- [x] Value Objects inmutables: `CustomerId`, `CustomerEmail`, `CustomerPhone`, `CustomerName`, `BirthDate`, `Gender`, `AddressId`, `AddressType`.
+- [x] Excepciones de dominio: `CustomerNotFoundException`, `DuplicateCustomerEmailException`, `CustomerAddressNotFoundException`.
+- [x] Tests unitarios de dominio.
 - ➔ `commit: feat(customer): implement customer domain entities and value objects`
 
-#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Customer/Application/`)
-- [ ] Contratos de repositorio: `CustomerRepositoryInterface`, `AddressRepositoryInterface`.
-- [ ] DTOs de entrada y salida: `CreateCustomerData`, `UpdateCustomerData`, `FilterCustomersCriteria`, `CustomerAddressData`.
-- [ ] Casos de uso:
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Customer/Application/`) ✅
+- [x] Contratos de repositorio: `CustomerRepositoryInterface`.
+- [x] DTOs de entrada y salida: `CreateCustomerData`, `UpdateCustomerData`, `FilterCustomersCriteria`, `CustomerAddressInputData`, `PaginatedCustomerResult`, `CustomerMetricsData`.
+- [x] Casos de uso:
   - `CreateCustomerUseCase`
   - `ConsultCustomerByIdUseCase`
-  - `FilterCustomersUseCase` (búsqueda por nombre, email, teléfono, estado, marketing, paginación)
+  - `FilterCustomersUseCase` (búsqueda por nombre, email, teléfono, estado, marketing, género y paginación)
   - `UpdateCustomerUseCase`
   - `DeleteCustomerUseCase` (soft deletes)
-  - `AddCustomerAddressUseCase` & `DeleteCustomerAddressUseCase`
-  - `GetCustomerSummaryMetricsUseCase` (total gastado, pedidos, facturas)
-- [ ] Tests unitarios de aplicación.
+  - `AddCustomerAddressUseCase`, `DeleteCustomerAddressUseCase` & `SetDefaultCustomerAddressUseCase`
+  - `GetCustomerMetricsUseCase` (total clientes, activos, marketing, nuevos este mes)
+- [x] Tests unitarios de aplicación con Mockery.
 - ➔ `commit: feat(customer): implement customer application use cases and dtos`
 
-#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Repositorios (`src/Customer/Infrastructure/`)
-- [ ] Modelos Eloquent en `src/Customer/Infrastructure/Eloquent/Models/`: `Customer.php` y `Address.php`.
-- [ ] Repositorio `EloquentCustomerRepository.php` con transacciones seguras y filtros dinámicos.
-- [ ] `CustomerServiceProvider.php` registrado en `bootstrap/providers.php`.
-- [ ] Tests de integración de repositorios.
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Repositorios (`src/Customer/Infrastructure/`) ✅
+- [x] Modelos Eloquent en `src/Customer/Infrastructure/Eloquent/Models/`: `Customer.php` y `Address.php`.
+- [x] Repositorio `EloquentCustomerRepository.php` con transacciones seguras, sincronización de direcciones y filtros dinámicos.
+- [x] `CustomerServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [x] Tests de integración de repositorios.
 - ➔ `commit: feat(customer): implement eloquent customer repositories and service provider`
 
-#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Customer/Infrastructure/Http/`)
-- [ ] FormRequests: `CreateCustomerFormRequest`, `UpdateCustomerFormRequest`, `FilterCustomersFormRequest`, `AddAddressFormRequest`.
-- [ ] Controladores API:
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Customer/Infrastructure/Http/`) ✅
+- [x] FormRequests: `CreateCustomerFormRequest`, `UpdateCustomerFormRequest`, `FilterCustomersFormRequest`, `AddCustomerAddressFormRequest`.
+- [x] Controladores API:
+  - `GET  /api-tenant/customer/metrics`
   - `GET  /api-tenant/customer/{id}`
   - `POST /api-tenant/customer/create`
   - `PUT  /api-tenant/customer/{id}`
@@ -80,25 +81,26 @@ flowchart TD
   - `POST /api-tenant/customer/filter`
   - `POST /api-tenant/customer/{id}/address`
   - `DELETE /api-tenant/customer/{id}/address/{address_id}`
-- [ ] Rutas registradas en `src/Customer/Infrastructure/Http/Routes/apiTenant.php`.
-- [ ] Tests de Feature API Tenant.
+  - `POST /api-tenant/customer/{id}/address/{address_id}/default`
+- [x] Rutas registradas en `src/Customer/Infrastructure/Http/Routes/apiTenant.php`.
+- [x] Tests de Feature API Tenant.
 - ➔ `commit: feat(customer): implement customer api controllers, routes and feature tests`
 
-#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
-- [ ] Tipos: `Customer.d.ts`, `CustomerAddress.d.ts`, `FormCustomer.d.ts`, `ErrorsFormCustomer.d.ts`.
-- [ ] Servicio Axios `CustomerServices.ts` con todos los métodos tipados.
-- ➔ `commit: feat(customer): implement frontend customer types and axios service`
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`) ✅
+- [x] Tipos: `Customer.d.ts`, `FormCustomer.d.ts`, `ErrorsFormCustomer.d.ts`.
+- [x] Servicio Axios `CustomerServices.ts` con todos los métodos tipados.
+- ➔ `commit: feat(customer): implement frontend customer types and customer axios service`
 
-#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/Pages/tenant/modules/customer/`)
-- [ ] `CustomerIndexPage.tsx`: Tarjetas KPI (Total Clientes, Activos, Suscritos a Marketing), barra de búsqueda, tabla reactiva con modales de creación rápida y eliminación.
-- [ ] `ShowCustomerDetailPage.tsx`: Ficha 360° del cliente con libreta de direcciones, historial de pedidos, facturas asociadas y notas.
-- [ ] Controladores Inertia Web y rutas en `routes/tenant.php` (`/customer/backoffice/...`).
-- [ ] Integración en Sidebar y Navbar móvil.
-- ➔ `commit: feat(customer): implement customer tenant dashboard views and navigation`
+#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/customer/`) ✅
+- [x] `CustomerIndexPage.tsx`: Tarjetas KPI (Total Clientes, Activos, Suscritos a Marketing, Nuevos Este Mes), barra de búsqueda, tabla reactiva con modales de creación rápida, edición y eliminación.
+- [x] `ShowCustomerDetailPage.tsx`: Ficha 360° del cliente con libreta de direcciones interactiva, acciones para definir predeterminada y modal para agregar nuevas direcciones.
+- [x] Controladores Inertia Web y rutas en `routes/tenant.php` (`/customer/backoffice/...`).
+- [x] Integración en Sidebar y Navbar móvil.
+- ➔ `commit: feat(customer): implement customer dashboard views, 360 detail page and navigation links`
 
-#### 🔹 Fase 7: Testing Integral y QA del Módulo de Clientes
-- [ ] Pruebas unitarias, de integración y Feature completas.
-- [ ] `npm run types` y `vendor/bin/pint`.
+#### 🔹 Fase 7: Testing Integral y QA del Módulo de Clientes ✅
+- [x] Pruebas unitarias, de integración, Feature y E2E completas (`CustomerLifecycleEndToEndTest.php`).
+- [x] `npm run types` y `vendor/bin/pint`.
 - ➔ `commit: test(customer): customer module full test suite and quality assurance`
 
 ---
