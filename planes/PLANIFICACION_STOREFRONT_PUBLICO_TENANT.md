@@ -31,13 +31,13 @@ Este documento define la planificación técnica, arquitectura de componentes, f
 ```mermaid
 flowchart TD
     subgraph StorefrontExperience ["🛍️ Flujo de Compra del Comprador en la Tienda del Inquilino"]
-        HOME["🏠 1. Home Page de la Tienda\n(Banner Hero, Logo, Categorías, Destacados, Ofertas)"]
-        CATALOG["🔍 2. Catálogo & Filtros Facetados\n(Búsqueda, Categoría, Marca, Precio, Ordenamiento)"]
-        DETAIL["📦 3. Detalle de Producto & Reseñas\n(Galería, Selector Variantes, Stock en vivo, Reseñas 1-5★)"]
+        HOME["🏠 1. Home Page de la Tienda (ViewHomePageTenantGETController)\n(Banner Hero, Logo, Categorías, Destacados, Ofertas)"]
+        CATALOG["🔍 2. Catálogo & Filtros Facetados (ViewCatalogTenantGETController)\n(Búsqueda, Categoría, Marca, Precio, Ordenamiento)"]
+        DETAIL["📦 3. Detalle de Producto & Reseñas (ViewProductDetailTenantGETController)\n(Galería, Selector Variantes, Stock en vivo, Reseñas 1-5★)"]
         DRAWER["🛒 4. Mini-Cart Drawer\n(Carrito lateral deslizante con acceso rápido)"]
-        CART["🛍️ 5. Página de Carrito & Cupones\n(Cantidades, Totales, Validación de Cupón de Descuento)"]
-        CHECKOUT["💳 6. Checkout Multitrayecto\n(Datos cliente, Dirección, Tarifa de envío, Impuestos, Pago)"]
-        SUCCESS["🎉 7. Confirmación de Pedido\n(Página de éxito, Resumen de orden, Consulta de tracking)"]
+        CART["🛍️ 5. Página de Carrito & Cupones (ViewCartTenantGETController)\n(Cantidades, Totales, Validación de Cupón de Descuento)"]
+        CHECKOUT["💳 6. Checkout Multitrayecto (ViewCheckoutTenantGETController)\n(Datos cliente, Dirección, Tarifa de envío, Impuestos, Paso Login para Pago)"]
+        SUCCESS["🎉 7. Confirmación de Pedido (ViewOrderConfirmationTenantGETController)\n(Página de éxito, Resumen de orden, Consulta de tracking)"]
         REVIEW["⭐ 8. Formulario de Calificación\n(Publicación de reseña con estrellas sobre el producto)"]
     end
 
@@ -55,39 +55,51 @@ flowchart TD
 
 ---
 
+## 🏛️ Estructura de Controladores y Rutas (`src/Marketplace/`)
+
+- **Archivo de Rutas:** [src/Marketplace/Infrastructure/Http/Routes/tenant.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Routes/tenant.php)
+  - `GET  /` ➔ `ViewHomePageTenantGETController::class` (Home de la tienda)
+  - `GET  /catalog` ➔ `ViewCatalogTenantGETController::class` (Catálogo con búsqueda y filtros)
+  - `GET  /product/{slug}` ➔ `ViewProductDetailTenantGETController::class` (Detalle de producto y variantes)
+  - `GET  /cart` ➔ `ViewCartTenantGETController::class` (Página de carrito y cupones)
+  - `GET  /checkout` ➔ `ViewCheckoutTenantGETController::class` (Paso a paso de checkout)
+  - `GET  /order/{id}/confirmation` ➔ `ViewOrderConfirmationTenantGETController::class` (Éxito y tracking)
+
+---
+
 ## 📌 Desglose por Fases de Implementación:
 
 ### 🔹 Fase 1: Layout Global del Storefront, Navbar, Footer y Estado del Carrito
-- **Contexto React**: `CartContext.tsx` con almacenamiento persistente en `localStorage`, cálculo de subtotales, adición de variantes y conteo de ítems.
-- **Layout Base**: `StorefrontLayout.tsx`:
-  - **Barra Superior**: Información de contacto, moneda y redes sociales desde `TenantSettings`.
+- **Contexto React**: [resources/js/contexts/CartContext.tsx](file:///c:/laragon/www/owomarket/resources/js/contexts/CartContext.tsx) con almacenamiento persistente en `localStorage`, cálculo reactivo de subtotales, variantes, adición y conteo de ítems.
+- **Layout Base**: [resources/js/components/layouts/StorefrontLayout.tsx](file:///c:/laragon/www/owomarket/resources/js/components/layouts/StorefrontLayout.tsx):
+  - **Barra Superior**: Información de contacto, moneda y redes sociales dinámicas desde `TenantSettings`.
   - **Navbar de Tienda**: Logotipo del comercio, barra de búsqueda en tiempo real, menú de categorías desplegable, botón de carrito con badge animado y acceso a cuenta.
   - **Mini-Cart Drawer**: Carrito lateral deslizable Flowbite con lista de ítems, selector de cantidad, eliminación rápida y botón "Finalizar Compra".
-  - **Footer de Tienda**: Marca, enlaces de navegación, formas de pago aceptadas, dirección física y botón flotante de WhatsApp.
+  - **Footer de Tienda**: Identidad de marca, enlaces de navegación, formas de pago aceptadas, dirección física y botón flotante de WhatsApp.
 - ➔ `commit: feat(storefront): implement storefront layout, navbar, footer and cart context`
 
 ---
 
 ### 🔹 Fase 2: Home Page de la Tienda Pública (`/`)
-- **Controlador Inertia**: `ViewTenantStorefrontHomeGETController.php` (obtiene configuración del tenant, categorías principales y productos destacados).
-- **Vista**: `resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx`:
-  - Banner Hero principal configurable con llamado a la acción (CTA).
-  - Carrusel/Grid de Categorías destacadas con iconos/imágenes.
+- **Controlador Inertia**: [ViewHomePageTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewHomePageTenantGETController.php) (obtiene configuración del tenant, categorías principales y productos destacados del catálogo).
+- **Vista**: [resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx):
+  - Banner Hero principal configurable con llamado a la acción (CTA) y títulos.
+  - Carrusel/Grid de Categorías destacadas con iconos e imágenes.
   - Sección **"Novedades y Más Vendidos"** con Cards de Producto:
-    - Imagen, Marca, Título, Estrellas promedio de calificación (`rating`), Precio, Precio tachado de oferta y botón interactivo "Añadir al Carrito".
+    - Imagen, Marca, Título, Estrellas promedio de calificación (`rating`), Precio, Precio tachado de oferta y botón interactivo "Añadir al Carrito" con feedback visual.
   - Sección de Beneficios de la Tienda (Envíos seguros, Métodos de pago, Soporte directo).
 - ➔ `commit: feat(storefront): implement dynamic tenant storefront home page`
 
 ---
 
-### 🔹 Fase 3: Catálogo, Búsqueda Avanzada y Filtros Facetados (`/shop` o `/catalog`)
-- **Controlador Inertia**: `ViewTenantCatalogGETController.php`.
-- **Vista**: `resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx`:
+### 🔹 Fase 3: Catálogo, Búsqueda Avanzada y Filtros Facetados (`/catalog`)
+- **Controlador Inertia**: `ViewCatalogTenantGETController.php`.
+- **Vista**: [resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/catalog/TenantCatalogPage.tsx):
   - Buscador reactivo con autocompletado y debounce.
   - **Filtros Facetados Laterales**:
     - Categorías (con conteo de productos).
-    - Marcas comerciales.
-    - Rango de precio con slider interactivo.
+    - Marcas comerciales activas.
+    - Rango de precio con slider/inputs interactivos.
     - Filtro de "Solo en oferta" y "Con stock disponible".
   - **Ordenamiento**: Más recientes, Menor precio, Mayor precio, Mejor calificados.
   - Selector de vista en Cuadrícula (Grid) o Lista con paginación integrada.
@@ -96,8 +108,8 @@ flowchart TD
 ---
 
 ### 🔹 Fase 4: Detalle de Producto, Variantes y Sistema de Reseñas (`/product/{slug}`)
-- **Controlador Inertia**: `ViewTenantProductDetailGETController.php`.
-- **Vista**: `resources/js/pages/marketplace/product/TenantProductDetailPage.tsx`:
+- **Controlador Inertia**: `ViewProductDetailTenantGETController.php`.
+- **Vista**: [resources/js/pages/marketplace/product/TenantProductDetailPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/product/TenantProductDetailPage.tsx):
   - Galería de imágenes interactiva con zoom y miniaturas.
   - Información principal: Marca, Título, SKU, Precio base y badge de ahorro.
   - **Selector de Variantes**: Tallas, Colores y Atributos con actualización instantánea de precio, imagen y stock disponible.
@@ -115,8 +127,8 @@ flowchart TD
 ---
 
 ### 🔹 Fase 5: Página de Carrito de Compras y Validación de Cupones (`/cart`)
-- **Controlador Inertia**: `ViewTenantCartGETController.php`.
-- **Vista**: `resources/js/pages/marketplace/cart/TenantCartPage.tsx`:
+- **Controlador Inertia**: `ViewCartTenantGETController.php`.
+- **Vista**: [resources/js/pages/marketplace/cart/TenantCartPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/cart/TenantCartPage.tsx):
   - Tabla de productos en el carrito con imagen, variante elegida, precio unitario, control de cantidad y eliminación.
   - **Caja de Aplicación de Cupones**: Input para código de cupón con validación en vivo vía API (`/api-tenant/coupon`), aplicando descuento porcentual o monto fijo con feedback inmediato.
   - Resumen financiero: Subtotal, Descuento por Cupón, Impuestos estimados y Total final.
@@ -126,8 +138,8 @@ flowchart TD
 ---
 
 ### 🔹 Fase 6: Checkout Completo, Control de Autenticación en Pago y Confirmación (`/checkout`)
-- **Controlador Inertia**: `ViewTenantCheckoutGETController.php` y `ViewTenantOrderConfirmationGETController.php`.
-- **Vista**: `resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx`:
+- **Controlador Inertia**: `ViewCheckoutTenantGETController.php` y `ViewOrderConfirmationTenantGETController.php`.
+- **Vista**: [resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx):
   - **Paso 1: Datos del Comprador y Contacto**: Nombre, Email, Teléfono, RUT/DNI (permite ingreso libre como invitado para cotizar).
   - **Paso 2: Dirección de Entrega y Cotización de Envío**: Selección de Región/Comuna con cálculo automático de tarifas según zona (`ShippingZones`).
   - **Paso 3: Bloqueo de Seguridad y Login Obligatorio para Pago**:
@@ -135,7 +147,7 @@ flowchart TD
     - Al avanzar al **Paso de Pago / Pasarela**, si el usuario no tiene sesión iniciada, se despliega un **Modal / Paso de Login o Registro Rápido** para que inicie sesión con su cuenta de cliente antes de procesar el pago y emitir la orden.
     - *En las pruebas automatizadas (Tests Feature/E2E), se realiza la autenticación correspondiente para validar el ciclo de orden.*
   - **Paso 4: Selección de Método de Pago y Creación Atómica del Pedido**: Transferencia Bancaria Directa o Pasarela, invocando `POST /api-tenant/order/create` con el cliente autenticado.
-- **Vista**: `resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx`:
+- **Vista**: [resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/checkout/TenantOrderConfirmationPage.tsx):
   - Pantalla de éxito con número de orden, resumen detallado de productos, instrucciones de pago/despacho y enlace para seguimiento de tracking.
 - ➔ `commit: feat(storefront): implement complete checkout flow and order confirmation`
 
@@ -144,11 +156,11 @@ flowchart TD
 ### 🔹 Fase 7: Testing Integral E2E del Storefront, QA y Validación Final
 - **Prueba End-to-End**: `tests/Feature/Tenant/TenantStorefrontCustomerLifecycleEndToEndTest.php`:
   - Simula la experiencia completa de un comprador:
-    1. Acceso a la home del subdominio del inquilino.
-    2. Búsqueda y filtrado de productos en el catálogo.
-    3. Selección de producto y variante específica.
-    4. Adición al carrito y aplicación de cupón de descuento.
-    5. Finalización de checkout con cálculo de envío e impuestos.
+    1. Acceso a la home del subdominio del inquilino (`ViewHomePageTenantGETController`).
+    2. Búsqueda y filtrado de productos en el catálogo (`ViewCatalogTenantGETController`).
+    3. Selección de producto y variante específica (`ViewProductDetailTenantGETController`).
+    4. Adición al carrito y aplicación de cupón de descuento (`ViewCartTenantGETController`).
+    5. Finalización de checkout con autenticación de cliente, cálculo de envío e impuestos.
     6. Verificación de creación del pedido en base de datos tenant y descuento de stock.
     7. Publicación de reseña con calificación por estrellas.
 - **Suite completa**: Ejecución de `php artisan test` (360+ tests pasando al 100%) y `npm run types`.
