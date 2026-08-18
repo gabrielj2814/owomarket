@@ -29,6 +29,7 @@ import {
     HiReceiptTax,
     HiSearch,
     HiShoppingBag,
+    HiShoppingCart,
     HiTicket,
     HiTruck,
     HiUser,
@@ -185,6 +186,10 @@ const NavBarMovilDashboardComponent = () => {
                                                     Cupones
                                                 </SidebarItem>
                                             </SidebarCollapse>
+
+                                            <SidebarItem icon={HiShoppingCart} href={`/order/backoffice/${state.authUser.user_id}/module`}>
+                                                Pedidos & Ventas
+                                            </SidebarItem>
 
                                             <SidebarItem icon={HiUsers} href={`/customer/backoffice/${state.authUser.user_id}/module`}>
                                                 Clientes

@@ -167,11 +167,11 @@ flowchart TD
 - [x] Servicio Axios `resources/js/services/OrderServices.ts` con soporte completo de filtros, creación, transiciones de estado, anulación y estados de pago.
 - ➔ `commit: feat(order): implement frontend order types and services`
 
-#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/Pages/tenant/modules/order/`)
-- [ ] `OrderIndexPage.tsx`: Métricas KPI, pipeline de estados con filtros por pestaña (Todas, Pendientes, En Proceso, Enviadas, Entregadas), tabla interactiva.
-- [ ] `CreateOrderPage.tsx` / Modal: Selector dinámico de cliente (con autocompletado), selector de productos con cálculo en vivo de totales.
-- [ ] `ShowOrderDetailPage.tsx`: Vista 360° del pedido con historial de estados, datos de entrega, desglose de ítems y botón directo para **"Generar Factura / Comprobante Fiscal"**.
-- [ ] Rutas Web Inertia e integración en Sidebar y Navbar.
+#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/order/`) ✅
+- [x] `OrderIndexPage.tsx`: Métricas KPI, pipeline de estados con filtros por pestaña (Todas, Pendientes, En Proceso, Enviadas, Entregadas), tabla interactiva, modal de creación manual y modal de transición de estados.
+- [x] `ShowOrderDetailPage.tsx`: Vista 360° del pedido con historial de estados, datos de entrega, desglose de ítems y botón directo para **"Generar Factura Fiscal"** mediante el puente con el módulo Billing.
+- [x] Controladores Web Inertia (`ViewOrderIndexGETController.php`, `ViewOrderDetailGETController.php`) y rutas en `src/Order/Infrastructure/Http/Routes/tenant.php` y `routes/tenant.php`.
+- [x] Integración de navegación en `SidebarDashboardComponent.tsx` y `NavBarMovilDashboardComponent.tsx`.
 - ➔ `commit: feat(order): implement tenant order management dashboard and detail views`
 
 #### 🔹 Fase 7: Testing Integral y QA del Módulo de Pedidos

@@ -8,6 +8,7 @@ import {
     HiIdentification,
     HiReceiptTax,
     HiShoppingBag,
+    HiShoppingCart,
     HiTicket,
     HiTruck,
     HiUser,
@@ -123,6 +124,10 @@ const SidebarDashboardComponent = () => {
                                 Cupones
                             </SidebarItem>
                         </SidebarCollapse>
+
+                        <SidebarItem icon={HiShoppingCart} href={`/order/backoffice/${state.authUser.user_id}/module`}>
+                            Pedidos & Ventas
+                        </SidebarItem>
 
                         <SidebarItem icon={HiUsers} href={`/customer/backoffice/${state.authUser.user_id}/module`}>
                             Clientes
