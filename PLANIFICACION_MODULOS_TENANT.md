@@ -212,9 +212,18 @@ flowchart TD
 - [x] Tests de integración con base de datos tenant (`ShipmentRepositoryTest.php`, 2 tests, 23 aserciones).
 - ➔ `commit: feat(shipment): implement shipment eloquent model, repository and service provider`
 
-#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Shipment/Infrastructure/Http/`)
-- [ ] FormRequests de validación y Controladores API (`/api-tenant/shipment/*`).
-- [ ] Tests de Feature API Tenant.
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Shipment/Infrastructure/Http/`) ✅
+- [x] FormRequests de validación: `CreateShipmentFormRequest.php`, `UpdateShipmentTrackingFormRequest.php`, `FilterShipmentsFormRequest.php`.
+- [x] Controladores API REST (`src/Shipment/Infrastructure/Http/Controller/`):
+  - `GET  /api-tenant/shipment/metrics`
+  - `POST /api-tenant/shipment/create`
+  - `GET  /api-tenant/shipment/{id}`
+  - `GET  /api-tenant/shipment/order/{orderId}`
+  - `POST /api-tenant/shipment/{id}/tracking`
+  - `POST /api-tenant/shipment/{id}/deliver`
+  - `POST /api-tenant/shipment/filter`
+- [x] Rutas registradas en `src/Shipment/Infrastructure/Http/Routes/apiTenant.php` y `routes/tenantApi.php`.
+- [x] Tests de Feature API Tenant (`ShipmentApiTest.php`, 7 tests, 33 aserciones).
 - ➔ `commit: feat(shipment): implement shipment api controllers, routes and feature tests`
 
 #### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
