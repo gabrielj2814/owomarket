@@ -162,9 +162,9 @@ flowchart TD
 - [x] Tests de Feature API Tenant (`OrderApiTest.php`).
 - ➔ `commit: feat(order): implement order api controllers, routes and feature tests`
 
-#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
-- [ ] Tipos: `Order.d.ts`, `OrderItem.d.ts`, `FormOrder.d.ts`, `OrderMetrics.d.ts`.
-- [ ] Servicio Axios `OrderServices.ts`.
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`) ✅
+- [x] Tipos: `resources/js/types/models/Order.d.ts`, `FormOrder.d.ts`, `ErrorsFormOrder.d.ts`.
+- [x] Servicio Axios `resources/js/services/OrderServices.ts` con soporte completo de filtros, creación, transiciones de estado, anulación y estados de pago.
 - ➔ `commit: feat(order): implement frontend order types and services`
 
 #### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/Pages/tenant/modules/order/`)
