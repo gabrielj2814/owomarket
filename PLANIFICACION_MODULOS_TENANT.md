@@ -339,9 +339,17 @@ flowchart TD
 - [x] Tests de integración con base de datos tenant (`TenantSettingsRepositoryTest.php`, 2 tests, 20 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings eloquent model, repository and service provider`
 
-#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/TenantSettings/Infrastructure/Http/`)
-- [ ] FormRequests de validación y Controladores API (`GET /api-tenant/settings`, `PUT /api-tenant/settings`, `GET /api-tenant/settings/{key}`, `POST /api-tenant/settings`).
-- [ ] Tests de Feature API Tenant.
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/TenantSettings/Infrastructure/Http/`) ✅
+- [x] FormRequests de validación: `UpdateStoreSettingsFormRequest.php`, `SaveSettingFormRequest.php`.
+- [x] Controladores API REST (`src/TenantSettings/Infrastructure/Http/Controller/`):
+  - `GET    /api-tenant/settings`
+  - `PUT    /api-tenant/settings`
+  - `GET    /api-tenant/settings/group/{group}`
+  - `GET    /api-tenant/settings/item/{key}`
+  - `POST   /api-tenant/settings/item`
+  - `DELETE /api-tenant/settings/item/{key}`
+- [x] Rutas registradas en `src/TenantSettings/Infrastructure/Http/Routes/apiTenant.php` y `routes/tenantApi.php`.
+- [x] Tests de Feature API Tenant (`TenantSettingsApiTest.php`, 6 tests, 29 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings api controllers, routes and feature tests`
 
 #### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
