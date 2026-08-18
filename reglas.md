@@ -74,4 +74,13 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
    * Todos los planes maestros, desgloses de desarrollo por fases, especificaciones de módulos y hojas de ruta (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`) deben almacenarse, crearse y consultarse exclusivamente dentro del directorio `planes/` en la raíz del proyecto.
    * Cada vez que se complete una fase de desarrollo, se debe actualizar el archivo de planificación correspondiente en `planes/` marcando el checking `[x]` para registrar el avance de la implementación.
 
+---
+
+## 🌱 6. Reglas de Seeders y Datos de Demostración
+
+1. **Generación Obligatoria de Seeders para Nuevos Módulos:**
+   * Cada vez que se implemente una nueva funcionalidad o módulo (ej. Configuración de Tienda, Catálogo de Productos, Atributos y Variantes, Reseñas y Calificaciones, Cupones de Descuento, Pedidos, etc.), se debe crear o actualizar un **Seeder** en `database/seeders/` con datos de prueba realistas, consistentes y completos.
+   * Esto garantiza que los entornos de desarrollo local y las pruebas manuales puedan visualizar de inmediato el funcionamiento tanto en el backoffice como en el storefront público del inquilino sin requerir carga manual previa.
+
+
 

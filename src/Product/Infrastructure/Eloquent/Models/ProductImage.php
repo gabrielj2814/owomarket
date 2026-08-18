@@ -26,4 +26,9 @@ class ProductImage extends Model
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
+
+    public function getUrlAttribute(): ?string
+    {
+        return $this->image_path;
+    }
 }

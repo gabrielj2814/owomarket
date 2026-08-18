@@ -21,9 +21,10 @@ export interface CartItem {
 export interface AppliedCoupon {
     id?: string;
     code: string;
-    type: 'percentage' | 'fixed';
+    type: 'percentage' | 'fixed' | 'fixed_amount';
     value: number;
     discountAmount: number;
+    description?: string;
 }
 
 export interface CartState {

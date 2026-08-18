@@ -169,3 +169,15 @@ export interface StorefrontProductDetailPageProps {
         email: string;
     } | null;
 }
+
+export interface StorefrontCartPageProps {
+    domain: string;
+    store_settings: StoreSettingsMap;
+    categories: StorefrontCategory[];
+    recommended_products: StorefrontProduct[];
+    auth_user?: {
+        id: string;
+        name: string;
+        email: string;
+    } | null;
+}

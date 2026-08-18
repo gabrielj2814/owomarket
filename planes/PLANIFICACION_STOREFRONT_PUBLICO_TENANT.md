@@ -122,13 +122,15 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 5: Página de Carrito de Compras y Validación de Cupones (`/cart`)
-- **Controlador Inertia**: `ViewCartTenantGETController.php`.
-- **Vista**: [resources/js/pages/marketplace/cart/TenantCartPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/cart/TenantCartPage.tsx):
-  - Tabla de productos en el carrito con imagen, variante elegida, precio unitario, control de cantidad y eliminación.
-  - **Caja de Aplicación de Cupones**: Input para código de cupón con validación en vivo vía API (`/api-tenant/coupon`), aplicando descuento porcentual o monto fijo con feedback inmediato.
-  - Resumen financiero: Subtotal, Descuento por Cupón, Impuestos estimados y Total final.
-  - Botón "Continuar Comprando" y "Proceder al Checkout".
+### 🔹 Fase 5: Página de Carrito de Compras y Validación de Cupones (`/cart`) ✅
+- [x] **Controlador Inertia**: [ViewCartTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewCartTenantGETController.php) con carga de configuración del comercio, categorías y productos recomendados.
+- [x] **Rutas Tenant**: [src/Marketplace/Infrastructure/Http/Routes/tenant.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Routes/tenant.php) registrada como `tenant.cart`.
+- [x] **Vista Carrito de Compras**: [resources/js/pages/marketplace/cart/TenantCartPage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/cart/TenantCartPage.tsx):
+  - Tabla interactiva de artículos con miniatura, enlaces, variantes seleccionadas (chips de Color/Talla), selector numérico de cantidades con límites de stock y botón de eliminación por ítem.
+  - Botón de vaciado completo del carrito y enlace para continuar comprando.
+  - **Motor de Cupones de Descuento**: Input con validación en vivo vía `CouponServices.validate` (`/api-tenant/coupon/validate`), aplicando descuentos porcentuales o de monto fijo con cálculo en tiempo real del ahorro y botón para remover cupón.
+  - Tarjeta de Resumen Financiero fija (Subtotal, Descuento, Estimación de envío y Total) con botón para avanzar a Checkout.
+  - Carrusel de productos recomendados para venta cruzada.
 - ➔ `commit: feat(storefront): implement shopping cart page with dynamic coupon discounts`
 
 ---
@@ -172,6 +174,6 @@ flowchart TD
 | **Fase 2** | Home Page (`/`) con Hero Banner, Categorías, Novedades y Cards de Producto | ✅ Completado | `feat(storefront): implement dynamic tenant storefront home page` |
 | **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ✅ Completado | `feat(storefront): implement tenant catalog with faceted filters and search` |
 | **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ✅ Completado | `feat(storefront): implement product detail page with variants selector and reviews system` |
-| **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ⏳ Pendiente | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
+| **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ✅ Completado | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
 | **Fase 6** | Checkout (`/checkout`), Cálculo de Envíos, Creación de Pedido y Confirmación | ⏳ Pendiente | `feat(storefront): implement complete checkout flow and order confirmation` |
 | **Fase 7** | Testing Integral E2E, QA, Laravel Pint y Suite Completa | ⏳ Pendiente | `test(storefront): complete tenant storefront end-to-end test suite and quality assurance` |
