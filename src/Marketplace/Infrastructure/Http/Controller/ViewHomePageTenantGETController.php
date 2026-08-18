@@ -26,11 +26,17 @@ final class ViewHomePageTenantGETController extends Controller
         // 1. Fetch Store Settings
         $storeSettings = [];
         try {
-            if ($this->getStoreSettingsUseCase) {
-                $settingsEntity = $this->getStoreSettingsUseCase->execute();
-                $storeSettings = $settingsEntity->toKeyValueMap();
-            }
+            $useCase = $this->getStoreSettingsUseCase ?? app(GetStoreSettingsUseCase::class);
+            $settingsEntity = $useCase->execute();
+            $storeSettings = $settingsEntity->toKeyValueMap();
         } catch (\Throwable) {
+            $storeSettings = [
+                'store_name' => 'Mi Tienda Online',
+                'currency' => 'USD',
+            ];
+        }
+
+        if (empty($storeSettings)) {
             $storeSettings = [
                 'store_name' => 'Mi Tienda Online',
                 'currency' => 'USD',

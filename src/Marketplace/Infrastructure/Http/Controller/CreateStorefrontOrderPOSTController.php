@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Src\Coupon\Infrastructure\Eloquent\Models\Coupon;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
 use Src\Order\Application\DTOs\CreateOrderData;
-use Src\Order\Application\DTOs\OrderItemData;
+use Src\Order\Application\DTOs\OrderItemInputData;
 use Src\Order\Application\UseCases\CreateOrderUseCase;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
 use Src\Product\Infrastructure\Eloquent\Models\ProductVariant;
@@ -86,7 +86,7 @@ final class CreateStorefrontOrderPOSTController extends Controller
 
                 $calculatedSubtotal += ($price * $qty);
 
-                $orderItemsDto[] = new OrderItemData(
+                $orderItemsDto[] = new OrderItemInputData(
                     productId: $pId,
                     productName: $pName,
                     sku: $sku,
@@ -157,12 +157,16 @@ final class CreateStorefrontOrderPOSTController extends Controller
 
             $order = $this->createOrderUseCase->execute($dto);
 
+            $orderId = $order->id()->value();
+            $orderNum = $order->orderNumber()->value();
+            $orderTotal = $order->total()->amount();
+
             return ApiResponse::success(
                 data: [
-                    'order_id' => $order->id->value,
-                    'order_number' => $order->orderNumber,
-                    'total' => $order->total,
-                    'redirect_url' => "/order/{$order->id->value}/confirmation",
+                    'order_id' => $orderId,
+                    'order_number' => $orderNum,
+                    'total' => $orderTotal,
+                    'redirect_url' => "/order/{$orderId}/confirmation",
                 ],
                 message: '¡Pedido creado exitosamente!',
                 code: 201

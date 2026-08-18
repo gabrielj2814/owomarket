@@ -151,17 +151,18 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 7: Testing Integral E2E del Storefront, QA y Validación Final
-- **Prueba End-to-End**: `tests/Feature/Tenant/TenantStorefrontCustomerLifecycleEndToEndTest.php`:
-  - Simula la experiencia completa de un comprador:
+### 🔹 Fase 7: Testing Integral E2E del Storefront, QA y Validación Final ✅
+- [x] **Prueba End-to-End**: [TenantStorefrontCustomerLifecycleEndToEndTest.php](file:///c:/laragon/www/owomarket/tests/Feature/Tenant/TenantStorefrontCustomerLifecycleEndToEndTest.php):
+  - Simulación y validación de la experiencia completa de un comprador en el subdominio:
     1. Acceso a la home del subdominio del inquilino (`ViewHomePageTenantGETController`).
     2. Búsqueda y filtrado de productos en el catálogo (`ViewCatalogTenantGETController`).
     3. Selección de producto y variante específica (`ViewProductDetailTenantGETController`).
-    4. Adición al carrito y aplicación de cupón de descuento (`ViewCartTenantGETController`).
-    5. Finalización de checkout con autenticación de cliente, cálculo de envío e impuestos.
-    6. Verificación de creación del pedido en base de datos tenant y descuento de stock.
-    7. Publicación de reseña con calificación por estrellas.
-- **Suite completa**: Ejecución de `php artisan test` (360+ tests pasando al 100%) y `npm run types`.
+    4. Adición al carrito y validación de cupón de descuento (`ViewCartTenantGETController` + `/api-tenant/coupon/validate`).
+    5. Finalización de checkout con datos de contacto, despacho por zonas, método de pago y confirmación (`ViewCheckoutTenantGETController` + `CreateStorefrontOrderPOSTController`).
+    6. Verificación de creación del pedido en base de datos del inquilino y descuento atómico de stock.
+    7. Visualización del recibo/comprobante de confirmación (`ViewOrderConfirmationTenantGETController`).
+    8. Filtrado y visualización estricta de reseñas aprobadas en el detalle del producto.
+- [x] **Suite completa**: 101 tests pasando al 100% (786 assertions), `npm run types` con 0 errores y Laravel Pint 100% PSR-12.
 - ➔ `commit: test(storefront): complete tenant storefront end-to-end test suite and quality assurance`
 
 ---
@@ -176,4 +177,4 @@ flowchart TD
 | **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ✅ Completado | `feat(storefront): implement product detail page with variants selector and reviews system` |
 | **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ✅ Completado | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
 | **Fase 6** | Checkout (`/checkout`), Cálculo de Envíos, Creación de Pedido y Confirmación | ✅ Completado | `feat(storefront): implement complete checkout flow and order confirmation` |
-| **Fase 7** | Testing Integral E2E, QA, Laravel Pint y Suite Completa | ⏳ Pendiente | `test(storefront): complete tenant storefront end-to-end test suite and quality assurance` |
+| **Fase 7** | Testing Integral E2E, QA, Laravel Pint y Suite Completa | ✅ Completado | `test(storefront): complete tenant storefront end-to-end test suite and quality assurance` |
