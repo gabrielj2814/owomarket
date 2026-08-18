@@ -69,13 +69,13 @@ flowchart TD
 
 ## 📌 Desglose por Fases de Implementación:
 
-### 🔹 Fase 1: Layout Global del Storefront, Navbar, Footer y Estado del Carrito
-- **Contexto React**: [resources/js/contexts/CartContext.tsx](file:///c:/laragon/www/owomarket/resources/js/contexts/CartContext.tsx) con almacenamiento persistente en `localStorage`, cálculo reactivo de subtotales, variantes, adición y conteo de ítems.
-- **Layout Base**: [resources/js/components/layouts/StorefrontLayout.tsx](file:///c:/laragon/www/owomarket/resources/js/components/layouts/StorefrontLayout.tsx):
-  - **Barra Superior**: Información de contacto, moneda y redes sociales dinámicas desde `TenantSettings`.
-  - **Navbar de Tienda**: Logotipo del comercio, barra de búsqueda en tiempo real, menú de categorías desplegable, botón de carrito con badge animado y acceso a cuenta.
-  - **Mini-Cart Drawer**: Carrito lateral deslizable Flowbite con lista de ítems, selector de cantidad, eliminación rápida y botón "Finalizar Compra".
-  - **Footer de Tienda**: Identidad de marca, enlaces de navegación, formas de pago aceptadas, dirección física y botón flotante de WhatsApp.
+### 🔹 Fase 1: Layout Global del Storefront, Navbar, Footer y Estado del Carrito ✅
+- [x] **Tipos TypeScript**: [resources/js/types/models/Cart.d.ts](file:///c:/laragon/www/owomarket/resources/js/types/models/Cart.d.ts) (`CartItem`, `CartItemAttribute`, `AppliedCoupon`, `CartState`).
+- [x] **Contexto React**: [resources/js/contexts/CartContext.tsx](file:///c:/laragon/www/owomarket/resources/js/contexts/CartContext.tsx) con persistencia en `localStorage`, cálculo reactivo de subtotales, cupones, adición de variantes y conteo de ítems.
+- [x] **Mini-Cart Drawer**: [resources/js/components/ui/storefront/MiniCartDrawer.tsx](file:///c:/laragon/www/owomarket/resources/js/components/ui/storefront/MiniCartDrawer.tsx) con selector de cantidad, eliminación, estado vacío amigable y botones de acción rápida.
+- [x] **Navbar de Tienda**: [resources/js/components/ui/storefront/StorefrontNavbar.tsx](file:///c:/laragon/www/owomarket/resources/js/components/ui/storefront/StorefrontNavbar.tsx) con buscador en tiempo real, branding dinámico del tenant, menú de categorías y contador animado de carrito.
+- [x] **Footer de Tienda**: [resources/js/components/ui/storefront/StorefrontFooter.tsx](file:///c:/laragon/www/owomarket/resources/js/components/ui/storefront/StorefrontFooter.tsx) con enlaces rápidos, datos de contacto, sellos de seguridad y botón flotante de WhatsApp.
+- [x] **Layout Base**: [resources/js/components/layouts/StorefrontLayout.tsx](file:///c:/laragon/www/owomarket/resources/js/components/layouts/StorefrontLayout.tsx) envolviendo toda la experiencia pública del comprador.
 - ➔ `commit: feat(storefront): implement storefront layout, navbar, footer and cart context`
 
 ---
@@ -172,7 +172,7 @@ flowchart TD
 
 | Fase | Alcance | Estado | Commit |
 | :--- | :--- | :---: | :--- |
-| **Fase 1** | Layout Storefront, Navbar dinámico, Footer, CartContext y Mini-Cart Drawer | ⏳ Pendiente | `feat(storefront): implement storefront layout, navbar, footer and cart context` |
+| **Fase 1** | Layout Storefront, Navbar dinámico, Footer, CartContext y Mini-Cart Drawer | ✅ Completado | `feat(storefront): implement storefront layout, navbar, footer and cart context` |
 | **Fase 2** | Home Page (`/`) con Hero Banner, Categorías, Novedades y Cards de Producto | ⏳ Pendiente | `feat(storefront): implement dynamic tenant storefront home page` |
 | **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ⏳ Pendiente | `feat(storefront): implement tenant catalog with faceted filters and search` |
 | **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ⏳ Pendiente | `feat(storefront): implement product detail page with variants selector and reviews system` |
