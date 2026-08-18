@@ -295,9 +295,11 @@ flowchart TD
 - [x] Servicio Axios `resources/js/Services/ReviewServices.ts` con tipado estricto `ApiResponse`, consultas por ID, resumen de ratings, moderación, respuestas, edición y eliminación.
 - ➔ `commit: feat(review): implement frontend review types and services`
 
-#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/review/`)
-- [ ] Vista `ReviewIndexPage.tsx` con filtros por producto, rating y estado de aprobación, moderación masiva y modal de respuesta al cliente.
-- [ ] Controlador Web Inertia y navegación en el Dashboard.
+#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/review/`) ✅
+- [x] Vista interactiva `ReviewIndexPage.tsx` con resumen analítico de calificaciones (KPI global de estrellas, desglose por nivel de 1★ a 5★ con barras de progreso).
+- [x] Filtros por búsqueda textual, número de estrellas, estado de moderación (Aprobada / Oculta) y estado de respuesta.
+- [x] Moderación en vivo con toggle inmediato, modal para responder públicamente al cliente y modal para eliminar reseñas.
+- [x] Controlador Web Inertia `ViewReviewIndexGETController.php` y rutas web tenant en `routes/tenant.php`.
 - ➔ `commit: feat(review): implement product reviews backoffice moderation ui`
 
 #### 🔹 Fase 7: Testing Integral, QA y Validación Final
