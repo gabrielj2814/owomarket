@@ -23,6 +23,7 @@ import {
     HiAdjustments,
     HiBookmark,
     HiChartPie,
+    HiCog,
     HiDocumentText,
     HiIdentification,
     HiLogout,
@@ -30,6 +31,7 @@ import {
     HiSearch,
     HiShoppingBag,
     HiShoppingCart,
+    HiStar,
     HiTicket,
     HiTruck,
     HiUser,
@@ -195,6 +197,10 @@ const NavBarMovilDashboardComponent = () => {
                                                 Clientes
                                             </SidebarItem>
 
+                                            <SidebarItem icon={HiStar} href={`/review/backoffice/${state.authUser.user_id}/module`}>
+                                                Reseñas
+                                            </SidebarItem>
+
                                             <SidebarCollapse icon={LuReceipt} label="Facturación">
                                                 <SidebarItem icon={HiDocumentText} href={`/billing/backoffice/${state.authUser.user_id}/module`}>
                                                     Facturas
@@ -205,6 +211,9 @@ const NavBarMovilDashboardComponent = () => {
                                             </SidebarCollapse>
 
                                             <SidebarCollapse icon={LuSettings} label="Configuración">
+                                                <SidebarItem icon={HiCog} href={`/settings/backoffice/${state.authUser.user_id}/module`}>
+                                                    General
+                                                </SidebarItem>
                                                 <SidebarItem icon={HiReceiptTax} href={`/tax/backoffice/${state.authUser.user_id}/module`}>
                                                     Impuestos
                                                 </SidebarItem>
