@@ -13,8 +13,7 @@ flowchart TD
         PROD["📦 Catálogo de Productos (Completado)"]
         BILL["🧾 Facturación y Pagos (Completado)"]
         CUST["👥 Módulo 1: Clientes y CRM (Completado)"]
-        
-        ORD["📦 Módulo 2: Pedidos y Ventas (orders & order_items)"]
+        ORD["📦 Módulo 2: Pedidos y Ventas (Completado)"]
         SHIP["🚚 Módulo 3: Envíos y Tracking (shipments)"]
         REV["⭐ Módulo 4: Reseñas y Moderación (product_reviews)"]
         SETT["⚙️ Módulo 5: Configuración de Tienda (tenant_settings)"]
@@ -105,14 +104,14 @@ flowchart TD
 
 ---
 
-# 📦 MÓDULO 2: Gestión de Pedidos y Ventas (`src/Order/`)
+# 📦 MÓDULO 2: Gestión de Pedidos y Ventas (`src/Order/`) ✅ COMPLETADO
 **Tablas:** `orders`, `order_items`
 
 ### 🎯 Objetivos:
-- Gestión completa del flujo de ventas y pedidos: `pending` ➔ `confirmed` ➔ `processing` ➔ `shipped` ➔ `delivered` ➔ `cancelled` / `refunded`.
-- Emisión manual de órdenes en Backoffice (ventas telefónicas, cotizaciones) y recepción de compras online.
-- Cálculo matemático exacto integrando Impuestos (Tax), Envíos (Shipping) y Cupones (Coupon).
-- **Puente con Facturación:** Generación instantánea de Factura (`Invoice`) con 1 clic al confirmar el pago.
+- [x] Gestión completa del flujo de ventas y pedidos: `pending` ➔ `confirmed` ➔ `processing` ➔ `shipped` ➔ `delivered` ➔ `cancelled` / `refunded`.
+- [x] Emisión manual de órdenes en Backoffice (ventas telefónicas, cotizaciones) y recepción de compras online.
+- [x] Cálculo matemático exacto integrando Impuestos (Tax), Envíos (Shipping) y Cupones (Coupon).
+- [x] **Puente con Facturación:** Generación instantánea de Factura (`Invoice`) con 1 clic al confirmar el pago.
 
 ---
 
