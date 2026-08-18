@@ -174,9 +174,9 @@ flowchart TD
 - [x] Integración de navegación en `SidebarDashboardComponent.tsx` y `NavBarMovilDashboardComponent.tsx`.
 - ➔ `commit: feat(order): implement tenant order management dashboard and detail views`
 
-#### 🔹 Fase 7: Testing Integral y QA del Módulo de Pedidos
-- [ ] Prueba End-to-End: Creación de orden ➔ Procesamiento de pago ➔ Facturación automática ➔ Despacho.
-- [ ] Suite completa: `php artisan test`, `npm run types` y `vendor/bin/pint`.
+#### 🔹 Fase 7: Testing Integral y QA del Módulo de Pedidos ✅
+- [x] Prueba End-to-End (`OrderLifecycleEndToEndTest.php`): Creación de orden con múltiples productos ➔ Cálculo exacto de impuestos, envío y descuentos ➔ Transición a confirmada y en preparación ➔ Cobro y actualización a pagada ➔ Facturación fiscal automática con el módulo Billing ➔ Despacho con courier ➔ Entrega exitosa ➔ Flujo de anulación de orden secundaria y métricas agregadas.
+- [x] Suite completa: `php artisan test` (265 passing tests, 1266 assertions), `npm run types` (`tsc --noEmit`) 100% limpio y `vendor/bin/pint`.
 - ➔ `commit: test(order): complete order module test suite and quality assurance`
 
 ---
