@@ -9,6 +9,7 @@ return [
     App\Providers\BrandServiceProvider::class,
     App\Providers\CategoryServiceProvider::class,
     App\Providers\CouponServiceProvider::class,
+    App\Providers\CustomerServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\PaymentServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
