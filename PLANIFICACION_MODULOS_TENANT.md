@@ -254,14 +254,45 @@ flowchart TD
 ---
 
 ### 📌 Desglose por Fases - Módulo Reseñas:
-- [ ] **Fase 1**: Entidad `ProductReview`, Value Objects (`Rating`, `ReviewStatus`).
-- [ ] **Fase 2**: Casos de uso (`ListProductReviewsUseCase`, `ModerateReviewUseCase`, `DeleteReviewUseCase`).
-- [ ] **Fase 3**: Modelo Eloquent `ProductReview.php`, Repositorio y Service Provider.
-- [ ] **Fase 4**: Controladores API (`POST /api-tenant/review/filter`, `PUT /api-tenant/review/{id}/status`) y tests.
-- [ ] **Fase 5**: Tipos TypeScript y `ReviewServices.ts`.
-- [ ] **Fase 6**: Vista `ReviewIndexPage.tsx` con filtros por producto y estado de moderación.
-- [ ] **Fase 7**: Testing integral y QA.
-- ➔ `commit: feat(review): implement product reviews moderation and ratings module`
+#### 🔹 Fase 1: Dominio Core de Reseñas y Calificaciones (`src/Review/Domain/`) ✅
+- [x] Entidad `ProductReview` (Aggregate Root) con métodos de moderación (`approve`, `reject`), respuestas de soporte (`respond`, `clearResponse`) y actualización de contenido (`updateContent`, `markAsVerified`).
+- [x] Value Objects inmutables: `ReviewId`, `Rating` (validación de 1 a 5 estrellas y clasificación de sentimiento).
+- [x] Excepciones de dominio: `ReviewNotFoundException`, `InvalidRatingException`, `DuplicateReviewException`.
+- [x] Tests unitarios de dominio: `ProductReviewDomainTest.php` y `ReviewValueObjectsTest.php` (9 tests, 44 aserciones).
+- ➔ `commit: feat(review): implement product review domain entities, value objects and unit tests`
+
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Review/Application/`)
+- [ ] Contrato `ReviewRepositoryInterface`.
+- [ ] DTOs: `CreateReviewData`, `ModerateReviewData`, `RespondReviewData`, `FilterReviewsCriteria`, `PaginatedReviewResult`, `ProductRatingSummaryData`.
+- [ ] Casos de uso: `CreateProductReviewUseCase`, `ModerateReviewUseCase`, `RespondReviewUseCase`, `ConsultReviewByIdUseCase`, `FilterReviewsUseCase`, `GetProductRatingSummaryUseCase`, `DeleteReviewUseCase`.
+- [ ] Tests unitarios de aplicación con Mockery.
+- ➔ `commit: feat(review): implement product review use cases, dtos and repository interface`
+
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Review/Infrastructure/`)
+- [ ] Modelo Eloquent `src/Review/Infrastructure/Eloquent/Models/ProductReview.php` con relaciones a `Product`, `Customer` y `Order`.
+- [ ] Repositorio `EloquentReviewRepository.php` transaccional con cálculo de promedios de calificación.
+- [ ] Proveedor `ReviewServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [ ] Tests de integración con base de datos tenant.
+- ➔ `commit: feat(review): implement product review eloquent model, repository and service provider`
+
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Review/Infrastructure/Http/`)
+- [ ] FormRequests de validación y Controladores API (`/api-tenant/review/*`).
+- [ ] Tests de Feature API Tenant.
+- ➔ `commit: feat(review): implement product review api controllers, routes and feature tests`
+
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
+- [ ] Tipos: `resources/js/types/models/ProductReview.d.ts`, `FormProductReview.d.ts`.
+- [ ] Servicio Axios `resources/js/Services/ReviewServices.ts`.
+- ➔ `commit: feat(review): implement frontend review types and services`
+
+#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/review/`)
+- [ ] Vista `ReviewIndexPage.tsx` con filtros por producto, rating y estado de aprobación, moderación masiva y modal de respuesta al cliente.
+- [ ] Controlador Web Inertia y navegación en el Dashboard.
+- ➔ `commit: feat(review): implement product reviews backoffice moderation ui`
+
+#### 🔹 Fase 7: Testing Integral, QA y Validación Final
+- [ ] Prueba End-to-End (`ReviewModerationLifecycleEndToEndTest.php`) y suite completa.
+- ➔ `commit: test(review): complete review module test suite and quality assurance`
 
 ---
 
