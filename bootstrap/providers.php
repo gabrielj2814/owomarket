@@ -21,5 +21,6 @@ return [
     App\Providers\TaxServiceProvider::class,
     App\Providers\TenancyServiceProvider::class,
     App\Providers\TenantServiceProvider::class,
+    App\Providers\TenantSettingsServiceProvider::class,
     App\Providers\UserServiceProvider::class,
 ];

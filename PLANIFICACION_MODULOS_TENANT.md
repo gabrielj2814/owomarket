@@ -332,11 +332,11 @@ flowchart TD
 - [x] Tests unitarios de aplicación con Mockery (`TenantSettingsUseCasesTest.php`, 8 tests, 25 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings use cases, dtos and repository interface`
 
-#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/TenantSettings/Infrastructure/Eloquent/`)
-- [ ] Modelo Eloquent `src/TenantSettings/Infrastructure/Eloquent/Models/TenantSetting.php`.
-- [ ] Repositorio `EloquentTenantSettingsRepository.php` con transacciones e hidratación bidireccional.
-- [ ] Proveedor `TenantSettingsServiceProvider.php` registrado en `bootstrap/providers.php`.
-- [ ] Tests de integración con base de datos tenant.
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/TenantSettings/Infrastructure/Eloquent/`) ✅
+- [x] Modelo Eloquent `src/TenantSettings/Infrastructure/Eloquent/Models/TenantSetting.php` con soporte UUID y casts.
+- [x] Repositorio `EloquentTenantSettingsRepository.php` transaccional con mapeo agrupado de atributos (`KEY_GROUP_MAP`) y métodos para parámetros individuales y colectivos de la tienda.
+- [x] Proveedor `TenantSettingsServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [x] Tests de integración con base de datos tenant (`TenantSettingsRepositoryTest.php`, 2 tests, 20 aserciones).
 - ➔ `commit: feat(settings): implement tenant settings eloquent model, repository and service provider`
 
 #### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/TenantSettings/Infrastructure/Http/`)
