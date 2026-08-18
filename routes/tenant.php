@@ -39,4 +39,5 @@ Route::middleware([
     Route::prefix('customer')->group(callback: base_path('src/Customer/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('order')->group(callback: base_path('src/Order/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('review')->group(callback: base_path('src/Review/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('settings')->group(callback: base_path('src/TenantSettings/Infrastructure/Http/Routes/tenant.php'));
 });

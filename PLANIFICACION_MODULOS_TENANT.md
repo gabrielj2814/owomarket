@@ -357,9 +357,13 @@ flowchart TD
 - [x] Servicio Axios `resources/js/Services/TenantSettingsServices.ts` con tipado estricto `ApiResponse`, consultas por ID, lectura agrupada y plana, mutaciones atómicas y CRUD de parámetros individuales.
 - ➔ `commit: feat(settings): implement frontend tenant settings types and services`
 
-#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/settings/`)
-- [ ] Vista `TenantSettingsPage.tsx` organizada por pestañas Flowbite (General, Apariencia & Marca, Redes Sociales, SEO & Metadatos).
-- [ ] Controlador Web Inertia y rutas.
+#### 🔹 Fase 6: Vistas del Dashboard en React Flowbite (`resources/js/pages/tenant/modules/settings/`) ✅
+- [x] Vista `TenantSettingsPage.tsx` organizada por pestañas Flowbite:
+  - **General & Contacto**: Nombre de tienda, correo electrónico, moneda principal (CLP, USD, EUR, etc.), teléfono de soporte y dirección física.
+  - **Imagen y Marca**: Logotipo y Banner con previsualización en vivo.
+  - **Redes Sociales**: Canales oficiales (Facebook, Instagram, WhatsApp Business, Twitter/X).
+  - **SEO & Buscadores**: Title tag, meta description, keywords y **Google Search Result Card** interactivo en tiempo real.
+- [x] Controlador Web Inertia `ViewTenantSettingsIndexGETController.php` y rutas tenant registradas en `routes/tenant.php`.
 - ➔ `commit: feat(settings): implement tenant settings backoffice ui with flowbite tabs`
 
 #### 🔹 Fase 7: Testing Integral, QA y Validación Final
