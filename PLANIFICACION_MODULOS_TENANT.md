@@ -198,11 +198,11 @@ flowchart TD
 - [x] Tests unitarios de dominio: `ShipmentDomainTest.php` y `ShipmentValueObjectsTest.php` (16 tests, 51 aserciones).
 - ➔ `commit: feat(shipment): implement shipment domain entities, value objects and unit tests`
 
-#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Shipment/Application/`)
-- [ ] Contrato `ShipmentRepositoryInterface`.
-- [ ] DTOs: `CreateShipmentData`, `UpdateTrackingData`, `FilterShipmentsCriteria`, `PaginatedShipmentResult`, `ShipmentMetricsData`.
-- [ ] Casos de uso: `CreateShipmentUseCase`, `UpdateShipmentTrackingUseCase`, `MarkShipmentAsDeliveredUseCase`, `ConsultShipmentByIdUseCase`, `ConsultShipmentByOrderIdUseCase`, `FilterShipmentsUseCase`, `GetShipmentMetricsUseCase`.
-- [ ] Tests unitarios de aplicación con Mockery.
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Shipment/Application/`) ✅
+- [x] Contrato `ShipmentRepositoryInterface`.
+- [x] DTOs: `CreateShipmentData`, `UpdateTrackingData`, `FilterShipmentsCriteria`, `PaginatedShipmentResult`, `ShipmentMetricsData`.
+- [x] Casos de uso: `CreateShipmentUseCase`, `UpdateShipmentTrackingUseCase`, `MarkShipmentAsDeliveredUseCase`, `ConsultShipmentByIdUseCase`, `ConsultShipmentByOrderIdUseCase`, `FilterShipmentsUseCase`, `GetShipmentMetricsUseCase`.
+- [x] Tests unitarios de aplicación con Mockery (`ShipmentUseCasesTest.php`, 8 tests, 31 aserciones).
 - ➔ `commit: feat(shipment): implement shipment application use cases, dtos and repository contract`
 
 #### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Shipment/Infrastructure/`)
