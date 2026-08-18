@@ -191,14 +191,44 @@ flowchart TD
 ---
 
 ### 📌 Desglose por Fases - Módulo Envíos:
-- [ ] **Fase 1**: Entidad `Shipment`, Value Objects y excepciones.
-- [ ] **Fase 2**: Casos de uso (`CreateShipmentUseCase`, `UpdateTrackingUseCase`, `ConsultShipmentByOrderUseCase`).
-- [ ] **Fase 3**: Modelo Eloquent `Shipment.php`, Repositorio y Service Provider.
-- [ ] **Fase 4**: Controladores API (`POST /api-tenant/shipment/create`, `PUT /api-tenant/shipment/{id}/tracking`) y tests.
-- [ ] **Fase 5**: Tipos TypeScript y `ShipmentServices.ts`.
-- [ ] **Fase 6**: Modal/Pestaña de envíos en la vista de detalle del pedido (`ShowOrderDetailPage.tsx`).
-- [ ] **Fase 7**: Testing integral y QA.
-- ➔ `commit: feat(shipment): implement physical shipments, tracking and fulfillment module`
+#### 🔹 Fase 1: Dominio Core de Envíos y Guías de Despacho (`src/Shipment/Domain/`) ✅
+- [x] Entidad `Shipment` (Aggregate Root) con métodos de transición de ciclo de vida (`assignTrackingNumber`, `markAsDelivered`, `updateCarrierAndService`, `updateNotes`).
+- [x] Value Objects inmutables: `ShipmentId`, `TrackingNumber`, `Carrier`, `ShipmentServiceType`, `ShipmentCost`, `ShipmentStatus` (enum `pending`, `in_transit`, `delivered`).
+- [x] Excepciones de dominio: `ShipmentNotFoundException`, `InvalidShipmentDataException`, `ShipmentAlreadyDeliveredException`.
+- [x] Tests unitarios de dominio: `ShipmentDomainTest.php` y `ShipmentValueObjectsTest.php` (16 tests, 51 aserciones).
+- ➔ `commit: feat(shipment): implement shipment domain entities, value objects and unit tests`
+
+#### 🔹 Fase 2: Capa de Aplicación, DTOs y Casos de Uso (`src/Shipment/Application/`)
+- [ ] Contrato `ShipmentRepositoryInterface`.
+- [ ] DTOs: `CreateShipmentData`, `UpdateTrackingData`, `FilterShipmentsCriteria`, `PaginatedShipmentResult`, `ShipmentMetricsData`.
+- [ ] Casos de uso: `CreateShipmentUseCase`, `UpdateShipmentTrackingUseCase`, `MarkShipmentAsDeliveredUseCase`, `ConsultShipmentByIdUseCase`, `ConsultShipmentByOrderIdUseCase`, `FilterShipmentsUseCase`, `GetShipmentMetricsUseCase`.
+- [ ] Tests unitarios de aplicación con Mockery.
+- ➔ `commit: feat(shipment): implement shipment application use cases, dtos and repository contract`
+
+#### 🔹 Fase 3: Infraestructura, Modelos Eloquent y Service Provider (`src/Shipment/Infrastructure/`)
+- [ ] Modelo Eloquent `src/Shipment/Infrastructure/Eloquent/Models/Shipment.php`.
+- [ ] Repositorio `EloquentShipmentRepository.php` y sincronización con el estado de `Order`.
+- [ ] Proveedor `ShipmentServiceProvider.php` registrado en `bootstrap/providers.php`.
+- [ ] Tests de integración con base de datos tenant.
+- ➔ `commit: feat(shipment): implement shipment eloquent model, repository and service provider`
+
+#### 🔹 Fase 4: Endpoints API REST y FormRequests (`src/Shipment/Infrastructure/Http/`)
+- [ ] FormRequests de validación y Controladores API (`/api-tenant/shipment/*`).
+- [ ] Tests de Feature API Tenant.
+- ➔ `commit: feat(shipment): implement shipment api controllers, routes and feature tests`
+
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
+- [ ] Tipos: `resources/js/types/models/Shipment.d.ts`, `FormShipment.d.ts`.
+- [ ] Servicio Axios `resources/js/services/ShipmentServices.ts`.
+- ➔ `commit: feat(shipment): implement frontend shipment types and services`
+
+#### 🔹 Fase 6: Modal/Pestaña de Despachos en el Backoffice y Detalle de Pedido
+- [ ] Integración en `ShowOrderDetailPage.tsx` con modal interactivo para generar guía de despacho y tracking en vivo.
+- ➔ `commit: feat(shipment): implement shipment tracking ui and integration in order detail`
+
+#### 🔹 Fase 7: Testing Integral, QA y Validación Final
+- [ ] Prueba End-to-End (`ShipmentLifecycleEndToEndTest.php`) y suite completa.
+- ➔ `commit: test(shipment): complete shipment module test suite and quality assurance`
 
 ---
 
