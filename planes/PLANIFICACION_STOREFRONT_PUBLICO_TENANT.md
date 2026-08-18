@@ -80,14 +80,14 @@ flowchart TD
 
 ---
 
-### 🔹 Fase 2: Home Page de la Tienda Pública (`/`)
-- **Controlador Inertia**: [ViewHomePageTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewHomePageTenantGETController.php) (obtiene configuración del tenant, categorías principales y productos destacados del catálogo).
-- **Vista**: [resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx):
-  - Banner Hero principal configurable con llamado a la acción (CTA) y títulos.
-  - Carrusel/Grid de Categorías destacadas con iconos e imágenes.
-  - Sección **"Novedades y Más Vendidos"** con Cards de Producto:
-    - Imagen, Marca, Título, Estrellas promedio de calificación (`rating`), Precio, Precio tachado de oferta y botón interactivo "Añadir al Carrito" con feedback visual.
-  - Sección de Beneficios de la Tienda (Envíos seguros, Métodos de pago, Soporte directo).
+### 🔹 Fase 2: Home Page de la Tienda Pública (`/`) ✅
+- [x] **Controlador Inertia**: [ViewHomePageTenantGETController.php](file:///c:/laragon/www/owomarket/src/Marketplace/Infrastructure/Http/Controller/ViewHomePageTenantGETController.php) con consultas transaccionales de configuración del comercio (`TenantSettings`), categorías activas, productos destacados y novedades con cálculo de calificación promedio en estrellas (`ProductReview`).
+- [x] **Card de Producto Interactiva**: [resources/js/components/ui/storefront/ProductCard.tsx](file:///c:/laragon/www/owomarket/resources/js/components/ui/storefront/ProductCard.tsx) con zoom en hover, badges de descuento y disponibilidad, visualizador de estrellas, precios y botón "Añadir al Carrito" directo a `CartContext`.
+- [x] **Vista Home Page**: [resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx](file:///c:/laragon/www/owomarket/resources/js/pages/marketplace/home/TenantStorefrontHomePage.tsx):
+  - Banner Hero principal configurable con degradados, imagen de portada y botones de acción rápida.
+  - Grid de Categorías destacadas con iconos e imágenes.
+  - Sección de **"Productos Destacados"** y **"Novedades"** con grids responsivos.
+  - Banner promocional de Cupones de Descuento.
 - ➔ `commit: feat(storefront): implement dynamic tenant storefront home page`
 
 ---
@@ -173,7 +173,7 @@ flowchart TD
 | Fase | Alcance | Estado | Commit |
 | :--- | :--- | :---: | :--- |
 | **Fase 1** | Layout Storefront, Navbar dinámico, Footer, CartContext y Mini-Cart Drawer | ✅ Completado | `feat(storefront): implement storefront layout, navbar, footer and cart context` |
-| **Fase 2** | Home Page (`/`) con Hero Banner, Categorías, Novedades y Cards de Producto | ⏳ Pendiente | `feat(storefront): implement dynamic tenant storefront home page` |
+| **Fase 2** | Home Page (`/`) con Hero Banner, Categorías, Novedades y Cards de Producto | ✅ Completado | `feat(storefront): implement dynamic tenant storefront home page` |
 | **Fase 3** | Catálogo (`/catalog`), Búsqueda en vivo, Filtros facetados y Ordenamiento | ⏳ Pendiente | `feat(storefront): implement tenant catalog with faceted filters and search` |
 | **Fase 4** | Detalle de Producto (`/product/{slug}`), Variantes y Sistema de Reseñas 1-5★ | ⏳ Pendiente | `feat(storefront): implement product detail page with variants selector and reviews system` |
 | **Fase 5** | Carrito de Compras (`/cart`) con aplicación de Cupones de Descuento | ⏳ Pendiente | `feat(storefront): implement shopping cart page with dynamic coupon discounts` |
