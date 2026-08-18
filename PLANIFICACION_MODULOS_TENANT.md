@@ -226,9 +226,9 @@ flowchart TD
 - [x] Tests de Feature API Tenant (`ShipmentApiTest.php`, 7 tests, 33 aserciones).
 - ➔ `commit: feat(shipment): implement shipment api controllers, routes and feature tests`
 
-#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`)
-- [ ] Tipos: `resources/js/types/models/Shipment.d.ts`, `FormShipment.d.ts`.
-- [ ] Servicio Axios `resources/js/services/ShipmentServices.ts`.
+#### 🔹 Fase 5: Servicios Frontend y Definición de Tipos TypeScript (`resources/js/`) ✅
+- [x] Tipos: `resources/js/types/models/Shipment.d.ts`, `FormShipment.d.ts`, `ErrorsFormShipment.d.ts`.
+- [x] Servicio Axios `resources/js/Services/ShipmentServices.ts` con tipado estricto `ApiResponse`, consultas por ID, orden, actualización de tracking, entrega y métricas.
 - ➔ `commit: feat(shipment): implement frontend shipment types and services`
 
 #### 🔹 Fase 6: Modal/Pestaña de Despachos en el Backoffice y Detalle de Pedido
