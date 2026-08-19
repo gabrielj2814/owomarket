@@ -11,6 +11,7 @@ return [
     App\Providers\CategoryServiceProvider::class,
     App\Providers\CouponServiceProvider::class,
     App\Providers\CustomerServiceProvider::class,
+    App\Providers\ExchangeRateServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\OrderServiceProvider::class,
     App\Providers\PaymentServiceProvider::class,

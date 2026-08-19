@@ -13,7 +13,7 @@ const mockProduct: StorefrontProduct = {
     price: 89.99,
     compare_price: 119.99,
     quantity: 15,
-    is_active: true,
+    is_visible: true,
     rating: 4.8,
     reviews_count: 24,
     brand_name: 'Logitech',
