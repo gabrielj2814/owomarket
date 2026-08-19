@@ -19,6 +19,11 @@ class ExchangeRateServiceProvider extends ServiceProvider
             ExchangeRateRepositoryInterface::class,
             EloquentExchangeRateRepository::class
         );
+
+        $this->app->bind(
+            BcvScraperInterface::class,
+            BcvWebScraper::class
+        );
     }
 
     /**
@@ -26,6 +31,10 @@ class ExchangeRateServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Src\ExchangeRate\Infrastructure\Console\Commands\SyncBcvExchangeRateCommand::class,
+            ]);
+        }
     }
 }

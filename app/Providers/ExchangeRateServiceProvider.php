@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Src\ExchangeRate\Domain\Contracts\BcvScraperInterface;
 use Src\ExchangeRate\Domain\Contracts\ExchangeRateRepositoryInterface;
 use Src\ExchangeRate\Infrastructure\Eloquent\Repositories\EloquentExchangeRateRepository;
+use Src\ExchangeRate\Infrastructure\Scrapers\BcvWebScraper;
 
 class ExchangeRateServiceProvider extends ServiceProvider
 {
@@ -19,6 +21,11 @@ class ExchangeRateServiceProvider extends ServiceProvider
             ExchangeRateRepositoryInterface::class,
             EloquentExchangeRateRepository::class
         );
+
+        $this->app->bind(
+            BcvScraperInterface::class,
+            BcvWebScraper::class
+        );
     }
 
     /**
@@ -26,6 +33,10 @@ class ExchangeRateServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                \Src\ExchangeRate\Infrastructure\Console\Commands\SyncBcvExchangeRateCommand::class,
+            ]);
+        }
     }
 }
