@@ -71,7 +71,10 @@ final class CreateDirectInvoiceUseCase
             notes: $data->notes,
             orderId: $data->order_id,
             customerId: $data->customer_id,
-            metadata: $data->metadata
+            metadata: $data->metadata,
+            exchangeRate: $data->exchange_rate,
+            commissionAmount: $data->commission_amount,
+            commissionCurrency: $data->commission_currency
         );
 
         // 5. Persistir factura

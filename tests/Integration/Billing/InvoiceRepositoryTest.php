@@ -31,6 +31,9 @@ beforeEach(function () {
     if (! Schema::hasTable('invoices')) {
         (require base_path('database/migrations/tenant/2026_08_18_000002_create_invoices.php'))->up();
     }
+    if (! Schema::hasColumn('invoices', 'exchange_rate')) {
+        (require base_path('database/migrations/tenant/2026_08_19_000008_add_exchange_rate_and_dual_totals_to_invoices_table.php'))->up();
+    }
     if (! Schema::hasTable('invoice_items')) {
         (require base_path('database/migrations/tenant/2026_08_18_000003_create_invoice_items.php'))->up();
     }
@@ -138,4 +141,33 @@ it('filters invoices and calculates metrics correctly', function () {
     expect($metrics['total_paid'])->toBe(1)
         ->and($metrics['total_cancelled'])->toBe(1)
         ->and($metrics['total_billed'])->toBe(100.00);
+});
+
+it('saves and retrieves invoice with multi-currency and BCV exchange rate data', function () {
+    $item = InvoiceItem::create('Zapato Deportivo', 1, 50.00, 16.0);
+
+    $invoice = Invoice::createDirect(
+        invoiceNumber: 'FAC-2026-000555',
+        customer: ['name' => 'Comprador VE', 'email' => 'comprador@ve.com', 'address_line_1' => 'C1', 'city' => 'Caracas', 'state' => 'Miranda', 'postal_code' => '1060', 'country' => 'Venezuela'],
+        issuer: ['legal_name' => 'Tienda VE', 'tax_id' => 'J-12345678-0', 'billing_email' => 'tienda@ve.com', 'address_line_1' => 'E1', 'city' => 'Caracas', 'state' => 'Miranda', 'postal_code' => '1060', 'country' => 'Venezuela', 'invoice_prefix' => 'FAC-'],
+        items: [$item],
+        currency: 'USD',
+        exchangeRate: 775.3356,
+        commissionAmount: 2.50,
+        commissionCurrency: 'USDT'
+    );
+
+    $saved = $this->repository->save($invoice);
+
+    expect($saved->exchangeRate())->toBe(775.3356)
+        ->and($saved->totalUsd())->toBe(58.00)
+        ->and($saved->totalVes())->toBe(44969.46)
+        ->and($saved->commissionAmount())->toBe(2.50)
+        ->and($saved->commissionCurrency())->toBe('USDT');
+
+    $retrieved = $this->repository->findById($saved->id());
+    expect($retrieved)->not->toBeNull()
+        ->and($retrieved->exchangeRate())->toBe(775.3356)
+        ->and($retrieved->totalVes())->toBe(44969.46)
+        ->and($retrieved->commissionCurrency())->toBe('USDT');
 });

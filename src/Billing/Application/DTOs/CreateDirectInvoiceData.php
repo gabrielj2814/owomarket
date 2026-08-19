@@ -31,7 +31,10 @@ final class CreateDirectInvoiceData extends Data
         public ?string $notes = null,
         public ?string $order_id = null,
         public ?string $customer_id = null,
-        public ?array $metadata = null
+        public ?array $metadata = null,
+        public ?float $exchange_rate = null,
+        public ?float $commission_amount = null,
+        public ?string $commission_currency = null
     ) {}
 
     public function toCustomerAddressArray(): array

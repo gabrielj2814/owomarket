@@ -39,7 +39,14 @@ final class Invoice
         private array $items = [],
         private ?string $pdfPath = null,
         private ?string $notes = null,
-        private ?array $metadata = null
+        private ?array $metadata = null,
+        private ?float $exchangeRate = null,
+        private ?float $subtotalVes = null,
+        private ?float $totalVes = null,
+        private ?float $subtotalUsd = null,
+        private ?float $totalUsd = null,
+        private ?float $commissionAmount = null,
+        private ?string $commissionCurrency = null
     ) {
         if ($this->subtotal < 0) {
             throw new InvalidArgumentException('El subtotal de la factura no puede ser negativo.');
@@ -72,7 +79,14 @@ final class Invoice
         ?string $orderId = null,
         ?string $customerId = null,
         ?string $id = null,
-        ?array $metadata = null
+        ?array $metadata = null,
+        ?float $exchangeRate = null,
+        ?float $subtotalVes = null,
+        ?float $totalVes = null,
+        ?float $subtotalUsd = null,
+        ?float $totalUsd = null,
+        ?float $commissionAmount = null,
+        ?string $commissionCurrency = null
     ): self {
         if (empty($items)) {
             throw new InvalidArgumentException('Una factura debe contener al menos un ítem.');
@@ -100,6 +114,21 @@ final class Invoice
 
         $paidAt = $paymentStatus === 'paid' ? new DateTimeImmutable : null;
 
+        // Auto-calcular totales duales si no fueron provistos explícitamente pero hay exchangeRate
+        if ($exchangeRate !== null && $exchangeRate > 0) {
+            if ($currency === 'USD' || $currency === 'USDT' || $currency === 'USDC') {
+                $subtotalUsd = $subtotalUsd ?? round($subtotal, 2);
+                $totalUsd = $totalUsd ?? round($total, 2);
+                $subtotalVes = $subtotalVes ?? round($subtotal * $exchangeRate, 2);
+                $totalVes = $totalVes ?? round($total * $exchangeRate, 2);
+            } elseif ($currency === 'VES') {
+                $subtotalVes = $subtotalVes ?? round($subtotal, 2);
+                $totalVes = $totalVes ?? round($total, 2);
+                $subtotalUsd = $subtotalUsd ?? round($subtotal / $exchangeRate, 2);
+                $totalUsd = $totalUsd ?? round($total / $exchangeRate, 2);
+            }
+        }
+
         return new self(
             id: $idVo,
             orderId: $orderId,
@@ -120,7 +149,14 @@ final class Invoice
             items: $items,
             pdfPath: null,
             notes: $notes,
-            metadata: $metadata
+            metadata: $metadata,
+            exchangeRate: $exchangeRate,
+            subtotalVes: $subtotalVes,
+            totalVes: $totalVes,
+            subtotalUsd: $subtotalUsd,
+            totalUsd: $totalUsd,
+            commissionAmount: $commissionAmount,
+            commissionCurrency: $commissionCurrency
         );
     }
 
@@ -254,6 +290,41 @@ final class Invoice
         return $this->metadata;
     }
 
+    public function exchangeRate(): ?float
+    {
+        return $this->exchangeRate;
+    }
+
+    public function subtotalVes(): ?float
+    {
+        return $this->subtotalVes;
+    }
+
+    public function totalVes(): ?float
+    {
+        return $this->totalVes;
+    }
+
+    public function subtotalUsd(): ?float
+    {
+        return $this->subtotalUsd;
+    }
+
+    public function totalUsd(): ?float
+    {
+        return $this->totalUsd;
+    }
+
+    public function commissionAmount(): ?float
+    {
+        return $this->commissionAmount;
+    }
+
+    public function commissionCurrency(): ?string
+    {
+        return $this->commissionCurrency;
+    }
+
     public function toArray(): array
     {
         return [
@@ -265,10 +336,17 @@ final class Invoice
             'issue_date' => $this->date->issueDateFormatted(),
             'due_date' => $this->date->dueDateFormatted(),
             'currency' => $this->currency,
+            'exchange_rate' => $this->exchangeRate,
             'subtotal' => $this->subtotal,
             'tax_amount' => $this->taxAmount,
             'discount_amount' => $this->discountAmount,
             'total' => $this->total,
+            'subtotal_ves' => $this->subtotalVes,
+            'total_ves' => $this->totalVes,
+            'subtotal_usd' => $this->subtotalUsd,
+            'total_usd' => $this->totalUsd,
+            'commission_amount' => $this->commissionAmount,
+            'commission_currency' => $this->commissionCurrency,
             'payment_method' => $this->paymentMethod,
             'payment_status' => $this->paymentStatus,
             'paid_at' => $this->paidAt?->format('Y-m-d H:i:s'),

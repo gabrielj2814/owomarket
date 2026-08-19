@@ -135,3 +135,46 @@ it('LaravelInvoiceMailerService sends email with attached PDF', function () {
         return $mail->hasTo('cliente@test.com');
     });
 });
+
+it('DomPdfInvoiceGeneratorService generates valid PDF for VES invoice with BCV exchange rate', function () {
+    $item = InvoiceItem::create('Producto Nacional', 2, 500.00, 16.0);
+
+    $invoice = Invoice::createDirect(
+        invoiceNumber: 'FAC-2026-000200',
+        customer: [
+            'name' => 'Cliente Caracas',
+            'tax_id' => 'V-12345678',
+            'email' => 'cliente@caracas.ve',
+            'address_line_1' => 'Av Francisco de Miranda',
+            'city' => 'Caracas',
+            'state' => 'Miranda',
+            'postal_code' => '1060',
+            'country' => 'Venezuela',
+        ],
+        issuer: [
+            'legal_name' => 'Tienda Oficial Venezuela C.A.',
+            'tax_id' => 'J-12345678-9',
+            'billing_email' => 'facturacion@tienda.ve',
+            'address_line_1' => 'Centro Comercial CCCT',
+            'city' => 'Caracas',
+            'state' => 'Miranda',
+            'postal_code' => '1060',
+            'country' => 'Venezuela',
+            'invoice_prefix' => 'FAC-',
+        ],
+        items: [$item],
+        currency: 'VES',
+        exchangeRate: 775.3356,
+        commissionAmount: 50.00,
+        commissionCurrency: 'VES'
+    );
+
+    $service = new DomPdfInvoiceGeneratorService;
+    $pdfBinary = $service->generate($invoice);
+
+    expect($pdfBinary)->toBeString()
+        ->and($pdfBinary)->toStartWith('%PDF-');
+    expect($invoice->currency())->toBe('VES');
+    expect($invoice->exchangeRate())->toBe(775.3356);
+    expect($invoice->commissionAmount())->toBe(50.00);
+});

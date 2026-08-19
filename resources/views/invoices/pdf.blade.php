@@ -307,24 +307,59 @@
     <table class="totals-table">
         <tr>
             <td class="label">Subtotal Neto:</td>
-            <td class="amount">${{ number_format($invoice['subtotal'], 2) }}</td>
+            <td class="amount">
+                @if($invoice['currency'] === 'VES')
+                    Bs. {{ number_format($invoice['subtotal'], 2, ',', '.') }}
+                @else
+                    ${{ number_format($invoice['subtotal'], 2) }} {{ $invoice['currency'] }}
+                @endif
+            </td>
         </tr>
         @if($invoice['discount_amount'] > 0)
             <tr>
                 <td class="label">Descuentos:</td>
-                <td class="amount" style="color: #dc2626;">-${{ number_format($invoice['discount_amount'], 2) }}</td>
+                <td class="amount" style="color: #dc2626;">
+                    @if($invoice['currency'] === 'VES')
+                        -Bs. {{ number_format($invoice['discount_amount'], 2, ',', '.') }}
+                    @else
+                        -${{ number_format($invoice['discount_amount'], 2) }}
+                    @endif
+                </td>
             </tr>
         @endif
         @if($invoice['tax_amount'] > 0)
             <tr>
                 <td class="label">Impuestos (IVA):</td>
-                <td class="amount">${{ number_format($invoice['tax_amount'], 2) }}</td>
+                <td class="amount">
+                    @if($invoice['currency'] === 'VES')
+                        Bs. {{ number_format($invoice['tax_amount'], 2, ',', '.') }}
+                    @else
+                        ${{ number_format($invoice['tax_amount'], 2) }}
+                    @endif
+                </td>
             </tr>
         @endif
         <tr class="total-row">
             <td class="label">TOTAL:</td>
-            <td class="amount">${{ number_format($invoice['total'], 2) }} {{ $invoice['currency'] }}</td>
+            <td class="amount">
+                @if($invoice['currency'] === 'VES')
+                    Bs. {{ number_format($invoice['total'], 2, ',', '.') }} VES
+                @else
+                    ${{ number_format($invoice['total'], 2) }} {{ $invoice['currency'] }}
+                @endif
+            </td>
         </tr>
+        @if(!empty($invoice['exchange_rate']) && $invoice['exchange_rate'] > 0)
+            <tr>
+                <td colspan="2" style="padding-top: 8px; font-size: 9px; color: #4b5563; text-align: right; border-top: 1px dashed #d1d5db;">
+                    @if($invoice['currency'] === 'VES')
+                        Ref. Base: <strong>${{ number_format($invoice['total_usd'] ?? ($invoice['total'] / $invoice['exchange_rate']), 2) }} USD</strong> | Tasa BCV: <strong>Bs. {{ number_format($invoice['exchange_rate'], 4, ',', '.') }}</strong>
+                    @else
+                        Equivalente en Bolívares: <strong>Bs. {{ number_format($invoice['total_ves'] ?? ($invoice['total'] * $invoice['exchange_rate']), 2, ',', '.') }} VES</strong> (Tasa BCV: Bs. {{ number_format($invoice['exchange_rate'], 4, ',', '.') }})
+                    @endif
+                </td>
+            </tr>
+        @endif
     </table>
 
     <div style="clear: both;"></div>
@@ -334,6 +369,12 @@
         @if(!empty($invoice['notes']))
             <div class="notes-title">Notas:</div>
             <div>{{ $invoice['notes'] }}</div>
+        @endif
+
+        @if(!empty($invoice['exchange_rate']) && $invoice['exchange_rate'] > 0)
+            <div style="margin-top: 6px; font-size: 9px; color: #6b7280;">
+                <em>Tasa oficial de cambio emitida por el Banco Central de Venezuela (BCV) aplicada a esta operación: Bs. {{ number_format($invoice['exchange_rate'], 4, ',', '.') }}/USD.</em>
+            </div>
         @endif
 
         @if(!empty($invoice['issuer_snapshot']['invoice_footer_notes']))

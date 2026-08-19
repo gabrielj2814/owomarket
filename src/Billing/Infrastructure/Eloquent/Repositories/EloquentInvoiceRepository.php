@@ -34,10 +34,17 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
                 'issue_date' => $invoice->date()->issueDateFormatted(),
                 'due_date' => $invoice->date()->dueDateFormatted(),
                 'currency' => $invoice->currency(),
+                'exchange_rate' => $invoice->exchangeRate(),
                 'subtotal' => $invoice->subtotal(),
                 'tax_amount' => $invoice->taxAmount(),
                 'discount_amount' => $invoice->discountAmount(),
                 'total' => $invoice->total(),
+                'subtotal_ves' => $invoice->subtotalVes(),
+                'total_ves' => $invoice->totalVes(),
+                'subtotal_usd' => $invoice->subtotalUsd(),
+                'total_usd' => $invoice->totalUsd(),
+                'commission_amount' => $invoice->commissionAmount(),
+                'commission_currency' => $invoice->commissionCurrency(),
                 'payment_method' => $invoice->paymentMethod(),
                 'payment_status' => $invoice->paymentStatus(),
                 'paid_at' => $invoice->paidAt()?->format('Y-m-d H:i:s'),
@@ -109,6 +116,13 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
             'pdf_path' => $invoice->pdfPath(),
             'notes' => $invoice->notes(),
             'metadata' => $invoice->metadata(),
+            'exchange_rate' => $invoice->exchangeRate(),
+            'subtotal_ves' => $invoice->subtotalVes(),
+            'total_ves' => $invoice->totalVes(),
+            'subtotal_usd' => $invoice->subtotalUsd(),
+            'total_usd' => $invoice->totalUsd(),
+            'commission_amount' => $invoice->commissionAmount(),
+            'commission_currency' => $invoice->commissionCurrency(),
         ]);
 
         $model->load('items');
@@ -138,10 +152,6 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
             $query->where('payment_status', $criteria->payment_status);
         }
 
-        if ($criteria->payment_method) {
-            $query->where('payment_method', $criteria->payment_method);
-        }
-
         if ($criteria->date_from) {
             $query->whereDate('issue_date', '>=', $criteria->date_from);
         }
@@ -150,25 +160,10 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
             $query->whereDate('issue_date', '<=', $criteria->date_to);
         }
 
-        if ($criteria->min_total !== null) {
-            $query->where('total', '>=', $criteria->min_total);
-        }
-
-        if ($criteria->max_total !== null) {
-            $query->where('total', '<=', $criteria->max_total);
-        }
-
-        $sortField = in_array($criteria->sort_by, ['invoice_number', 'issue_date', 'total', 'created_at', 'status'], true)
-            ? $criteria->sort_by
-            : 'created_at';
-
-        $direction = strtolower($criteria->sort_direction) === 'asc' ? 'asc' : 'desc';
-
-        $paginator = $query->orderBy($sortField, $direction)
-            ->paginate($criteria->per_page, ['*'], 'page', $criteria->page);
+        $paginator = $query->orderBy('created_at', 'desc')->paginate($criteria->per_page, ['*'], 'page', $criteria->page);
 
         $domainInvoices = array_map(
-            fn (EloquentInvoice $model) => $this->toDomain($model),
+            fn (EloquentInvoice $m) => $this->toDomain($m),
             $paginator->items()
         );
 
@@ -183,7 +178,7 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
 
     public function getMetrics(): array
     {
-        $totalBilled = (float) EloquentInvoice::whereIn('status', ['issued', 'paid'])->sum('total');
+        $totalBilled = (float) EloquentInvoice::where('status', '!=', 'cancelled')->sum('total');
         $totalIssued = EloquentInvoice::where('status', 'issued')->count();
         $totalPaid = EloquentInvoice::where('status', 'paid')->count();
         $totalCancelled = EloquentInvoice::where('status', 'cancelled')->count();
@@ -242,7 +237,14 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
             items: $items,
             pdfPath: $model->pdf_path,
             notes: $model->notes,
-            metadata: $model->metadata
+            metadata: $model->metadata,
+            exchangeRate: $model->exchange_rate ? (float) $model->exchange_rate : null,
+            subtotalVes: $model->subtotal_ves ? (float) $model->subtotal_ves : null,
+            totalVes: $model->total_ves ? (float) $model->total_ves : null,
+            subtotalUsd: $model->subtotal_usd ? (float) $model->subtotal_usd : null,
+            totalUsd: $model->total_usd ? (float) $model->total_usd : null,
+            commissionAmount: $model->commission_amount ? (float) $model->commission_amount : null,
+            commissionCurrency: $model->commission_currency
         );
     }
 }
