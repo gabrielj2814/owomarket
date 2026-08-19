@@ -18,9 +18,20 @@ final class SyncCentralBrandsPOSTController
     {
         $result = $this->useCase->execute();
 
+        $message = match (true) {
+            $result['created_count'] > 0 && $result['updated_count'] > 0 =>
+                "Marcas sincronizadas: {$result['created_count']} creadas, {$result['updated_count']} actualizadas.",
+            $result['created_count'] > 0 =>
+                "Marcas sincronizadas: {$result['created_count']} nuevas marcas agregadas.",
+            $result['updated_count'] > 0 =>
+                "Marcas sincronizadas: {$result['updated_count']} registros actualizados con la base central.",
+            default =>
+                "El catálogo de marcas ya se encuentra al día con la base central ({$result['unchanged_count']} verificadas).",
+        };
+
         return ApiResponse::success(
             data: $result,
-            message: "Marcas maestras sincronizadas correctamente ({$result['synced_count']} procesadas)"
+            message: $message
         );
     }
 }

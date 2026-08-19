@@ -66,25 +66,27 @@ beforeEach(function () {
 test('POST /api-tenant/brand/sync-central synchronizes central master brands into tenant database with central_uuid', function () {
     $centralUuid1 = (string) Str::uuid();
     $centralUuid2 = (string) Str::uuid();
-    $slug1 = 'sony-corp-' . bin2hex(random_bytes(4));
-    $slug2 = 'apple-inc-' . bin2hex(random_bytes(4));
+    $name1 = 'Brand Alpha ' . bin2hex(random_bytes(3));
+    $name2 = 'Brand Beta ' . bin2hex(random_bytes(3));
+    $slug1 = 'brand-alpha-' . bin2hex(random_bytes(4));
+    $slug2 = 'brand-beta-' . bin2hex(random_bytes(4));
 
     CentralBrand::create([
         'id' => $centralUuid1,
-        'name' => 'Sony Corporation',
+        'name' => $name1,
         'slug' => $slug1,
-        'logo' => 'https://example.com/sony.png',
-        'description' => 'Dispositivos de entretenimiento',
+        'logo' => 'https://example.com/alpha.png',
+        'description' => 'Alpha devices',
         'is_active' => true,
         'position' => 1,
     ]);
 
     CentralBrand::create([
         'id' => $centralUuid2,
-        'name' => 'Apple Inc',
+        'name' => $name2,
         'slug' => $slug2,
-        'logo' => 'https://example.com/apple.png',
-        'description' => 'Smartphones y computadoras',
+        'logo' => 'https://example.com/beta.png',
+        'description' => 'Beta computers',
         'is_active' => true,
         'position' => 2,
     ]);
@@ -101,27 +103,29 @@ test('POST /api-tenant/brand/sync-central synchronizes central master brands int
     $tenantBrand2 = Brand::where('central_uuid', $centralUuid2)->first();
 
     expect($tenantBrand1)->not->toBeNull();
-    expect($tenantBrand1->name)->toBe('Sony Corporation');
+    expect($tenantBrand1->name)->toBe($name1);
     expect($tenantBrand1->slug)->toBe($slug1);
 
     expect($tenantBrand2)->not->toBeNull();
-    expect($tenantBrand2->name)->toBe('Apple Inc');
+    expect($tenantBrand2->name)->toBe($name2);
     expect($tenantBrand2->slug)->toBe($slug2);
 });
 
 test('POST /api-tenant/category/sync-central synchronizes hierarchical central categories into tenant database with central_uuid and parent_id', function () {
     $parentUuid = (string) Str::uuid();
     $childUuid = (string) Str::uuid();
-    $parentSlug = 'tecnologia-' . bin2hex(random_bytes(4));
-    $childSlug = 'smartphones-' . bin2hex(random_bytes(4));
+    $parentName = 'Parent Cat ' . bin2hex(random_bytes(3));
+    $childName = 'Child Cat ' . bin2hex(random_bytes(3));
+    $parentSlug = 'parent-cat-' . bin2hex(random_bytes(4));
+    $childSlug = 'child-cat-' . bin2hex(random_bytes(4));
 
     CentralCategory::create([
         'id' => $parentUuid,
-        'name' => 'Tecnología',
+        'name' => $parentName,
         'slug' => $parentSlug,
         'icon' => 'LuCpu',
-        'image' => 'https://example.com/tech.png',
-        'description' => 'Categoría raíz de tecnología',
+        'image' => 'https://example.com/parent.png',
+        'description' => 'Parent category description',
         'parent_id' => null,
         'is_active' => true,
         'position' => 1,
@@ -129,11 +133,11 @@ test('POST /api-tenant/category/sync-central synchronizes hierarchical central c
 
     CentralCategory::create([
         'id' => $childUuid,
-        'name' => 'Smartphones',
+        'name' => $childName,
         'slug' => $childSlug,
         'icon' => 'LuSmartphone',
-        'image' => 'https://example.com/phones.png',
-        'description' => 'Teléfonos móviles',
+        'image' => 'https://example.com/child.png',
+        'description' => 'Child category description',
         'parent_id' => $parentUuid,
         'is_active' => true,
         'position' => 1,
@@ -151,10 +155,86 @@ test('POST /api-tenant/category/sync-central synchronizes hierarchical central c
     $childTenantCat = Category::where('central_uuid', $childUuid)->first();
 
     expect($parentTenantCat)->not->toBeNull();
-    expect($parentTenantCat->name)->toBe('Tecnología');
+    expect($parentTenantCat->name)->toBe($parentName);
     expect($parentTenantCat->parent_id)->toBeNull();
 
     expect($childTenantCat)->not->toBeNull();
-    expect($childTenantCat->name)->toBe('Smartphones');
+    expect($childTenantCat->name)->toBe($childName);
     expect($childTenantCat->parent_id)->toBe($parentTenantCat->id);
+});
+
+test('sync updates existing tenant brands by slug or name without creating duplicates', function () {
+    $centralUuid = (string) Str::uuid();
+    $name = 'Shoes Brand ' . bin2hex(random_bytes(3));
+    $slug = 'shoes-brand-' . bin2hex(random_bytes(4));
+
+    // Existing local brand created previously without central_uuid
+    $localBrand = Brand::create([
+        'name' => $name,
+        'slug' => $slug,
+        'description' => 'Local description',
+        'is_active' => true,
+        'position' => 0,
+    ]);
+
+    // Central master brand with updated description and logo
+    CentralBrand::create([
+        'id' => $centralUuid,
+        'name' => $name,
+        'slug' => $slug,
+        'logo' => 'https://example.com/shoes.png',
+        'description' => 'Updated Central description',
+        'is_active' => true,
+        'position' => 10,
+    ]);
+
+    $response = $this->postJson("http://{$this->domain}/api-tenant/brand/sync-central");
+
+    $response->assertStatus(200);
+
+    // Verify no duplicates were created
+    $matchingBrands = Brand::where('slug', $slug)->get();
+    expect($matchingBrands->count())->toBe(1);
+
+    $updatedBrand = $matchingBrands->first();
+    expect($updatedBrand->id)->toBe($localBrand->id);
+    expect($updatedBrand->central_uuid)->toBe($centralUuid);
+    expect($updatedBrand->description)->toBe('Updated Central description');
+    expect($updatedBrand->logo)->toBe('https://example.com/shoes.png');
+    expect($updatedBrand->position)->toBe(10);
+});
+
+test('sync is fully idempotent on multiple executions', function () {
+    $centralUuid = (string) Str::uuid();
+    $name = 'Electronics ' . bin2hex(random_bytes(3));
+    $slug = 'electronics-' . bin2hex(random_bytes(4));
+
+    CentralBrand::create([
+        'id' => $centralUuid,
+        'name' => $name,
+        'slug' => $slug,
+        'logo' => 'https://example.com/elec.png',
+        'is_active' => true,
+        'position' => 5,
+    ]);
+
+    // Run first sync
+    $res1 = $this->postJson("http://{$this->domain}/api-tenant/brand/sync-central");
+    $res1->assertStatus(200);
+
+    $countAfterFirst = Brand::where('central_uuid', $centralUuid)->count();
+    expect($countAfterFirst)->toBe(1);
+
+    // Run second sync immediately
+    $res2 = $this->postJson("http://{$this->domain}/api-tenant/brand/sync-central");
+    $res2->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'data' => [
+                'created_count' => 0,
+            ],
+        ]);
+
+    $countAfterSecond = Brand::where('central_uuid', $centralUuid)->count();
+    expect($countAfterSecond)->toBe(1);
 });

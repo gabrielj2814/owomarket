@@ -11,7 +11,7 @@ use Src\Category\Infrastructure\Eloquent\Models\Category;
 final class SyncCentralCategoriesUseCase
 {
     /**
-     * @return array{synced_count: int, created_count: int, updated_count: int}
+     * @return array{synced_count: int, created_count: int, updated_count: int, unchanged_count: int}
      */
     public function execute(): array
     {
@@ -24,29 +24,46 @@ final class SyncCentralCategoriesUseCase
                 'synced_count' => 0,
                 'created_count' => 0,
                 'updated_count' => 0,
+                'unchanged_count' => 0,
             ];
         }
 
         $created = 0;
         $updated = 0;
+        $unchanged = 0;
 
-        DB::transaction(function () use ($centralCategories, &$created, &$updated) {
-            // First pass: upsert all categories by central_uuid or slug
+        DB::transaction(function () use ($centralCategories, &$created, &$updated, &$unchanged) {
+            // First pass: upsert all categories with 3-tier matching (central_uuid -> slug -> LOWER(TRIM(name)))
             foreach ($centralCategories as $centralCat) {
                 $tenantCat = Category::where('central_uuid', $centralCat->id)->first()
-                    ?? Category::where('slug', $centralCat->slug)->first();
+                    ?? Category::where('slug', $centralCat->slug)->first()
+                    ?? Category::whereRaw('LOWER(TRIM(name)) = ?', [strtolower(trim($centralCat->name))])->first();
 
                 if ($tenantCat) {
-                    $tenantCat->update([
-                        'central_uuid' => $centralCat->id,
-                        'name' => $centralCat->name,
-                        'slug' => $centralCat->slug,
-                        'description' => $centralCat->description ?? $tenantCat->description,
-                        'image' => $centralCat->image ?? $tenantCat->image,
-                        'is_active' => $centralCat->is_active,
-                        'position' => $centralCat->position,
-                    ]);
-                    $updated++;
+                    $hasChanges = (
+                        $tenantCat->central_uuid !== $centralCat->id ||
+                        $tenantCat->name !== $centralCat->name ||
+                        $tenantCat->slug !== $centralCat->slug ||
+                        ($centralCat->description !== null && $tenantCat->description !== $centralCat->description) ||
+                        ($centralCat->image !== null && $tenantCat->image !== $centralCat->image) ||
+                        (bool) $tenantCat->is_active !== (bool) $centralCat->is_active ||
+                        (int) $tenantCat->position !== (int) $centralCat->position
+                    );
+
+                    if ($hasChanges) {
+                        $tenantCat->update([
+                            'central_uuid' => $centralCat->id,
+                            'name' => $centralCat->name,
+                            'slug' => $centralCat->slug,
+                            'description' => $centralCat->description ?? $tenantCat->description,
+                            'image' => $centralCat->image ?? $tenantCat->image,
+                            'is_active' => $centralCat->is_active,
+                            'position' => $centralCat->position,
+                        ]);
+                        $updated++;
+                    } else {
+                        $unchanged++;
+                    }
                 } else {
                     Category::create([
                         'central_uuid' => $centralCat->id,
@@ -76,9 +93,10 @@ final class SyncCentralCategoriesUseCase
         });
 
         return [
-            'synced_count' => $created + $updated,
+            'synced_count' => $created + $updated + $unchanged,
             'created_count' => $created,
             'updated_count' => $updated,
+            'unchanged_count' => $unchanged,
         ];
     }
 }
