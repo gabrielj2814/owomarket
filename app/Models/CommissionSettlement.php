@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
-class PlatformCommission extends Model
+class CommissionSettlement extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $table = 'platform_commissions';
+    protected $table = 'commission_settlements';
 
     public function getConnectionName()
     {
@@ -23,23 +24,27 @@ class PlatformCommission extends Model
 
     protected $fillable = [
         'id',
+        'settlement_number',
         'tenant_id',
-        'order_id',
-        'order_number',
-        'order_total',
-        'commission_rate',
+        'type',
+        'total_orders_count',
+        'gross_sales_amount',
         'commission_amount',
+        'net_amount',
         'currency',
         'status',
-        'settlement_id',
-        'payment_gateway',
+        'payment_method',
+        'payment_reference',
+        'settled_at',
+        'notes',
         'metadata',
     ];
 
     protected $casts = [
-        'order_total' => 'float',
-        'commission_rate' => 'float',
+        'gross_sales_amount' => 'float',
         'commission_amount' => 'float',
+        'net_amount' => 'float',
+        'settled_at' => 'datetime',
         'metadata' => 'array',
     ];
 
@@ -48,8 +53,8 @@ class PlatformCommission extends Model
         return $this->belongsTo(Tenant::class, 'tenant_id', 'id');
     }
 
-    public function settlement(): BelongsTo
+    public function commissions(): HasMany
     {
-        return $this->belongsTo(CommissionSettlement::class, 'settlement_id', 'id');
+        return $this->hasMany(PlatformCommission::class, 'settlement_id', 'id');
     }
 }
