@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Application\UseCase\CreateTenantOwnerUseCase;
 use Src\Tenant\Domain\Entities\TenantOwner;
-use Src\Tenant\Domain\ValueObjects\UserType;
 
 /**
  * Regresión: TenantOwner::create() exige UuidGenerator como primer parámetro y

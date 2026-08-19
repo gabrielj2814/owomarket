@@ -4,11 +4,11 @@ namespace Src\Authentication\Application\UseCase;
 
 use Src\Authentication\Application\Contracts\UserServices;
 use Src\Authentication\Domain\Entities\User;
-use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
+use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ConsultUserApiByEmailUseCase

@@ -4,7 +4,6 @@ namespace Src\Admin\Application\UseCase;
 
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
@@ -16,6 +15,7 @@ use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
+use Src\Shared\Domain\ValueObjects\UserType;
 
 class CreateAdminUseCase
 {

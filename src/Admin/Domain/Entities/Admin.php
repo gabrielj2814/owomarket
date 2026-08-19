@@ -2,7 +2,6 @@
 
 namespace Src\Admin\Domain\Entities;
 
-use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
@@ -14,6 +13,7 @@ use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
+use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class Admin

@@ -5,8 +5,8 @@ namespace Src\Tenant\Domain\Entities;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
+use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
-use Src\Tenant\Domain\ValueObjects\UserType;
 
 class AuthUser
 {

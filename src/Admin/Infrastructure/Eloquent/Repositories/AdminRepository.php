@@ -5,7 +5,6 @@ namespace Src\Admin\Infrastructure\Eloquent\Repositories;
 use DateTime;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Admin\Infrastructure\Eloquent\Models\User as AdminModel;
 use Src\Shared\Collection\Collection;
 use Src\Shared\Collection\Pagination;
@@ -18,6 +17,7 @@ use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
+use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class AdminRepository implements AdminRepositoryInterface

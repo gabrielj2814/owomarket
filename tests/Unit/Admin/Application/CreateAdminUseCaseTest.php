@@ -5,10 +5,10 @@ declare(strict_types=1);
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Application\UseCase\CreateAdminUseCase;
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\UserType;
 
 /**
  * Regresión: Admin::create() exige UuidGenerator como primer parámetro.

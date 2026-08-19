@@ -13,9 +13,9 @@ use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
+use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\User\Domain\ValueObjects\RememberToken;
-use Src\User\Domain\ValueObjects\UserType;
 
 class User
 {
