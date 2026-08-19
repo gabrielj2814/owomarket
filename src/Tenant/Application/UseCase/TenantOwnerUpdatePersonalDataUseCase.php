@@ -3,10 +3,10 @@
 namespace Src\Tenant\Application\UseCase;
 
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
-use Src\Tenant\Domain\ValueObjects\UserName;
 
 class TenantOwnerUpdatePersonalDataUseCase
 {

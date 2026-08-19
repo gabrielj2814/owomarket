@@ -6,8 +6,8 @@ use App\Mail\SecurityPinMail;
 use Illuminate\Support\Facades\Mail;
 use Src\Admin\Application\Contracts\Services\SecurityPinMailerInterface;
 use Src\Admin\Domain\ValueObjects\PinVerification;
-use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 
 class LaravelSecurityPinMailerService implements SecurityPinMailerInterface
 {

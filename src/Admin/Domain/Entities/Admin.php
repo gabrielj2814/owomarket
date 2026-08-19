@@ -6,13 +6,13 @@ use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Admin\Domain\ValueObjects\Password;
 use Src\Admin\Domain\ValueObjects\PinVerification;
-use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 

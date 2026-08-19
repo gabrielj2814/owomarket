@@ -8,7 +8,6 @@ use Src\Admin\Domain\Entities\Admin;
 use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\Password;
 use Src\Admin\Domain\ValueObjects\PinVerification;
-use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Admin\Infrastructure\Eloquent\Models\User as AdminModel;
 use Src\Shared\Collection\Collection;
@@ -17,6 +16,7 @@ use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 

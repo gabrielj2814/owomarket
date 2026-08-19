@@ -3,9 +3,9 @@
 namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Domain\ValueObjects\AvatarUrl;
-use Src\Tenant\Domain\ValueObjects\UserName;
 use Src\Tenant\Domain\ValueObjects\UserType;
 
 class AuthUser

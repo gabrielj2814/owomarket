@@ -3,10 +3,10 @@
 namespace Src\Authentication\Domain\Entities;
 
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
-use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class AuthUser

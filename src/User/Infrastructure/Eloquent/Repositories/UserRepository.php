@@ -7,6 +7,7 @@ use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\Timestamps;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\User\Application\Contracts\Repositories\UserRepositoryInterface;
@@ -16,7 +17,6 @@ use Src\User\Domain\ValueObjects\EmailVerifiedAt;
 use Src\User\Domain\ValueObjects\Password;
 use Src\User\Domain\ValueObjects\PinVerification;
 use Src\User\Domain\ValueObjects\RememberToken;
-use Src\User\Domain\ValueObjects\UserName;
 use Src\User\Domain\ValueObjects\UserType;
 use Src\User\Infrastructure\Eloquent\Models\User;
 

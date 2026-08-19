@@ -6,10 +6,10 @@ use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterfac
 use Src\Authentication\Domain\Entities\User as EntitiesUser;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\Password;
-use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Authentication\Infrastructure\Eloquent\Models\User;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 

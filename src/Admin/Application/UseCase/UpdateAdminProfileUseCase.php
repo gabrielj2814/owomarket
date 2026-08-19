@@ -5,8 +5,8 @@ namespace Src\Admin\Application\UseCase;
 use InvalidArgumentException;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class UpdateAdminProfileUseCase

@@ -5,9 +5,9 @@ namespace Src\Authentication\Application\UseCase;
 use Src\Authentication\Application\Contracts\UserServices;
 use Src\Authentication\Domain\Entities\User;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
-use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 

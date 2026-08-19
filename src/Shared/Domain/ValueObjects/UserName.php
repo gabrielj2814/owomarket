@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\User\Domain\ValueObjects;
+namespace Src\Shared\Domain\ValueObjects;
 
 use InvalidArgumentException;
 
@@ -8,9 +8,9 @@ final class UserName
 {
     private string $value;
 
-    private function __construct(string $nombre)
+    private function __construct(string $name)
     {
-        $this->value = $nombre;
+        $this->value = $name;
     }
 
     public static function make(string $name): self
@@ -20,10 +20,9 @@ final class UserName
         return new self($name);
     }
 
-    private static function validate(string $value)
+    private static function validate(string $value): void
     {
-
-        if ($value == '') {
+        if ($value === '' || trim($value) === '') {
             throw new InvalidArgumentException('El nombre no puede estar vacio', 400);
         }
 
@@ -33,6 +32,11 @@ final class UserName
     }
 
     public function value(): string
+    {
+        return $this->value;
+    }
+
+    public function __toString(): string
     {
         return $this->value;
     }

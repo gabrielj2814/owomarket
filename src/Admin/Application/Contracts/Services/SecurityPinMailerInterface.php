@@ -3,8 +3,8 @@
 namespace Src\Admin\Application\Contracts\Services;
 
 use Src\Admin\Domain\ValueObjects\PinVerification;
-use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserName;
 
 interface SecurityPinMailerInterface
 {
