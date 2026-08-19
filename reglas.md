@@ -73,11 +73,12 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 
 ## 📁 5. Ubicación y Gestión de Documentos de Planificación
  
- 1. **Carpeta `planes/` Centralizada y Estructura en 3 Carpetas:**
-    * Todos los planes maestros, desgloses de desarrollo por fases, especificaciones de módulos y hojas de ruta (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`) deben almacenarse exclusivamente dentro del directorio `planes/` en la raíz del proyecto, organizados en 3 subcarpetas obligatorias:
+ 1. **Carpeta `planes/` Centralizada y Estructura en 4 Carpetas:**
+    * Todos los planes maestros, desgloses de desarrollo por fases, especificaciones de módulos, notas y hojas de ruta (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`, `ARQUITECTURA_*.md`) deben almacenarse exclusivamente dentro del directorio `planes/` en la raíz del proyecto, organizados en 4 subcarpetas obligatorias:
       - `planes/implementados/`: Planes de trabajo finalizados y 100% implementados.
       - `planes/por_hacer/`: Planes de trabajo en curso o aprobados que, al completarse al 100%, se moverán a la carpeta `planes/implementados/`.
       - `planes/futuros/`: Planificaciones y requerimientos a futuro que todavía no se van a realizar.
+      - `planes/anotaciones/`: Documentos generales, notas técnicas, diagramas de arquitectura y especificaciones de referencia global.
     * Cada vez que se complete una fase o plan de desarrollo, se debe actualizar el archivo de planificación correspondiente marcando el checking `[x]` y trasladarlo a `planes/implementados/`.
 
 ---

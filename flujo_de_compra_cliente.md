@@ -3,4 +3,5 @@ ok mira tenermos que hablar de lo siguiente este es el flujo que quiero que teng
 
 2- lo otro es que cuando entre un usuario al al tienda del cliente que esta registrado en el dominio central si compra lo ideal es que es venta se ve reflejada en el dominio centra pero ademas el problema es que la sesiones no se comparte entre subdominios a si que veo fastidioso que le usuario tenga que crearse una cuenta en la tienda del cliente a si que se me ocurrio que cuando cuando este por confirmar la compra de alguna forma mandarlo a un login especial con sus datos de la compra al logear la compra se registre en la base de datos central eso emita un evento y se registre esa venta a la respectiva tienda y lo mande otra ves a la tienda mostrandole un mensaje de compra completada
 
-ese es el flujo que quiero pero no se si es el mejor o lo ideal, al final la plataforma tiene que asegurar el cobro de la comición y de la subcripciones de los clientes quiero que me ayudes con eso 
+ese es el flujo que quiero pero no se si es el mejor o lo ideal, al final la plataforma tiene que asegurar el cobro de la comición y de la subcripciones de los clientes quiero que me ayudes con eso ojo no se tiene todavia el marketplace de dominio central contruido y todavia si no mal recuedo no tengo nada realcionado a los cliente montado
+10
