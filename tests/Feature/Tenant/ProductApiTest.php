@@ -168,6 +168,40 @@ test('POST /api-tenant/product/filter returns paginated products', function () {
         ]);
 });
 
+test('POST /api-tenant/product/filter with null boolean filters returns all active products without erroneous filtering', function () {
+    $this->postJson("http://{$this->domain}/api-tenant/product/create", [
+        'name' => 'Audífonos Bluetooth',
+        'slug' => 'audifonos-bluetooth-' . bin2hex(random_bytes(3)),
+        'sku' => 'AUD-BT-' . bin2hex(random_bytes(2)),
+        'price' => 80.00,
+        'quantity' => 10,
+        'is_visible' => true,
+    ]);
+
+    $response = $this->postJson("http://{$this->domain}/api-tenant/product/filter", [
+        'search' => null,
+        'category_id' => null,
+        'brand_id' => null,
+        'is_visible' => null,
+        'in_stock' => null,
+        'is_featured' => null,
+        'is_digital' => null,
+        'page' => 1,
+        'per_page' => 10,
+        'sort_by' => 'created_at',
+        'sort_direction' => 'desc',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'status' => 'success',
+            'code' => 200,
+        ]);
+
+    expect($response->json('pagination.total'))->toBeGreaterThanOrEqual(1);
+    expect(count($response->json('data')))->toBeGreaterThanOrEqual(1);
+});
+
 test('GET /api-tenant/product/{id} returns existing product by id and slug', function () {
     $created = $this->postJson("http://{$this->domain}/api-tenant/product/create", [
         'name' => 'Impresora Multifuncional',
