@@ -3,7 +3,7 @@
 namespace Src\Admin\Application\UseCase;
 
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
-use Src\Admin\Domain\ValueObjects\UserStatus;
+use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ChangeStatuAdminByUuidUseCase

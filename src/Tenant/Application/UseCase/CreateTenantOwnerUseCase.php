@@ -6,13 +6,13 @@ use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValueObjects\AvatarUrl;
 use Src\Tenant\Domain\ValueObjects\Password;
 use Src\Tenant\Domain\ValueObjects\PhoneNumber;
 use Src\Tenant\Domain\ValueObjects\UserName;
-use Src\Tenant\Domain\ValueObjects\UserStatus;
 use Src\Tenant\Domain\ValueObjects\UserType;
 
 class CreateTenantOwnerUseCase

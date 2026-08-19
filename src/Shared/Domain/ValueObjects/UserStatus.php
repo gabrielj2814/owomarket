@@ -1,8 +1,6 @@
 <?php
 
-namespace Src\Tenant\Domain\ValueObjects;
-
-use Src\Shared\Domain\ValueObjects\BoolValueObject;
+namespace Src\Shared\Domain\ValueObjects;
 
 final class UserStatus extends BoolValueObject
 {
