@@ -1,4 +1,4 @@
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -27,6 +27,14 @@ export interface CreateStorefrontOrderPayload {
     shipping_method: string;
     shipping_amount: number;
     payment_method: string;
+    payment_details?: {
+        bank_origin?: string;
+        phone_origin?: string;
+        reference_number?: string;
+        binance_id?: string;
+        transaction_hash?: string;
+        [key: string]: any;
+    };
     coupon_code?: string;
     items: Array<{
         product_id: string;
@@ -49,9 +57,9 @@ export interface CreateStorefrontOrderResponse {
 const StorefrontServices = {
     createOrder: async (
         payload: CreateStorefrontOrderPayload
-    ): Promise<ApiResponse<CreateStorefrontOrderResponse>> => {
+    ): Promise<Data<CreateStorefrontOrderResponse>> => {
         try {
-            const response = await axiosStorefront.post<ApiResponse<CreateStorefrontOrderResponse>>(
+            const response = await axiosStorefront.post<Data<CreateStorefrontOrderResponse>>(
                 '/checkout/create-order',
                 payload
             );

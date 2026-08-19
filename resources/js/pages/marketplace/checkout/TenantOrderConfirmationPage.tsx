@@ -16,7 +16,7 @@ import {
     HiTruck,
     HiUser,
 } from 'react-icons/hi';
-import { FaCheckCircle, FaUniversity } from 'react-icons/fa';
+import { FaBitcoin, FaCheckCircle, FaMobileAlt, FaUniversity } from 'react-icons/fa';
 
 function OrderConfirmationContent({
     domain,
@@ -146,7 +146,65 @@ function OrderConfirmationContent({
                             </div>
                         </Card>
 
-                        {/* Payment Instructions Box */}
+                        {/* Payment Confirmation & Details Box */}
+                        {order.payment_method === 'pago_movil' && (
+                            <Card className="shadow-sm rounded-2xl bg-gradient-to-br from-blue-50/70 to-indigo-50/50 dark:from-gray-900 dark:to-blue-950/30 border-blue-200 dark:border-blue-800/60">
+                                <div className="flex items-center justify-between border-b border-blue-100 dark:border-gray-800 pb-2.5">
+                                    <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-bold text-sm">
+                                        <FaMobileAlt className="w-5 h-5 text-blue-600" />
+                                        <span>Comprobante de Pago Móvil Registrado</span>
+                                    </div>
+                                    <Badge color="warning" size="xs">Pendiente de Verificación</Badge>
+                                </div>
+                                <div className="text-xs text-gray-700 dark:text-gray-300 space-y-2 leading-relaxed">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 p-3 bg-white dark:bg-gray-800/80 rounded-xl border text-[11px] font-mono">
+                                        <div>
+                                            <span className="text-gray-400 block text-[10px]">BANCO EMISOR</span>
+                                            <strong className="text-gray-900 dark:text-white">{(order as any).payment_details?.bank_origin || 'No especificado'}</strong>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-400 block text-[10px]">TELÉFONO</span>
+                                            <strong className="text-gray-900 dark:text-white">{(order as any).payment_details?.phone_origin || order.customer.phone || 'No especificado'}</strong>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-400 block text-[10px]">Nº REFERENCIA</span>
+                                            <strong className="text-blue-600 dark:text-blue-400 text-xs">{(order as any).payment_details?.reference_number || 'N/A'}</strong>
+                                        </div>
+                                    </div>
+                                    <p className="text-[11px] text-gray-500">
+                                        Hemos recibido los datos de tu Pago Móvil. Nuestro equipo conciliará la referencia con el extracto bancario para despachar tu compra.
+                                    </p>
+                                </div>
+                            </Card>
+                        )}
+
+                        {order.payment_method === 'binance_pay' && (
+                            <Card className="shadow-sm rounded-2xl bg-gradient-to-br from-amber-50/70 to-yellow-50/40 dark:from-gray-900 dark:to-amber-950/30 border-amber-200 dark:border-amber-800/60">
+                                <div className="flex items-center justify-between border-b border-amber-100 dark:border-gray-800 pb-2.5">
+                                    <div className="flex items-center gap-2 text-amber-900 dark:text-amber-300 font-bold text-sm">
+                                        <FaBitcoin className="w-5 h-5 text-amber-500" />
+                                        <span>Comprobante de Binance Pay (USDT)</span>
+                                    </div>
+                                    <Badge color="warning" size="xs">Validando en Blockchain / Pay</Badge>
+                                </div>
+                                <div className="text-xs text-gray-700 dark:text-gray-300 space-y-2 leading-relaxed">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-800/80 rounded-xl border text-[11px] font-mono">
+                                        <div>
+                                            <span className="text-gray-400 block text-[10px]">BINANCE BUYER ID</span>
+                                            <strong className="text-gray-900 dark:text-white">{(order as any).payment_details?.binance_id || 'Comprador Binance'}</strong>
+                                        </div>
+                                        <div>
+                                            <span className="text-gray-400 block text-[10px]">TX HASH / ORDER ID</span>
+                                            <strong className="text-amber-600 dark:text-amber-400 text-xs break-all">{(order as any).payment_details?.transaction_hash || 'N/A'}</strong>
+                                        </div>
+                                    </div>
+                                    <p className="text-[11px] text-gray-500">
+                                        Tu transacción en USDT ha sido registrada. Una vez confirmada en Binance Pay, la orden cambiará automáticamente a estado Pagada.
+                                    </p>
+                                </div>
+                            </Card>
+                        )}
+
                         {order.payment_method === 'bank_transfer' && (
                             <Card className="shadow-sm rounded-2xl bg-blue-50/60 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900">
                                 <div className="flex items-center gap-2 text-blue-900 dark:text-blue-300 font-bold text-sm">

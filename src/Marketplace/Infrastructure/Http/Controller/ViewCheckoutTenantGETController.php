@@ -79,15 +79,28 @@ final class ViewCheckoutTenantGETController extends Controller
         // 4. Available Payment Methods
         $paymentMethods = [
             [
+                'id' => 'pago_movil',
+                'name' => 'Pago Móvil Interbancario (VES)',
+                'description' => 'Transfiere en Bolívares (VES) al instante a través de Pago Móvil e ingresa el número de referencia.',
+                'bank_name' => '0102 - Banco de Venezuela',
+                'phone' => $storeSettings['contact_phone'] ?? '0412-1234567',
+                'document_id' => 'J-50123456-0',
+                'holder_name' => $storeSettings['store_name'] ?? 'OwOMarket Store',
+                'exchange_rate_ves' => 40.50,
+            ],
+            [
+                'id' => 'binance_pay',
+                'name' => 'Binance Pay / USDT (Cripto)',
+                'description' => 'Pago instantáneo en USDT sin comisiones de red usando Binance Pay ID o escaneando el código QR.',
+                'binance_pay_id' => '284759302',
+                'crypto_currency' => 'USDT',
+                'qr_code' => 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=binancepay://pay?id=284759302',
+            ],
+            [
                 'id' => 'bank_transfer',
                 'name' => 'Transferencia Bancaria Directa',
                 'description' => 'Realiza tu pago directamente en nuestra cuenta bancaria. Tu pedido será procesado tras verificar el comprobante.',
-                'instructions' => 'Banco: Banco Estado / Santander | Tipo: Cuenta Corriente | Titular: '.($storeSettings['store_name'] ?? 'Comercio').' | Email: '.($storeSettings['store_email'] ?? 'pagos@tienda.com'),
-            ],
-            [
-                'id' => 'webpay',
-                'name' => 'Webpay Plus / Tarjetas de Débito y Crédito',
-                'description' => 'Pago seguro e instantáneo con tarjetas de crédito, débito o prepago vía Webpay.',
+                'instructions' => 'Banco: Banco de Venezuela / Mercantil | Tipo: Cuenta Corriente | Titular: '.($storeSettings['store_name'] ?? 'Comercio').' | Email: '.($storeSettings['store_email'] ?? 'pagos@tienda.com'),
             ],
             [
                 'id' => 'cash_on_delivery',

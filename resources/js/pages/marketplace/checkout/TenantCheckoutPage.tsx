@@ -38,7 +38,7 @@ import {
     HiTruck,
     HiUser,
 } from 'react-icons/hi';
-import { FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
+import { FaBitcoin, FaCopy, FaMobileAlt, FaMoneyBillWave, FaQrcode, FaUniversity } from 'react-icons/fa';
 
 function CheckoutPageContent({
     domain,
@@ -96,6 +96,20 @@ function CheckoutPageContent({
         payment_methods.length > 0 ? payment_methods[0].id : 'bank_transfer'
     );
 
+    // Form: Payment Details (Pago Móvil & Binance Pay)
+    const [pagoMovilBank, setPagoMovilBank] = useState<string>('0102 - Banco de Venezuela');
+    const [pagoMovilPhone, setPagoMovilPhone] = useState<string>('');
+    const [pagoMovilRef, setPagoMovilRef] = useState<string>('');
+    const [binanceId, setBinanceId] = useState<string>('');
+    const [binanceTxHash, setBinanceTxHash] = useState<string>('');
+    const [copyFeedback, setCopyFeedback] = useState<string | null>(null);
+
+    const handleCopy = (text: string, label: string) => {
+        navigator.clipboard.writeText(text);
+        setCopyFeedback(`¡${label} copiado!`);
+        setTimeout(() => setCopyFeedback(null), 3000);
+    };
+
     // Auth gate modal state
     const [isAuthGateModalOpen, setIsAuthGateModalOpen] = useState<boolean>(false);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -133,7 +147,7 @@ function CheckoutPageContent({
         setErrorMessage(null);
 
         // Check login gate condition
-        if (!auth_user) {
+        if (!auth_user && !customer) {
             setIsAuthGateModalOpen(true);
             return;
         }
@@ -148,8 +162,33 @@ function CheckoutPageContent({
             return;
         }
 
+        if (selectedPaymentMethodId === 'pago_movil' && !pagoMovilRef.trim()) {
+            setErrorMessage('Por favor ingresa el número de referencia del Pago Móvil realizado.');
+            return;
+        }
+
+        if (selectedPaymentMethodId === 'binance_pay' && !binanceTxHash.trim()) {
+            setErrorMessage('Por favor ingresa el Hash o ID de la transacción de Binance Pay.');
+            return;
+        }
+
         setIsSubmitting(true);
         setErrorMessage(null);
+
+        let paymentDetails: Record<string, any> | undefined = undefined;
+        if (selectedPaymentMethodId === 'pago_movil') {
+            paymentDetails = {
+                bank_origin: pagoMovilBank.trim(),
+                phone_origin: (pagoMovilPhone || customerPhone).trim(),
+                reference_number: pagoMovilRef.trim(),
+            };
+        } else if (selectedPaymentMethodId === 'binance_pay') {
+            paymentDetails = {
+                binance_id: binanceId.trim() || undefined,
+                transaction_hash: binanceTxHash.trim(),
+                crypto_currency: 'USDT',
+            };
+        }
 
         const payload: CreateStorefrontOrderPayload = {
             customer: {
@@ -168,6 +207,7 @@ function CheckoutPageContent({
             shipping_method: selectedShippingMethodId,
             shipping_amount: shippingCost,
             payment_method: selectedPaymentMethodId,
+            payment_details: paymentDetails,
             coupon_code: coupon?.code || undefined,
             items: items.map((it) => ({
                 product_id: it.productId,
@@ -183,12 +223,11 @@ function CheckoutPageContent({
         try {
             const res = await StorefrontServices.createOrder(payload);
 
-            const apiData = res.data;
-            if (apiData && (apiData.code === 201 || apiData.code === 200) && apiData.data) {
+            if ((res.code === 201 || res.code === 200) && res.data?.redirect_url) {
                 clearCart();
-                window.location.href = apiData.data.redirect_url;
+                window.location.href = res.data.redirect_url;
             } else {
-                setErrorMessage(apiData?.message || 'Error al procesar la orden. Por favor intenta de nuevo.');
+                setErrorMessage(res.message || 'Error al procesar la orden. Por favor intenta de nuevo.');
             }
         } catch {
             setErrorMessage('Error de conexión con el servidor de pagos.');
@@ -641,8 +680,9 @@ function CheckoutPageContent({
                                                             </span>
                                                         </div>
                                                         <div className="text-gray-400">
-                                                            {method.id === 'bank_transfer' && <FaUniversity className="w-5 h-5" />}
-                                                            {method.id === 'webpay' && <HiCreditCard className="w-6 h-6 text-blue-600" />}
+                                                            {method.id === 'pago_movil' && <FaMobileAlt className="w-5 h-5 text-blue-600" />}
+                                                            {method.id === 'binance_pay' && <FaBitcoin className="w-6 h-6 text-amber-500" />}
+                                                            {method.id === 'bank_transfer' && <FaUniversity className="w-5 h-5 text-gray-500" />}
                                                             {method.id === 'cash_on_delivery' && <FaMoneyBillWave className="w-5 h-5 text-green-600" />}
                                                         </div>
                                                     </div>
@@ -650,6 +690,162 @@ function CheckoutPageContent({
                                                     <p className="text-xs text-gray-500 pl-7">
                                                         {method.description}
                                                     </p>
+
+                                                    {/* PAGO MOVIL INTERACTIVE PANEL */}
+                                                    {isSelected && method.id === 'pago_movil' && (
+                                                        <div className="ml-7 mt-3 p-4 bg-gradient-to-br from-blue-50/90 to-indigo-50/60 dark:from-gray-900 dark:to-blue-950/40 border border-blue-200 dark:border-blue-800/60 rounded-xl space-y-3 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-blue-100 dark:border-gray-800 pb-2.5">
+                                                                <div>
+                                                                    <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
+                                                                        📱 Datos para realizar el Pago Móvil
+                                                                    </span>
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        Monto a transferir: <strong className="text-blue-700 dark:text-blue-300 font-black">Bs. {(finalGrandTotal * ((method as any).exchange_rate_ves || 40.50)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                                                                        <span className="text-[10px] text-gray-400 ml-1.5 font-mono">(Tasa ref: Bs. {(method as any).exchange_rate_ves || 40.50} / USD)</span>
+                                                                    </p>
+                                                                </div>
+                                                                {copyFeedback && (
+                                                                    <span className="text-[11px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold self-start">
+                                                                        {copyFeedback}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                                                <div className="bg-white dark:bg-gray-800/80 p-2.5 rounded-lg border dark:border-gray-700">
+                                                                    <span className="text-[10px] text-gray-400 block font-semibold">BANCO RECEPTOR</span>
+                                                                    <span className="font-bold text-gray-900 dark:text-white truncate block">{(method as any).bank_name || '0102 - Banco de Venezuela'}</span>
+                                                                </div>
+                                                                <div className="bg-white dark:bg-gray-800/80 p-2.5 rounded-lg border dark:border-gray-700 flex justify-between items-center">
+                                                                    <div>
+                                                                        <span className="text-[10px] text-gray-400 block font-semibold">CÉDULA / RIF</span>
+                                                                        <span className="font-bold text-gray-900 dark:text-white">{(method as any).document_id || 'J-50123456-0'}</span>
+                                                                    </div>
+                                                                    <button type="button" onClick={() => handleCopy((method as any).document_id || 'J-50123456-0', 'RIF')} className="text-gray-400 hover:text-blue-600 p-1">
+                                                                        <FaCopy className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                </div>
+                                                                <div className="bg-white dark:bg-gray-800/80 p-2.5 rounded-lg border dark:border-gray-700 flex justify-between items-center">
+                                                                    <div>
+                                                                        <span className="text-[10px] text-gray-400 block font-semibold">TELÉFONO RECEPTOR</span>
+                                                                        <span className="font-bold text-gray-900 dark:text-white">{(method as any).phone || '0412-1234567'}</span>
+                                                                    </div>
+                                                                    <button type="button" onClick={() => handleCopy((method as any).phone || '0412-1234567', 'Teléfono')} className="text-gray-400 hover:text-blue-600 p-1">
+                                                                        <FaCopy className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="pt-2 border-t border-blue-100 dark:border-gray-800 space-y-2">
+                                                                <Label className="text-xs font-bold text-gray-900 dark:text-white">
+                                                                    Ingresa el Comprobante de tu Pago Móvil:
+                                                                </Label>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                                                    <div>
+                                                                        <TextInput
+                                                                            id="pago_movil_bank"
+                                                                            placeholder="Banco Emisor (Ej. Banesco)"
+                                                                            value={pagoMovilBank}
+                                                                            onChange={(e) => setPagoMovilBank(e.target.value)}
+                                                                            className="text-xs"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <TextInput
+                                                                            id="pago_movil_phone"
+                                                                            placeholder="Teléfono Emisor"
+                                                                            value={pagoMovilPhone || customerPhone}
+                                                                            onChange={(e) => setPagoMovilPhone(e.target.value)}
+                                                                            className="text-xs"
+                                                                        />
+                                                                    </div>
+                                                                    <div>
+                                                                        <TextInput
+                                                                            id="pago_movil_ref"
+                                                                            placeholder="Nº Referencia (*)"
+                                                                            required
+                                                                            value={pagoMovilRef}
+                                                                            onChange={(e) => setPagoMovilRef(e.target.value)}
+                                                                            className="text-xs"
+                                                                        />
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* BINANCE PAY INTERACTIVE PANEL */}
+                                                    {isSelected && method.id === 'binance_pay' && (
+                                                        <div className="ml-7 mt-3 p-4 bg-gradient-to-br from-amber-50/80 to-yellow-50/50 dark:from-gray-900 dark:to-amber-950/30 border border-amber-200 dark:border-amber-800/60 rounded-xl space-y-3 cursor-default" onClick={(e) => e.stopPropagation()}>
+                                                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b border-amber-100 dark:border-gray-800 pb-2.5">
+                                                                <div>
+                                                                    <span className="text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
+                                                                        🟡 Pagar con Binance Pay (USDT)
+                                                                    </span>
+                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                        Total a pagar: <strong className="text-amber-700 dark:text-amber-300 font-black">{finalGrandTotal.toFixed(2)} USDT</strong> (Red interna Binance Pay sin comisión de gas)
+                                                                    </p>
+                                                                </div>
+                                                                {copyFeedback && (
+                                                                    <span className="text-[11px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold self-start">
+                                                                        {copyFeedback}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+                                                                <div className="space-y-2">
+                                                                    <div className="bg-white dark:bg-gray-800/80 p-3 rounded-lg border dark:border-gray-700 flex justify-between items-center">
+                                                                        <div>
+                                                                            <span className="text-[10px] text-gray-400 block font-semibold">BINANCE PAY ID</span>
+                                                                            <span className="font-mono text-base font-black text-gray-900 dark:text-white">{(method as any).binance_pay_id || '284759302'}</span>
+                                                                        </div>
+                                                                        <Button size="xs" color="light" type="button" onClick={() => handleCopy((method as any).binance_pay_id || '284759302', 'Binance Pay ID')}>
+                                                                            <FaCopy className="mr-1 w-3 h-3" /> Copiar ID
+                                                                        </Button>
+                                                                    </div>
+
+                                                                    <div className="text-[11px] text-gray-500 space-y-1">
+                                                                        <p>1. Abre tu App de Binance y ve a <strong>Pay</strong>.</p>
+                                                                        <p>2. Envía <strong>{finalGrandTotal.toFixed(2)} USDT</strong> al Pay ID o escanea el QR.</p>
+                                                                        <p>3. Pega el <strong>ID o Hash de la transacción</strong> abajo.</p>
+                                                                    </div>
+                                                                </div>
+
+                                                                <div className="flex flex-col items-center justify-center p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
+                                                                    <img
+                                                                        src={(method as any).qr_code || 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=binancepay://pay?id=284759302'}
+                                                                        alt="Binance Pay QR"
+                                                                        className="w-28 h-28 object-contain rounded"
+                                                                    />
+                                                                    <span className="text-[10px] text-gray-400 font-semibold mt-1">Escanear con Binance App</span>
+                                                                </div>
+                                                            </div>
+
+                                                            <div className="pt-2 border-t border-amber-100 dark:border-gray-800 space-y-2">
+                                                                <Label className="text-xs font-bold text-gray-900 dark:text-white">
+                                                                    Comprobante de Binance Pay:
+                                                                </Label>
+                                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                                                    <TextInput
+                                                                        id="binance_id_buyer"
+                                                                        placeholder="Tu Binance Pay ID / Nickname (Opcional)"
+                                                                        value={binanceId}
+                                                                        onChange={(e) => setBinanceId(e.target.value)}
+                                                                        className="text-xs"
+                                                                    />
+                                                                    <TextInput
+                                                                        id="binance_tx_hash"
+                                                                        placeholder="ID de Orden / Hash de Transacción (*)"
+                                                                        required
+                                                                        value={binanceTxHash}
+                                                                        onChange={(e) => setBinanceTxHash(e.target.value)}
+                                                                        className="text-xs"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
 
                                                     {/* If Bank Transfer and selected, show account instructions */}
                                                     {isSelected && method.instructions && (

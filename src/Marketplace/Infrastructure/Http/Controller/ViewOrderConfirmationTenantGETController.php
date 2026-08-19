@@ -89,6 +89,7 @@ final class ViewOrderConfirmationTenantGETController extends Controller
                 'phone' => $order->customer?->phone ?? '',
             ],
             'shipping_address' => $order->metadata['shipping_address'] ?? null,
+            'payment_details' => $order->metadata['payment_details'] ?? null,
             'items' => $formattedItems,
         ];
 

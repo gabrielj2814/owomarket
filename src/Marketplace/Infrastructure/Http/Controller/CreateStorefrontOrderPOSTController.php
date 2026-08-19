@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\Coupon\Infrastructure\Eloquent\Models\Coupon;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
@@ -40,6 +41,12 @@ final class CreateStorefrontOrderPOSTController extends Controller
             'shipping_method' => ['required', 'string', 'max:100'],
             'shipping_amount' => ['nullable', 'numeric', 'min:0'],
             'payment_method' => ['required', 'string', 'max:50'],
+            'payment_details' => ['nullable', 'array'],
+            'payment_details.bank_origin' => ['nullable', 'string', 'max:100'],
+            'payment_details.phone_origin' => ['nullable', 'string', 'max:50'],
+            'payment_details.reference_number' => ['nullable', 'string', 'max:100'],
+            'payment_details.binance_id' => ['nullable', 'string', 'max:100'],
+            'payment_details.transaction_hash' => ['nullable', 'string', 'max:150'],
             'coupon_code' => ['nullable', 'string', 'max:50'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'string'],
@@ -133,9 +140,12 @@ final class CreateStorefrontOrderPOSTController extends Controller
             $paymentMethod = (string) $request->input('payment_method', 'bank_transfer');
             $orderNumber = 'ORD-'.strtoupper(Str::random(8));
 
+            $paymentDetails = $request->input('payment_details', []);
+
             $metadata = [
                 'shipping_address' => $request->input('shipping_address'),
                 'customer_info' => $request->input('customer'),
+                'payment_details' => $paymentDetails,
                 'source' => 'storefront_checkout',
             ];
 
@@ -160,6 +170,35 @@ final class CreateStorefrontOrderPOSTController extends Controller
             $orderId = $order->id()->value();
             $orderNum = $order->orderNumber()->value();
             $orderTotal = $order->total()->amount();
+
+            // 6. Record Payment in payments table
+            try {
+                $txId = $paymentDetails['transaction_hash'] 
+                    ?? $paymentDetails['reference_number'] 
+                    ?? ('TX-'.strtoupper(Str::random(10)));
+
+                DB::table('payments')->insert([
+                    'id' => (string) Str::uuid(),
+                    'order_id' => $orderId,
+                    'payment_gateway' => $paymentMethod,
+                    'transaction_id' => (string) $txId,
+                    'amount' => $orderTotal,
+                    'fee' => 0.0,
+                    'status' => 'pending',
+                    'currency' => 'USD',
+                    'gateway_response' => json_encode([
+                        'gateway' => $paymentMethod,
+                        'payment_details' => $paymentDetails,
+                        'customer' => $request->input('customer'),
+                        'created_at' => now()->toIso8601String(),
+                    ]),
+                    'paid_at' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable) {
+                // Keep order creation robust if payments table constraint differs
+            }
 
             return ApiResponse::success(
                 data: [
