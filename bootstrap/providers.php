@@ -1,6 +1,7 @@
 <?php
 
 return [
+    App\Providers\SharedServiceProvider::class,
     App\Providers\AdminServiceProvider::class,
     App\Providers\AppServiceProvider::class,
     App\Providers\AttributeServiceProvider::class,
@@ -22,5 +23,4 @@ return [
     App\Providers\TenancyServiceProvider::class,
     App\Providers\TenantServiceProvider::class,
     App\Providers\TenantSettingsServiceProvider::class,
-    App\Providers\UserServiceProvider::class,
 ];

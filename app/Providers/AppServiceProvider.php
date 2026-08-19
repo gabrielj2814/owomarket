@@ -9,12 +9,6 @@ use Src\Authentication\Application\Contracts\AuthServices;
 use Src\Authentication\Application\Contracts\UserServices;
 use Src\Authentication\Infrastructure\Eloquent\Models\PersonalAccessToken;
 use Src\Authentication\Infrastructure\Services\UserApiClient;
-use Src\Shared\Domain\Contracts\PasswordHasher;
-use Src\Shared\Domain\Contracts\PasswordValidator;
-use Src\Shared\Domain\Contracts\UuidGenerator;
-use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
-use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
-use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -23,14 +17,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
-        $this->app->bind(UuidGenerator::class, LaravelUuidGenerator::class);
-        $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
-        $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
-
         $this->app->bind(UserServices::class, UserApiClient::class);
         $this->app->bind(AuthServices::class, AuthApiClient::class);
-
     }
 
     /**
@@ -38,7 +26,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
 
         if (tenancy()->initialized) {
