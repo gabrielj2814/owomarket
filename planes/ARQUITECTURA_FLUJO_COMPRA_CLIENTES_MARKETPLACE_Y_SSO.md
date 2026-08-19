@@ -113,23 +113,24 @@ Existen dos escenarios según el lugar donde se cobra:
 
 ---
 
-## 6. 🗺️ Roadmap de Implementación Recomendado
+## 6. 🗺️ Roadmap de Implementación (Estado: 100% Completado)
 
-### Fase 1: Autenticación Centralizada de Clientes y Sincronización
-- [ ] Creación de tablas centrales de clientes (`central_customers`, `central_customer_addresses`).
-- [ ] Implementación del mecanismo SSO tokenizado para inicio de sesión universal en subdominios de inquilinos.
-- [ ] Soporte de checkout sin fricción con sincronización automática de perfiles.
+### Fase 1: Autenticación Centralizada de Clientes y Sincronización (OwO Pass SSO)
+- [x] Creación de tablas centrales de clientes (`central_customers`, `central_customer_addresses`, `central_sso_tokens`).
+- [x] Implementación del mecanismo SSO tokenizado para inicio de sesión universal en subdominios de inquilinos (`CustomerAuthModal.tsx`, `CustomerAuthContext.tsx`, `AuthenticateCentralCustomerUseCase`).
+- [x] Soporte de checkout sin fricción con sincronización automática de perfiles y enlace con `central_uuid`.
 
 ### Fase 2: Pasarelas de Pago de Prueba (Pago Móvil y Binance Pay)
-- [ ] Adaptador de Pago Móvil con formulario de reporte de referencia bancaria y panel de validación de pagos.
-- [ ] Adaptador de Binance Pay con generación de QR y webhook de confirmación.
+- [x] Adaptador DDD de Pago Móvil (`PagoMovilPaymentGateway.php`) con formulario interactivo de referencia bancaria, teléfono y cálculo en Bolívares (VES).
+- [x] Adaptador DDD de Binance Pay (`BinancePayPaymentGateway.php`) con generación de QR, copia rápida de Pay ID y captura de Hash de transacción USDT.
+- [x] Persistencia y trazabilidad de comprobantes en la tabla `payments`.
 
 ### Fase 3: Marketplace Central y Split Orders Multi-Tienda
-- [ ] Carrito multi-tienda central con desglose por tenant.
-- [ ] Caso de uso de `CreateMasterOrderUseCase` y división en sub-órdenes hacia cada tenant.
-- [ ] Eventos y jobs asíncronos para actualizar el stock y registrar la orden en la base de datos de cada inquilino.
+- [x] Carrito multi-tienda central y payload con desglose por tenant (`CentralMarketplaceServices.ts`).
+- [x] Caso de uso maestro `CreateUnifiedCentralOrderUseCase` con factura consolidada única (`central_orders`).
+- [x] Motor de enrutamiento y desglose automático `DispatchCentralOrderToTenantsUseCase` que crea las órdenes locales en cada base de datos de inquilino.
 
-### Fase 4: Motor de Comisiones, Billetera de Inquilinos y Suscripciones
-- [ ] Registro de comisiones por orden (`platform_commissions`).
-- [ ] Balance y liquidaciones de inquilinos (`tenant_wallets` / `tenant_payouts`).
-- [ ] Módulo de suscripciones mensuales y planes con reducción de tasas.
+### Fase 4: Motor de Comisiones, Liquidaciones y Suscripciones
+- [x] Registro inmutable de comisiones por orden (`platform_commissions`) con jerarquía configurable de 3 niveles (Tenant Custom -> Plan de Suscripción -> Global).
+- [x] Balance, liquidaciones y conciliaciones (`commission_settlements`) con endpoints para SuperAdmin y Backoffice del Tenant.
+- [x] Módulo de planes de suscripción (`subscription_plans` y `tenant_subscriptions`) con reducción automática de comisiones (Free 8%, Pro 3.5%, Enterprise 1%).
