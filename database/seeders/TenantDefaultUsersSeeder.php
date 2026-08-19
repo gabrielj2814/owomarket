@@ -53,10 +53,10 @@ class TenantDefaultUsersSeeder extends Seeder
             $emailSlug = $slug !== '' ? $slug : Str::slug($tenant->name ?: 'tenant');
             $email = $emailSlug . '.owner@owomarket.local';
 
-            $user = User::updateOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $email],
                 [
-                    'id' =>   Str::uuid()->toString(),
+                    'id' => Str::uuid()->toString(),
                     'name' => $name,
                     'password' => Password::fromPlainText($password, $this->validator, $this->hasher)->getHash(),
                     'avatar' => "https://i.pinimg.com/originals/b0/ce/76/b0ce76f4cdb95ef13afa21a889adfc71.jpg",
