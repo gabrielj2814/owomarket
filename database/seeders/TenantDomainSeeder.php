@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Hash;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Tenant\Domain\ValueObjects\Password;
@@ -15,11 +14,10 @@ use Stancl\Tenancy\Database\Models\Domain;
 
 class TenantDomainSeeder extends Seeder
 {
-
     public function __construct(
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
-    ){}
+    ) {}
 
     public function run(): void
     {
@@ -41,11 +39,11 @@ class TenantDomainSeeder extends Seeder
         // Prefer the first non-local domain as base (e.g., owomarket.test)
         $baseDomain = collect($centralDomains)
             ->first(function ($d) {
-                return !in_array($d, ['localhost', '127.0.0.1'], true);
+                return ! in_array($d, ['localhost', '127.0.0.1'], true);
             }) ?? Arr::first($centralDomains) ?? 'localhost';
 
         // Contraseña por defecto del usuario admin
-        $defaultPassword = env('DEFAULT_USER_TENANT_OWNER_PASSWORD_DEV', 'EndAdmin_12345678');
+        $defaultPassword = config('app.default_passwords_tenant_owner');
 
         foreach ($codes as $code) {
             $sub = Str::lower($code);
@@ -62,17 +60,17 @@ class TenantDomainSeeder extends Seeder
             $tenant = Tenant::firstOrCreate(
                 ['slug' => $slug],
                 [
-                    'name'    => $name,
-                    'slug'    => $slug,
-                    'status'  => "active",
-                    'request' => "approved",
+                    'name' => $name,
+                    'slug' => $slug,
+                    'status' => 'active',
+                    'request' => 'approved',
                     // Los demás campos tienen default en la migración
                 ]
             );
 
             $tenant->domains()->create([
                 'id' => Str::uuid()->toString(),
-                'domain' => $fullDomain
+                'domain' => $fullDomain,
             ]);
 
             // Crear usuario admin por defecto en la base de datos del tenant
@@ -90,17 +88,17 @@ class TenantDomainSeeder extends Seeder
 
         try {
             // Verificar si ya existe un usuario admin
-            $existingAdmin = User::where('email', 'admin@' . $tenant->slug . '.com')
+            $existingAdmin = User::where('email', 'admin@'.$tenant->slug.'.com')
                 ->where('type', 'owner')
                 ->first();
 
-            if (!$existingAdmin) {
+            if (! $existingAdmin) {
 
                 // Crear usuario admin
                 User::create([
                     'id' => Str::uuid()->toString(),
                     'name' => 'Administrador',
-                    'email' => 'admin@' . $tenant->slug . '.com',
+                    'email' => 'admin@'.$tenant->slug.'.com',
                     'password' => Password::fromPlainText($defaultPassword, $this->validator, $this->hasher)->getHash(),
                     'type' => 'owner',
                     'is_active' => true,

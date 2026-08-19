@@ -3,37 +3,35 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Src\Admin\Domain\ValueObjects\Password;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
-use Src\Admin\Domain\ValueObjects\Password;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 class TenantDefaultUsersSeeder extends Seeder
 {
-
-
     public function __construct(
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
-    ){}
+    ) {}
 
     public function run(): void
     {
-        $password = env('USER_PASSWORD_DEV', '12345678');
+        $password = config('app.dev_user_password')
+            ?? throw new \RuntimeException('USER_PASSWORD_DEV no está definida en .env; requerida para seeders de desarrollo.');
 
         $owners = [
-            'tecs'              => 'Kō Yamori',
-            'chivostore'        => 'Kyouko Mejiro',
+            'tecs' => 'Kō Yamori',
+            'chivostore' => 'Kyouko Mejiro',
             // '7-leven'           => 'Kyouko Mejiro',
-            'tecno_isekaic'     => 'Nazuna Nanakusa',
-            'tematicosvzla'     => 'arturia',
-            'cosplay_'          => 'modred',
-            'darker'            => 'astolfo',
-            'montcord_sc'       => 'stay gold',
-            'baymax'            => 'Akira Asai',
+            'tecno_isekaic' => 'Nazuna Nanakusa',
+            'tematicosvzla' => 'arturia',
+            'cosplay_' => 'modred',
+            'darker' => 'astolfo',
+            'montcord_sc' => 'stay gold',
+            'baymax' => 'Akira Asai',
         ];
 
         foreach ($owners as $code => $name) {
@@ -51,7 +49,7 @@ class TenantDefaultUsersSeeder extends Seeder
             }
 
             $emailSlug = $slug !== '' ? $slug : Str::slug($tenant->name ?: 'tenant');
-            $email = $emailSlug . '.owner@owomarket.local';
+            $email = $emailSlug.'.owner@owomarket.local';
 
             $user = User::firstOrCreate(
                 ['email' => $email],
@@ -59,8 +57,8 @@ class TenantDefaultUsersSeeder extends Seeder
                     'id' => Str::uuid()->toString(),
                     'name' => $name,
                     'password' => Password::fromPlainText($password, $this->validator, $this->hasher)->getHash(),
-                    'avatar' => "https://i.pinimg.com/originals/b0/ce/76/b0ce76f4cdb95ef13afa21a889adfc71.jpg",
-                    'type' => "tenant_owner",
+                    'avatar' => 'https://i.pinimg.com/originals/b0/ce/76/b0ce76f4cdb95ef13afa21a889adfc71.jpg',
+                    'type' => 'tenant_owner',
                 ]
             );
 
@@ -75,4 +73,3 @@ class TenantDefaultUsersSeeder extends Seeder
         }
     }
 }
-

@@ -30,11 +30,7 @@ class CreateAdminPOSTController extends Controller
         $email = $data->email;
         $phone = $data->phone;
 
-        if (env('APP_ENV') == 'local') {
-            $password = env('USER_PASSWORD_DEV');
-        } else {
-            $password = $this->password_generator->generate(12);
-        }
+        $password = $this->password_generator->generate(12);
 
         $admin = $this->create_admin_use_case->execute($name, $email, $phone, $password);
 
