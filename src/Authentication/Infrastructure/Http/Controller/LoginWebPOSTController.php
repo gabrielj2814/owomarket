@@ -7,9 +7,9 @@ use Src\Authentication\Application\UseCase\ConsultUserApiByEmailUseCase;
 use Src\Authentication\Application\UseCase\CrearAuthUserUseCase;
 use Src\Authentication\Application\UseCase\EliminarAuthUserByUuidUseCase;
 use Src\Authentication\Application\UseCase\LoginWebUserUseCase;
-use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Infrastructure\Http\Request\LoginFormRequest;
 use Src\Authentication\Infrastructure\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

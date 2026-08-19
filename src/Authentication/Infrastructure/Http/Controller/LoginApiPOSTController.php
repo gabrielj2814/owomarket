@@ -5,9 +5,9 @@ namespace Src\Authentication\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Src\Authentication\Application\UseCase\ConsultDataUserByEmailCase;
 use Src\Authentication\Application\UseCase\LoginApiUserUseCase;
-use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Infrastructure\Http\Request\LoginFormRequest;
 use Src\Authentication\Infrastructure\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

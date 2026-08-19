@@ -4,7 +4,7 @@ namespace Src\Authentication\Application\UseCase;
 
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\Authentication\Domain\Entities\User;
-use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 
 class ConsultDataUserByEmailCase
 {

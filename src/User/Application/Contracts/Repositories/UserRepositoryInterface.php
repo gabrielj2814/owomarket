@@ -2,8 +2,8 @@
 
 namespace Src\User\Application\Contracts\Repositories;
 
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\User\Domain\Entities\User;
-use Src\User\Domain\ValueObjects\UserEmail;
 
 interface UserRepositoryInterface
 {

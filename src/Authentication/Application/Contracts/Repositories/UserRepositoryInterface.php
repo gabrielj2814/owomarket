@@ -3,7 +3,7 @@
 namespace Src\Authentication\Application\Contracts\Repositories;
 
 use Src\Authentication\Domain\Entities\User;
-use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 
 interface UserRepositoryInterface
 {

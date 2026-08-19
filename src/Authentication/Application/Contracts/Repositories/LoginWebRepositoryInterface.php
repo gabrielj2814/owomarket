@@ -2,7 +2,7 @@
 
 namespace Src\Authentication\Application\Contracts\Repositories;
 
-use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 interface LoginWebRepositoryInterface

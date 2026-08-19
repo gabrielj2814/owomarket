@@ -3,9 +3,9 @@
 namespace Src\Admin\Application\Contracts\Repositories;
 
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\UserEmail;
 use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Shared\Collection\Pagination;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 interface AdminRepositoryInterface

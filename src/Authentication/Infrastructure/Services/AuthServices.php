@@ -5,7 +5,7 @@ namespace Src\Authentication\Infrastructure\Services;
 use Src\Authentication\Application\Contracts\AuthServices as ContractsAuthServices;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\Authentication\Domain\Entities\User;
-use Src\Authentication\Domain\ValueObjects\UserEmail;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 
 class AuthServices implements ContractsAuthServices
 {

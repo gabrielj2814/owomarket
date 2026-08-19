@@ -1,10 +1,11 @@
 <?php
 
-namespace Src\User\Domain\ValueObjects;
+namespace Src\Shared\Domain\ValueObjects;
+
+use InvalidArgumentException;
 
 final class UserEmail
 {
-    //
     private string $email;
 
     private function __construct(string $email)
@@ -12,10 +13,10 @@ final class UserEmail
         $this->email = $email;
     }
 
-    private static function validate(string $email)
+    private static function validate(string $email): void
     {
         if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            throw new \InvalidArgumentException('Correo invalido: '.$email);
+            throw new InvalidArgumentException('Correo invalido: '.$email);
         }
     }
 
@@ -27,6 +28,11 @@ final class UserEmail
     }
 
     public function value(): string
+    {
+        return $this->email;
+    }
+
+    public function __toString(): string
     {
         return $this->email;
     }

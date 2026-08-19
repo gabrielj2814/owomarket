@@ -4,9 +4,9 @@ namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Illuminate\Support\Facades\Auth;
 use Src\Authentication\Application\Contracts\Repositories\LoginWebRepositoryInterface;
-use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser;
 use Src\Authentication\Infrastructure\Eloquent\Models\User;
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
 class LoginWebRepository implements LoginWebRepositoryInterface

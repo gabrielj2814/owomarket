@@ -2,10 +2,10 @@
 
 namespace Src\User\Application\UseCase;
 
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\User\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\User\Application\Data\EmailUserData;
 use Src\User\Domain\Entities\User;
-use Src\User\Domain\ValueObjects\UserEmail;
 
 class ConsultUserByEmailUseCase
 {

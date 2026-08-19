@@ -2,11 +2,11 @@
 
 namespace Src\Tenant\Application\UseCase;
 
+use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\AuthServices;
 use Src\Tenant\Domain\Entities\AuthUser;
 use Src\Tenant\Domain\ValueObjects\AvatarUrl;
-use Src\Tenant\Domain\ValueObjects\UserEmail;
 use Src\Tenant\Domain\ValueObjects\UserName;
 use Src\Tenant\Domain\ValueObjects\UserType;
 
