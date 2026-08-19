@@ -200,6 +200,28 @@ final class CreateStorefrontOrderPOSTController extends Controller
                 // Keep order creation robust if payments table constraint differs
             }
 
+            // 7. Calculate and Record Platform Commission in Central DB
+            try {
+                $tenantId = (string) (tenant('id') ?? '');
+                if ($tenantId !== '') {
+                    $commissionUseCase = app(\Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase::class);
+                    $commissionUseCase->execute(
+                        tenantId: $tenantId,
+                        orderId: $orderId,
+                        orderNumber: $orderNum,
+                        orderTotal: (float) $orderTotal,
+                        paymentGateway: $paymentMethod,
+                        currency: 'USD',
+                        metadata: [
+                            'customer_email' => $request->input('customer.email'),
+                            'source' => 'storefront_checkout',
+                        ]
+                    );
+                }
+            } catch (\Throwable) {
+                // Keep order creation robust
+            }
+
             return ApiResponse::success(
                 data: [
                     'order_id' => $orderId,

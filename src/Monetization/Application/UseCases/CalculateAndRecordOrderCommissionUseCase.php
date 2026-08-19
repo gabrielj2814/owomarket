@@ -1,0 +1,111 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Src\Monetization\Application\UseCases;
+
+use App\Models\PlatformCommission;
+use App\Models\TenantSubscription;
+use Illuminate\Support\Str;
+use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+
+final class CalculateAndRecordOrderCommissionUseCase
+{
+    /**
+     * @param string $tenantId
+     * @param string $orderId
+     * @param string $orderNumber
+     * @param float $orderTotal
+     * @param string|null $paymentGateway
+     * @param string $currency
+     * @param array<string, mixed> $metadata
+     * @return PlatformCommission
+     */
+    public function execute(
+        string $tenantId,
+        string $orderId,
+        string $orderNumber,
+        float $orderTotal,
+        ?string $paymentGateway = null,
+        string $currency = 'USD',
+        array $metadata = []
+    ): PlatformCommission {
+        // 1. Resolve applicable commission rate based on 3-tier hierarchy:
+        // Priority 1: Tenant specific custom_commission_rate
+        // Priority 2: Active subscription plan commission_rate
+        // Priority 3: Platform global default rate (8.00%)
+        $rate = $this->resolveCommissionRate($tenantId);
+
+        $commissionAmount = round($orderTotal * ($rate / 100), 2);
+
+        return PlatformCommission::create([
+            'id' => (string) Str::uuid(),
+            'tenant_id' => $tenantId,
+            'order_id' => $orderId,
+            'order_number' => $orderNumber,
+            'order_total' => $orderTotal,
+            'commission_rate' => $rate,
+            'commission_amount' => $commissionAmount,
+            'currency' => $currency,
+            'status' => 'pending',
+            'payment_gateway' => $paymentGateway,
+            'metadata' => array_merge($metadata, [
+                'resolved_rate_source' => $this->resolveRateSource($tenantId),
+            ]),
+        ]);
+    }
+
+    public function resolveCommissionRate(string $tenantId): float
+    {
+        $tenant = Tenant::find($tenantId);
+
+        // Priority 1: Custom tenant rate
+        if ($tenant) {
+            $customRate = $tenant->custom_commission_rate 
+                ?? $tenant->getAttribute('custom_commission_rate') 
+                ?? ($tenant->data['custom_commission_rate'] ?? null);
+
+            if ($customRate !== null && is_numeric($customRate)) {
+                return (float) $customRate;
+            }
+        }
+
+        // Priority 2: Active subscription plan
+        $subscription = TenantSubscription::with('plan')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->first();
+
+        if ($subscription && $subscription->isActive() && $subscription->plan) {
+            return (float) $subscription->plan->commission_rate;
+        }
+
+        // Priority 3: Global default rate (8.00%)
+        return 8.00;
+    }
+
+    private function resolveRateSource(string $tenantId): string
+    {
+        $tenant = Tenant::find($tenantId);
+        if ($tenant) {
+            $customRate = $tenant->custom_commission_rate 
+                ?? $tenant->getAttribute('custom_commission_rate') 
+                ?? ($tenant->data['custom_commission_rate'] ?? null);
+
+            if ($customRate !== null && is_numeric($customRate)) {
+                return 'tenant_custom';
+            }
+        }
+
+        $subscription = TenantSubscription::with('plan')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'active')
+            ->first();
+
+        if ($subscription && $subscription->isActive() && $subscription->plan) {
+            return 'subscription_plan:' . $subscription->plan->slug;
+        }
+
+        return 'platform_default';
+    }
+}

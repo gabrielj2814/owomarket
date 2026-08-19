@@ -13,7 +13,10 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasDatabase, HasDomains, SoftDeletes;
 
-    protected $connection = 'central';
+    public function getConnectionName()
+    {
+        return app()->environment('testing') ? config('database.default') : 'central';
+    }
 
     public $primaryKey = 'id';
 
