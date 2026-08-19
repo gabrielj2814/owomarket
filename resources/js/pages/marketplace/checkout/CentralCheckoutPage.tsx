@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
 import { useCentralCart } from '@/contexts/CentralCartContext';
@@ -72,7 +72,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-    const totalBs = (subtotal * BCV_RATE).toFixed(2);
+    const totalBs = (subtotal * bcvRate).toFixed(2);
 
     const handleSubmitOrder = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -126,7 +126,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                           bank_origin: bankOrigin,
                           phone_origin: phoneOrigin,
                           reference_number: referenceNumber,
-                          rate_bcv: BCV_RATE,
+                          rate_bcv: bcvRate,
                           total_bs: totalBs,
                       }
                     : {

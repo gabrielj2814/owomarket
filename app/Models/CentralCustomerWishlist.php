@@ -9,42 +9,34 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CentralCustomerSsoToken extends Model
+class CentralCustomerWishlist extends Model
 {
     use HasFactory, HasUuids;
 
-    public $timestamps = false;
+    protected $table = 'central_customer_wishlists';
 
     public function getConnectionName()
     {
         return app()->environment('testing') ? config('database.default') : 'central';
     }
 
-    protected $table = 'central_sso_tokens';
-
     protected $fillable = [
         'id',
         'customer_id',
-        'token',
-        'target_domain',
-        'expires_at',
-        'used_at',
-        'created_at',
+        'product_id',
+        'tenant_id',
+        'product_name',
+        'product_slug',
+        'product_price',
+        'product_image',
     ];
 
     protected $casts = [
-        'expires_at' => 'datetime',
-        'used_at' => 'datetime',
-        'created_at' => 'datetime',
+        'product_price' => 'float',
     ];
 
     public function customer(): BelongsTo
     {
         return $this->belongsTo(CentralCustomer::class, 'customer_id', 'id');
-    }
-
-    public function isValid(): bool
-    {
-        return $this->used_at === null && $this->expires_at->isFuture();
     }
 }

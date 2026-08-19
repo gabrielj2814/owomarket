@@ -15,7 +15,10 @@ class CentralCustomer extends Authenticatable
 {
     use HasFactory, HasUuids, Notifiable, SoftDeletes;
 
-    protected $connection = 'central';
+    public function getConnectionName()
+    {
+        return app()->environment('testing') ? config('database.default') : 'central';
+    }
 
     protected $table = 'central_customers';
 

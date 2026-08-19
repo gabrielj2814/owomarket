@@ -7,44 +7,31 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class CentralCustomerSsoToken extends Model
+class CentralCustomerPasswordReset extends Model
 {
     use HasFactory, HasUuids;
-
-    public $timestamps = false;
 
     public function getConnectionName()
     {
         return app()->environment('testing') ? config('database.default') : 'central';
     }
 
-    protected $table = 'central_sso_tokens';
+    protected $table = 'central_customer_password_resets';
+
+    public $timestamps = false;
 
     protected $fillable = [
         'id',
-        'customer_id',
+        'email',
+        'pin_code',
         'token',
-        'target_domain',
         'expires_at',
-        'used_at',
         'created_at',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
-        'used_at' => 'datetime',
         'created_at' => 'datetime',
     ];
-
-    public function customer(): BelongsTo
-    {
-        return $this->belongsTo(CentralCustomer::class, 'customer_id', 'id');
-    }
-
-    public function isValid(): bool
-    {
-        return $this->used_at === null && $this->expires_at->isFuture();
-    }
 }

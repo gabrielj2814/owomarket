@@ -2,6 +2,7 @@ import React, { FC, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { CentralCartProvider, useCentralCart } from '@/contexts/CentralCartContext';
 import { CustomerAuthProvider, useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from 'flowbite-react';
 import CentralCartDrawer from '../ui/marketplace/CentralCartDrawer';
 import CustomerAuthModal from '@/components/ui/storefront/CustomerAuthModal';
 import {
@@ -94,23 +95,39 @@ const CentralNavbar: React.FC = () => {
 
                         {/* Customer Auth / OwO Pass SSO */}
                         {isAuthenticated && customer ? (
-                            <div className="flex items-center gap-2 pl-2 border-l border-gray-200 dark:border-gray-700">
-                                <div className="text-right hidden sm:block">
-                                    <p className="text-xs font-bold text-gray-900 dark:text-white leading-tight">
+                            <Dropdown
+                                label=""
+                                dismissOnClick={true}
+                                renderTrigger={() => (
+                                    <button className="flex items-center gap-2 p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-xl transition-colors font-semibold">
+                                        <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
+                                            {((customer.name || 'U')[0]).toUpperCase()}
+                                        </div>
+                                        <span className="hidden lg:inline text-xs max-w-[110px] truncate">
+                                            {customer.name}
+                                        </span>
+                                    </button>
+                                )}
+                            >
+                                <DropdownHeader>
+                                    <span className="block text-sm font-bold text-gray-900 dark:text-white">
                                         {customer.name}
-                                    </p>
-                                    <span className="text-[10px] text-blue-600 dark:text-blue-400 font-medium">
-                                        OwO Pass Activo
                                     </span>
-                                </div>
-                                <button
-                                    onClick={logout}
-                                    title="Cerrar sesión"
-                                    className="p-2 text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
-                                >
-                                    <HiArrowRightOnRectangle className="w-5 h-5" />
-                                </button>
-                            </div>
+                                    <span className="block truncate text-xs text-gray-500">
+                                        {customer.email}
+                                    </span>
+                                </DropdownHeader>
+                                <DropdownItem href="/account/dashboard">📊 Mi Dashboard</DropdownItem>
+                                <DropdownItem href="/account/orders">📦 Mis Pedidos & Tracking</DropdownItem>
+                                <DropdownItem href="/account/invoices">🧾 Mis Facturas PDF</DropdownItem>
+                                <DropdownItem href="/account/wishlist">❤️ Mis Favoritos</DropdownItem>
+                                <DropdownItem href="/account/coupons">🎟️ Mis Cupones</DropdownItem>
+                                <DropdownItem href="/account/profile">⚙️ Mi Perfil & Seguridad</DropdownItem>
+                                <DropdownDivider />
+                                <DropdownItem onClick={logout}>
+                                    🚪 Cerrar Sesión
+                                </DropdownItem>
+                            </Dropdown>
                         ) : (
                             <button
                                 onClick={() => openAuthModal()}

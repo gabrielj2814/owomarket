@@ -201,7 +201,7 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                 </span>
                                 <CurrencyPriceDisplay
                                     priceUsd={product.price}
-                                    comparePriceUsd={product.compare_price}
+                                    comparePriceUsd={product.compare_price ?? undefined}
                                     size="xl"
                                     showVes={true}
                                     showUsdt={true}

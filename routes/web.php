@@ -15,6 +15,7 @@ foreach (config('tenancy.central_domains') as $domain) {
         // })->name('home');
 
         require base_path('src/Marketplace/Infrastructure/Http/Routes/web.php');
+        require base_path('src/CentralCustomer/Infrastructure/Http/Routes/webCentral.php');
 
         Route::prefix('auth')->group(callback: base_path('src/Authentication/Infrastructure/Http/Routes/web.php'));
 

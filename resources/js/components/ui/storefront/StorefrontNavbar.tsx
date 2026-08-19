@@ -201,6 +201,12 @@ export default function StorefrontNavbar({
                             <DropdownItem href="/catalog">Explorar Catálogo</DropdownItem>
                             <DropdownItem href="/cart">Mi Carrito</DropdownItem>
                             <DropdownDivider />
+                            <DropdownItem href="/account/dashboard">📊 Mi Dashboard</DropdownItem>
+                            <DropdownItem href="/account/orders">📦 Mis Pedidos & Tracking</DropdownItem>
+                            <DropdownItem href="/account/invoices">🧾 Mis Facturas PDF</DropdownItem>
+                            <DropdownItem href="/account/wishlist">❤️ Mis Favoritos</DropdownItem>
+                            <DropdownItem href="/account/profile">⚙️ Mi Perfil</DropdownItem>
+                            <DropdownDivider />
                             <DropdownItem
                                 onClick={async () => {
                                     if (customer) {

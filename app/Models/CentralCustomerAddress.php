@@ -13,7 +13,10 @@ class CentralCustomerAddress extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $connection = 'central';
+    public function getConnectionName()
+    {
+        return app()->environment('testing') ? config('database.default') : 'central';
+    }
 
     protected $table = 'central_customer_addresses';
 

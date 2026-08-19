@@ -39,9 +39,13 @@ final class GenerateSsoTokenPOSTController
                 code: 200
             );
         } catch (Exception $e) {
+            $code = is_numeric($e->getCode()) && (int) $e->getCode() >= 400 && (int) $e->getCode() < 600
+                ? (int) $e->getCode()
+                : 422;
+
             return ApiResponse::error(
                 message: $e->getMessage(),
-                code: (int) ($e->getCode() ?: 422)
+                code: $code
             );
         }
     }

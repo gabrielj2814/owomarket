@@ -199,6 +199,14 @@ export const CustomerAuthModal: React.FC = () => {
                                     {showLoginPassword ? <HiEyeOff className="w-4 h-4" /> : <HiEye className="w-4 h-4" />}
                                 </button>
                             </div>
+                            <div className="text-right mt-1.5">
+                                <a
+                                    href="/auth/forgot-password"
+                                    className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                                >
+                                    ¿Olvidaste tu contraseña?
+                                </a>
+                            </div>
                         </div>
 
                         <Button
