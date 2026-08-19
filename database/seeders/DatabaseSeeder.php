@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             TenantDomainSeeder::class,
             TenantDefaultUsersSeeder::class,
             TenantDemoDataSeeder::class,
+            CentralCustomerDemoSeeder::class,
         ]);
     }
 }
