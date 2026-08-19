@@ -1,5 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import CustomerAuthServices, { CentralCustomerData, LoginCustomerPayload, RegisterCustomerPayload } from '@/Services/CustomerAuthServices';
+import CustomerAuthServices, {
+    CentralCustomerData,
+    LoginCustomerPayload,
+    RegisterCustomerPayload,
+    isCentralDomain,
+} from '@/Services/CustomerAuthServices';
 
 export interface CustomerAddress {
     id: string;
@@ -50,22 +55,33 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const refreshSession = async () => {
         setLoading(true);
         try {
-            const res = await CustomerAuthServices.getTenantSession();
-            if (res && res.code === 200 && res.data?.authenticated && res.data?.customer) {
-                setCustomer(res.data.customer);
-                // Load cached addresses or details from localStorage if available
-                const cachedAddresses = localStorage.getItem('owo_customer_addresses');
-                if (cachedAddresses) {
-                    try {
-                        setAddresses(JSON.parse(cachedAddresses));
-                    } catch {}
+            // 1. Check cached central customer in localStorage
+            const cachedCustomer = localStorage.getItem('owo_central_customer');
+            const cachedAddresses = localStorage.getItem('owo_customer_addresses');
+
+            if (cachedCustomer) {
+                try {
+                    const parsedCust = JSON.parse(cachedCustomer);
+                    setCustomer(parsedCust);
+                    setCentralCustomer(parsedCust);
+                } catch {}
+            }
+
+            if (cachedAddresses) {
+                try {
+                    setAddresses(JSON.parse(cachedAddresses));
+                } catch {}
+            }
+
+            // 2. If on tenant storefront, sync with tenant session
+            if (!isCentralDomain()) {
+                const res = await CustomerAuthServices.getTenantSession();
+                if (res && res.code === 200 && res.data?.authenticated && res.data?.customer) {
+                    setCustomer(res.data.customer);
                 }
-            } else {
-                setCustomer(null);
-                setCentralCustomer(null);
             }
         } catch {
-            setCustomer(null);
+            // keep state
         } finally {
             setLoading(false);
         }
@@ -77,7 +93,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const login = async (payload: LoginCustomerPayload): Promise<{ success: boolean; message?: string }> => {
         try {
-            // 1. Authenticate with central
+            // 1. Authenticate with central API
             const loginRes = await CustomerAuthServices.loginCentral(payload);
             if (loginRes.code !== 200 || !loginRes.data?.customer) {
                 return {
@@ -88,30 +104,49 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
             const centralCust = loginRes.data.customer;
 
-            // 2. Generate SSO token
-            const ssoRes = await CustomerAuthServices.generateSsoToken(centralCust.id);
-            if (ssoRes.code !== 200 || !ssoRes.data?.token) {
-                return {
-                    success: false,
-                    message: 'Error al generar pase de acceso seguro.',
-                };
+            // 2. If on central marketplace domain, complete login immediately
+            if (isCentralDomain()) {
+                setCustomer(centralCust);
+                setCentralCustomer(centralCust);
+                localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
+
+                if (centralCust.addresses && Array.isArray(centralCust.addresses)) {
+                    setAddresses(centralCust.addresses);
+                    localStorage.setItem('owo_customer_addresses', JSON.stringify(centralCust.addresses));
+                }
+
+                closeAuthModal();
+                return { success: true, message: '¡Bienvenido de nuevo!' };
             }
 
-            // 3. Consume SSO token in current tenant
-            const consumeRes = await CustomerAuthServices.consumeSsoToken(ssoRes.data.token);
-            if (consumeRes.code !== 200 || !consumeRes.data) {
-                return {
-                    success: false,
-                    message: consumeRes.message || 'Error al validar sesión en la tienda.',
-                };
+            // 3. If on tenant storefront, perform SSO exchange
+            try {
+                const ssoRes = await CustomerAuthServices.generateSsoToken(centralCust.id);
+                if (ssoRes.code === 200 && ssoRes.data?.token) {
+                    const consumeRes = await CustomerAuthServices.consumeSsoToken(ssoRes.data.token);
+                    if (consumeRes.code === 200 && consumeRes.data) {
+                        setCustomer(consumeRes.data.customer);
+                        setCentralCustomer(consumeRes.data.central_customer || centralCust);
+                        if (consumeRes.data.addresses) {
+                            setAddresses(consumeRes.data.addresses);
+                            localStorage.setItem('owo_customer_addresses', JSON.stringify(consumeRes.data.addresses));
+                        }
+                        localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
+                        closeAuthModal();
+                        return { success: true, message: '¡Bienvenido de nuevo!' };
+                    }
+                }
+            } catch {
+                // Fallback to central customer if SSO consume fails
             }
 
-            // Set state
-            setCustomer(consumeRes.data.customer);
-            setCentralCustomer(consumeRes.data.central_customer);
-            if (consumeRes.data.addresses) {
-                setAddresses(consumeRes.data.addresses);
-                localStorage.setItem('owo_customer_addresses', JSON.stringify(consumeRes.data.addresses));
+            // Graceful fallback
+            setCustomer(centralCust);
+            setCentralCustomer(centralCust);
+            localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
+            if (centralCust.addresses) {
+                setAddresses(centralCust.addresses);
+                localStorage.setItem('owo_customer_addresses', JSON.stringify(centralCust.addresses));
             }
 
             closeAuthModal();
@@ -150,11 +185,14 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const logout = async (): Promise<void> => {
         try {
-            await CustomerAuthServices.logoutTenant();
+            if (!isCentralDomain()) {
+                await CustomerAuthServices.logoutTenant();
+            }
         } finally {
             setCustomer(null);
             setCentralCustomer(null);
             setAddresses([]);
+            localStorage.removeItem('owo_central_customer');
             localStorage.removeItem('owo_customer_addresses');
         }
     };

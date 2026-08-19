@@ -64,6 +64,20 @@ const axiosTenantCustomer = axios.create({
     },
 });
 
+export const isCentralDomain = (): boolean => {
+    if (typeof window === 'undefined') return true;
+    const hostname = window.location.hostname;
+    const centralList = ['owomarket.local', 'owomarket.test', 'localhost', '127.0.0.1'];
+    if (centralList.includes(hostname)) {
+        return true;
+    }
+    const parts = hostname.split('.');
+    if (parts.length <= 2) {
+        return true;
+    }
+    return false;
+};
+
 export const CustomerAuthServices = {
     // 1. Registro en Base Central
     registerCentral: async (payload: RegisterCustomerPayload): Promise<Data<{ customer: CentralCustomerData; token: string }>> => {
