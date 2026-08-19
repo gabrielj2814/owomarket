@@ -3,6 +3,7 @@
 namespace Src\User\Infrastructure\Eloquent\Repositories;
 
 use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\Timestamps;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 use Src\Shared\Domain\ValueObjects\UserEmail;
@@ -13,7 +14,6 @@ use Src\User\Domain\Entities\User as EntitiesUser;
 use Src\User\Domain\ValueObjects\AvatarUrl;
 use Src\User\Domain\ValueObjects\EmailVerifiedAt;
 use Src\User\Domain\ValueObjects\Password;
-use Src\User\Domain\ValueObjects\PhoneNumber;
 use Src\User\Domain\ValueObjects\PinVerification;
 use Src\User\Domain\ValueObjects\RememberToken;
 use Src\User\Domain\ValueObjects\UserName;

@@ -1,9 +1,8 @@
 <?php
 
-namespace Src\Tenant\Domain\ValueObjects;
+namespace Src\Shared\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class PhoneNumber extends StringValueObject
 {
@@ -34,7 +33,6 @@ final class PhoneNumber extends StringValueObject
     {
         $cleaned = preg_replace('/\D/', '', $this->value);
 
-        // Asumir formato mexicano como ejemplo, ajusta según tu país
         if (strlen($cleaned) === 10) {
             return '+52'.$cleaned;
         }
@@ -55,7 +53,6 @@ final class PhoneNumber extends StringValueObject
 
     public function normalizedEquals(self $other): bool
     {
-        // Método adicional si necesitas comparación normalizada
         $thisCleaned = preg_replace('/\D/', '', $this->value);
         $otherCleaned = preg_replace('/\D/', '', $other->value);
 
