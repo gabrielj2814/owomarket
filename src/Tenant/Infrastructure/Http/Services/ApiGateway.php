@@ -2,14 +2,11 @@
 
 namespace Src\Tenant\Infrastructure\Http\Services;
 
-
-
-class ApiGateway {
-
+class ApiGateway
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         private AuthTenantApiClient $authApiTenantClient,
         private AuthCentralApiClient $authApiCentralClient,
@@ -19,19 +16,16 @@ class ApiGateway {
     /**
      * Método authCentral.
      */
-
-    public function authCentral(): AuthCentralApiClient {
+    public function authCentral(): AuthCentralApiClient
+    {
         return $this->authApiCentralClient;
     }
 
     /**
      * Método authTenant.
      */
-
-    public function authTenant(): AuthTenantApiClient {
+    public function authTenant(): AuthTenantApiClient
+    {
         return $this->authApiTenantClient;
     }
 }
-
-
-?>

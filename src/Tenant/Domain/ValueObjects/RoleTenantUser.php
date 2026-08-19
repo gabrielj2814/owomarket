@@ -1,23 +1,25 @@
 <?php
 
-
 namespace Src\Tenant\Domain\ValueObjects;
 
 use InvalidArgumentException;
 use Src\Shared\Domain\ValueObjects\StringValueObject;
 
-final class RoleTenantUser extends StringValueObject{
-
+final class RoleTenantUser extends StringValueObject
+{
     const ROLE_OWNER = 'owner';
+
     const ROLE_ADMIN = 'admin';
+
     const ROLE_MANAGER = 'manager';
+
     const ROLE_STAFF = 'staff';
 
-     private const ALLOWED_TYPES = [
+    private const ALLOWED_TYPES = [
         self::ROLE_OWNER,
         self::ROLE_ADMIN,
         self::ROLE_MANAGER,
-        self::ROLE_STAFF
+        self::ROLE_STAFF,
     ];
 
     private const HIERARCHY = [
@@ -29,12 +31,13 @@ final class RoleTenantUser extends StringValueObject{
 
     protected function validate(string $value): void
     {
-        if (!in_array($value, self::ALLOWED_TYPES)) {
+        if (! in_array($value, self::ALLOWED_TYPES)) {
             throw new InvalidArgumentException("Tipo rol del tenant no válido: {$value}", 400);
         }
     }
 
-    public static function make(string $value): self {
+    public static function make(string $value): self
+    {
         return new self($value);
     }
 
@@ -63,30 +66,23 @@ final class RoleTenantUser extends StringValueObject{
         return self::HIERARCHY[$this->value] >= self::HIERARCHY[$other->value];
     }
 
-    static public function owner(): self
+    public static function owner(): self
     {
         return new self(self::ROLE_OWNER);
     }
 
-    static public function admin(): self
+    public static function admin(): self
     {
         return new self(self::ROLE_ADMIN);
     }
 
-    static public function manager(): self
+    public static function manager(): self
     {
         return new self(self::ROLE_MANAGER);
     }
 
-    static public function staff(): self
+    public static function staff(): self
     {
         return new self(self::ROLE_STAFF);
     }
-
-
-
-
-
 }
-
-?>

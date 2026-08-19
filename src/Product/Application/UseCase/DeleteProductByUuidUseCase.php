@@ -6,36 +6,28 @@ use Exception;
 use Src\Product\Application\Contracts\Repositories\ProductRepositoryInterface;
 use Src\Product\Domain\ValueObjects\Uuid;
 
-class DeleteProductByUuidUseCase {
-
+class DeleteProductByUuidUseCase
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected ProductRepositoryInterface $productRepository
-    ){}
+    ) {}
 
     /**
      * Método excute.
      */
-
-    public function excute(string $_uuid): void {
-        $uuid= Uuid::make($_uuid);
+    public function excute(string $_uuid): void
+    {
+        $uuid = Uuid::make($_uuid);
 
         $product = $this->productRepository->ConsultProductByUuid($uuid);
 
-        if(!$product){
+        if (! $product) {
             throw new Exception('Product not found', 404);
         }
 
         $this->productRepository->delete($uuid);
     }
-
-
-
 }
-
-
-
-?>

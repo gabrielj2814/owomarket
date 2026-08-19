@@ -28,8 +28,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
 
-        $this->app->bind(UserServices::class,UserApiClient::class);
-        $this->app->bind(AuthServices::class,AuthApiClient::class);
+        $this->app->bind(UserServices::class, UserApiClient::class);
+        $this->app->bind(AuthServices::class, AuthApiClient::class);
 
     }
 
@@ -43,10 +43,10 @@ class AppServiceProvider extends ServiceProvider
 
         if (tenancy()->initialized) {
             $currentDomain = tenancy()->tenant->domains->first()->domain;
-            \URL::forceRootUrl('http://' . $currentDomain);
+            \URL::forceRootUrl('http://'.$currentDomain);
 
             // Para Vite/Webpack
-            config(['app.url' => 'http://' . $currentDomain]);
+            config(['app.url' => 'http://'.$currentDomain]);
         }
     }
 }

@@ -5,7 +5,9 @@ namespace Src\Shared\Domain\ValueObjects;
 final class Timestamps
 {
     private CreatedAt $createdAt;
+
     private UpdatedAt $updatedAt;
+
     private SoftDeleteAt $deletedAt;
 
     private function __construct(
@@ -14,15 +16,15 @@ final class Timestamps
         ?SoftDeleteAt $deletedAt = null
     ) {
         $this->createdAt = $createdAt ?? CreatedAt::now();
-        $this->updatedAt = $updatedAt ?? new UpdatedAt();
-        $this->deletedAt = $deletedAt ?? new SoftDeleteAt();
+        $this->updatedAt = $updatedAt ?? new UpdatedAt;
+        $this->deletedAt = $deletedAt ?? new SoftDeleteAt;
     }
 
     public static function make(
         ?CreatedAt $createdAt = null,
         ?UpdatedAt $updatedAt = null,
         ?SoftDeleteAt $deletedAt = null
-    ):self{
+    ): self {
         return new self(
             $createdAt,
             $updatedAt,
@@ -32,7 +34,7 @@ final class Timestamps
 
     public static function create(): self
     {
-        return new self();
+        return new self;
     }
 
     public static function fromStrings(
@@ -70,7 +72,7 @@ final class Timestamps
         return new self(
             $this->createdAt,
             UpdatedAt::now(),
-            new SoftDeleteAt() // null
+            new SoftDeleteAt // null
         );
     }
 

@@ -7,40 +7,36 @@ use Src\User\Application\Data\EmailUserData;
 use Src\User\Domain\Entities\User;
 use Src\User\Domain\ValueObjects\UserEmail;
 
-class ConsultUserByEmailUseCase {
-
+class ConsultUserByEmailUseCase
+{
     /**
      * Constructor del caso de uso.
      *
-     * @param UserRepositoryInterface $userRepository Repositorio de usuarios.
+     * @param  UserRepositoryInterface  $userRepository  Repositorio de usuarios.
      */
     /**
      * Constructor de la clase.
      */
     public function __construct(
         protected UserRepositoryInterface $userRepository
-    ){}
+    ) {}
 
     /**
      * Ejecuta el caso de uso para consultar un usuario por su email.
      *
-     * @param EmailUserData $user Datos que contienen el email a buscar.
+     * @param  EmailUserData  $user  Datos que contienen el email a buscar.
      * @return User|null La entidad de usuario si se encuentra, null en caso contrario.
      */
     /**
      * Método execute.
      */
-    public function execute(EmailUserData $user): ?User{
+    public function execute(EmailUserData $user): ?User
+    {
 
-        $mail=UserEmail::make($user->email);
+        $mail = UserEmail::make($user->email);
 
-        $user=$this->userRepository->consultarPorMail($mail);
+        $user = $this->userRepository->consultarPorMail($mail);
 
         return $user;
     }
-
-
 }
-
-
-?>

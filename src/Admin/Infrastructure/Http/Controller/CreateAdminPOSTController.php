@@ -1,34 +1,22 @@
 <?php
 
-
 namespace Src\Admin\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Config\Repository;
-use Illuminate\Container\Container;
-use Illuminate\Hashing\HashManager;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Src\Admin\Application\UseCase\CreateAdminUseCase;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Http\Request\CreateAdminFormRequest;
-use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
-use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
 use Src\Shared\Helper\ApiResponse;
 
-class CreateAdminPOSTController extends Controller {
-
-
+class CreateAdminPOSTController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected CreateAdminUseCase $create_admin_use_case
-    )
-    {}
+    ) {}
 
     /**
      * Reglas de validación para la contraseña
@@ -37,58 +25,52 @@ class CreateAdminPOSTController extends Controller {
         'mayúscula' => '/[A-Z]/',                      // Al menos una letra mayúscula
         'minúscula' => '/[a-z]/',                      // Al menos una letra minúscula
         'número' => '/[0-9]/',                         // Al menos un número
-        'carácter especial' => '/[!@#$%^&*()\-_=+{};:,<.>]/' // Al menos un carácter especial
+        'carácter especial' => '/[!@#$%^&*()\-_=+{};:,<.>]/', // Al menos un carácter especial
     ];
-
-
 
     /**
      * Método index.
      */
+    public function index(CreateAdminFormRequest $request): JsonResponse
+    {
+        $data = $request->data;
 
+        $name = $data->name;
+        $email = $data->email;
+        $phone = $data->phone;
+        $password = null;
 
-
-    public function index(CreateAdminFormRequest $request): JsonResponse {
-        $data=$request->data;
-
-        $name=$data->name;
-        $email=$data->email;
-        $phone=$data->phone;
-        $password=null;
-
-        if(env("APP_ENV")=="local"){
-            $password=env("USER_PASSWORD_DEV");
-        }
-        else{
-            $password=$this->generarContrasena(12);
+        if (env('APP_ENV') == 'local') {
+            $password = env('USER_PASSWORD_DEV');
+        } else {
+            $password = $this->generarContrasena(12);
         }
 
         // $repository= new AdminRepository();
 
-
         // $createAdminUseCase= new CreateAdminUseCase($repository, $validator, $hasher);
 
+        $admin = $this->create_admin_use_case->execute($name, $email, $phone, $password);
 
-        $admin=$this->create_admin_use_case->execute($name,$email,$phone,$password);
-
-        $dataRespose=[
-            "id"          => $admin->getId()->value(),
-            "name"        => $admin->getName()->value(),
-            "email"       => $admin->getEmail()->value(),
-            "type"        => $admin->getType()->value(),
-            "phone"       => $admin->getPhone()->value(),
-            "created_at"  => $admin->getCreatedAt()->value()->format("Y-m-d"),
+        $dataRespose = [
+            'id' => $admin->getId()->value(),
+            'name' => $admin->getName()->value(),
+            'email' => $admin->getEmail()->value(),
+            'type' => $admin->getType()->value(),
+            'phone' => $admin->getPhone()->value(),
+            'created_at' => $admin->getCreatedAt()->value()->format('Y-m-d'),
         ];
 
-        return ApiResponse::success(data: $dataRespose, message: "ok", code: 200);
+        return ApiResponse::success(data: $dataRespose, message: 'ok', code: 200);
 
     }
 
     /**
      * Genera una contraseña segura con las reglas especificadas
      *
-     * @param int $length Longitud de la contraseña (8-72)
+     * @param  int  $length  Longitud de la contraseña (8-72)
      * @return string Contraseña generada
+     *
      * @throws \InvalidArgumentException Si la longitud no está en el rango válido
      */
     /**
@@ -108,7 +90,7 @@ class CreateAdminPOSTController extends Controller {
         $specialChars = '!@#$%^&*()-_=+{};:,<.>';
 
         // Combinar todos los caracteres
-        $allChars = $uppercase . $lowercase . $numbers . $specialChars;
+        $allChars = $uppercase.$lowercase.$numbers.$specialChars;
         $allCharsLength = strlen($allChars);
 
         // Inicializar la contraseña
@@ -130,7 +112,7 @@ class CreateAdminPOSTController extends Controller {
         $password = str_shuffle($password);
 
         // Validar que la contraseña generada cumple todas las reglas
-        if (!$this->validarContrasena($password)) {
+        if (! $this->validarContrasena($password)) {
             // En caso raro de que no cumpla, regenerar recursivamente
             return $this->generarContrasena($length);
         }
@@ -141,7 +123,7 @@ class CreateAdminPOSTController extends Controller {
     /**
      * Valida si una contraseña cumple con todas las reglas
      *
-     * @param string $password Contraseña a validar
+     * @param  string  $password  Contraseña a validar
      * @return bool True si cumple todas las reglas
      */
     /**
@@ -150,7 +132,7 @@ class CreateAdminPOSTController extends Controller {
     public function validarContrasena(string $password): bool
     {
         foreach ($this->rules as $rule => $pattern) {
-            if (!preg_match($pattern, $password)) {
+            if (! preg_match($pattern, $password)) {
                 return false;
             }
         }
@@ -161,8 +143,8 @@ class CreateAdminPOSTController extends Controller {
     /**
      * Genera múltiples contraseñas
      *
-     * @param int $count Cantidad de contraseñas a generar
-     * @param int $length Longitud de cada contraseña
+     * @param  int  $count  Cantidad de contraseñas a generar
+     * @param  int  $length  Longitud de cada contraseña
      * @return array Array de contraseñas generadas
      */
     /**
@@ -178,11 +160,4 @@ class CreateAdminPOSTController extends Controller {
 
         return $passwords;
     }
-
-
-
 }
-
-
-
-?>

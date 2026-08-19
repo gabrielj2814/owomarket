@@ -18,7 +18,7 @@ final class SoftDeleteAt
     public static function fromString(?string $value): self
     {
         if ($value === null) {
-            return new self();
+            return new self;
         }
 
         $date = DateTimeImmutable::createFromFormat(DateTimeInterface::ATOM, $value);
@@ -36,17 +36,17 @@ final class SoftDeleteAt
 
     public static function now(): self
     {
-        return new self(new DateTimeImmutable());
+        return new self(new DateTimeImmutable);
     }
 
     public function markAsDeleted(): self
     {
-        return new self(new DateTimeImmutable());
+        return new self(new DateTimeImmutable);
     }
 
     public function restore(): self
     {
-        return new self();
+        return new self;
     }
 
     public function value(): ?DateTimeImmutable
@@ -80,7 +80,7 @@ final class SoftDeleteAt
             return false;
         }
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $diff = $now->getTimestamp() - $this->value->getTimestamp();
 
         return $diff <= ($minutes * 60);
@@ -92,7 +92,7 @@ final class SoftDeleteAt
             return false;
         }
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $diff = $now->getTimestamp() - $this->value->getTimestamp();
 
         return $diff > ($days * 24 * 60 * 60); // Más de X días
@@ -104,7 +104,7 @@ final class SoftDeleteAt
             return null;
         }
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $diff = $now->getTimestamp() - $this->value->getTimestamp();
 
         return (int) floor($diff / (24 * 60 * 60));

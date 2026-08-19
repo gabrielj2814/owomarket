@@ -9,9 +9,12 @@ class AuthUser extends Model
     //
 
     public $table = 'auth_users';
+
     public $primaryKey = 'id';
+
     public $incrementing = false;
-    protected $ketType = "string";
+
+    protected $ketType = 'string';
 
     protected $fillable = [
         'id',

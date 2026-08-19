@@ -11,39 +11,31 @@ use Src\Authentication\Infrastructure\Services\ApiGateway;
 use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-class LogoutWebPOSTController extends Controller{
-
-
+class LogoutWebPOSTController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
-    public function __construct(protected ApiGateway $api){}
+    public function __construct(protected ApiGateway $api) {}
 
     /**
      * Método index.
      */
+    public function index(Request $request): JsonResponse
+    {
+        $uuid = Uuid::make($request->uuid);
 
-    public function index(Request $request):JsonResponse {
-        $uuid=Uuid::make($request->uuid);
+        $loginWebRepository = new LoginWebRepository;
 
-        $loginWebRepository= new LoginWebRepository();
-
-        $useCase= new LogoutWebUseCase(
+        $useCase = new LogoutWebUseCase(
             $loginWebRepository
         );
 
-        $respuesta=$useCase->execute($uuid);
-        if(!$respuesta){
-            return ApiResponse::error(message:"Error al hacer logout", code: 500);
+        $respuesta = $useCase->execute($uuid);
+        if (! $respuesta) {
+            return ApiResponse::error(message: 'Error al hacer logout', code: 500);
         }
 
-        return ApiResponse::success(data: $respuesta,message: 'Cierre de sesión exitoso', code:200);
+        return ApiResponse::success(data: $respuesta, message: 'Cierre de sesión exitoso', code: 200);
     }
-
-
 }
-
-
-?>

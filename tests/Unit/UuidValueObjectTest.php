@@ -1,6 +1,8 @@
 <?php
 
-use Tests\TestCase;
+use Src\Admin\Domain\ValueObjects\Uuid as AdminUuid;
+use Src\Authentication\Domain\ValueObjects\Uuid as AuthUuid;
+use Src\Product\Domain\ValueObjects\Uuid as ProductUuid;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
@@ -8,16 +10,14 @@ use Src\Shared\Domain\ValueObjects\Uuid as SharedUuid;
 use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
 use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
 use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
-use Src\Authentication\Domain\ValueObjects\Uuid as AuthUuid;
-use Src\User\Domain\ValueObjects\Uuid as UserUuid;
 use Src\Tenant\Domain\ValueObjects\Uuid as TenantUuid;
-use Src\Product\Domain\ValueObjects\Uuid as ProductUuid;
-use Src\Admin\Domain\ValueObjects\Uuid as AdminUuid;
+use Src\User\Domain\ValueObjects\Uuid as UserUuid;
+use Tests\TestCase;
 
 uses(TestCase::class);
 
 test('Shared Kernel Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator;
     $uuid = SharedUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(SharedUuid::class);
@@ -30,7 +30,7 @@ test('Shared Kernel Uuid detects invalid string formats without framework depend
 });
 
 test('Authentication Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator;
     $uuid = AuthUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(AuthUuid::class);
@@ -38,7 +38,7 @@ test('Authentication Uuid can be generated using injected LaravelUuidGenerator',
 });
 
 test('User Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator;
     $uuid = UserUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(UserUuid::class);
@@ -46,7 +46,7 @@ test('User Uuid can be generated using injected LaravelUuidGenerator', function 
 });
 
 test('Tenant Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator;
     $uuid = TenantUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(TenantUuid::class);
@@ -54,7 +54,7 @@ test('Tenant Uuid can be generated using injected LaravelUuidGenerator', functio
 });
 
 test('Product Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator;
     $uuid = ProductUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(ProductUuid::class);
@@ -62,7 +62,7 @@ test('Product Uuid can be generated using injected LaravelUuidGenerator', functi
 });
 
 test('Admin Uuid can be generated using injected LaravelUuidGenerator', function () {
-    $generator = new LaravelUuidGenerator();
+    $generator = new LaravelUuidGenerator;
     $uuid = AdminUuid::generate($generator);
 
     expect($uuid)->toBeInstanceOf(AdminUuid::class);

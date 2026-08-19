@@ -8,8 +8,11 @@ use Src\Shared\Domain\ValueObjects\StringValueObject;
 final class Domain extends StringValueObject
 {
     private const MAX_LENGTH = 253;
+
     private const PART_MAX_LENGTH = 63;
+
     private const LOCAL_TLDS = ['local', 'localhost', 'test', 'example', 'invalid'];
+
     private const COMMON_TLDS = ['com', 'org', 'net', 'edu', 'gov', 'io', 'co', 'ai', 'es', 'mx', 'ar', 'br', 'cl', 'pe', 've'];
 
     public static function make(string $value): self
@@ -39,7 +42,7 @@ final class Domain extends StringValueObject
     private function validateNotEmpty(string $value): void
     {
         if (empty($value)) {
-            throw new InvalidArgumentException("El dominio no puede estar vacío");
+            throw new InvalidArgumentException('El dominio no puede estar vacío');
         }
     }
 
@@ -47,7 +50,7 @@ final class Domain extends StringValueObject
     {
         if (strlen($value) > self::MAX_LENGTH) {
             throw new InvalidArgumentException(
-                sprintf("El dominio es demasiado largo (máximo %d caracteres)", self::MAX_LENGTH)
+                sprintf('El dominio es demasiado largo (máximo %d caracteres)', self::MAX_LENGTH)
             );
         }
     }
@@ -55,7 +58,7 @@ final class Domain extends StringValueObject
     private function validateLocalDomain(array $parts): void
     {
         if (count($parts) < 2) {
-            throw new InvalidArgumentException("El dominio local debe tener al menos 2 partes");
+            throw new InvalidArgumentException('El dominio local debe tener al menos 2 partes');
         }
 
         $this->validateDomainParts($parts, false);
@@ -64,7 +67,7 @@ final class Domain extends StringValueObject
     private function validatePublicDomain(array $parts, string $tld): void
     {
         if (count($parts) < 2) {
-            throw new InvalidArgumentException("El dominio público debe tener al menos 2 partes");
+            throw new InvalidArgumentException('El dominio público debe tener al menos 2 partes');
         }
 
         $this->validateTld($tld);
@@ -74,12 +77,12 @@ final class Domain extends StringValueObject
 
     private function validateTld(string $tld): void
     {
-        if (strlen($tld) < 2 || !ctype_alpha($tld)) {
-            throw new InvalidArgumentException("El TLD debe tener al menos 2 letras");
+        if (strlen($tld) < 2 || ! ctype_alpha($tld)) {
+            throw new InvalidArgumentException('El TLD debe tener al menos 2 letras');
         }
 
         // Opcional: Validar contra lista de TLDs conocidos
-        if (!in_array($tld, self::COMMON_TLDS) && strlen($tld) < 3 && strlen($tld) !== 2) {
+        if (! in_array($tld, self::COMMON_TLDS) && strlen($tld) < 3 && strlen($tld) !== 2) {
             throw new InvalidArgumentException(
                 sprintf("TLD '%s' no es común. TLDs permitidos: %s",
                     $tld,
@@ -93,12 +96,12 @@ final class Domain extends StringValueObject
     {
         foreach ($parts as $part) {
             if (empty($part)) {
-                throw new InvalidArgumentException("Las partes del dominio no pueden estar vacías");
+                throw new InvalidArgumentException('Las partes del dominio no pueden estar vacías');
             }
 
             if (strlen($part) > self::PART_MAX_LENGTH) {
                 throw new InvalidArgumentException(
-                    sprintf("Cada parte del dominio no puede exceder %d caracteres", self::PART_MAX_LENGTH)
+                    sprintf('Cada parte del dominio no puede exceder %d caracteres', self::PART_MAX_LENGTH)
                 );
             }
 
@@ -106,15 +109,15 @@ final class Domain extends StringValueObject
                 ? '/^[a-z]([a-z0-9\-]*[a-z0-9])?$/'  // Público: empieza con letra
                 : '/^[a-z0-9]([a-z0-9\-]*[a-z0-9])?$/'; // Local: empieza con letra o número
 
-            if (!preg_match($pattern, $part)) {
+            if (! preg_match($pattern, $part)) {
                 $message = $isPublic
-                    ? "Las partes del dominio público deben comenzar con letra"
-                    : "Las partes del dominio solo pueden contener letras, números y guiones";
+                    ? 'Las partes del dominio público deben comenzar con letra'
+                    : 'Las partes del dominio solo pueden contener letras, números y guiones';
                 throw new InvalidArgumentException($message);
             }
 
             if (str_contains($part, '--')) {
-                throw new InvalidArgumentException("No se permiten guiones consecutivos");
+                throw new InvalidArgumentException('No se permiten guiones consecutivos');
             }
         }
     }
@@ -122,11 +125,11 @@ final class Domain extends StringValueObject
     private function validateDomainName(string $domainName): void
     {
         if (strlen($domainName) < 2) {
-            throw new InvalidArgumentException("El nombre del dominio debe tener al menos 2 caracteres");
+            throw new InvalidArgumentException('El nombre del dominio debe tener al menos 2 caracteres');
         }
 
         if (is_numeric($domainName)) {
-            throw new InvalidArgumentException("El nombre del dominio no puede ser solo números");
+            throw new InvalidArgumentException('El nombre del dominio no puede ser solo números');
         }
     }
 
@@ -139,20 +142,29 @@ final class Domain extends StringValueObject
     public function isCountryTld(): bool
     {
         $tld = $this->getTld();
-        return strlen($tld) === 2 && ctype_alpha($tld) && !$this->isLocal();
+
+        return strlen($tld) === 2 && ctype_alpha($tld) && ! $this->isLocal();
     }
 
     public function getTldType(): string
     {
-        if ($this->isLocal()) return 'local';
-        if ($this->hasCommonTld()) return 'common';
-        if ($this->isCountryTld()) return 'country';
+        if ($this->isLocal()) {
+            return 'local';
+        }
+        if ($this->hasCommonTld()) {
+            return 'common';
+        }
+        if ($this->isCountryTld()) {
+            return 'country';
+        }
+
         return 'other';
     }
 
     public function getBaseDomain(): string
     {
         $parts = explode('.', $this->value);
+
         return count($parts) >= 2
             ? implode('.', array_slice($parts, -2))
             : $this->value;
@@ -163,8 +175,10 @@ final class Domain extends StringValueObject
         $parts = explode('.', $this->value);
         if (count($parts) > 2) {
             $subdomain = implode('.', array_slice($parts, 0, -2));
-            return !empty($subdomain) ? $subdomain : null;
+
+            return ! empty($subdomain) ? $subdomain : null;
         }
+
         return null;
     }
 
@@ -180,18 +194,20 @@ final class Domain extends StringValueObject
 
     public function isPublic(): bool
     {
-        return !$this->isLocal();
+        return ! $this->isLocal();
     }
 
     public function getTld(): string
     {
         $parts = explode('.', $this->value);
+
         return end($parts);
     }
 
     public function getDomainName(): string
     {
         $parts = explode('.', $this->value);
+
         return $parts[0];
     }
 
@@ -204,6 +220,7 @@ final class Domain extends StringValueObject
     {
         try {
             new self(self::normalize($domain));
+
             return true;
         } catch (InvalidArgumentException) {
             return false;

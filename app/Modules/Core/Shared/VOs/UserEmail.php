@@ -1,8 +1,6 @@
 <?php
 
-
 namespace App\Modules\Core\Shared\VOs;
-
 
 class UserEmail
 {
@@ -12,8 +10,8 @@ class UserEmail
     public function __construct(string $email)
     {
 
-        if(filter_var($email, FILTER_VALIDATE_EMAIL) === false){
-            throw new \InvalidArgumentException("Correo invalido: " . $email);
+        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+            throw new \InvalidArgumentException('Correo invalido: '.$email);
         }
 
         $this->email = $email;
@@ -24,7 +22,3 @@ class UserEmail
         return $this->email;
     }
 }
-
-
-
-?>

@@ -6,8 +6,8 @@ use Src\Shared\Domain\ValueObjects\BoolValueObject;
 
 final class UserStatus extends BoolValueObject
 {
-
-    public static function make(bool $value):self{
+    public static function make(bool $value): self
+    {
         return new self($value);
     }
 

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Tenant\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
@@ -9,38 +8,31 @@ use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\DeleteTenantByUuidUseCase;
 
-class DeleteTenantDELETEController extends Controller {
-
-
+class DeleteTenantDELETEController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected DeleteTenantByUuidUseCase $delete_tenant_by_uuid_use_case
-    ){}
+    ) {}
 
     /**
      * Método index.
      */
-
-    public function index(Request $request): JsonResponse{
+    public function index(Request $request): JsonResponse
+    {
         try {
-            //code...
-            $idTenant= $request->idTenant;
-            $idTenantOwner= $request->idTenantOwner; // id del owner hay que obtenerlo de la sesion del usuario autenticado
+            // code...
+            $idTenant = $request->idTenant;
+            $idTenantOwner = $request->idTenantOwner; // id del owner hay que obtenerlo de la sesion del usuario autenticado
             $this->delete_tenant_by_uuid_use_case->execute($idTenant, $idTenantOwner);
+
             return ApiResponse::success(message: 'Tenant deleted successfully', code: 200);
 
         } catch (\Throwable $th) {
-            //throw $th;
+            // throw $th;
             return ApiResponse::error(message: $th->getMessage(), code: 500);
         }
     }
-
-
 }
-
-
-?>

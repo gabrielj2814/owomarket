@@ -7,9 +7,8 @@ use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class AvatarUrl extends StringValueObject
 {
-
-
-    public static function make(string $value):self{
+    public static function make(string $value): self
+    {
         return new self($value);
     }
 
@@ -19,15 +18,15 @@ final class AvatarUrl extends StringValueObject
             return; // Permitir null/empty
         }
 
-        if (!filter_var($value, FILTER_VALIDATE_URL)) {
-            throw new InvalidArgumentException("La URL del avatar no es válida", 400);
+        if (! filter_var($value, FILTER_VALIDATE_URL)) {
+            throw new InvalidArgumentException('La URL del avatar no es válida', 400);
         }
 
         $allowedSchemes = ['http', 'https'];
         $scheme = parse_url($value, PHP_URL_SCHEME);
 
-        if (!in_array($scheme, $allowedSchemes)) {
-            throw new InvalidArgumentException("El avatar debe usar HTTP o HTTPS", 400);
+        if (! in_array($scheme, $allowedSchemes)) {
+            throw new InvalidArgumentException('El avatar debe usar HTTP o HTTPS', 400);
         }
 
         // Validar extensión de archivo
@@ -35,18 +34,19 @@ final class AvatarUrl extends StringValueObject
         $extension = pathinfo($path, PATHINFO_EXTENSION);
         $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
-        if (!in_array(strtolower($extension), $allowedExtensions)) {
-            throw new InvalidArgumentException("Formato de imagen no permitido para el avatar", 400);
+        if (! in_array(strtolower($extension), $allowedExtensions)) {
+            throw new InvalidArgumentException('Formato de imagen no permitido para el avatar', 400);
         }
 
         if (strlen($value) > 500) {
-            throw new InvalidArgumentException("La URL del avatar es demasiado larga", 400);
+            throw new InvalidArgumentException('La URL del avatar es demasiado larga', 400);
         }
     }
 
     public static function fromFilename(string $filename, string $baseUrl): self
     {
-        $url = rtrim($baseUrl, '/') . '/avatars/' . $filename;
+        $url = rtrim($baseUrl, '/').'/avatars/'.$filename;
+
         return new self($url);
     }
 
@@ -57,6 +57,7 @@ final class AvatarUrl extends StringValueObject
         }
 
         $path = parse_url($this->value, PHP_URL_PATH);
+
         return basename($path);
     }
 

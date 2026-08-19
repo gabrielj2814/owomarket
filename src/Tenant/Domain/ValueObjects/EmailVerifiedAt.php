@@ -17,12 +17,12 @@ final class EmailVerifiedAt
     public static function fromString(?string $value): self
     {
         if ($value === null) {
-            return new self();
+            return new self;
         }
 
         $date = DateTimeImmutable::createFromFormat('Y-m-d H:i:s', $value);
         if ($date === false) {
-            throw new InvalidArgumentException("Formato de fecha de verificación inválido");
+            throw new InvalidArgumentException('Formato de fecha de verificación inválido');
         }
 
         return new self($date);
@@ -30,7 +30,7 @@ final class EmailVerifiedAt
 
     public function verify(): self
     {
-        return new self(new DateTimeImmutable());
+        return new self(new DateTimeImmutable);
     }
 
     public function isVerified(): bool
@@ -44,7 +44,7 @@ final class EmailVerifiedAt
             return false;
         }
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $diff = $now->getTimestamp() - $this->value->getTimestamp();
 
         return $diff <= ($minutes * 60);

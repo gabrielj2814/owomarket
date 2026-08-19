@@ -49,3 +49,41 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 1. **Consultar `reglas.md`**: Verificar si existe alguna regla predefinida aplicable a la tarea antes de escribir o modificar código.
 2. **Consultar `ficha_tecnica.md`**: Revisar las versiones de dependencias y librerías disponibles.
 3. **Planificación Obligatoria y Aprobación Previa**: Antes de realizar cualquier cambio o desarrollo, se debe presentar una planificación detallada con las tareas, componentes afectados y pasos de ejecución. **No se iniciará ningún trabajo ni modificación de código sin la aprobación previa y explícita del usuario**.
+
+---
+
+## 🔒 4. Reglas de Control de Versiones y Commits (Testing Obligatorio)
+
+1. **Pruebas Obligatorias Previas al Commit:**
+   * Cada vez que se implemente una funcionalidad, componente, caso de uso, repositorio o cambio de código, se debe ejecutar la suite de pruebas automatizadas correspondiente (`php artisan test` / `composer test` y `npm run types` si afecta al frontend).
+   * **PROHIBIDO hacer commit si existe algún test fallido, error de compilación o error de tipado.**
+
+2. **Creación de Commit tras Validación Exitosa:**
+   * **SI Y SOLO SI** todas las pruebas pasan exitosamente al 100%, se debe proceder a crear un commit en Git para guardar los cambios de forma incremental.
+   * Los mensajes de commit deben seguir el estándar de **Conventional Commits**:
+     * `feat({modulo}): {descripción del cambio}`
+     * `fix({modulo}): {descripción del fix}`
+     * `test({modulo}): {descripción de las pruebas añadidas}`
+     * `refactor({modulo}): {descripción de la refactorización}`
+
+3. **Push Automático a Origin en la Rama Activa:**
+   * Inmediatamente después de crear cada commit en Git (tras haber superado las validaciones y pruebas), se debe ejecutar `git push origin <rama_actual>` para mantener el repositorio remoto actualizado y respaldado en todo momento.
+
+---
+
+## 📁 5. Ubicación y Gestión de Documentos de Planificación
+
+1. **Carpeta `planes/` Centralizada:**
+   * Todos los planes maestros, desgloses de desarrollo por fases, especificaciones de módulos y hojas de ruta (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`) deben almacenarse, crearse y consultarse exclusivamente dentro del directorio `planes/` en la raíz del proyecto.
+   * Cada vez que se complete una fase de desarrollo, se debe actualizar el archivo de planificación correspondiente en `planes/` marcando el checking `[x]` para registrar el avance de la implementación.
+
+---
+
+## 🌱 6. Reglas de Seeders y Datos de Demostración
+
+1. **Generación Obligatoria de Seeders para Nuevos Módulos:**
+   * Cada vez que se implemente una nueva funcionalidad o módulo (ej. Configuración de Tienda, Catálogo de Productos, Atributos y Variantes, Reseñas y Calificaciones, Cupones de Descuento, Pedidos, etc.), se debe crear o actualizar un **Seeder** en `database/seeders/` con datos de prueba realistas, consistentes y completos.
+   * Esto garantiza que los entornos de desarrollo local y las pruebas manuales puedan visualizar de inmediato el funcionamiento tanto en el backoffice como en el storefront público del inquilino sin requerir carga manual previa.
+
+
+

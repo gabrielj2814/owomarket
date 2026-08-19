@@ -7,27 +7,25 @@ use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\ConsultTenantLoginIsActiveUseCase;
 
-class ConsultTenantLoginIsActiveGETController extends Controller {
-
+class ConsultTenantLoginIsActiveGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected ConsultTenantLoginIsActiveUseCase $consultTenantLoginIsActiveUseCase
-    ){}
-
+    ) {}
 
     /**
      * Método index.
      */
-
-
-    public function index(Request $request, string $slug){
+    public function index(Request $request, string $slug)
+    {
 
         try {
             $domain = $request->getHost();
             $response = $this->consultTenantLoginIsActiveUseCase->execute($slug, $domain);
+
             return ApiResponse::success(data: $response);
 
         } catch (\Throwable $th) {
@@ -35,12 +33,4 @@ class ConsultTenantLoginIsActiveGETController extends Controller {
         }
 
     }
-
-
-
-
-
 }
-
-
-?>

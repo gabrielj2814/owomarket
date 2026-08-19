@@ -10,33 +10,29 @@ use Src\Product\Domain\ValueObjects\Sku;
 use Src\Product\Domain\ValueObjects\Slug;
 use Src\Product\Domain\ValueObjects\Uuid;
 
-class EditProductByUuidUseCase {
-
-
+class EditProductByUuidUseCase
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected ProductRepositoryInterface $productRepository
-    ){}
+    ) {}
 
     /**
      * Método excute.
      */
-
     public function excute(string $_uuid, string $_name, float $_price, string $_sku, string $_slug): ?Product
     {
-        $uuid= Uuid::make($_uuid);
-        $name= NameProduct::make($_name);
-        $price= PriceProduct::make($_price);
-        $sku= Sku::create($_sku);
-        $slug= Slug::make($_slug);
+        $uuid = Uuid::make($_uuid);
+        $name = NameProduct::make($_name);
+        $price = PriceProduct::make($_price);
+        $sku = Sku::create($_sku);
+        $slug = Slug::make($_slug);
 
         $product = $this->productRepository->ConsultProductByUuid($uuid);
 
-        if (!$product) {
+        if (! $product) {
             throw new \Exception('Product not found', 404);
         }
 
@@ -47,8 +43,4 @@ class EditProductByUuidUseCase {
 
         return $this->productRepository->edit($product);
     }
-
-
 }
-
-?>

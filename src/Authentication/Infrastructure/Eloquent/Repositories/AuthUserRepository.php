@@ -1,23 +1,22 @@
 <?php
 
-
 namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Src\Authentication\Application\Contracts\Repositories\AuthUserRepositoryInterface;
 use Src\Authentication\Domain\Entities\AuthUser;
 use Src\Authentication\Domain\Entities\User;
-use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserType;
 use Src\Authentication\Domain\ValueObjects\Uuid;
 use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser as ModelsAuthUser;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 
 // use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser;
 
-class AuthUserRepository implements AuthUserRepositoryInterface{
-
+class AuthUserRepository implements AuthUserRepositoryInterface
+{
     public function __construct(
         private UuidGenerator $generator
     ) {}
@@ -25,10 +24,10 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
     /**
      * Método create.
      */
-
-    public function create(User $user):? AuthUser{
-        $avatar=($user->getAvatar()?->value())?$user->getAvatar():null;
-        $AuthUser=AuthUser::create(
+    public function create(User $user): ?AuthUser
+    {
+        $avatar = ($user->getAvatar()?->value()) ? $user->getAvatar() : null;
+        $AuthUser = AuthUser::create(
             $this->generator,
             $user->getId(),
             $user->getName(),
@@ -38,12 +37,12 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
         );
 
         ModelsAuthUser::create([
-            "id"           => $AuthUser->getId()->value(),
-            "user_id"      => $AuthUser->getUserId()->value(),
-            "user_name"    => $AuthUser->getName()->value(),
-            "user_email"   => $AuthUser->getEmail()->value(),
-            "user_type"    => $AuthUser->getType()->value(),
-            "user_avatar"  => $AuthUser->getAvatar()?->value(),
+            'id' => $AuthUser->getId()->value(),
+            'user_id' => $AuthUser->getUserId()->value(),
+            'user_name' => $AuthUser->getName()->value(),
+            'user_email' => $AuthUser->getEmail()->value(),
+            'user_type' => $AuthUser->getType()->value(),
+            'user_avatar' => $AuthUser->getAvatar()?->value(),
         ]);
 
         return $AuthUser;
@@ -52,20 +51,19 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
     /**
      * Método consult.
      */
-
-    public function consult(Uuid $uuid):? AuthUser{
-        $respuesta= ModelsAuthUser::query()->where("user_id","=",$uuid->value())->first();
-        if(!$respuesta){
+    public function consult(Uuid $uuid): ?AuthUser
+    {
+        $respuesta = ModelsAuthUser::query()->where('user_id', '=', $uuid->value())->first();
+        if (! $respuesta) {
             return null;
         }
 
-        $id= Uuid::make($respuesta->id);
-        $user_id= Uuid::make($respuesta->user_id);
-        $user_name= UserName::make($respuesta->user_name);
-        $user_email= UserEmail::make($respuesta->user_email);
-        $user_type= UserType::make($respuesta->user_type);
-        $user_avatar=($respuesta->user_avatar!=null && $respuesta->user_avatar!="" )? AvatarUrl::make($respuesta->user_avatar) :null;
-
+        $id = Uuid::make($respuesta->id);
+        $user_id = Uuid::make($respuesta->user_id);
+        $user_name = UserName::make($respuesta->user_name);
+        $user_email = UserEmail::make($respuesta->user_email);
+        $user_type = UserType::make($respuesta->user_type);
+        $user_avatar = ($respuesta->user_avatar != null && $respuesta->user_avatar != '') ? AvatarUrl::make($respuesta->user_avatar) : null;
 
         return AuthUser::reconstitute(
             $id,
@@ -80,19 +78,12 @@ class AuthUserRepository implements AuthUserRepositoryInterface{
     /**
      * Método delete.
      */
-
-    public function delete(Uuid $uuid): void{
-        $registro=ModelsAuthUser::query()->where("user_id","=",$uuid->value())->first();
-        if($registro){
+    public function delete(Uuid $uuid): void
+    {
+        $registro = ModelsAuthUser::query()->where('user_id', '=', $uuid->value())->first();
+        if ($registro) {
             $registro->delete();
         }
 
     }
-
-
-
-
 }
-
-
-?>

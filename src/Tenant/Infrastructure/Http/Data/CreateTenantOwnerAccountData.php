@@ -1,12 +1,11 @@
 <?php
 
-
 namespace Src\Tenant\Infrastructure\Http\Data;
 
 use Spatie\LaravelData\Data;
 
-class CreateTenantOwnerAccountData extends Data {
-
+class CreateTenantOwnerAccountData extends Data
+{
     public function __construct(
         public readonly string $name,
         public readonly string $email,
@@ -17,6 +16,3 @@ class CreateTenantOwnerAccountData extends Data {
     ) {}
 
 }
-
-
-?>

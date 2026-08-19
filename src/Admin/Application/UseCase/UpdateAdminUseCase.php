@@ -1,8 +1,5 @@
 <?php
 
-
-
-
 namespace Src\Admin\Application\UseCase;
 
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
@@ -12,39 +9,30 @@ use Src\Admin\Domain\ValueObjects\UserEmail;
 use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Admin\Domain\ValueObjects\Uuid;
 
-class UpdateAdminUseCase {
-
-
-
+class UpdateAdminUseCase
+{
     /**
      * Constructor de la clase.
      */
-
-
-
     public function __construct(
         protected AdminRepositoryInterface $admin_repository
-    )
-    {}
-
+    ) {}
 
     /**
      * Método execute.
      */
+    public function execute(string $uuid, string $name, string $email, string $phone): ?Admin
+    {
+        $userUuid = Uuid::make($uuid);
+        $updateName = UserName::make($name);
+        $updateEmail = UserEmail::make($email);
+        $updatePhone = PhoneNumber::make($phone);
 
+        $admin = $this->admin_repository->consultByUuid($userUuid);
 
-    public function execute(string $uuid, string $name, string $email, string $phone):? Admin{
-        $userUuid=Uuid::make($uuid);
-        $updateName=UserName::make($name);
-        $updateEmail=UserEmail::make($email);
-        $updatePhone=PhoneNumber::make($phone);
-
-        $admin= $this->admin_repository->consultByUuid($userUuid);
-
-        if(!$admin){
+        if (! $admin) {
             return null;
         }
-
 
         $admin->setName($updateName);
 
@@ -52,20 +40,13 @@ class UpdateAdminUseCase {
 
         $admin->setPhone($updatePhone);
 
-        $respuesta=$this->admin_repository->editar($admin);
+        $respuesta = $this->admin_repository->editar($admin);
 
-        if(!$respuesta){
+        if (! $respuesta) {
             return null;
         }
-
 
         return $admin;
 
     }
-
-
 }
-
-
-
-?>

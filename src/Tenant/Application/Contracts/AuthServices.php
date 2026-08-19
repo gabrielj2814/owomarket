@@ -4,14 +4,10 @@ namespace Src\Tenant\Application\Contracts;
 
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-interface AuthServices {
-
+interface AuthServices
+{
     /**
      * Método consultAuthUserByUuid.
      */
-
-    public function consultAuthUserByUuid(Uuid $uuid, string $baseUrl=""): array;
-
+    public function consultAuthUserByUuid(Uuid $uuid, string $baseUrl = ''): array;
 }
-
-?>

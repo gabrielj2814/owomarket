@@ -22,4 +22,3 @@ class ProductAttributeValue extends Model
             ->withTimestamps();
     }
 }
-

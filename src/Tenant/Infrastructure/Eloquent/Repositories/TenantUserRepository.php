@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
 use Src\Shared\Domain\ValueObjects\CreatedAt;
@@ -11,24 +10,21 @@ use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantUser as ModelsTenantUser;
 
-class TenantUserRepository implements TenantUserRepositoryInterface {
-
-
-
+class TenantUserRepository implements TenantUserRepositoryInterface
+{
     /**
      * Método assignTenantToUser.
      */
-
-
-
-    public function assignTenantToUser(TenantUser $tenantUser): TenantUser {
-        $record= new ModelsTenantUser();
+    public function assignTenantToUser(TenantUser $tenantUser): TenantUser
+    {
+        $record = new ModelsTenantUser;
         $record->id = $tenantUser->getId()->value();
         $record->tenant_id = $tenantUser->getTenantId()->value();
         $record->user_id = $tenantUser->getUserId()->value();
         $record->role = $tenantUser->getRole()->value();
         $record->permissions = $tenantUser->getPermissions();
         $record->save();
+
         // Implementación para asignar un tenant a un usuario en la base de datos
         return $tenantUser; // Retorna el TenantUser asignado o null si falla
     }
@@ -36,10 +32,10 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
     /**
      * Método consultTenantUsersByUuid.
      */
-
-    public function consultTenantUsersByUuid(Uuid $id): ?TenantUser {
+    public function consultTenantUsersByUuid(Uuid $id): ?TenantUser
+    {
         $record = ModelsTenantUser::where('id', $id->value())->first();
-        if (!$record) {
+        if (! $record) {
             return null;
         }
 
@@ -57,32 +53,32 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
     /**
      * Método deleteTenantUserByUuid.
      */
-
-    public function deleteTenantUserByUuid(Uuid $id): bool {
+    public function deleteTenantUserByUuid(Uuid $id): bool
+    {
         $record = ModelsTenantUser::where('id', $id->value())->first();
-        if (!$record) {
+        if (! $record) {
             return false;
         }
 
         $record->delete();
+
         return true;
     }
 
     /**
      * Método consultTenantsUserByUuidTenantOwner.
      */
-
-    public function consultTenantsUserByUuidTenantOwner(Uuid $id): ? array
+    public function consultTenantsUserByUuidTenantOwner(Uuid $id): ?array
     {
 
         $tenantsUsers = [];
 
         $records = ModelsTenantUser::where('user_id', $id->value())->get();
-        if ($records->count()==0) {
+        if ($records->count() == 0) {
             return null;
         }
 
-        for ($index=0; $index < $records->count(); $index++) {
+        for ($index = 0; $index < $records->count(); $index++) {
             $record = $records[$index];
             $tenantsUsers[] = TenantUser::reconstitute(
                 Uuid::make($record->id),
@@ -101,10 +97,10 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
     /**
      * Método consultTenantUsersByUuidTenant.
      */
-
-    public function consultTenantUsersByUuidTenant(Uuid $id): ? TenantUser {
+    public function consultTenantUsersByUuidTenant(Uuid $id): ?TenantUser
+    {
         $record = ModelsTenantUser::where('tenant_id', $id->value())->first();
-        if (!$record) {
+        if (! $record) {
             return null;
         }
 
@@ -118,9 +114,4 @@ class TenantUserRepository implements TenantUserRepositoryInterface {
             $record->updated_at ? UpdatedAt::fromString($record->updated_at) : null
         );
     }
-
-
 }
-
-
-?>

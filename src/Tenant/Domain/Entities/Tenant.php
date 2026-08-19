@@ -1,73 +1,81 @@
 <?php
 
-
 namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\Collection\Collection;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\Currency;
 use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
 use Src\Shared\Domain\ValueObjects\Timezone;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
-use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Tenant\Domain\ValueObjects\Slug;
 use Src\Tenant\Domain\ValueObjects\TenantName;
 use Src\Tenant\Domain\ValueObjects\TenantRequest;
 use Src\Tenant\Domain\ValueObjects\TenantStatus;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-class Tenant {
+class Tenant
+{
+    private Uuid $id;
 
+    private TenantName $name;
 
-    private Uuid            $id;
-    private TenantName      $name;
-    private Slug            $slug;
-    private TenantStatus    $status;
-    private Timezone        $timezone;
-    private Currency        $currency;
-    private TenantRequest   $request;
-    private ?CreatedAt      $createdAt;
-    private ?UpdatedAt      $updatedAt;
-    private ?SoftDeleteAt   $deletedAt;
-    private ?Collection     $domains;
+    private Slug $slug;
 
-    private Collection      $owners;
+    private TenantStatus $status;
+
+    private Timezone $timezone;
+
+    private Currency $currency;
+
+    private TenantRequest $request;
+
+    private ?CreatedAt $createdAt;
+
+    private ?UpdatedAt $updatedAt;
+
+    private ?SoftDeleteAt $deletedAt;
+
+    private ?Collection $domains;
+
+    private Collection $owners;
 
     private function __construct(
-        Uuid            $id,
-        TenantName      $name,
-        Slug            $slug,
-        TenantStatus    $status,
-        Timezone        $timezone,
-        Currency        $currency,
-        TenantRequest   $request,
-        ?CreatedAt      $createdAt = null,
-        ?UpdatedAt      $updatedAt = null,
-        ?SoftDeleteAt   $deletedAt = null,
-        ?Collection     $domains   = null
+        Uuid $id,
+        TenantName $name,
+        Slug $slug,
+        TenantStatus $status,
+        Timezone $timezone,
+        Currency $currency,
+        TenantRequest $request,
+        ?CreatedAt $createdAt = null,
+        ?UpdatedAt $updatedAt = null,
+        ?SoftDeleteAt $deletedAt = null,
+        ?Collection $domains = null
     ) {
-        $this->id          = $id;
-        $this->name        = $name;
-        $this->slug        = $slug;
-        $this->status      = $status;
-        $this->timezone    = $timezone;
-        $this->currency    = $currency;
-        $this->request     = $request;
-        $this->createdAt   = $createdAt;
-        $this->updatedAt   = $updatedAt;
-        $this->deletedAt   = $deletedAt;
-        $this->domains     = $domains;
+        $this->id = $id;
+        $this->name = $name;
+        $this->slug = $slug;
+        $this->status = $status;
+        $this->timezone = $timezone;
+        $this->currency = $currency;
+        $this->request = $request;
+        $this->createdAt = $createdAt;
+        $this->updatedAt = $updatedAt;
+        $this->deletedAt = $deletedAt;
+        $this->domains = $domains;
     }
 
     public static function create(
-        UuidGenerator   $generator,
-        TenantName      $name,
-        Slug            $slug,
-        TenantStatus    $status,
-        Timezone        $timezone,
-        Currency        $currency,
-        TenantRequest   $request
-    ): self{
+        UuidGenerator $generator,
+        TenantName $name,
+        Slug $slug,
+        TenantStatus $status,
+        Timezone $timezone,
+        Currency $currency,
+        TenantRequest $request
+    ): self {
         return new self(
             Uuid::generate($generator),
             $name,
@@ -83,18 +91,17 @@ class Tenant {
     }
 
     public static function reconstitute(
-        Uuid            $id,
-        TenantName      $name,
-        Slug            $slug,
-        TenantStatus    $status,
-        Timezone        $timezone,
-        Currency        $currency,
-        TenantRequest   $request,
-        CreatedAt       $createdAt,
-        UpdatedAt       $updatedAt,
-        ?SoftDeleteAt   $softdeleteAt,
-    ): self
-    {
+        Uuid $id,
+        TenantName $name,
+        Slug $slug,
+        TenantStatus $status,
+        Timezone $timezone,
+        Currency $currency,
+        TenantRequest $request,
+        CreatedAt $createdAt,
+        UpdatedAt $updatedAt,
+        ?SoftDeleteAt $softdeleteAt,
+    ): self {
         return new self(
             $id,
             $name,
@@ -109,16 +116,18 @@ class Tenant {
         );
     }
 
-    public function setDomain(?Domain $domain){
-        $this->domain= $domain;
+    public function setDomain(?Domain $domain)
+    {
+        $this->domain = $domain;
     }
 
-
-    public function setOwners(Collection $owners){
-        $this->owners= $owners;
+    public function setOwners(Collection $owners)
+    {
+        $this->owners = $owners;
     }
 
-    public function getOwners(): Collection{
+    public function getOwners(): Collection
+    {
         return $this->owners;
     }
 
@@ -172,40 +181,48 @@ class Tenant {
         return $this->softdeleteAt;
     }
 
-    public function suspended(){
-        $this->status=TenantStatus::suspended();
-        $this->updatedAt=UpdatedAt::now();
+    public function suspended()
+    {
+        $this->status = TenantStatus::suspended();
+        $this->updatedAt = UpdatedAt::now();
     }
 
-    public function inactive(){
-        $this->status=TenantStatus::inactive();
-        $this->updatedAt=UpdatedAt::now();
+    public function inactive()
+    {
+        $this->status = TenantStatus::inactive();
+        $this->updatedAt = UpdatedAt::now();
     }
 
-    public function active(){
-        $this->status=TenantStatus::active();
-        $this->updatedAt=UpdatedAt::now();
+    public function active()
+    {
+        $this->status = TenantStatus::active();
+        $this->updatedAt = UpdatedAt::now();
     }
 
-    public function rejectedRequest(){
-        $this->request=TenantRequest::rejected();
-        $this->updatedAt=UpdatedAt::now();
+    public function rejectedRequest()
+    {
+        $this->request = TenantRequest::rejected();
+        $this->updatedAt = UpdatedAt::now();
     }
 
-    public function approvedRequest(){
-        $this->request=TenantRequest::approved();
-        $this->updatedAt=UpdatedAt::now();
+    public function approvedRequest()
+    {
+        $this->request = TenantRequest::approved();
+        $this->updatedAt = UpdatedAt::now();
     }
 
-    public function isInProgressRequest(): bool{
+    public function isInProgressRequest(): bool
+    {
         return $this->request->equals(TenantRequest::inProgress());
     }
 
-    public function isApprovedRequest(): bool{
+    public function isApprovedRequest(): bool
+    {
         return $this->request->equals(TenantRequest::approved());
     }
 
-    public function isRejectedRequest(): bool{
+    public function isRejectedRequest(): bool
+    {
         return $this->request->equals(TenantRequest::rejected());
     }
 
@@ -214,12 +231,8 @@ class Tenant {
         return $this->domain;
     }
 
-    public function loginIsActive(): bool{
+    public function loginIsActive(): bool
+    {
         return $this->status->equals(TenantStatus::active()) && $this->request->equals(TenantRequest::approved());
     }
-
 }
-
-
-
-?>

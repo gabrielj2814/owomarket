@@ -1,11 +1,10 @@
 <?php
 
-
 namespace Src\Shared\Collection;
 
 class Pagination
 {
-      public function __construct(
+    public function __construct(
         private Collection $items,
         private int $total,
         private int $perPage,
@@ -30,11 +29,7 @@ class Pagination
                 'per_page' => $this->perPage,
                 'current_page' => $this->currentPage,
                 'last_page' => $this->lastPage,
-            ]
+            ],
         ];
     }
-
-
 }
-
-?>

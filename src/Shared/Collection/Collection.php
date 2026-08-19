@@ -3,19 +3,19 @@
 namespace Src\Shared\Collection;
 
 use ArrayAccess;
+use ArrayIterator;
 use Countable;
 use IteratorAggregate;
-use Traversable;
-use ArrayIterator;
-use InvalidArgumentException;
 use OutOfBoundsException;
+use Traversable;
 
 /**
  * @template T
+ *
  * @implements ArrayAccess<int|string, T>
  * @implements IteratorAggregate<int|string, T>
  */
-class Collection implements ArrayAccess, IteratorAggregate, Countable
+class Collection implements ArrayAccess, Countable, IteratorAggregate
 {
     /**
      * @var array<int|string, T>
@@ -23,7 +23,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     protected array $items;
 
     /**
-     * @param array<int|string, T> $items
+     * @param  array<int|string, T>  $items
      */
     public function __construct(array $items = [])
     {
@@ -34,7 +34,8 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
      * Crea una nueva Collection desde un array
      *
      * @template U
-     * @param array<int|string, U> $items
+     *
+     * @param  array<int|string, U>  $items
      * @return Collection<U>
      */
     public static function make(array $items = []): self
@@ -43,7 +44,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     }
 
     /**
-     * @param callable(T): bool $callback
+     * @param  callable(T): bool  $callback
      * @return Collection<T>
      */
     public function filter(callable $callback): self
@@ -53,7 +54,8 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
 
     /**
      * @template U
-     * @param callable(T, int|string): U $callback
+     *
+     * @param  callable(T, int|string): U  $callback
      * @return Collection<U>
      */
     public function map(callable $callback): self
@@ -64,7 +66,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Ejecuta una función para cada elemento
      *
-     * @param callable(T, int|string): void $callback
+     * @param  callable(T, int|string): void  $callback
      * @return Collection<T>
      */
     public function each(callable $callback): self
@@ -80,8 +82,9 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
      * Reduce la colección a un solo valor
      *
      * @template U
-     * @param callable(U|null, T): U $callback
-     * @param U|null $initial
+     *
+     * @param  callable(U|null, T): U  $callback
+     * @param  U|null  $initial
      * @return U|null
      */
     public function reduce(callable $callback, $initial = null)
@@ -92,7 +95,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Devuelve el primer elemento que cumple la condición
      *
-     * @param callable(T): bool|null $callback
+     * @param  callable(T): bool|null  $callback
      * @return T|null
      */
     public function first(?callable $callback = null)
@@ -113,8 +116,8 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Devuelve los valores de una columna específica
      *
-     * @param string|int $columnKey
-     * @param string|int|null $indexKey
+     * @param  string|int  $columnKey
+     * @param  string|int|null  $indexKey
      * @return Collection<mixed>
      */
     public function pluck($columnKey, $indexKey = null): self
@@ -145,7 +148,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Agrupa elementos por una clave
      *
-     * @param string|callable(T): mixed $groupBy
+     * @param  string|callable(T): mixed  $groupBy
      * @return Collection<Collection<T>>
      */
     public function groupBy($groupBy): self
@@ -163,20 +166,20 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
                 $groupKey = $item;
             }
 
-            if (!isset($groups[$groupKey])) {
+            if (! isset($groups[$groupKey])) {
                 $groups[$groupKey] = [];
             }
 
             $groups[$groupKey][$key] = $item;
         }
 
-        return new self(array_map(fn($group) => new self($group), $groups));
+        return new self(array_map(fn ($group) => new self($group), $groups));
     }
 
     /**
      * Ordena la colección
      *
-     * @param callable(T, T): int|null $callback
+     * @param  callable(T, T): int|null  $callback
      * @return Collection<T>
      */
     public function sort(?callable $callback = null): self
@@ -201,6 +204,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     {
         $items = $this->items;
         arsort($items);
+
         return new self($items);
     }
 
@@ -217,24 +221,26 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Combina con otra colección
      *
-     * @param Collection<T>|array<T> $items
+     * @param  Collection<T>|array<T>  $items
      * @return Collection<T>
      */
     public function merge($items): self
     {
         $array = $items instanceof self ? $items->toArray() : $items;
+
         return new self(array_merge($this->items, $array));
     }
 
     /**
      * Añade un elemento al final
      *
-     * @param T $item
+     * @param  T  $item
      * @return Collection<T>
      */
     public function push($item): self
     {
         $this->items[] = $item;
+
         return $this;
     }
 
@@ -251,12 +257,13 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Añade un elemento al inicio
      *
-     * @param T $item
+     * @param  T  $item
      * @return Collection<T>
      */
     public function prepend($item): self
     {
         array_unshift($this->items, $item);
+
         return $this;
     }
 
@@ -273,8 +280,6 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Obtiene un slice de la colección
      *
-     * @param int $offset
-     * @param int|null $length
      * @return Collection<T>
      */
     public function slice(int $offset, ?int $length = null): self
@@ -285,7 +290,6 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Salta los primeros N elementos
      *
-     * @param int $count
      * @return Collection<T>
      */
     public function skip(int $count): self
@@ -296,7 +300,6 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Toma los primeros N elementos
      *
-     * @param int $count
      * @return Collection<T>
      */
     public function take(int $count): self
@@ -317,7 +320,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
      */
     public function isNotEmpty(): bool
     {
-        return !$this->isEmpty();
+        return ! $this->isEmpty();
     }
 
     /**
@@ -349,7 +352,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Implementación de ArrayAccess: offsetExists
      *
-     * @param int|string $offset
+     * @param  int|string  $offset
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -359,12 +362,12 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Implementación de ArrayAccess: offsetGet
      *
-     * @param int|string $offset
+     * @param  int|string  $offset
      * @return T
      */
     public function offsetGet(mixed $offset): mixed
     {
-        if (!$this->offsetExists($offset)) {
+        if (! $this->offsetExists($offset)) {
             throw new OutOfBoundsException("Offset $offset does not exist");
         }
 
@@ -374,8 +377,8 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Implementación de ArrayAccess: offsetSet
      *
-     * @param int|string|null $offset
-     * @param T $value
+     * @param  int|string|null  $offset
+     * @param  T  $value
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
@@ -389,7 +392,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Implementación de ArrayAccess: offsetUnset
      *
-     * @param int|string $offset
+     * @param  int|string  $offset
      */
     public function offsetUnset(mixed $offset): void
     {
@@ -437,7 +440,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Busca un elemento
      *
-     * @param callable(T): bool $callback
+     * @param  callable(T): bool  $callback
      * @return int|string|false
      */
     public function search(callable $callback)
@@ -454,7 +457,7 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
     /**
      * Verifica si algún elemento cumple la condición
      *
-     * @param callable(T): bool $callback
+     * @param  callable(T): bool  $callback
      */
     public function contains(callable $callback): bool
     {
@@ -489,7 +492,8 @@ class Collection implements ArrayAccess, IteratorAggregate, Countable
      * Transforma la colección y aplana el resultado
      *
      * @template U
-     * @param callable(T): array<U>|Collection<U> $callback
+     *
+     * @param  callable(T): array<U>|Collection<U>  $callback
      * @return Collection<U>
      */
     public function flatMap(callable $callback): self

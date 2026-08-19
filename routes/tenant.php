@@ -2,10 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
-use Src\Authentication\Infrastructure\Http\Controller\AuthController;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
 use Stancl\Tenancy\Middleware\PreventAccessFromCentralDomains;
 
@@ -27,18 +24,21 @@ Route::middleware([
     PreventAccessFromCentralDomains::class,
 ])->group(function () {
 
-    // Route::get('/', function () {
-    //     $domain = request()->getHost();
-    //     return Inertia::render('welcome',[
-    //         'domain' => $domain,
-    //     ]);
-    // })->name('tenant.welcome');
+    require base_path('src/Marketplace/Infrastructure/Http/Routes/tenant.php');
 
-    require base_path("src/Marketplace/Infrastructure/Http/Routes/tenant.php");
-
-    Route::prefix("auth")->group(callback: base_path("src/Authentication/Infrastructure/Http/Routes/tenant.php"));
-    Route::prefix("tenant")->group(callback: base_path("src/Tenant/Infrastructure/Http/Routes/tenant.php"));
-    Route::prefix("product")->group(callback: base_path("src/Product/Infrastructure/Http/Routes/tenant.php"));
+    Route::prefix('auth')->group(callback: base_path('src/Authentication/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('admin')->group(callback: base_path('src/Admin/Infrastructure/Http/Routes/web.php'));
+    Route::prefix('tenant')->group(callback: base_path('src/Tenant/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('product')->group(callback: base_path('src/Product/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('category')->group(callback: base_path('src/Category/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('brand')->group(callback: base_path('src/Brand/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('attribute')->group(callback: base_path('src/Attribute/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('coupon')->group(callback: base_path('src/Coupon/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('tax')->group(callback: base_path('src/Tax/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('shipping')->group(callback: base_path('src/Shipping/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('billing')->group(callback: base_path('src/Billing/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('customer')->group(callback: base_path('src/Customer/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('order')->group(callback: base_path('src/Order/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('review')->group(callback: base_path('src/Review/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('settings')->group(callback: base_path('src/TenantSettings/Infrastructure/Http/Routes/tenant.php'));
 });
-
-

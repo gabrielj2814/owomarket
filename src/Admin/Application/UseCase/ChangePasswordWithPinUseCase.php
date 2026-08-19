@@ -12,7 +12,9 @@ use Src\Shared\Domain\Contracts\PasswordValidator;
 class ChangePasswordWithPinUseCase
 {
     private AdminRepositoryInterface $repository;
+
     private PasswordValidator $validator;
+
     private PasswordHasher $hasher;
 
     public function __construct(
@@ -28,18 +30,18 @@ class ChangePasswordWithPinUseCase
     public function execute(string $uuid, string $pinInput, string $newPassword, string $newPasswordConfirmation): void
     {
         if ($newPassword !== $newPasswordConfirmation) {
-            throw new InvalidArgumentException("La confirmación de la contraseña no coincide");
+            throw new InvalidArgumentException('La confirmación de la contraseña no coincide');
         }
 
         $adminUuid = Uuid::make($uuid);
         $admin = $this->repository->consultByUuid($adminUuid);
 
-        if (!$admin) {
-            throw new InvalidArgumentException("Administrador no encontrado");
+        if (! $admin) {
+            throw new InvalidArgumentException('Administrador no encontrado');
         }
 
-        if (!$admin->verifySecurityPin($pinInput)) {
-            throw new InvalidArgumentException("El PIN de seguridad es incorrecto o ha expirado");
+        if (! $admin->verifySecurityPin($pinInput)) {
+            throw new InvalidArgumentException('El PIN de seguridad es incorrecto o ha expirado');
         }
 
         $passwordVO = Password::fromPlainText(
@@ -53,8 +55,8 @@ class ChangePasswordWithPinUseCase
 
         $savedAdmin = $this->repository->saveProfile($admin);
 
-        if (!$savedAdmin) {
-            throw new InvalidArgumentException("Error al actualizar la contraseña");
+        if (! $savedAdmin) {
+            throw new InvalidArgumentException('Error al actualizar la contraseña');
         }
     }
 }

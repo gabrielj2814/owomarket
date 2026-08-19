@@ -20,14 +20,14 @@ use Src\Shared\Collection\Pagination;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 
-class AdminRepository implements AdminRepositoryInterface {
-
+class AdminRepository implements AdminRepositoryInterface
+{
     /**
      * Método create.
      */
     public function create(Admin $admin): ?Admin
     {
-        $record = new AdminModel();
+        $record = new AdminModel;
         $record->id = $admin->getId()->value();
         $record->name = $admin->getName()->value();
         $record->email = $admin->getEmail()->value();
@@ -48,8 +48,8 @@ class AdminRepository implements AdminRepositoryInterface {
      */
     public function consultByUuid(Uuid $uuid): ?Admin
     {
-        $record = AdminModel::query()->where("id", "=", $uuid->value())->first();
-        if (!$record) {
+        $record = AdminModel::query()->where('id', '=', $uuid->value())->first();
+        if (! $record) {
             return null;
         }
 
@@ -57,11 +57,11 @@ class AdminRepository implements AdminRepositoryInterface {
         $name = UserName::make($record->name);
         $email = UserEmail::make($record->email);
         $password = Password::fromHash($record->password);
-        $phone = ($record->phone != null && $record->phone != "") ? PhoneNumber::make($record->phone) : null;
+        $phone = ($record->phone != null && $record->phone != '') ? PhoneNumber::make($record->phone) : null;
         $type = UserType::make($record->type);
         $avatar = AvatarUrl::make($record->avatar ?? '');
         $state = UserStatus::make($record->is_active);
-        $pin = ($record->pin != null && $record->pin != "") ? PinVerification::make($record->pin) : null;
+        $pin = ($record->pin != null && $record->pin != '') ? PinVerification::make($record->pin) : null;
 
         $create_at = CreatedAt::fromString($record->created_at);
         $update_at = UpdatedAt::fromString($record->updated_at);
@@ -87,12 +87,13 @@ class AdminRepository implements AdminRepositoryInterface {
     /**
      * Método consultByEmail.
      */
-    public function consultByEmail(UserEmail $email): ?Admin {
+    public function consultByEmail(UserEmail $email): ?Admin
+    {
         $record = AdminModel::query()
-            ->where("email", "=", $email->value())
+            ->where('email', '=', $email->value())
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return null;
         }
 
@@ -100,11 +101,11 @@ class AdminRepository implements AdminRepositoryInterface {
         $name = UserName::make($record->name);
         $email = UserEmail::make($record->email);
         $password = Password::fromHash($record->password);
-        $phone = ($record->phone != null && $record->phone != "") ? PhoneNumber::make($record->phone) : null;
+        $phone = ($record->phone != null && $record->phone != '') ? PhoneNumber::make($record->phone) : null;
         $type = UserType::make($record->type);
         $avatar = AvatarUrl::make($record->avatar ?? '');
         $state = UserStatus::make($record->is_active);
-        $pin = ($record->pin != null && $record->pin != "") ? PinVerification::make($record->pin) : null;
+        $pin = ($record->pin != null && $record->pin != '') ? PinVerification::make($record->pin) : null;
 
         $create_at = CreatedAt::fromString($record->created_at);
         $update_at = UpdatedAt::fromString($record->updated_at);
@@ -133,10 +134,10 @@ class AdminRepository implements AdminRepositoryInterface {
     public function editar(Admin $admin): ?Admin
     {
         $record = AdminModel::query()
-            ->where("id", "=", $admin->getId()->value())
-            ->where("type", "=", UserType::SUPER_ADMIN)
+            ->where('id', '=', $admin->getId()->value())
+            ->where('type', '=', UserType::SUPER_ADMIN)
             ->first();
-        if (!$record) {
+        if (! $record) {
             return null;
         }
 
@@ -158,10 +159,10 @@ class AdminRepository implements AdminRepositoryInterface {
     public function saveProfile(Admin $admin): ?Admin
     {
         $record = AdminModel::query()
-            ->where("id", "=", $admin->getId()->value())
+            ->where('id', '=', $admin->getId()->value())
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return null;
         }
 
@@ -183,37 +184,36 @@ class AdminRepository implements AdminRepositoryInterface {
      * Método filter.
      */
     public function filter(
-        string | null $search,
-        string | null $fechaDesdeUTC,
-        string | null $fechaHastaUTC,
-        bool | null $status,
+        ?string $search,
+        ?string $fechaDesdeUTC,
+        ?string $fechaHastaUTC,
+        ?bool $status,
         int $prePage = 50
-    ): Pagination
-    {
+    ): Pagination {
         $paginator = AdminModel::query();
 
-        if ($search != "" && $search != null) {
-            $paginator = $paginator->where(function($query) use ($search) {
-               $query->where("name", "like", "%" . $search . "%")
-                     ->orWhere("phone", "like", "%" . $search . "%")
-                     ->orWhere("email", "like", "%" . $search . "%");
+        if ($search != '' && $search != null) {
+            $paginator = $paginator->where(function ($query) use ($search) {
+                $query->where('name', 'like', '%'.$search.'%')
+                    ->orWhere('phone', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%');
             });
         }
 
-        if (($fechaDesdeUTC != "" && $fechaDesdeUTC != null) && ($fechaHastaUTC != "" && $fechaHastaUTC != null)) {
+        if (($fechaDesdeUTC != '' && $fechaDesdeUTC != null) && ($fechaHastaUTC != '' && $fechaHastaUTC != null)) {
             $fechaDesde = new DateTime($fechaDesdeUTC);
             $fechaHasta = new DateTime($fechaHastaUTC);
-            $paginator = $paginator->whereDate('created_at', '>=', $fechaDesde->format("Y-m-d"))
-                                   ->whereDate('created_at', '<=', $fechaHasta->format("Y-m-d"));
+            $paginator = $paginator->whereDate('created_at', '>=', $fechaDesde->format('Y-m-d'))
+                ->whereDate('created_at', '<=', $fechaHasta->format('Y-m-d'));
         }
 
-        if ($status != "" && $status != null) {
-            $paginator = $paginator->where("is_active", "=", true);
+        if ($status != '' && $status != null) {
+            $paginator = $paginator->where('is_active', '=', true);
         } else {
-            $paginator = $paginator->where("is_active", "=", false);
+            $paginator = $paginator->where('is_active', '=', false);
         }
 
-        $paginator = $paginator->where("type", "=", UserType::SUPER_ADMIN);
+        $paginator = $paginator->where('type', '=', UserType::SUPER_ADMIN);
 
         $respuesta = $paginator->paginate($prePage);
         $items = $respuesta->items();
@@ -223,7 +223,7 @@ class AdminRepository implements AdminRepositoryInterface {
             $name = UserName::make($model->name);
             $email = UserEmail::make($model->email);
             $password = Password::fromHash($model->password);
-            $phone = ($model->phone != null && $model->phone != "")
+            $phone = ($model->phone != null && $model->phone != '')
                 ? PhoneNumber::make($model->phone)
                 : null;
             $type = UserType::make($model->type);
@@ -266,7 +266,7 @@ class AdminRepository implements AdminRepositoryInterface {
     public function eliminar(Uuid $uuid): void
     {
         $admin = AdminModel::query()
-            ->where("id", "=", $uuid->value())
+            ->where('id', '=', $uuid->value())
             ->first();
         if ($admin) {
             $admin->delete();
@@ -278,11 +278,10 @@ class AdminRepository implements AdminRepositoryInterface {
      */
     public function changeStatu(Uuid $uuid, UserStatus $statu): void
     {
-        $admin = AdminModel::query()->where("id", "=", $uuid->value())->first();
+        $admin = AdminModel::query()->where('id', '=', $uuid->value())->first();
         if ($admin) {
             $admin->is_active = $statu->value();
             $admin->save();
         }
     }
 }
-?>

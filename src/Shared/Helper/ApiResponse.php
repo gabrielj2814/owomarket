@@ -4,9 +4,8 @@ namespace Src\Shared\Helper;
 
 use Illuminate\Http\JsonResponse;
 
-class ApiResponse {
-
-
+class ApiResponse
+{
     public static function success($data = null, $message = 'Operación exitosa', $code = 200, $meta = null): JsonResponse
     {
         return new JsonResponse([
@@ -15,7 +14,12 @@ class ApiResponse {
             'message' => $message,
             'data' => $data,
             'meta' => $meta,
-        ],$code);
+        ], $code);
+    }
+
+    public static function created($data = null, $message = 'Recurso creado exitosamente', $meta = null): JsonResponse
+    {
+        return self::success($data, $message, 201, $meta);
     }
 
     public static function Pagination($data = null, $message = 'Operación exitosa', $code = 200, $meta = null, $pagination = null): JsonResponse
@@ -27,24 +31,17 @@ class ApiResponse {
             'data' => $data,
             'meta' => $meta,
             'pagination' => $pagination,
-        ],$code);
+        ], $code);
     }
 
     public static function error($message = 'Error', $code = 400, $errors = null): JsonResponse
     {
-
         return new JsonResponse([
             'status' => 'error',
             'code' => $code,
             'message' => $message,
             'data' => [],
-            'errors' => $errors
-        ],$code);
+            'errors' => $errors,
+        ], $code);
     }
 }
-
-
-
-
-
-?>

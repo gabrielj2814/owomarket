@@ -9,32 +9,26 @@ use Illuminate\Support\Facades\Log;
 use Src\Product\Application\UseCase\ConsultProductByUuidUseCase;
 use Src\Shared\Helper\ApiResponse;
 
-class ConsultProductByUuidGETController extends Controller {
-
-
-
+class ConsultProductByUuidGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
-
     public function __construct(
         protected ConsultProductByUuidUseCase $consultProductByUuidUseCase
-    ){}
+    ) {}
 
     /**
      * Método index.
      */
-
-    public function index(Request $request):JsonResponse{
-
+    public function index(Request $request): JsonResponse
+    {
 
         try {
             $uuid = $request->uuid;
             $product = $this->consultProductByUuidUseCase->excute($uuid);
 
-            if (!$product) {
+            if (! $product) {
                 return ApiResponse::error(message: 'Product not found', code: 404);
             }
 
@@ -48,18 +42,10 @@ class ConsultProductByUuidGETController extends Controller {
 
             return ApiResponse::success(data: $data, message: 'Product retrieved successfully', code: 200);
         } catch (\Exception $e) {
-            Log::error('Error consult product: ' . $e->getMessage(), ['exception' => $e]);
-            return ApiResponse::error(message: $e->getMessage(), code: ($e->getCode()==0 ? 500 : $e->getCode()));
+            Log::error('Error consult product: '.$e->getMessage(), ['exception' => $e]);
+
+            return ApiResponse::error(message: $e->getMessage(), code: ($e->getCode() == 0 ? 500 : $e->getCode()));
         }
 
     }
-
-
-
-
-
-
 }
-
-
-?>

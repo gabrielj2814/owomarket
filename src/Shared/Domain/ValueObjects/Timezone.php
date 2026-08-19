@@ -10,14 +10,14 @@ use InvalidArgumentException;
 
 /**
  * Value Object para manejar zonas horarias
- * 
+ *
  * Encapsula la lógica de zonas horarias según la base de datos IANA (Olson).
  * Proporciona métodos para validación, conversiones, offsets y agrupamiento regional.
- * 
+ *
  * Este es un Value Object inmutable: una vez creado, no puede modificarse.
  *
- * @package Src\Shared\Domain\ValueObjects
  * @author Gabriel
+ *
  * @version 1.0.0
  */
 class Timezone
@@ -25,8 +25,8 @@ class Timezone
     /**
      * Constructor privado para forzar el uso del método factory `make()`.
      *
-     * @param string $value Nombre del timezone IANA (ej: 'America/New_York', 'Europe/Madrid')
-     * @param DateTimeZone $dateTimeZone Instancia de DateTimeZone de PHP
+     * @param  string  $value  Nombre del timezone IANA (ej: 'America/New_York', 'Europe/Madrid')
+     * @param  DateTimeZone  $dateTimeZone  Instancia de DateTimeZone de PHP
      *
      * @internal Usar Timezone::make() en lugar del constructor directo
      */
@@ -41,7 +41,7 @@ class Timezone
      * Valida que el timezone sea válido según la lista de identificadores IANA
      * y crea una instancia inmutable del objeto.
      *
-     * @param string $timezone Nombre del timezone IANA a crear
+     * @param  string  $timezone  Nombre del timezone IANA a crear
      * @return self Instancia inmutable de Timezone
      *
      * @throws InvalidArgumentException Si el timezone está vacío o no es válido
@@ -54,6 +54,7 @@ class Timezone
     public static function make(string $timezone): self
     {
         self::ensureIsValidTimezone($timezone);
+
         return new self($timezone, new DateTimeZone($timezone));
     }
 
@@ -106,8 +107,7 @@ class Timezone
     /**
      * Valida que un string sea un timezone IANA válido.
      *
-     * @param string $timezone Timezone a validar
-     * @return void
+     * @param  string  $timezone  Timezone a validar
      *
      * @throws InvalidArgumentException Si el timezone está vacío o no es válido
      *
@@ -119,11 +119,11 @@ class Timezone
             throw new InvalidArgumentException('El timezone no puede estar vacío');
         }
 
-        if (!in_array($timezone, timezone_identifiers_list(), true)) {
+        if (! in_array($timezone, timezone_identifiers_list(), true)) {
             $commonExamples = array_keys(self::commonTimezones());
             throw new InvalidArgumentException(
-                "El timezone '{$timezone}' no es válido. " .
-                "Ejemplos válidos: " . implode(', ', array_slice($commonExamples, 0, 5)) . "..."
+                "El timezone '{$timezone}' no es válido. ".
+                'Ejemplos válidos: '.implode(', ', array_slice($commonExamples, 0, 5)).'...'
             );
         }
     }
@@ -142,7 +142,7 @@ class Timezone
      */
     public function offset(): string
     {
-        $offset = $this->dateTimeZone->getOffset(new DateTime());
+        $offset = $this->dateTimeZone->getOffset(new DateTime);
         $hours = intdiv($offset, 3600);
         $minutes = intdiv($offset % 3600, 60);
 
@@ -161,6 +161,7 @@ class Timezone
     public function isDst(): bool
     {
         $date = new DateTime('now', $this->dateTimeZone);
+
         return (bool) $date->format('I');
     }
 
@@ -181,7 +182,7 @@ class Timezone
     /**
      * Convierte una fecha UTC a la zona horaria representada por este objeto.
      *
-     * @param DateTime $utcDate Fecha en UTC a convertir
+     * @param  DateTime  $utcDate  Fecha en UTC a convertir
      * @return DateTime Fecha convertida a esta zona horaria
      *
      * @example
@@ -193,13 +194,14 @@ class Timezone
     public function convertFromUTC(DateTime $utcDate): DateTime
     {
         $utcDate->setTimezone($this->dateTimeZone);
+
         return $utcDate;
     }
 
     /**
      * Convierte una fecha de esta zona horaria a UTC.
      *
-     * @param DateTime $localDate Fecha en esta zona horaria a convertir
+     * @param  DateTime  $localDate  Fecha en esta zona horaria a convertir
      * @return DateTime Fecha convertida a UTC
      *
      * @example
@@ -211,6 +213,7 @@ class Timezone
     public function convertToUTC(DateTime $localDate): DateTime
     {
         $localDate->setTimezone(new DateTimeZone('UTC'));
+
         return $localDate;
     }
 
@@ -232,7 +235,7 @@ class Timezone
     /**
      * Compara si este timezone es igual a otro.
      *
-     * @param self $other Otro objeto Timezone a comparar
+     * @param  self  $other  Otro objeto Timezone a comparar
      * @return bool True si son el mismo timezone, false en caso contrario
      *
      * @example
@@ -254,7 +257,7 @@ class Timezone
      * Nota: Dos timezones diferentes pueden tener el mismo offset en ciertos momentos
      * (ej: 'America/New_York' y 'America/Toronto' comparten offset en horario estándar).
      *
-     * @param self $other Otro objeto Timezone a comparar
+     * @param  self  $other  Otro objeto Timezone a comparar
      * @return bool True si tienen el mismo offset actual, false en caso contrario
      *
      * @example
@@ -303,24 +306,24 @@ class Timezone
     public static function commonTimezones(): array
     {
         return [
-            'UTC'                   => 'UTC (Tiempo Universal Coordinado)',
-            'America/Caracas'       => 'America, Caracas',
-            'America/New_York'      => 'Eastern Time (US & Canada)',
-            'America/Chicago'       => 'Central Time (US & Canada)',
-            'America/Denver'        => 'Mountain Time (US & Canada)',
-            'America/Los_Angeles'   => 'Pacific Time (US & Canada)',
-            'America/Mexico_City'   => 'Mexico City',
-            'America/Bogota'        => 'Bogotá, Lima',
-            'America/Sao_Paulo'     => 'Brasilia',
-            'Europe/London'         => 'London, Dublin',
-            'Europe/Paris'          => 'Paris, Madrid',
-            'Europe/Berlin'         => 'Berlin, Rome',
-            'Europe/Moscow'         => 'Moscow, St. Petersburg',
-            'Asia/Dubai'            => 'Dubai, Abu Dhabi',
-            'Asia/Kolkata'          => 'India Standard Time',
-            'Asia/Shanghai'         => 'Beijing, Shanghai',
-            'Asia/Tokyo'            => 'Tokyo, Osaka',
-            'Australia/Sydney'      => 'Sydney, Melbourne',
+            'UTC' => 'UTC (Tiempo Universal Coordinado)',
+            'America/Caracas' => 'America, Caracas',
+            'America/New_York' => 'Eastern Time (US & Canada)',
+            'America/Chicago' => 'Central Time (US & Canada)',
+            'America/Denver' => 'Mountain Time (US & Canada)',
+            'America/Los_Angeles' => 'Pacific Time (US & Canada)',
+            'America/Mexico_City' => 'Mexico City',
+            'America/Bogota' => 'Bogotá, Lima',
+            'America/Sao_Paulo' => 'Brasilia',
+            'Europe/London' => 'London, Dublin',
+            'Europe/Paris' => 'Paris, Madrid',
+            'Europe/Berlin' => 'Berlin, Rome',
+            'Europe/Moscow' => 'Moscow, St. Petersburg',
+            'Asia/Dubai' => 'Dubai, Abu Dhabi',
+            'Asia/Kolkata' => 'India Standard Time',
+            'Asia/Shanghai' => 'Beijing, Shanghai',
+            'Asia/Tokyo' => 'Tokyo, Osaka',
+            'Australia/Sydney' => 'Sydney, Melbourne',
         ];
     }
 
@@ -330,7 +333,7 @@ class Timezone
      * Este método es una versión que no lanza excepciones de `make()`.
      * Útil para validaciones donde no se necesita crear el objeto.
      *
-     * @param string $timezone Timezone a validar
+     * @param  string  $timezone  Timezone a validar
      * @return bool True si el timezone es válido, false en caso contrario
      *
      * @example
@@ -341,6 +344,7 @@ class Timezone
     {
         try {
             self::make($timezone);
+
             return true;
         } catch (InvalidArgumentException) {
             return false;

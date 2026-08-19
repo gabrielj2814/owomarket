@@ -5,9 +5,8 @@ namespace Src\Product\Domain\ValueObjects;
 use InvalidArgumentException;
 use Src\Shared\Domain\ValueObjects\StringValueObject;
 
-final class NameProduct extends StringValueObject {
-
-
+final class NameProduct extends StringValueObject
+{
     public static function make(string $value): self
     {
         return new self($value);
@@ -15,7 +14,7 @@ final class NameProduct extends StringValueObject {
 
     public function validate(string $value): void
     {
-        if($value){
+        if ($value) {
             if (strlen($value) < 3 || strlen($value) > 255) {
                 throw new InvalidArgumentException('El nombre del producto debe tener minimo 3 y maximo 255 caracteres.', 400);
             }
@@ -23,10 +22,4 @@ final class NameProduct extends StringValueObject {
             throw new InvalidArgumentException('El nombre del producto no puede estar vacío.', 400);
         }
     }
-
-
-
 }
-
-
-?>

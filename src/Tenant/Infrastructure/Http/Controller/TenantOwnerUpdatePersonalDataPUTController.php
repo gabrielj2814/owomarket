@@ -4,53 +4,39 @@ namespace Src\Tenant\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\TenantOwnerUpdatePersonalDataUseCase;
 use Src\Tenant\Infrastructure\Http\Request\UpdatePersonalDataFormRequest;
 
-class TenantOwnerUpdatePersonalDataPUTController extends Controller{
-
-
+class TenantOwnerUpdatePersonalDataPUTController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected TenantOwnerUpdatePersonalDataUseCase $update_personal_data_use_case,
-    ){}
-
+    ) {}
 
     /**
      * Método index.
      */
-
-
-    public function index(UpdatePersonalDataFormRequest $request, string $id):JsonResponse{
+    public function index(UpdatePersonalDataFormRequest $request, string $id): JsonResponse
+    {
         try {
 
-            $name=$request->data->name;
-            $phone=$request->data->phone;
+            $name = $request->data->name;
+            $phone = $request->data->phone;
 
-            $tenantOwner=$this->update_personal_data_use_case->execute($id,$name,$phone);
+            $tenantOwner = $this->update_personal_data_use_case->execute($id, $name, $phone);
 
-            return ApiResponse::success(data: null, message: "ok");
+            return ApiResponse::success(data: null, message: 'ok');
 
         } catch (\Throwable $th) {
 
-            $code=($th->getCode()==0)?500:$th->getCode();
-            return ApiResponse::error(message:$th->getMessage(), code: $code);
+            $code = ($th->getCode() == 0) ? 500 : $th->getCode();
+
+            return ApiResponse::error(message: $th->getMessage(), code: $code);
         }
 
-
-
     }
-
-
-
 }
-
-
-?>

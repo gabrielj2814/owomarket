@@ -15,23 +15,22 @@ class AuthController extends Controller
 
     public function __construct(
         private Auth $auth
-    ){}
+    ) {}
 
     public function helpCheck(): JsonResponse
     {
-        return ApiResponse::success(message: 'El servicio de autenticación está funcionando correctamente', code:200);
+        return ApiResponse::success(message: 'El servicio de autenticación está funcionando correctamente', code: 200);
     }
-
 
     public function login(LoginFormRequest $request): JsonResponse
     {
         $credentials = $request->data;
 
-        if(!$this->auth->login($credentials)){
-            return ApiResponse::success(message: 'Credenciales invalidas', code:401);
+        if (! $this->auth->login($credentials)) {
+            return ApiResponse::success(message: 'Credenciales invalidas', code: 401);
         }
 
-        return ApiResponse::success(message: 'Inicio de sesión exitoso', code:200);
+        return ApiResponse::success(message: 'Inicio de sesión exitoso', code: 200);
 
     }
 
@@ -39,33 +38,26 @@ class AuthController extends Controller
     {
         $this->auth->logout();
 
-        return ApiResponse::success(message: 'Cierre de sesión exitoso', code:200);
+        return ApiResponse::success(message: 'Cierre de sesión exitoso', code: 200);
     }
 
-    public function loginApi(LoginFormRequest $request): JsonResponse{
+    public function loginApi(LoginFormRequest $request): JsonResponse
+    {
 
-        $token=$this->auth->loginApi($request->data);
+        $token = $this->auth->loginApi($request->data);
 
-        return ApiResponse::success(data: ['token'=>$token], message: 'Inicio de sesión exitoso', code:200);
+        return ApiResponse::success(data: ['token' => $token], message: 'Inicio de sesión exitoso', code: 200);
 
     }
 
-    public function logoutApi(Request $request): JsonResponse{
+    public function logoutApi(Request $request): JsonResponse
+    {
 
         $token = request()->bearerToken();
 
         $this->auth->logoutApi($token);
 
-        return ApiResponse::success(message: 'Cierre de sesión exitoso', code:200);
+        return ApiResponse::success(message: 'Cierre de sesión exitoso', code: 200);
 
     }
-
-
-
-
-
 }
-
-
-
-?>

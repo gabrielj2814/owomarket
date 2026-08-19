@@ -2,8 +2,6 @@
 
 namespace Src\Authentication\Infrastructure\Http\Request;
 
-
-
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -13,7 +11,6 @@ use Src\Shared\Helper\ApiResponse;
 
 class LoginFormRequest extends FormRequest
 {
-
     public AuthCredencialesData $data;
 
     /**
@@ -34,7 +31,7 @@ class LoginFormRequest extends FormRequest
         return [
             //
             // 'email'    => 'required|email|unique:App\Models\User,email',
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required|string|min:6',
         ];
     }
@@ -42,26 +39,26 @@ class LoginFormRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required'    => 'El campo email es obligatorio.',
-            'email.email'       => 'El campo email debe ser una dirección de correo electrónico válida.',
+            'email.required' => 'El campo email es obligatorio.',
+            'email.email' => 'El campo email debe ser una dirección de correo electrónico válida.',
             'password.required' => 'El campo contraseña es obligatorio.',
-            'password.string'   => 'El campo contraseña debe ser una cadena de texto.',
-            'password.min'      => 'El campo contraseña debe tener al menos :min caracteres.',
+            'password.string' => 'El campo contraseña debe ser una cadena de texto.',
+            'password.min' => 'El campo contraseña debe tener al menos :min caracteres.',
         ];
     }
 
-    protected function failedValidation(Validator $validator):JsonResponse
+    protected function failedValidation(Validator $validator): JsonResponse
     {
-        $errors=$validator->errors();
-        $response=ApiResponse::error("Error",422,$errors);
+        $errors = $validator->errors();
+        $response = ApiResponse::error('Error', 422, $errors);
         throw new HttpResponseException($response);
     }
 
     protected function passedValidation()
     {
-        $this->data=AuthCredencialesData::from([
-            "email"       =>    $this->email,
-            "password"    =>    $this->password,
+        $this->data = AuthCredencialesData::from([
+            'email' => $this->email,
+            'password' => $this->password,
         ]);
     }
 }

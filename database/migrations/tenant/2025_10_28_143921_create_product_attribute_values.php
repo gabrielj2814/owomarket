@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_attribute_values', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
             $table->string('product_attribute_id');
             $table->foreign('product_attribute_id')->references('id')->on('product_attributes');
             $table->string('value');

@@ -8,12 +8,11 @@ use InvalidArgumentException;
 
 /**
  * Value Object para manejar monedas (ISO 4217)
- * 
+ *
  * Encapsula la lógica de monedas según el estándar ISO 4217.
  * Soporta códigos de 3 letras (USD, EUR, GTQ, etc.) y proporciona
  * métodos para formato, símbolos, conversiones y operaciones financieras.
- * 
- * @package Src\Shared\Domain\ValueObjects;
+ *
  * @version 1.0.0
  */
 class Currency
@@ -21,10 +20,10 @@ class Currency
     /**
      * Constructor privado para forzar uso del método factory.
      *
-     * @param string $code Código ISO 4217 de la moneda (3 letras)
-     * @param string $name Nombre completo de la moneda
-     * @param string $symbol Símbolo de la moneda (ej: '$', '€')
-     * @param int $decimals Número de decimales estándar
+     * @param  string  $code  Código ISO 4217 de la moneda (3 letras)
+     * @param  string  $name  Nombre completo de la moneda
+     * @param  string  $symbol  Símbolo de la moneda (ej: '$', '€')
+     * @param  int  $decimals  Número de decimales estándar
      *
      * @internal Usar Currency::make() o métodos estáticos específicos
      */
@@ -38,7 +37,7 @@ class Currency
     /**
      * Factory method principal para crear una moneda por su código ISO 4217.
      *
-     * @param string $currencyCode Código de moneda ISO 4217 (ej: 'USD', 'EUR')
+     * @param  string  $currencyCode  Código de moneda ISO 4217 (ej: 'USD', 'EUR')
      * @return self Instancia de Currency
      *
      * @throws InvalidArgumentException Si el código de moneda no es válido
@@ -238,9 +237,9 @@ class Currency
     /**
      * Formatea un monto según las convenciones de esta moneda.
      *
-     * @param float|int|string $amount Monto a formatear
-     * @param bool $showSymbol Si se debe mostrar el símbolo
-     * @param string|null $locale Locale para formato (ej: 'en_US', 'es_ES')
+     * @param  float|int|string  $amount  Monto a formatear
+     * @param  bool  $showSymbol  Si se debe mostrar el símbolo
+     * @param  string|null  $locale  Locale para formato (ej: 'en_US', 'es_ES')
      * @return string Monto formateado
      *
      * @example
@@ -258,7 +257,7 @@ class Currency
 
         $formatter = new \NumberFormatter($locale, \NumberFormatter::CURRENCY);
 
-        if (!$showSymbol) {
+        if (! $showSymbol) {
             $formatter->setSymbol(\NumberFormatter::CURRENCY_SYMBOL, '');
         }
 
@@ -268,7 +267,7 @@ class Currency
     /**
      * Formatea un monto de manera simple (símbolo + número).
      *
-     * @param float|int|string $amount Monto a formatear
+     * @param  float|int|string  $amount  Monto a formatear
      * @return string Monto formateado simplemente
      *
      * @example
@@ -285,15 +284,15 @@ class Currency
             ','
         );
 
-        return $this->symbol . $formatted;
+        return $this->symbol.$formatted;
     }
 
     /**
      * Convierte un monto de esta moneda a otra moneda.
      *
-     * @param float|int|string $amount Monto a convertir
-     * @param Currency $targetCurrency Moneda destino
-     * @param float $exchangeRate Tasa de cambio (1 unidad de esta moneda = X unidades de destino)
+     * @param  float|int|string  $amount  Monto a convertir
+     * @param  Currency  $targetCurrency  Moneda destino
+     * @param  float  $exchangeRate  Tasa de cambio (1 unidad de esta moneda = X unidades de destino)
      * @return float Monto convertido
      *
      * @example
@@ -307,13 +306,14 @@ class Currency
         float $exchangeRate
     ): float {
         $amount = $this->normalizeAmount($amount);
+
         return round($amount * $exchangeRate, $targetCurrency->decimals());
     }
 
     /**
      * Verifica si esta moneda es la misma que otra.
      *
-     * @param Currency $other Otra moneda a comparar
+     * @param  Currency  $other  Otra moneda a comparar
      * @return bool True si son la misma moneda, false en caso contrario
      *
      * @example
@@ -360,7 +360,7 @@ class Currency
     /**
      * Verifica si un código de moneda es válido.
      *
-     * @param string $currencyCode Código de moneda a validar
+     * @param  string  $currencyCode  Código de moneda a validar
      * @return bool True si es válido, false en caso contrario
      *
      * @example
@@ -373,6 +373,7 @@ class Currency
 
         try {
             self::ensureIsValidCurrency($currencyCode);
+
             return true;
         } catch (InvalidArgumentException) {
             return false;
@@ -382,7 +383,7 @@ class Currency
     /**
      * Obtiene monedas por región geográfica.
      *
-     * @param string $region Región (america, europe, asia, etc.)
+     * @param  string  $region  Región (america, europe, asia, etc.)
      * @return array Monedas de esa región
      *
      * @example
@@ -406,7 +407,7 @@ class Currency
     /**
      * Normaliza un monto a float.
      *
-     * @param float|int|string $amount Monto a normalizar
+     * @param  float|int|string  $amount  Monto a normalizar
      * @return float Monto normalizado
      *
      * @throws InvalidArgumentException Si el monto no es numérico
@@ -423,9 +424,9 @@ class Currency
             $amount = str_replace(',', '.', $amount);
         }
 
-        if (!is_numeric($amount)) {
+        if (! is_numeric($amount)) {
             throw new InvalidArgumentException(
-                "El monto debe ser numérico. Valor recibido: " . (string) $amount
+                'El monto debe ser numérico. Valor recibido: '.(string) $amount
             );
         }
 
@@ -435,8 +436,7 @@ class Currency
     /**
      * Valida que un código de moneda sea válido.
      *
-     * @param string $currencyCode Código de moneda a validar
-     * @return void
+     * @param  string  $currencyCode  Código de moneda a validar
      *
      * @throws InvalidArgumentException Si el código de moneda no es válido
      *
@@ -450,7 +450,7 @@ class Currency
             );
         }
 
-        if (!ctype_alpha($currencyCode)) {
+        if (! ctype_alpha($currencyCode)) {
             throw new InvalidArgumentException(
                 "El código de moneda debe contener solo letras. Valor recibido: '{$currencyCode}'"
             );
@@ -458,10 +458,10 @@ class Currency
 
         $currencies = self::currenciesData();
 
-        if (!isset($currencies[$currencyCode])) {
+        if (! isset($currencies[$currencyCode])) {
             $supported = implode(', ', array_slice(array_keys($currencies), 0, 10));
             throw new InvalidArgumentException(
-                "El código de moneda '{$currencyCode}' no es válido o no está soportado. " .
+                "El código de moneda '{$currencyCode}' no es válido o no está soportado. ".
                 "Ejemplos válidos: {$supported}..."
             );
         }
@@ -470,7 +470,7 @@ class Currency
     /**
      * Obtiene los datos de una moneda específica.
      *
-     * @param string $currencyCode Código de moneda
+     * @param  string  $currencyCode  Código de moneda
      * @return array Datos de la moneda
      *
      * @internal Método privado para uso interno
@@ -478,6 +478,7 @@ class Currency
     private static function getCurrencyData(string $currencyCode): array
     {
         $currencies = self::currenciesData();
+
         return $currencies[$currencyCode];
     }
 

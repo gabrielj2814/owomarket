@@ -18,7 +18,7 @@ final class UpdatedAt
     public static function fromString(?string $value): self
     {
         if ($value === null) {
-            return new self();
+            return new self;
         }
 
         $date = DateTimeImmutable::createFromFormat(DateTimeInterface::ATOM, $value);
@@ -36,12 +36,12 @@ final class UpdatedAt
 
     public static function now(): self
     {
-        return new self(new DateTimeImmutable());
+        return new self(new DateTimeImmutable);
     }
 
     public function touch(): self
     {
-        return new self(new DateTimeImmutable());
+        return new self(new DateTimeImmutable);
     }
 
     public function value(): ?DateTimeImmutable
@@ -76,6 +76,7 @@ final class UpdatedAt
         }
 
         $diff = $this->value->getTimestamp() - $createdAt->value()->getTimestamp();
+
         return $diff > ($minutes * 60);
     }
 
@@ -85,7 +86,7 @@ final class UpdatedAt
             return false;
         }
 
-        $now = new DateTimeImmutable();
+        $now = new DateTimeImmutable;
         $diff = $now->getTimestamp() - $this->value->getTimestamp();
 
         return $diff <= ($minutes * 60);

@@ -6,67 +6,48 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
-use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 use Src\Tenant\Domain\ValueObjects\Uuid;
+use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 
-class ViewModuleTenantSuspendedIndexGETController extends Controller {
-
-
+class ViewModuleTenantSuspendedIndexGETController extends Controller
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected ApiGateway $apiGateway
-    ){}
-
+    ) {}
 
     /**
      * Método index.
      */
-
-
-    public function index(Request $request) {
+    public function index(Request $request)
+    {
         $fullUrl = request()->getSchemeAndHttpHost();
-        $user_uuid=$request->user_uuid;
-        $uuid=Uuid::make($user_uuid);
-        $ConsultAuthUserApiByUuid= new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authCentral());
-        $usuario=$ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
+        $user_uuid = $request->user_uuid;
+        $uuid = Uuid::make($user_uuid);
+        $ConsultAuthUserApiByUuid = new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authCentral());
+        $usuario = $ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
 
-        $type=null;
-        $title=null;
-        $message=null;
-        if($request->has("type") && $request->has("message") && $request->has("title")){
-            $type=$request->query("type");
-            $title=$request->query("title");
-            $message=$request->query("message");
+        $type = null;
+        $title = null;
+        $message = null;
+        if ($request->has('type') && $request->has('message') && $request->has('title')) {
+            $type = $request->query('type');
+            $title = $request->query('title');
+            $message = $request->query('message');
         }
-
 
         return Inertia::render(
             component: 'admin/modules/tenants_suspended/IndexPage',
             props: [
-                'title'      => 'Modulo Tenant Suspended - OwOMarket',
-                'user_id'    => $usuario->getUserId()->value(),
-                'type'       => $type,
+                'title' => 'Modulo Tenant Suspended - OwOMarket',
+                'user_id' => $usuario->getUserId()->value(),
+                'type' => $type,
                 'titleToast' => $title,
-                'message'    => $message,
+                'message' => $message,
             ]
         );
 
-
     }
-
-
-
-
 }
-
-
-
-
-
-
-
-?>

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Src\Tenant\Application\UseCase;
 
 use Exception;
@@ -9,37 +8,30 @@ use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-class CancelAccountTenantOwnerUseCase {
-
-
-
+class CancelAccountTenantOwnerUseCase
+{
     /**
      * Constructor de la clase.
      */
-
-
-
     public function __construct(
         protected TenantOwnerRepositoryInterface $tenant_owner_repository_interface,
         protected TenantRepositoryInterface $tenant_repository_interface,
         protected TenantUserRepositoryInterface $tenant_user_repository_interface
-    ){}
+    ) {}
 
     /**
      * Método execute.
      */
-
-    public function execute(string $_id): void{
-        $id= Uuid::make($_id);
-
-
+    public function execute(string $_id): void
+    {
+        $id = Uuid::make($_id);
 
         // $tenantOwner=$this->tenant_owner_repository_interface->consultTenantOwnerByUuid($id);
         // $tenant=$this->tenant_repository_interface->consultTenantById($tenanUser->getTenantId());
 
-        $tenanUsers=$this->tenant_user_repository_interface->consultTenantsUserByUuidTenantOwner($id);
-        if(!$tenanUsers){
-            throw new Exception('Tenant User not found',404);
+        $tenanUsers = $this->tenant_user_repository_interface->consultTenantsUserByUuidTenantOwner($id);
+        if (! $tenanUsers) {
+            throw new Exception('Tenant User not found', 404);
         }
 
         foreach ($tenanUsers as $tenanUser) {
@@ -51,12 +43,4 @@ class CancelAccountTenantOwnerUseCase {
         }
 
     }
-
-
-
 }
-
-
-
-
-?>

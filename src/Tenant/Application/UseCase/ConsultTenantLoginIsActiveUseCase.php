@@ -1,43 +1,31 @@
 <?php
 
-
 namespace Src\Tenant\Application\UseCase;
 
 use Exception;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\ValueObjects\Slug;
 
-class ConsultTenantLoginIsActiveUseCase {
-
+class ConsultTenantLoginIsActiveUseCase
+{
     /**
      * Constructor de la clase.
      */
-
     public function __construct(
         protected TenantRepositoryInterface $tenantRepository
     ) {}
 
-
     /**
      * Método execute.
      */
-
-
-    public function execute(string $slug, string $domain): bool{
+    public function execute(string $slug, string $domain): bool
+    {
         $VOslug = Slug::fromString($slug, $domain);
         $tenant = $this->tenantRepository->consultTenantBySlug($VOslug);
-        if($tenant === null){
-            throw new Exception("Tenant no encontrado para el slug: {$VOslug->value()}",404);
+        if ($tenant === null) {
+            throw new Exception("Tenant no encontrado para el slug: {$VOslug->value()}", 404);
         }
 
         return $tenant->loginIsActive();
     }
-
-
-
-
 }
-
-
-
-?>

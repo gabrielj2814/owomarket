@@ -1,48 +1,43 @@
 <?php
 
-
 namespace Src\Authentication\Application\UseCase;
 
 use Exception;
 use LogicException;
 use Src\Authentication\Application\Contracts\Repositories\LoginWebRepositoryInterface;
 use Src\Authentication\Application\Contracts\Repositories\UserRepositoryInterface;
-use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
-use Src\Authentication\Infrastructure\Eloquent\Repositories\UserRepository;
+use Src\Shared\Domain\Contracts\PasswordHasher;
 
-class LoginWebUserUseCase {
-
-
+class LoginWebUserUseCase
+{
     /**
      * Constructor de la clase.
      */
-
-
     public function __construct(
         protected LoginWebRepositoryInterface $login_web_repository,
         protected UserRepositoryInterface $user_repository,
         protected PasswordHasher $hasher
-    ){}
+    ) {}
 
     /**
      * Método execute.
      */
-
-    public function execute(UserEmail $email, string $clave): bool{
-        $user=$this->user_repository->consultarPorMail($email);
+    public function execute(UserEmail $email, string $clave): bool
+    {
+        $user = $this->user_repository->consultarPorMail($email);
         try {
 
-            if(!$user){
-                throw new Exception("Usuario no encontrado");
+            if (! $user) {
+                throw new Exception('Usuario no encontrado');
             }
 
-            if(!$user->canLogin()){
-                throw new Exception("Usuario no autorizado para iniciar sesion");
+            if (! $user->canLogin()) {
+                throw new Exception('Usuario no autorizado para iniciar sesion');
             }
 
-            if(!$user->getPassword()->verify($clave, $this->hasher)){
-                throw new LogicException("clave invalida");
+            if (! $user->getPassword()->verify($clave, $this->hasher)) {
+                throw new LogicException('clave invalida');
             }
 
             $this->login_web_repository->loginWebUser($email);
@@ -53,16 +48,5 @@ class LoginWebUserUseCase {
             return false;
         }
 
-
-
-
-
     }
-
-
-
 }
-
-
-
-?>

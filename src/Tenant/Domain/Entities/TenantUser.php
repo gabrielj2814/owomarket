@@ -1,24 +1,28 @@
 <?php
 
-
 namespace Src\Tenant\Domain\Entities;
 
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
-use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
 use Src\Tenant\Domain\ValueObjects\Uuid;
 
-class TenantUser {
+class TenantUser
+{
+    private Uuid $id;
 
-    private Uuid                $id;
-    private Uuid                $tenantId;
-    private Uuid                $userId;
-    private RoleTenantUser      $role;
-    private ?array              $permissions;
-    private ?CreatedAt          $createdAt;
-    private ?UpdatedAt          $updatedAt;
+    private Uuid $tenantId;
 
+    private Uuid $userId;
+
+    private RoleTenantUser $role;
+
+    private ?array $permissions;
+
+    private ?CreatedAt $createdAt;
+
+    private ?UpdatedAt $updatedAt;
 
     private function __construct(
         Uuid $id,
@@ -38,7 +42,6 @@ class TenantUser {
         $this->updatedAt = $updatedAt;
     }
 
-
     public static function create(
         UuidGenerator $generator,
         Uuid $tenantId,
@@ -48,10 +51,11 @@ class TenantUser {
         ?CreatedAt $createdAt = null,
     ): self {
         $id = Uuid::generate($generator); // Generar UUID con el generador inyectado
+
         return new self($id, $tenantId, $userId, $role, $permissions, $createdAt);
     }
 
-        // Factory method - para reconstruir desde BD
+    // Factory method - para reconstruir desde BD
     public static function reconstitute(
         Uuid $id,
         Uuid $tenantId,
@@ -64,36 +68,38 @@ class TenantUser {
         return new self($id, $tenantId, $userId, $role, $permissions, $createdAt, $updatedAt);
     }
 
-    public function getId(): Uuid {
+    public function getId(): Uuid
+    {
         return $this->id;
     }
 
-    public function getTenantId(): Uuid {
+    public function getTenantId(): Uuid
+    {
         return $this->tenantId;
     }
 
-    public function getUserId(): Uuid {
+    public function getUserId(): Uuid
+    {
         return $this->userId;
     }
 
-    public function getRole(): RoleTenantUser {
+    public function getRole(): RoleTenantUser
+    {
         return $this->role;
     }
 
-    public function getPermissions(): ?array {
+    public function getPermissions(): ?array
+    {
         return $this->permissions;
     }
 
-    public function getCreatedAt(): ?CreatedAt {
+    public function getCreatedAt(): ?CreatedAt
+    {
         return $this->createdAt;
     }
 
-    public function getUpdatedAt(): ?UpdatedAt {
+    public function getUpdatedAt(): ?UpdatedAt
+    {
         return $this->updatedAt;
     }
-
-
 }
-
-
-?>

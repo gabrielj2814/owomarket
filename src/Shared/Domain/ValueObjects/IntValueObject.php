@@ -6,7 +6,7 @@ abstract class IntValueObject
 {
     protected int $value;
 
-   protected function __construct(string $value)
+    public function __construct(int $value)
     {
         $this->validate($value);
         $this->value = $value;

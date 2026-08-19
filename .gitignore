@@ -26,3 +26,6 @@ yarn-error.log
 /.vscode
 /.zed
 laradumps.yaml
+database/tenant_*
+*.sqlite
+*.sqlite-journal

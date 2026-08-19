@@ -6,7 +6,7 @@ abstract class StringValueObject
 {
     protected string $value;
 
-    protected function __construct(string $value)
+    public function __construct(string $value)
     {
         $this->validate($value);
         $this->value = $value;

@@ -25,6 +25,3 @@ abstract class FloatValueObject
             && $this->value === $other->value;
     }
 }
-
-
-?>

@@ -161,7 +161,7 @@ const TenantServices = {
 
             return respuesta
         } catch (error) {
-            return error as ApiResponse<void>;
+            return error as ApiResponse<ResponseOKSendRequestCreateTenant>;
         }
     }
 
