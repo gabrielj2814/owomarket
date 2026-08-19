@@ -23,7 +23,7 @@ interface CentralProductDetailPageProps {
     store?: TenantStoreItem;
 }
 
-const CentralProductDetailPage: React.FC<CentralProductDetailPageProps> = ({
+const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> = ({
     domain,
     slug,
     product_initial,
@@ -59,11 +59,7 @@ const CentralProductDetailPage: React.FC<CentralProductDetailPageProps> = ({
     }, [slug, product_initial]);
 
     if (loading || !product) {
-        return (
-            <CentralLayout>
-                <div className="py-20 text-center text-gray-500">Cargando producto...</div>
-            </CentralLayout>
-        );
+        return <div className="py-20 text-center text-gray-500">Cargando producto...</div>;
     }
 
     const mainImage =
@@ -94,7 +90,7 @@ const CentralProductDetailPage: React.FC<CentralProductDetailPageProps> = ({
     };
 
     return (
-        <CentralLayout>
+        <>
             <Head title={`${product.name} - OwOMarket Central`} />
 
             <div className="space-y-12">
@@ -327,6 +323,14 @@ const CentralProductDetailPage: React.FC<CentralProductDetailPageProps> = ({
                     </div>
                 )}
             </div>
+        </>
+    );
+};
+
+const CentralProductDetailPage: React.FC<CentralProductDetailPageProps> = (props) => {
+    return (
+        <CentralLayout>
+            <CentralProductDetailPageContent {...props} />
         </CentralLayout>
     );
 };

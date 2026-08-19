@@ -23,7 +23,7 @@ interface CentralCheckoutPageProps {
 
 const BCV_RATE = 36.5; // Official BCV rate reference for simulation
 
-const CentralCheckoutPage: React.FC<CentralCheckoutPageProps> = ({ domain }) => {
+const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain }) => {
     const { items, getItemsByStore, getSubtotal, getItemCount, clearCart } = useCentralCart();
     const { customer, isAuthenticated, openAuthModal } = useCustomerAuth();
 
@@ -146,26 +146,24 @@ const CentralCheckoutPage: React.FC<CentralCheckoutPageProps> = ({ domain }) => 
 
     if (items.length === 0) {
         return (
-            <CentralLayout>
-                <div className="text-center py-24 space-y-4">
-                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-                        <HiOutlineShoppingBag className="w-8 h-8" />
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tu carrito está vacío</h2>
-                    <p className="text-xs text-gray-500">Agrega productos antes de realizar el checkout.</p>
-                    <Link
-                        href="/marketplace"
-                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs"
-                    >
-                        Explorar Catálogo
-                    </Link>
+            <div className="text-center py-24 space-y-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-full flex items-center justify-center mx-auto">
+                    <HiOutlineShoppingBag className="w-8 h-8" />
                 </div>
-            </CentralLayout>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tu carrito está vacío</h2>
+                <p className="text-xs text-gray-500">Agrega productos antes de realizar el checkout.</p>
+                <Link
+                    href="/marketplace"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs"
+                >
+                    Explorar Catálogo
+                </Link>
+            </div>
         );
     }
 
     return (
-        <CentralLayout>
+        <>
             <Head title="Checkout Unificado Multi-Tienda - OwOMarket Central" />
 
             <div className="space-y-8">
@@ -571,6 +569,14 @@ const CentralCheckoutPage: React.FC<CentralCheckoutPageProps> = ({ domain }) => 
                     </div>
                 </form>
             </div>
+        </>
+    );
+};
+
+const CentralCheckoutPage: React.FC<CentralCheckoutPageProps> = (props) => {
+    return (
+        <CentralLayout>
+            <CentralCheckoutPageContent {...props} />
         </CentralLayout>
     );
 };

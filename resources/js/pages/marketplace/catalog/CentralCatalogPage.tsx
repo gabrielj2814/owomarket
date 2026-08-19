@@ -20,7 +20,7 @@ interface CentralCatalogPageProps {
     query?: MarketplaceProductFilterParams;
 }
 
-const CentralCatalogPage: React.FC<CentralCatalogPageProps> = ({ domain, query = {} }) => {
+const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, query = {} }) => {
     const { addItem } = useCentralCart();
 
     const [products, setProducts] = useState<CentralProductItem[]>([]);
@@ -122,7 +122,7 @@ const CentralCatalogPage: React.FC<CentralCatalogPageProps> = ({ domain, query =
     };
 
     return (
-        <CentralLayout>
+        <>
             <Head title="Explorar Catálogo Central - OwOMarket" />
 
             <div className="space-y-6">
@@ -345,6 +345,14 @@ const CentralCatalogPage: React.FC<CentralCatalogPageProps> = ({ domain, query =
                     </div>
                 </div>
             </div>
+        </>
+    );
+};
+
+const CentralCatalogPage: React.FC<CentralCatalogPageProps> = (props) => {
+    return (
+        <CentralLayout>
+            <CentralCatalogPageContent {...props} />
         </CentralLayout>
     );
 };

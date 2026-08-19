@@ -18,7 +18,7 @@ interface CentralOrderConfirmationPageProps {
     order_id: string;
 }
 
-const CentralOrderConfirmationPage: React.FC<CentralOrderConfirmationPageProps> = ({
+const CentralOrderConfirmationPageContent: React.FC<CentralOrderConfirmationPageProps> = ({
     domain,
     order_id,
 }) => {
@@ -43,35 +43,31 @@ const CentralOrderConfirmationPage: React.FC<CentralOrderConfirmationPageProps> 
 
     if (loading) {
         return (
-            <CentralLayout>
-                <div className="py-24 text-center space-y-4">
-                    <HiOutlineArrowPath className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
-                    <p className="text-sm font-semibold text-gray-500">Cargando confirmación de la orden unificada...</p>
-                </div>
-            </CentralLayout>
+            <div className="py-24 text-center space-y-4">
+                <HiOutlineArrowPath className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
+                <p className="text-sm font-semibold text-gray-500">Cargando confirmación de la orden unificada...</p>
+            </div>
         );
     }
 
     if (error || !order) {
         return (
-            <CentralLayout>
-                <div className="py-20 text-center space-y-4">
-                    <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 max-w-md mx-auto text-sm font-bold">
-                        {error || 'Orden no encontrada'}
-                    </div>
-                    <Link
-                        href="/"
-                        className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs"
-                    >
-                        Volver a la Portada
-                    </Link>
+            <div className="py-20 text-center space-y-4">
+                <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 max-w-md mx-auto text-sm font-bold">
+                    {error || 'Orden no encontrada'}
                 </div>
-            </CentralLayout>
+                <Link
+                    href="/"
+                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs"
+                >
+                    Volver a la Portada
+                </Link>
+            </div>
         );
     }
 
     return (
-        <CentralLayout>
+        <>
             <Head title={`Factura ${order.order_number} - OwOMarket Central`} />
 
             <div className="max-w-4xl mx-auto space-y-8">
@@ -230,6 +226,14 @@ const CentralOrderConfirmationPage: React.FC<CentralOrderConfirmationPageProps> 
                     </Link>
                 </div>
             </div>
+        </>
+    );
+};
+
+const CentralOrderConfirmationPage: React.FC<CentralOrderConfirmationPageProps> = (props) => {
+    return (
+        <CentralLayout>
+            <CentralOrderConfirmationPageContent {...props} />
         </CentralLayout>
     );
 };

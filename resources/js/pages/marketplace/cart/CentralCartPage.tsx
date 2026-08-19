@@ -15,7 +15,7 @@ interface CentralCartPageProps {
     domain?: string;
 }
 
-const CentralCartPage: React.FC<CentralCartPageProps> = ({ domain }) => {
+const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
     const {
         items,
         getItemsByStore,
@@ -32,7 +32,7 @@ const CentralCartPage: React.FC<CentralCartPageProps> = ({ domain }) => {
     const totalCount = getItemCount();
 
     return (
-        <CentralLayout>
+        <>
             <Head title="Carrito Multi-Tienda - OwOMarket Central" />
 
             <div className="space-y-8">
@@ -242,6 +242,14 @@ const CentralCartPage: React.FC<CentralCartPageProps> = ({ domain }) => {
                     </div>
                 )}
             </div>
+        </>
+    );
+};
+
+const CentralCartPage: React.FC<CentralCartPageProps> = (props) => {
+    return (
+        <CentralLayout>
+            <CentralCartPageContent {...props} />
         </CentralLayout>
     );
 };

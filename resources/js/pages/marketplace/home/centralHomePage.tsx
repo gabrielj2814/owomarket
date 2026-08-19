@@ -24,7 +24,7 @@ interface CentralHomePageProps {
     initial_data?: MarketplaceHomeData;
 }
 
-const CentralHomePage: React.FC<CentralHomePageProps> = ({ domain, initial_data }) => {
+const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initial_data }) => {
     const { addItem } = useCentralCart();
     const [data, setData] = useState<MarketplaceHomeData>(
         initial_data || {
@@ -85,7 +85,7 @@ const CentralHomePage: React.FC<CentralHomePageProps> = ({ domain, initial_data 
         : data.recent_products;
 
     return (
-        <CentralLayout>
+        <>
             <Head title="OwOMarket Central - Marketplace Multi-Tienda" />
 
             <div className="space-y-12 sm:space-y-16">
@@ -432,6 +432,14 @@ const CentralHomePage: React.FC<CentralHomePageProps> = ({ domain, initial_data 
                     </div>
                 </div>
             </div>
+        </>
+    );
+};
+
+const CentralHomePage: React.FC<CentralHomePageProps> = (props) => {
+    return (
+        <CentralLayout>
+            <CentralHomePageContent {...props} />
         </CentralLayout>
     );
 };
