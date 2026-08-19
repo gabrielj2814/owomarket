@@ -14,6 +14,7 @@ export interface FormProduct {
     max_quantity?: number | string;
     track_quantity?: boolean;
     is_visible?: boolean;
+    is_published_central?: boolean;
     is_featured?: boolean;
     is_digital?: boolean;
     digital_product_url?: string | null;

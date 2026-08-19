@@ -15,6 +15,8 @@ export interface Product {
     track_quantity: boolean;
     is_in_stock: boolean;
     is_visible: boolean;
+    is_published_central?: boolean;
+    published_to_central_at?: string | null;
     is_featured: boolean;
     is_digital: boolean;
     digital_product_url?: string | null;

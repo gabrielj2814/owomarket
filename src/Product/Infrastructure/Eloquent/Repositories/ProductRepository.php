@@ -274,7 +274,19 @@ final class ProductRepository implements ProductRepositoryInterface
 
     public function updateStock(ProductId $id, int $quantity): void
     {
-        EloquentProduct::where('id', $id->value())->update(['quantity' => max(0, $quantity)]);
+        $newQty = max(0, $quantity);
+        EloquentProduct::where('id', $id->value())->update(['quantity' => $newQty]);
+
+        $tenantId = tenant('id');
+        if ($tenantId && class_exists(\App\Models\CentralProduct::class)) {
+            try {
+                \App\Models\CentralProduct::where('tenant_id', $tenantId)
+                    ->where('tenant_product_id', $id->value())
+                    ->update(['quantity' => $newQty]);
+            } catch (\Throwable) {
+                // Stock sync resilient
+            }
+        }
     }
 
     private function toDomain(EloquentProduct $model): Product

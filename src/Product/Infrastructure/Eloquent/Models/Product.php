@@ -30,6 +30,8 @@ class Product extends Model
         'max_quantity' => 'integer',
         'track_quantity' => 'boolean',
         'is_visible' => 'boolean',
+        'is_published_central' => 'boolean',
+        'published_to_central_at' => 'datetime',
         'is_featured' => 'boolean',
         'is_digital' => 'boolean',
         'weight' => 'float',

@@ -137,6 +137,27 @@ const ProductServices = {
         }
     },
 
+    toggleMarketplacePublication: async (
+        id: string,
+        isPublishedCentral?: boolean
+    ): Promise<ApiResponse<Product>> => {
+        try {
+            const response = await axiosProduct.post<ApiResponse<Product>>(`${id}/toggle-marketplace`, {
+                is_published_central: isPublishedCentral,
+            });
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error de conexión al alternar publicación en el marketplace',
+                    data: null as any,
+                }
+            );
+        }
+    },
+
     updateStock: async (id: string, quantity: number): Promise<ApiResponse<null>> => {
         try {
             const response = await axiosProduct.patch<ApiResponse<null>>(`${id}/stock`, {
