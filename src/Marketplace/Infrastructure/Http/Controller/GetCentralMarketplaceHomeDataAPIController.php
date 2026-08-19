@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
-use App\Http\Controllers\Controller;
 use App\Models\CentralProduct;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
-final class ViewHomePageCentralGETController extends Controller
+final class GetCentralMarketplaceHomeDataAPIController
 {
-    public function index(): Response
+    public function __invoke(): JsonResponse
     {
-        $host = request()->getHost();
-
         // 1. Featured Stores
         $stores = Tenant::with('domains')
             ->where('status', 'active')
@@ -27,8 +25,8 @@ final class ViewHomePageCentralGETController extends Controller
                     'slug' => $t->slug ?? $t->id,
                     'domain' => $t->domains->isNotEmpty() ? $t->domains->first()->domain : "{$t->id}.localhost",
                     'description' => $t->description ?? 'Tienda asociada en OwOMarket',
-                    'logo' => $t->logo,
-                    'banner' => $t->banner,
+                    'logo' => $t->logo ?? null,
+                    'banner' => $t->banner ?? null,
                     'products_count' => CentralProduct::where('tenant_id', $t->id)->where('is_visible', true)->count(),
                 ];
             });
@@ -65,18 +63,17 @@ final class ViewHomePageCentralGETController extends Controller
             ->groupBy('category_name')
             ->orderBy('count', 'desc')
             ->take(10)
-            ->get()
-            ->toArray();
+            ->get();
 
-        return inertia()->render('marketplace/home/centralHomePage', [
-            'domain' => $host,
-            'initial_data' => [
+        return ApiResponse::success(
+            data: [
                 'featured_stores' => $stores,
                 'featured_products' => $featuredProducts,
                 'recent_products' => $recentProducts,
                 'categories' => $categories,
             ],
-        ]);
+            message: 'Datos principales del Marketplace Central recuperados exitosamente'
+        );
     }
 
     private function mapProduct(CentralProduct $p): array
