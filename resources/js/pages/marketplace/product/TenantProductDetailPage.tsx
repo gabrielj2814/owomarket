@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import StorefrontLayout from '@/components/layouts/StorefrontLayout';
 import ProductCard from '@/components/ui/storefront/ProductCard';
+import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
 import { useCart } from '@/contexts/CartContext';
 import ReviewServices from '@/Services/ReviewServices';
 import { StorefrontProductDetailPageProps, StorefrontProductVariant } from '@/types/models/Storefront';
@@ -303,17 +304,15 @@ function ProductDetailPageContent({
                         </div>
 
                         {/* Price & SKU */}
-                        <div className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl flex items-baseline justify-between">
-                            <div className="flex items-baseline gap-3">
-                                <span className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white tracking-tight">
-                                    {formatPrice(currentPrice)}
-                                </span>
-                                {currentComparePrice && currentComparePrice > currentPrice && (
-                                    <span className="text-base sm:text-lg line-through text-gray-400">
-                                        {formatPrice(currentComparePrice)}
-                                    </span>
-                                )}
-                            </div>
+                        <div className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl flex items-baseline justify-between flex-wrap gap-2">
+                            <CurrencyPriceDisplay
+                                priceUsd={currentPrice}
+                                comparePriceUsd={currentComparePrice}
+                                size="xl"
+                                showVes={true}
+                                showUsdt={true}
+                                showBcvLabel={true}
+                            />
                             {currentSku && (
                                 <span className="text-xs text-gray-400 font-mono">
                                     SKU: {currentSku}

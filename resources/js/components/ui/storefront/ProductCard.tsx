@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { StorefrontProduct } from '@/types/models/Storefront';
+import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
 import { Badge, Button } from 'flowbite-react';
 import { HiOutlineShoppingBag, HiStar } from 'react-icons/hi';
 
@@ -136,16 +137,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             {/* 3. Price & Quick Add Button */}
             <div className="p-4 sm:p-5 pt-0 space-y-3">
                 {/* Price Display */}
-                <div className="flex items-baseline gap-2">
-                    <span className="text-lg sm:text-xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                        {formatPrice(product.price)}
-                    </span>
-                    {product.compare_price && product.compare_price > product.price && (
-                        <span className="text-xs sm:text-sm line-through text-gray-400">
-                            {formatPrice(product.compare_price)}
-                        </span>
-                    )}
-                </div>
+                <CurrencyPriceDisplay
+                    priceUsd={product.price}
+                    comparePriceUsd={product.compare_price}
+                    size="sm"
+                    showVes={true}
+                    showUsdt={true}
+                    showBcvLabel={true}
+                />
 
                 {/* Add to Cart Button */}
                 <Button

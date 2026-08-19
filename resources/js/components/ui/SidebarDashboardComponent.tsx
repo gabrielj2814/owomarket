@@ -5,6 +5,7 @@ import {
     HiBookmark,
     HiChartPie,
     HiCog,
+    HiCurrencyDollar,
     HiDocumentText,
     HiIdentification,
     HiReceiptTax,
@@ -57,6 +58,9 @@ const SidebarDashboardComponent = () => {
                         </SidebarItem>
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers}>
                             Admins
+                        </SidebarItem>
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/exchange-rates`} icon={HiCurrencyDollar}>
+                            Tasa BCV / Monedas
                         </SidebarItem>
                         <SidebarCollapse icon={LuStore} label="Tenants">
                             <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>

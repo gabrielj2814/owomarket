@@ -15,6 +15,7 @@ import {
     HiOutlineTruck,
     HiOutlineArrowLeft,
 } from 'react-icons/hi2';
+import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
 
 interface CentralProductDetailPageProps {
     domain?: string;
@@ -195,17 +196,17 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                         {/* Price Display */}
                         <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 flex items-center justify-between">
                             <div>
-                                <span className="text-xs text-gray-400 block font-semibold">Precio en Marketplace:</span>
-                                <div className="flex items-baseline gap-3">
-                                    <span className="text-3xl font-black text-gray-900 dark:text-white">
-                                        ${product.price.toFixed(2)} USD
-                                    </span>
-                                    {product.compare_price && product.compare_price > product.price && (
-                                        <span className="text-sm font-semibold text-gray-400 line-through">
-                                            ${product.compare_price.toFixed(2)}
-                                        </span>
-                                    )}
-                                </div>
+                                <span className="text-xs text-gray-500 dark:text-gray-400 block font-medium">
+                                    Precio del Producto
+                                </span>
+                                <CurrencyPriceDisplay
+                                    priceUsd={product.price}
+                                    comparePriceUsd={product.compare_price}
+                                    size="xl"
+                                    showVes={true}
+                                    showUsdt={true}
+                                    showBcvLabel={true}
+                                />
                             </div>
                             <div className="text-right">
                                 <span className="text-xs text-green-600 dark:text-green-400 font-bold block">

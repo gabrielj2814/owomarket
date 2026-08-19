@@ -36,8 +36,8 @@ describe('ProductCard Component', () => {
         expect(screen.getByText('Teclado Mecánico RGB Pro')).toBeInTheDocument();
         expect(screen.getByText('Periféricos')).toBeInTheDocument();
         expect(screen.getByText('Logitech')).toBeInTheDocument();
-        expect(screen.getByText(/89\.99/)).toBeInTheDocument();
-        expect(screen.getByText(/119\.99/)).toBeInTheDocument();
+        expect(screen.getByTestId('price-usd')).toHaveTextContent('$89.99');
+        expect(screen.getByTestId('compare-price-usd')).toHaveTextContent('$119.99');
         expect(screen.getByText('-25%')).toBeInTheDocument();
         expect(screen.getByText('Disponible')).toBeInTheDocument();
     });

@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import StorefrontLayout from '@/components/layouts/StorefrontLayout';
 import { useCart } from '@/contexts/CartContext';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
 import StorefrontServices, { CreateStorefrontOrderPayload } from '@/Services/StorefrontServices';
 import { StorefrontCheckoutPageProps } from '@/types/models/Storefront';
 import {
@@ -955,11 +956,17 @@ function CheckoutPageContent({
                                     </span>
                                 </div>
 
-                                <div className="flex justify-between items-baseline pt-3 border-t dark:border-gray-800 text-sm">
-                                    <span className="font-bold text-gray-900 dark:text-white">Total a Pagar:</span>
-                                    <span className="text-xl font-black text-gray-900 dark:text-white">
-                                        {formatPrice(finalGrandTotal)}
+                                <div className="pt-3 border-t dark:border-gray-800">
+                                    <span className="font-bold text-gray-900 dark:text-white block text-xs uppercase tracking-wider mb-1">
+                                        Total a Pagar:
                                     </span>
+                                    <CurrencyPriceDisplay
+                                        priceUsd={finalGrandTotal}
+                                        size="lg"
+                                        showVes={true}
+                                        showUsdt={true}
+                                        showBcvLabel={true}
+                                    />
                                 </div>
                             </div>
                         </Card>

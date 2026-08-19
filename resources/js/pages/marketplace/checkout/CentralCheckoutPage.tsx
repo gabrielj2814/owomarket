@@ -17,15 +17,28 @@ import {
     HiOutlineCheckCircle,
 } from 'react-icons/hi2';
 
+import { getActiveExchangeRate } from '@/Services/ExchangeRateServices';
+import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
+
 interface CentralCheckoutPageProps {
     domain?: string;
 }
 
-const BCV_RATE = 36.5; // Official BCV rate reference for simulation
-
 const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain }) => {
     const { items, getItemsByStore, getSubtotal, getItemCount, clearCart } = useCentralCart();
     const { customer, isAuthenticated, openAuthModal } = useCustomerAuth();
+
+    const [bcvRate, setBcvRate] = useState<number>(775.3356);
+
+    useEffect(() => {
+        getActiveExchangeRate()
+            .then((res) => {
+                if (res?.data?.rate && res.data.rate > 0) {
+                    setBcvRate(res.data.rate);
+                }
+            })
+            .catch(() => {});
+    }, []);
 
     const storeGroups = getItemsByStore();
     const subtotal = getSubtotal();
@@ -521,26 +534,24 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                             </div>
 
                             {/* Totals */}
-                            <div className="space-y-2 pt-4 border-t border-gray-200 dark:border-gray-800 text-xs">
+                            <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-800 text-xs">
                                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                     <span>Subtotal ({totalCount} items):</span>
                                     <span className="font-bold text-gray-900 dark:text-white">${subtotal.toFixed(2)} USD</span>
                                 </div>
-                                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                                    <span>Tasa BCV Referencial:</span>
-                                    <span className="font-semibold text-gray-900 dark:text-white">Bs. {BCV_RATE}</span>
+                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                                    <span className="text-xs font-bold text-gray-900 dark:text-white block uppercase tracking-wider mb-1">
+                                        Total a Pagar:
+                                    </span>
+                                    <CurrencyPriceDisplay
+                                        priceUsd={subtotal}
+                                        exchangeRate={bcvRate}
+                                        size="lg"
+                                        showVes={true}
+                                        showUsdt={true}
+                                        showBcvLabel={true}
+                                    />
                                 </div>
-                                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                                    <span>Equivalente en Bolívares:</span>
-                                    <span className="font-bold text-blue-600 dark:text-blue-400">Bs. {totalBs}</span>
-                                </div>
-                            </div>
-
-                            <div className="pt-4 border-t border-gray-200 dark:border-gray-800 flex justify-between items-center">
-                                <span className="text-sm font-bold text-gray-900 dark:text-white">Total Unificado:</span>
-                                <span className="text-2xl font-black text-blue-600 dark:text-blue-400">
-                                    ${subtotal.toFixed(2)} USD
-                                </span>
                             </div>
 
                             <button

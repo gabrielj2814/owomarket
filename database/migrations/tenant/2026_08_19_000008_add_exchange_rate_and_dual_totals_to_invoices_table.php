@@ -13,14 +13,32 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (! Schema::hasTable('invoices')) {
+            return;
+        }
+
         Schema::table('invoices', function (Blueprint $table) {
-            $table->decimal('exchange_rate', 16, 6)->nullable()->after('currency');
-            $table->decimal('subtotal_ves', 16, 2)->nullable()->after('total');
-            $table->decimal('total_ves', 16, 2)->nullable()->after('subtotal_ves');
-            $table->decimal('subtotal_usd', 16, 2)->nullable()->after('total_ves');
-            $table->decimal('total_usd', 16, 2)->nullable()->after('subtotal_usd');
-            $table->decimal('commission_amount', 16, 2)->nullable()->after('total_usd');
-            $table->string('commission_currency', 10)->nullable()->after('commission_amount');
+            if (! Schema::hasColumn('invoices', 'exchange_rate')) {
+                $table->decimal('exchange_rate', 16, 6)->nullable()->after('currency');
+            }
+            if (! Schema::hasColumn('invoices', 'subtotal_ves')) {
+                $table->decimal('subtotal_ves', 16, 2)->nullable()->after('total');
+            }
+            if (! Schema::hasColumn('invoices', 'total_ves')) {
+                $table->decimal('total_ves', 16, 2)->nullable()->after('subtotal_ves');
+            }
+            if (! Schema::hasColumn('invoices', 'subtotal_usd')) {
+                $table->decimal('subtotal_usd', 16, 2)->nullable()->after('total_ves');
+            }
+            if (! Schema::hasColumn('invoices', 'total_usd')) {
+                $table->decimal('total_usd', 16, 2)->nullable()->after('subtotal_usd');
+            }
+            if (! Schema::hasColumn('invoices', 'commission_amount')) {
+                $table->decimal('commission_amount', 16, 2)->nullable()->after('total_usd');
+            }
+            if (! Schema::hasColumn('invoices', 'commission_currency')) {
+                $table->string('commission_currency', 10)->nullable()->after('commission_amount');
+            }
         });
     }
 
