@@ -58,7 +58,7 @@ final class Uuid
 
         $parts = explode('-', $this->value);
 
-        return isset($parts[3]) ? (int) substr($parts[3], 0, 1) : null;
+        return isset($parts[2]) ? (int) substr($parts[2], 0, 1) : null;
     }
 
     public function isV4(): bool

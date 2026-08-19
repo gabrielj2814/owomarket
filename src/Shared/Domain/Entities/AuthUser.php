@@ -1,73 +1,57 @@
 <?php
 
-namespace Src\Product\Domain\Entities;
+namespace Src\Shared\Domain\Entities;
 
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
 
-class AuthUser
+final class AuthUser
 {
-    private Uuid $user_id;
-
-    private UserName $name;
-
-    private UserEmail $email;
-
-    private UserType $type;
-
-    private ?AvatarUrl $avatar;
-
-    // Constructor privado
     private function __construct(
-        ?Uuid $user_id,
-        UserName $name,
-        UserEmail $email,
-        UserType $type,
-        ?AvatarUrl $avatar,
-    ) {
-        $this->user_id = $user_id;
-        $this->name = $name;
-        $this->email = $email;
-        $this->type = $type;
-        $this->avatar = $avatar;
-    }
+        private ?Uuid $id,
+        private Uuid $user_id,
+        private UserName $name,
+        private UserEmail $email,
+        private UserType $type,
+        private ?AvatarUrl $avatar
+    ) {}
 
-    // Factory method - genera su propio ID
     public static function create(
+        UuidGenerator $generator,
         Uuid $user_id,
         UserName $name,
         UserEmail $email,
         UserType $type,
-        ?AvatarUrl $avatar,
+        ?AvatarUrl $avatar = null
     ): self {
         return new self(
-            $user_id,
-            $name,
-            $email,
-            $type,
-            $avatar,
-        );
-    }
-
-    // Factory method - para reconstruir desde BD
-    public static function reconstitute(
-        Uuid $user_id,
-        UserName $name,
-        UserEmail $email,
-        UserType $type,
-        ?AvatarUrl $avatar,
-    ): self {
-        // return new self($id, $email, $createdAt);
-        return new self(
+            Uuid::generate($generator),
             $user_id,
             $name,
             $email,
             $type,
             $avatar
         );
+    }
+
+    public static function reconstitute(
+        ?Uuid $id,
+        Uuid $user_id,
+        UserName $name,
+        UserEmail $email,
+        UserType $type,
+        ?AvatarUrl $avatar = null
+    ): self {
+        return new self($id, $user_id, $name, $email, $type, $avatar);
+    }
+
+    public function getId(): ?Uuid
+    {
+        return $this->id;
     }
 
     public function getUserId(): Uuid

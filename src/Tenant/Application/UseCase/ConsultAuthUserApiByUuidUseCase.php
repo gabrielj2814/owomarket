@@ -2,13 +2,13 @@
 
 namespace Src\Tenant\Application\UseCase;
 
+use Src\Shared\Domain\Entities\AuthUser;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\AuthServices;
-use Src\Tenant\Domain\Entities\AuthUser;
 
 class ConsultAuthUserApiByUuidUseCase
 {
@@ -37,6 +37,7 @@ class ConsultAuthUserApiByUuidUseCase
         $user_avatar = ($dataApi['data']['user_avatar'] != null && $dataApi['data']['user_avatar'] != '') ? AvatarUrl::make($dataApi['data']['user_avatar']) : null;
 
         return AuthUser::reconstitute(
+            null,
             $user_id,
             $user_name,
             $user_email,

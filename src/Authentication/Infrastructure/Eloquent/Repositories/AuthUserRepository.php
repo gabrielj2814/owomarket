@@ -3,10 +3,10 @@
 namespace Src\Authentication\Infrastructure\Eloquent\Repositories;
 
 use Src\Authentication\Application\Contracts\Repositories\AuthUserRepositoryInterface;
-use Src\Authentication\Domain\Entities\AuthUser;
 use Src\Authentication\Domain\Entities\User;
 use Src\Authentication\Infrastructure\Eloquent\Models\AuthUser as ModelsAuthUser;
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\Entities\AuthUser;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
