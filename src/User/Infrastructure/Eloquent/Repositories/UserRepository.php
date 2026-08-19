@@ -4,6 +4,7 @@ namespace Src\User\Infrastructure\Eloquent\Repositories;
 
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\Password;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\Timestamps;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
@@ -14,7 +15,6 @@ use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\User\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\User\Domain\Entities\User as EntitiesUser;
 use Src\User\Domain\ValueObjects\EmailVerifiedAt;
-use Src\User\Domain\ValueObjects\Password;
 use Src\User\Domain\ValueObjects\PinVerification;
 use Src\User\Domain\ValueObjects\RememberToken;
 use Src\User\Domain\ValueObjects\UserType;

@@ -5,9 +5,9 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
-use Src\Admin\Domain\ValueObjects\Password;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
+use Src\Shared\Domain\ValueObjects\Password;
 
 class RootUserSeeder extends Seeder
 {
