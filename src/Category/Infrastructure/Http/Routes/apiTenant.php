@@ -11,7 +11,9 @@ use Src\Category\Infrastructure\Http\Controller\DeleteCategoryDELETEController;
 use Src\Category\Infrastructure\Http\Controller\EditCategoryPUTController;
 use Src\Category\Infrastructure\Http\Controller\FilterCategoriesPOSTController;
 use Src\Category\Infrastructure\Http\Controller\ListCategoriesTreeGETController;
+use Src\Category\Infrastructure\Http\Controller\SyncCentralCategoriesPOSTController;
 
+Route::post('/sync-central', SyncCentralCategoriesPOSTController::class);
 Route::post('/filter', FilterCategoriesPOSTController::class);
 Route::get('/tree', ListCategoriesTreeGETController::class);
 Route::post('/create', CreateCategoryPOSTController::class);

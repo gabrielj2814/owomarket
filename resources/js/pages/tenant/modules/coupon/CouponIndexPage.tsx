@@ -1,5 +1,7 @@
 import Dashboard from "@/components/layouts/Dashboard";
 import CouponServices from "@/Services/CouponServices";
+import { ErrorsFormCoupon } from "@/types/ErrorsFormCoupon";
+import { FormCoupon } from "@/types/FormCoupon";
 import { Coupon } from "@/types/models/Coupon";
 import { Head } from "@inertiajs/react";
 import {
@@ -8,10 +10,12 @@ import {
     BreadcrumbItem,
     Button,
     Card,
+    Label,
     Modal,
     ModalBody,
     ModalHeader,
     Pagination,
+    Select,
     Spinner,
     Table,
     TableBody,
@@ -20,10 +24,12 @@ import {
     TableHeadCell,
     TableRow,
     TextInput,
+    ToggleSwitch,
 } from "flowbite-react";
 import { FC, useEffect, useState } from "react";
 import {
     HiHome,
+    HiPlus,
     HiRefresh,
     HiSearch,
     HiTicket,
@@ -37,6 +43,18 @@ interface CouponIndexPageProps {
     user_name: string;
 }
 
+const initialFormCoupon: FormCoupon = {
+    code: "",
+    type: "percentage",
+    value: 10,
+    min_order_amount: null,
+    usage_limit: null,
+    usage_limit_per_customer: null,
+    valid_from: new Date().toISOString().split("T")[0],
+    valid_to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    is_active: true,
+};
+
 const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_name }) => {
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -46,6 +64,12 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
     const [totalItems, setTotalItems] = useState<number>(0);
     const [perPage, setPerPage] = useState<number>(10);
 
+    // Create Modal States
+    const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+    const [formData, setFormData] = useState<FormCoupon>(initialFormCoupon);
+    const [formErrors, setFormErrors] = useState<ErrorsFormCoupon>({});
+
+    // Delete Modal States
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [couponToDelete, setCouponToDelete] = useState<Coupon | null>(null);
     const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -61,13 +85,14 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                 perPage,
                 page
             );
-            if (res?.data?.data && Array.isArray(res.data.data)) {
-                setCoupons(res.data.data);
-                if (res.data.pagination) {
-                    setCurrentPage(res.data.pagination.current_page);
-                    setTotalPages(res.data.pagination.last_page);
-                    setTotalItems(res.data.pagination.total);
-                }
+            const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []);
+            setCoupons(items);
+
+            const pagination = (res as any)?.pagination || (res as any)?.data?.pagination;
+            if (pagination) {
+                setCurrentPage(pagination.current_page);
+                setTotalPages(pagination.last_page);
+                setTotalItems(pagination.total);
             }
         } catch (err) {
             console.error("Error al cargar cupones", err);
@@ -83,6 +108,40 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
     const handleSearchSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         fetchCoupons(1);
+    };
+
+    const handleOpenCreate = () => {
+        setFormData(initialFormCoupon);
+        setFormErrors({});
+        setCreateModalOpen(true);
+    };
+
+    const handleCreateSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setActionLoading(true);
+        setFormErrors({});
+        try {
+            const payload: FormCoupon = {
+                ...formData,
+                code: formData.code.trim().toUpperCase(),
+                value: Number(formData.value),
+                min_order_amount: formData.min_order_amount ? Number(formData.min_order_amount) : null,
+                usage_limit: formData.usage_limit ? Number(formData.usage_limit) : null,
+                usage_limit_per_customer: formData.usage_limit_per_customer ? Number(formData.usage_limit_per_customer) : null,
+            };
+
+            const res = await CouponServices.create(payload);
+            if ((res as any)?.code === 201 || (res as any)?.code === 200 || (res as any)?.status === "success" || res?.status === 201 || res?.status === 200) {
+                setCreateModalOpen(false);
+                fetchCoupons(1);
+            } else if ((res as any)?.errors || (res as any)?.data?.errors) {
+                setFormErrors((res as any)?.errors || (res as any)?.data?.errors);
+            }
+        } catch (err: any) {
+            console.error("Error creando cupón", err);
+        } finally {
+            setActionLoading(false);
+        }
     };
 
     const confirmDelete = async () => {
@@ -134,6 +193,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                         <Button color="gray" onClick={() => fetchCoupons(currentPage)} disabled={loading}>
                             <HiRefresh className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
                             Actualizar
+                        </Button>
+                        <Button color="purple" onClick={handleOpenCreate}>
+                            <HiPlus className="w-4 h-4 mr-2" />
+                            Crear Cupón
                         </Button>
                     </div>
                 </div>
@@ -236,6 +299,162 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                         </div>
                     )}
                 </Card>
+
+                {/* Create Modal */}
+                <Modal show={createModalOpen} onClose={() => setCreateModalOpen(false)} size="lg">
+                    <ModalHeader>
+                        <span className="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
+                            <HiTicket className="w-6 h-6 text-pink-600" />
+                            Crear Nuevo Cupón de Descuento
+                        </span>
+                    </ModalHeader>
+                    <ModalBody>
+                        <form onSubmit={handleCreateSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="code">Código del Cupón *</Label>
+                                    <TextInput
+                                        id="code"
+                                        placeholder="Ej: OWOVERANO2026"
+                                        value={formData.code}
+                                        onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
+                                        required
+                                        color={formErrors.code ? "failure" : undefined}
+                                    />
+                                    {formErrors.code && (
+                                        <span className="text-xs text-red-500 mt-1 block">
+                                            {Array.isArray(formErrors.code) ? formErrors.code[0] : formErrors.code}
+                                        </span>
+                                    )}
+                                </div>
+                                <div>
+                                    <Label htmlFor="type">Tipo de Descuento *</Label>
+                                    <Select
+                                        id="type"
+                                        value={formData.type}
+                                        onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+                                    >
+                                        <option value="percentage">Porcentaje (%)</option>
+                                        <option value="fixed_amount">Monto Fijo ($)</option>
+                                    </Select>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="value">
+                                        {formData.type === "percentage" ? "Porcentaje de Descuento (%) *" : "Monto de Descuento ($) *"}
+                                    </Label>
+                                    <TextInput
+                                        id="value"
+                                        type="number"
+                                        min="0.01"
+                                        step="0.01"
+                                        value={formData.value}
+                                        onChange={(e) => setFormData({ ...formData, value: Number(e.target.value) })}
+                                        required
+                                        color={formErrors.value ? "failure" : undefined}
+                                    />
+                                    {formErrors.value && (
+                                        <span className="text-xs text-red-500 mt-1 block">
+                                            {Array.isArray(formErrors.value) ? formErrors.value[0] : formErrors.value}
+                                        </span>
+                                    )}
+                                </div>
+                                <div>
+                                    <Label htmlFor="min_order_amount">Monto Mínimo de Compra ($)</Label>
+                                    <TextInput
+                                        id="min_order_amount"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="Opcional (Ej: 20.00)"
+                                        value={formData.min_order_amount ?? ""}
+                                        onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value ? Number(e.target.value) : null })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="valid_from">Fecha de Inicio *</Label>
+                                    <TextInput
+                                        id="valid_from"
+                                        type="date"
+                                        value={formData.valid_from}
+                                        onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
+                                        required
+                                        color={formErrors.valid_from ? "failure" : undefined}
+                                    />
+                                    {formErrors.valid_from && (
+                                        <span className="text-xs text-red-500 mt-1 block">
+                                            {Array.isArray(formErrors.valid_from) ? formErrors.valid_from[0] : formErrors.valid_from}
+                                        </span>
+                                    )}
+                                </div>
+                                <div>
+                                    <Label htmlFor="valid_to">Fecha de Expiración *</Label>
+                                    <TextInput
+                                        id="valid_to"
+                                        type="date"
+                                        value={formData.valid_to}
+                                        onChange={(e) => setFormData({ ...formData, valid_to: e.target.value })}
+                                        required
+                                        color={formErrors.valid_to ? "failure" : undefined}
+                                    />
+                                    {formErrors.valid_to && (
+                                        <span className="text-xs text-red-500 mt-1 block">
+                                            {Array.isArray(formErrors.valid_to) ? formErrors.valid_to[0] : formErrors.valid_to}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <Label htmlFor="usage_limit">Límite Total de Usos</Label>
+                                    <TextInput
+                                        id="usage_limit"
+                                        type="number"
+                                        min="1"
+                                        placeholder="Vacío para ilimitado"
+                                        value={formData.usage_limit ?? ""}
+                                        onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value ? Number(e.target.value) : null })}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="usage_limit_per_customer">Límite de Usos por Cliente</Label>
+                                    <TextInput
+                                        id="usage_limit_per_customer"
+                                        type="number"
+                                        min="1"
+                                        placeholder="Vacío para ilimitado"
+                                        value={formData.usage_limit_per_customer ?? ""}
+                                        onChange={(e) => setFormData({ ...formData, usage_limit_per_customer: e.target.value ? Number(e.target.value) : null })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="pt-2">
+                                <ToggleSwitch
+                                    checked={formData.is_active ?? true}
+                                    label="Cupón Activo y Disponible"
+                                    onChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <Button color="gray" onClick={() => setCreateModalOpen(false)}>
+                                    Cancelar
+                                </Button>
+                                <Button color="purple" type="submit" disabled={actionLoading}>
+                                    {actionLoading ? <Spinner size="sm" className="mr-2" /> : null}
+                                    Guardar Cupón
+                                </Button>
+                            </div>
+                        </form>
+                    </ModalBody>
+                </Modal>
 
                 {/* Delete Modal */}
                 <Modal show={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} size="md" popup>

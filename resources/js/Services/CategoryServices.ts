@@ -1,6 +1,6 @@
 import { FormCategory } from '@/types/FormCategory';
 import { Category } from '@/types/models/Category';
-import { ApiResponse } from '@/types/ResponseApi';
+import { ApiResponse, Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -82,6 +82,23 @@ const CategoryServices = {
             return respuesta;
         } catch (error) {
             return error as ApiResponse<void>;
+        }
+    },
+
+    syncCentral: async (): Promise<Data<{ synced_count: number; created_count: number; updated_count: number }>> => {
+        try {
+            const respuesta = await axiosCategory.post<Data<{ synced_count: number; created_count: number; updated_count: number }>>('sync-central');
+            return respuesta.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error al sincronizar con el catálogo central',
+                    data: { synced_count: 0, created_count: 0, updated_count: 0 },
+                    meta: [],
+                }
+            );
         }
     },
 };

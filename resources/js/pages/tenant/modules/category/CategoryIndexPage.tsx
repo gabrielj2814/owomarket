@@ -1,5 +1,6 @@
 import Dashboard from "@/components/layouts/Dashboard";
 import CategoryServices from "@/Services/CategoryServices";
+import { FormCategory } from "@/types/FormCategory";
 import { Category } from "@/types/models/Category";
 import { Head } from "@inertiajs/react";
 import {
@@ -8,6 +9,7 @@ import {
     BreadcrumbItem,
     Button,
     Card,
+    Label,
     Modal,
     ModalBody,
     ModalHeader,
@@ -20,11 +22,14 @@ import {
     TableHead,
     TableHeadCell,
     TableRow,
+    Textarea,
     TextInput,
+    ToggleSwitch,
 } from "flowbite-react";
 import { FC, useEffect, useState } from "react";
 import {
     HiHome,
+    HiPlus,
     HiRefresh,
     HiSearch,
     HiTrash,
@@ -38,6 +43,16 @@ interface CategoryIndexPageProps {
     user_name: string;
 }
 
+const initialFormCategory: FormCategory = {
+    name: "",
+    slug: "",
+    description: "",
+    image: "",
+    parent_id: null,
+    is_active: true,
+    position: 0,
+};
+
 const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, user_name }) => {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -48,9 +63,18 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
     const [totalItems, setTotalItems] = useState<number>(0);
     const [perPage, setPerPage] = useState<number>(10);
 
+    // Create Modal State
+    const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+    const [formData, setFormData] = useState<FormCategory>(initialFormCategory);
+
+    // Delete Modal State
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
     const [actionLoading, setActionLoading] = useState<boolean>(false);
+
+    // Sync State
+    const [syncLoading, setSyncLoading] = useState<boolean>(false);
+    const [syncMessage, setSyncMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
     const fetchCategories = async (page = currentPage) => {
         setLoading(true);
@@ -64,13 +88,14 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
                 perPage,
                 page
             );
-            if (res?.data?.data && Array.isArray(res.data.data)) {
-                setCategories(res.data.data);
-                if (res.data.pagination) {
-                    setCurrentPage(res.data.pagination.current_page);
-                    setTotalPages(res.data.pagination.last_page);
-                    setTotalItems(res.data.pagination.total);
-                }
+            const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []);
+            setCategories(items);
+
+            const pagination = (res as any)?.pagination || (res as any)?.data?.pagination;
+            if (pagination) {
+                setCurrentPage(pagination.current_page);
+                setTotalPages(pagination.last_page);
+                setTotalItems(pagination.total);
             }
         } catch (err) {
             console.error("Error al cargar categorías", err);
@@ -88,12 +113,68 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
         fetchCategories(1);
     };
 
+    const handleSyncCentral = async () => {
+        setSyncLoading(true);
+        setSyncMessage(null);
+        try {
+            const res = await CategoryServices.syncCentral();
+            if (res?.code === 200 || res?.status === "success") {
+                setSyncMessage({
+                    type: "success",
+                    text: res.message || "Categorías sincronizadas exitosamente desde el Catálogo Central",
+                });
+                fetchCategories(1);
+            } else {
+                setSyncMessage({
+                    type: "error",
+                    text: res?.message || "No se pudieron sincronizar las categorías",
+                });
+            }
+        } catch (err) {
+            setSyncMessage({
+                type: "error",
+                text: "Error de conexión al sincronizar categorías maestras",
+            });
+        } finally {
+            setSyncLoading(false);
+            setTimeout(() => setSyncMessage(null), 6000);
+        }
+    };
+
+    const handleOpenCreate = () => {
+        setFormData(initialFormCategory);
+        setCreateModalOpen(true);
+    };
+
+    const handleCreateSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setActionLoading(true);
+        try {
+            const payload: FormCategory = {
+                ...formData,
+                name: formData.name.trim(),
+                slug: formData.slug?.trim() || undefined,
+                position: Number(formData.position || 0),
+            };
+
+            const res = await CategoryServices.create(payload);
+            if (res?.status === 201 || res?.status === 200 || (res as any)?.code === 201 || (res as any)?.code === 200) {
+                setCreateModalOpen(false);
+                fetchCategories(1);
+            }
+        } catch (err) {
+            console.error("Error creando categoría", err);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const confirmDelete = async () => {
         if (!categoryToDelete) return;
         setActionLoading(true);
         try {
             const res = await CategoryServices.delete(categoryToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || res?.status === 200) {
                 setDeleteModalOpen(false);
                 setCategoryToDelete(null);
                 fetchCategories(currentPage);
@@ -123,6 +204,21 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
                     </BreadcrumbItem>
                 </Breadcrumb>
 
+                {syncMessage && (
+                    <div
+                        className={`mb-5 p-4 rounded-lg flex items-center justify-between text-sm font-medium ${
+                            syncMessage.type === "success"
+                                ? "bg-green-50 text-green-800 dark:bg-gray-800 dark:text-green-400 border border-green-200 dark:border-green-800"
+                                : "bg-red-50 text-red-800 dark:bg-gray-800 dark:text-red-400 border border-red-200 dark:border-red-800"
+                        }`}
+                    >
+                        <span>{syncMessage.text}</span>
+                        <button onClick={() => setSyncMessage(null)} className="text-gray-400 hover:text-gray-600 font-bold ml-3">
+                            ✕
+                        </button>
+                    </div>
+                )}
+
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div>
                         <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
@@ -133,10 +229,18 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
                             Organiza tus productos en categorías jerárquicas y menús de navegación
                         </p>
                     </div>
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
-                        <Button color="gray" onClick={() => fetchCategories(currentPage)} disabled={loading}>
+                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <Button color="gray" onClick={() => fetchCategories(currentPage)} disabled={loading || syncLoading}>
                             <HiRefresh className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
                             Actualizar
+                        </Button>
+                        <Button color="blue" onClick={handleSyncCentral} disabled={loading || syncLoading}>
+                            <HiRefresh className={`w-4 h-4 mr-2 ${syncLoading ? "animate-spin" : ""}`} />
+                            {syncLoading ? "Sincronizando..." : "Sincronizar Catálogo Central"}
+                        </Button>
+                        <Button color="purple" onClick={handleOpenCreate}>
+                            <HiPlus className="w-4 h-4 mr-2" />
+                            Crear Categoría
                         </Button>
                     </div>
                 </div>
@@ -253,6 +357,90 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
                     )}
                 </Card>
 
+                {/* Create Category Modal */}
+                <Modal show={createModalOpen} onClose={() => setCreateModalOpen(false)} size="md">
+                    <ModalHeader>
+                        <span className="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
+                            <LuFolderTree className="w-6 h-6 text-blue-600" />
+                            Crear Nueva Categoría
+                        </span>
+                    </ModalHeader>
+                    <ModalBody>
+                        <form onSubmit={handleCreateSubmit} className="space-y-4">
+                            <div>
+                                <Label htmlFor="cat-name">Nombre de la Categoría *</Label>
+                                <TextInput
+                                    id="cat-name"
+                                    placeholder="Ej: Smartphones, Zapatillas..."
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="cat-slug">Slug (Opcional)</Label>
+                                <TextInput
+                                    id="cat-slug"
+                                    placeholder="Dejar vacío para autogenerar"
+                                    value={formData.slug ?? ""}
+                                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="cat-image">URL de Imagen / Icono (Opcional)</Label>
+                                <TextInput
+                                    id="cat-image"
+                                    placeholder="https://..."
+                                    value={formData.image ?? ""}
+                                    onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="cat-desc">Descripción (Opcional)</Label>
+                                <Textarea
+                                    id="cat-desc"
+                                    rows={2}
+                                    placeholder="Descripción de la categoría..."
+                                    value={formData.description ?? ""}
+                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                />
+                            </div>
+
+                            <div>
+                                <Label htmlFor="cat-pos">Posición / Orden</Label>
+                                <TextInput
+                                    id="cat-pos"
+                                    type="number"
+                                    min="0"
+                                    value={formData.position ?? 0}
+                                    onChange={(e) => setFormData({ ...formData, position: Number(e.target.value) })}
+                                />
+                            </div>
+
+                            <div className="pt-2">
+                                <ToggleSwitch
+                                    checked={formData.is_active ?? true}
+                                    label="Categoría Activa en el Menú"
+                                    onChange={(checked) => setFormData({ ...formData, is_active: checked })}
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <Button color="gray" onClick={() => setCreateModalOpen(false)}>
+                                    Cancelar
+                                </Button>
+                                <Button color="purple" type="submit" disabled={actionLoading}>
+                                    {actionLoading ? <Spinner size="sm" className="mr-2" /> : null}
+                                    Guardar Categoría
+                                </Button>
+                            </div>
+                        </form>
+                    </ModalBody>
+                </Modal>
+
                 {/* Delete Modal */}
                 <Modal show={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} size="md" popup>
                     <ModalHeader />
@@ -283,3 +471,4 @@ const CategoryIndexPage: FC<CategoryIndexPageProps> = ({ user_id, title, host, u
 };
 
 export default CategoryIndexPage;
+

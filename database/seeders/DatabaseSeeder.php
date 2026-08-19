@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             RootUserSeeder::class,
+            CentralMasterCatalogSeeder::class,
             TenantDomainSeeder::class,
             TenantDefaultUsersSeeder::class,
             TenantDemoDataSeeder::class,

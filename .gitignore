@@ -29,3 +29,5 @@ laradumps.yaml
 database/tenant_*
 *.sqlite
 *.sqlite-journal
+/storage/tenant*
+

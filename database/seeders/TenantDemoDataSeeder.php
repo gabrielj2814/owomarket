@@ -45,6 +45,14 @@ final class TenantDemoDataSeeder extends Seeder
 
     public function seedTenantData(?string $storeName = 'OwoStore'): void
     {
+        // 0. Sincronizar Catálogo Maestro Central (Categorías y Marcas)
+        try {
+            app(\Src\Category\Application\UseCase\SyncCentralCategoriesUseCase::class)->execute();
+            app(\Src\Brand\Application\UseCase\SyncCentralBrandsUseCase::class)->execute();
+        } catch (\Throwable $e) {
+            // Continuar si ocurre alguna inconsistencia aislada
+        }
+
         // 1. Tenant Settings
         $settings = [
             'store_name' => $storeName.' Oficial',

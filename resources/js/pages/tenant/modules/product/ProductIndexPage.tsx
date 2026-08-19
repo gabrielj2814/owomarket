@@ -87,11 +87,13 @@ const ProductIndexPage: FC<ProductIndexPageProps> = ({ user_id, title, host, use
                     CategoryServices.tree(),
                     BrandServices.listActive(),
                 ]);
-                if (catsRes?.data?.data && Array.isArray(catsRes.data.data)) {
-                    setCategories(catsRes.data.data);
+                const catsData = Array.isArray(catsRes?.data) ? catsRes.data : (Array.isArray(catsRes?.data?.data) ? catsRes.data.data : []);
+                if (catsData.length > 0) {
+                    setCategories(catsData);
                 }
-                if (brandsRes?.data?.data && Array.isArray(brandsRes.data.data)) {
-                    setBrands(brandsRes.data.data);
+                const brandsData = Array.isArray(brandsRes?.data) ? brandsRes.data : (Array.isArray(brandsRes?.data?.data) ? brandsRes.data.data : []);
+                if (brandsData.length > 0) {
+                    setBrands(brandsData);
                 }
             } catch (err) {
                 console.error("Error cargando dependencias", err);
@@ -118,13 +120,14 @@ const ProductIndexPage: FC<ProductIndexPageProps> = ({ user_id, title, host, use
             };
 
             const response = await ProductServices.filtrar(params);
-            if (response?.data?.data && Array.isArray(response.data.data)) {
-                setProducts(response.data.data);
-                if (response.data.pagination) {
-                    setCurrentPage(response.data.pagination.current_page);
-                    setTotalPages(response.data.pagination.last_page);
-                    setTotalItems(response.data.pagination.total);
-                }
+            const items = Array.isArray(response?.data) ? response.data : (Array.isArray(response?.data?.data) ? response.data.data : []);
+            setProducts(items);
+
+            const pagination = (response as any)?.pagination || (response as any)?.data?.pagination;
+            if (pagination) {
+                setCurrentPage(pagination.current_page);
+                setTotalPages(pagination.last_page);
+                setTotalItems(pagination.total);
             }
         } catch (error) {
             console.error("Error al filtrar productos", error);

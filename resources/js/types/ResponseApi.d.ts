@@ -47,7 +47,7 @@ export interface Transitional {
     clarifyTimeoutError: boolean;
 }
 
-export interface Data<D, E > {
+export interface Data<D, E = {}> {
     // data:    T | Array<any> | null;
     data:     D | null;
     status:   string;

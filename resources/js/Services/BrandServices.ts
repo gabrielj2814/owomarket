@@ -1,7 +1,7 @@
 import { ErrorsFormBrand } from '@/types/ErrorsFormBrand';
 import { FormBrand } from '@/types/FormBrand';
 import { Brand } from '@/types/models/Brand';
-import { ApiResponse } from '@/types/ResponseApi';
+import { ApiResponse, Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -118,6 +118,23 @@ const BrandServices = {
                     code: 500,
                     message: 'Error de conexión',
                     data: null,
+                }
+            );
+        }
+    },
+
+    syncCentral: async (): Promise<Data<{ synced_count: number; created_count: number; updated_count: number }>> => {
+        try {
+            const response = await axiosBrand.post<Data<{ synced_count: number; created_count: number; updated_count: number }>>('sync-central');
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error al sincronizar marcas con el catálogo central',
+                    data: { synced_count: 0, created_count: 0, updated_count: 0 },
+                    meta: [],
                 }
             );
         }

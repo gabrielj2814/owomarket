@@ -59,13 +59,14 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                 perPage,
                 page
             );
-            if (res?.data?.data && Array.isArray(res.data.data)) {
-                setZones(res.data.data);
-                if (res.data.pagination) {
-                    setCurrentPage(res.data.pagination.current_page);
-                    setTotalPages(res.data.pagination.last_page);
-                    setTotalItems(res.data.pagination.total);
-                }
+            const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []);
+            setZones(items);
+
+            const pagination = (res as any)?.pagination || (res as any)?.data?.pagination;
+            if (pagination) {
+                setCurrentPage(pagination.current_page);
+                setTotalPages(pagination.last_page);
+                setTotalItems(pagination.total);
             }
         } catch (err) {
             console.error("Error al cargar zonas de envío", err);

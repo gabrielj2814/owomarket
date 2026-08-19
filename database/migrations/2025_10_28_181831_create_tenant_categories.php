@@ -21,7 +21,7 @@ return new class extends Migration
             // $table->foreignId('parent_id')->nullable()->constrained('tenant_categories')->onDelete('cascade');
 
 
-            $table->string('parent_id');
+            $table->string('parent_id')->nullable();
 
             // Foreign keys explícitas
             $table->foreign('parent_id')->nullable()->references("id")->on('tenant_categories')->onDelete('cascade');
