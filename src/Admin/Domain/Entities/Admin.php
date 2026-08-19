@@ -2,11 +2,11 @@
 
 namespace Src\Admin\Domain\Entities;
 
-use Src\Admin\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
+use Src\Shared\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Shared\Domain\ValueObjects\Password;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\PinVerification;
