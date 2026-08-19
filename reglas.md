@@ -20,6 +20,11 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 4. **Diseño Responsivo y Scroll**:
    * Las vistas de administración que se renderizan dentro del layout `<Dashboard>` deben utilizar los contenedores con scroll vertical interno (`overflow-y-auto`) para garantizar que ningún formulario o botón se corte en dispositivos móviles ni en pantallas de escritorio.
 
+5. **Testing Obligatorio de Componentes e Interfaces (Vitest + Playwright)**:
+   * Cada vez que se desarrolle una nueva interfaz, vista, modal, componente de UI o flujo de usuario, se deben crear sus pruebas unitarias/de componente correspondientes en `tests/Frontend/Components/` o `tests/Frontend/Unit/` utilizando **Vitest** y **React Testing Library**.
+   * Para flujos de navegación completos y transiciones críticas (checkout, autenticación, carrito), se deben crear sus pruebas End-to-End en `tests/Frontend/E2E/` utilizando **Playwright**.
+   * Todo commit que incluya cambios en el frontend debe pasar `npm run test:unit` y `npm run types` con 0 errores.
+
 ---
 
 ## 🏛️ 2. Reglas de Backend (Arquitectura Hexagonal + DDD)

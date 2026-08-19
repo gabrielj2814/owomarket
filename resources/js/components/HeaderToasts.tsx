@@ -29,9 +29,9 @@ const HeaderToasts:FC<HeaderToastsProps> = ({list= []}) => {
 
     return (<div className="relative">
        <div className="absolute z-50 top-2 right-2">
-            {list.map(toast => {
+            {list.map((toast, index) => {
                 return (
-                    <Toast className="mb-3 border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
+                    <Toast key={`header-toast-${index}`} className="mb-3 border border-gray-200 bg-white shadow-md dark:border-gray-700 dark:bg-gray-800">
                         <div className="flex items-start">
                             {toast.icon &&
                                 <div className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${colorsIcon[toast.type]}`}>

@@ -12,3 +12,6 @@
    - `planes/por_hacer/`: Planes de trabajo aprobados o en curso que, al completarse, se deben mover a `planes/implementados/`.
    - `planes/futuros/`: Planificaciones, ideas y especificaciones a futuro que todavía no se van a implementar.
    - `planes/anotaciones/`: Documentos generales, notas arquitectónicas, diagramas de flujo y referencias técnicas globales.
+
+4. **Testing Integral de Frontend y Backend**:
+   Cada vez que se implemente una interfaz de usuario, vista, componente, modal, formulario o acción en el frontend, se deberán crear sus pruebas unitarias/de componentes con Vitest (`npm run test:unit`) y sus pruebas E2E con Playwright (`npm run test:e2e`) para validar que la interfaz de usuario no tenga errores. Se debe garantizar 100% de tests pasando tanto en backend (`php artisan test`) como en frontend (`npm run test:unit`), 0 errores de TypeScript (`npm run types`) antes de commitear y pushear.
