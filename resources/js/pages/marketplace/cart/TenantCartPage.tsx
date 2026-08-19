@@ -31,7 +31,7 @@ import {
     HiTruck,
 } from 'react-icons/hi';
 
-export default function TenantCartPage({
+function CartPageContent({
     domain,
     store_settings,
     categories = [],
@@ -102,13 +102,7 @@ export default function TenantCartPage({
     };
 
     return (
-        <StorefrontLayout
-            domain={domain}
-            title="Mi Carrito de Compras"
-            storeSettings={store_settings}
-            categories={categories}
-            authUser={auth_user}
-        >
+        <>
             <div className="space-y-8">
                 {/* Breadcrumb */}
                 <Breadcrumb>
@@ -424,6 +418,20 @@ export default function TenantCartPage({
                     </section>
                 )}
             </div>
+        </>
+    );
+}
+
+export default function TenantCartPage(props: StorefrontCartPageProps) {
+    return (
+        <StorefrontLayout
+            domain={props.domain}
+            title="Mi Carrito de Compras"
+            storeSettings={props.store_settings}
+            categories={props.categories}
+            authUser={props.auth_user}
+        >
+            <CartPageContent {...props} />
         </StorefrontLayout>
     );
 }

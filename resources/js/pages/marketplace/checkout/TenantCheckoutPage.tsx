@@ -39,7 +39,7 @@ import {
 } from 'react-icons/hi';
 import { FaMoneyBillWave, FaUniversity } from 'react-icons/fa';
 
-export default function TenantCheckoutPage({
+function CheckoutPageContent({
     domain,
     store_settings,
     categories = [],
@@ -64,7 +64,6 @@ export default function TenantCheckoutPage({
     const [stateRegion, setStateRegion] = useState<string>('Región Metropolitana');
     const [zipCode, setZipCode] = useState<string>('');
     const [shippingNotes, setShippingNotes] = useState<string>('');
-
     // Shipping & Payment selection
     const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string>(
         shipping_methods.length > 0 ? shipping_methods[0].id : 'standard'
@@ -175,13 +174,7 @@ export default function TenantCheckoutPage({
     };
 
     return (
-        <StorefrontLayout
-            domain={domain}
-            title="Finalizar Compra"
-            storeSettings={store_settings}
-            categories={categories}
-            authUser={auth_user}
-        >
+        <>
             <div className="space-y-8 max-w-6xl mx-auto">
                 {/* Breadcrumb */}
                 <Breadcrumb>
@@ -766,6 +759,20 @@ export default function TenantCheckoutPage({
                     </ModalBody>
                 </Modal>
             </div>
+        </>
+    );
+}
+
+export default function TenantCheckoutPage(props: StorefrontCheckoutPageProps) {
+    return (
+        <StorefrontLayout
+            domain={props.domain}
+            title="Finalizar Compra"
+            storeSettings={props.store_settings}
+            categories={props.categories}
+            authUser={props.auth_user}
+        >
+            <CheckoutPageContent {...props} />
         </StorefrontLayout>
     );
 }

@@ -18,7 +18,7 @@ import {
 } from 'react-icons/hi';
 import { FaCheckCircle, FaUniversity } from 'react-icons/fa';
 
-export default function TenantOrderConfirmationPage({
+function OrderConfirmationContent({
     domain,
     store_settings,
     categories = [],
@@ -32,13 +32,7 @@ export default function TenantOrderConfirmationPage({
     };
 
     return (
-        <StorefrontLayout
-            domain={domain}
-            title={`Orden Confirmada #${order.order_number}`}
-            storeSettings={store_settings}
-            categories={categories}
-            authUser={auth_user}
-        >
+        <>
             <div className="max-w-4xl mx-auto space-y-8 py-4">
                 {/* Breadcrumb */}
                 <Breadcrumb>
@@ -257,6 +251,20 @@ export default function TenantOrderConfirmationPage({
                     </div>
                 </div>
             </div>
+        </>
+    );
+}
+
+export default function TenantOrderConfirmationPage(props: StorefrontOrderConfirmationPageProps) {
+    return (
+        <StorefrontLayout
+            domain={props.domain}
+            title={`Orden Confirmada #${props.order.order_number}`}
+            storeSettings={props.store_settings}
+            categories={props.categories}
+            authUser={props.auth_user}
+        >
+            <OrderConfirmationContent {...props} />
         </StorefrontLayout>
     );
 }

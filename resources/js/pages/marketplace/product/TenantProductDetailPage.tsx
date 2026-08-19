@@ -38,7 +38,7 @@ import {
 } from 'react-icons/hi';
 import { FaReply } from 'react-icons/fa';
 
-export default function TenantProductDetailPage({
+function ProductDetailPageContent({
     domain,
     store_settings,
     categories = [],
@@ -169,13 +169,7 @@ export default function TenantProductDetailPage({
     };
 
     return (
-        <StorefrontLayout
-            domain={domain}
-            title={product.name}
-            storeSettings={store_settings}
-            categories={categories}
-            authUser={auth_user}
-        >
+        <>
             <div className="space-y-12">
                 {/* Toast Notification */}
                 {toastMessage && (
@@ -787,6 +781,20 @@ export default function TenantProductDetailPage({
                     </ModalBody>
                 </Modal>
             </div>
+        </>
+    );
+}
+
+export default function TenantProductDetailPage(props: StorefrontProductDetailPageProps) {
+    return (
+        <StorefrontLayout
+            domain={props.domain}
+            title={props.product.name}
+            storeSettings={props.store_settings}
+            categories={props.categories}
+            authUser={props.auth_user}
+        >
+            <ProductDetailPageContent {...props} />
         </StorefrontLayout>
     );
 }
