@@ -3,6 +3,7 @@
 namespace Src\Tenant\Domain\Entities;
 
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
@@ -11,7 +12,6 @@ use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
-use Src\Tenant\Domain\ValueObjects\AvatarUrl;
 use Src\Tenant\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Tenant\Domain\ValueObjects\Password;
 use Src\Tenant\Domain\ValueObjects\PinVerification;

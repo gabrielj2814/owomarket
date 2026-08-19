@@ -3,7 +3,7 @@
 namespace Src\Admin\Application\Contracts\Services;
 
 use Illuminate\Http\UploadedFile;
-use Src\Admin\Domain\ValueObjects\AvatarUrl;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 
 interface AvatarStorageInterface
 {

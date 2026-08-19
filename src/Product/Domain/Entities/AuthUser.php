@@ -2,8 +2,8 @@
 
 namespace Src\Product\Domain\Entities;
 
-use Src\Product\Domain\ValueObjects\AvatarUrl;
 use Src\Product\Domain\ValueObjects\UserType;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\Uuid;

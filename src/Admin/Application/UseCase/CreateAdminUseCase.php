@@ -4,12 +4,12 @@ namespace Src\Admin\Application\UseCase;
 
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\AvatarUrl;
 use Src\Admin\Domain\ValueObjects\Password;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;

@@ -1,9 +1,8 @@
 <?php
 
-namespace Src\User\Domain\ValueObjects;
+namespace Src\Shared\Domain\ValueObjects;
 
 use InvalidArgumentException;
-use Src\Shared\Domain\ValueObjects\StringValueObject;
 
 final class AvatarUrl extends StringValueObject
 {

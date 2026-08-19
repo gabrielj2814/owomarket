@@ -5,7 +5,7 @@ namespace Src\Admin\Infrastructure\Services;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Src\Admin\Application\Contracts\Services\AvatarStorageInterface;
-use Src\Admin\Domain\ValueObjects\AvatarUrl;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 
 class LaravelAvatarStorageService implements AvatarStorageInterface
 {

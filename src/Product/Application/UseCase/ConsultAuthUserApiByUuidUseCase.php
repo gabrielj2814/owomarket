@@ -4,8 +4,8 @@ namespace Src\Product\Application\UseCase;
 
 use Src\Product\Application\Contracts\AuthServices;
 use Src\Product\Domain\Entities\AuthUser;
-use Src\Product\Domain\ValueObjects\AvatarUrl;
 use Src\Product\Domain\ValueObjects\UserType;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\UserEmail;
 use Src\Shared\Domain\ValueObjects\UserName;
 use Src\Shared\Domain\ValueObjects\Uuid;

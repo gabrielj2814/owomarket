@@ -3,6 +3,7 @@
 namespace Src\Tenant\Infrastructure\Eloquent\Repositories;
 
 use Exception;
+use Src\Shared\Domain\ValueObjects\AvatarUrl;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\PhoneNumber;
 use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
@@ -13,7 +14,6 @@ use Src\Shared\Domain\ValueObjects\UserStatus;
 use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
-use Src\Tenant\Domain\ValueObjects\AvatarUrl;
 use Src\Tenant\Domain\ValueObjects\Password;
 use Src\Tenant\Domain\ValueObjects\UserType;
 use Src\Tenant\Infrastructure\Eloquent\Models\User as TenantOwnerModel;
