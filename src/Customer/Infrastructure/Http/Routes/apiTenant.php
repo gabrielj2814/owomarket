@@ -13,6 +13,15 @@ use Src\Customer\Infrastructure\Http\Controller\GetCustomerMetricsGETController;
 use Src\Customer\Infrastructure\Http\Controller\SetDefaultCustomerAddressPOSTController;
 use Src\Customer\Infrastructure\Http\Controller\UpdateCustomerPUTController;
 
+use Src\CentralCustomer\Infrastructure\Http\Controller\ConsumeSsoTokenPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\CustomerLogoutPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\GetTenantCustomerSessionGETController;
+
+// SSO y Sesión de Comprador
+Route::post('/sso/consume', ConsumeSsoTokenPOSTController::class);
+Route::get('/auth/session', GetTenantCustomerSessionGETController::class);
+Route::post('/auth/logout', CustomerLogoutPOSTController::class);
+
 Route::get('/metrics', GetCustomerMetricsGETController::class);
 Route::post('/filter', FilterCustomersPOSTController::class);
 Route::post('/create', CreateCustomerPOSTController::class);

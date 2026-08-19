@@ -1,6 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import StorefrontLayout from '@/components/layouts/StorefrontLayout';
 import { useCart } from '@/contexts/CartContext';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import StorefrontServices, { CreateStorefrontOrderPayload } from '@/Services/StorefrontServices';
 import { StorefrontCheckoutPageProps } from '@/types/models/Storefront';
 import {
@@ -48,6 +49,7 @@ function CheckoutPageContent({
     auth_user = null,
 }: StorefrontCheckoutPageProps) {
     const { items, subtotal, discountAmount, total, coupon, clearCart, formatPrice } = useCart();
+    const { customer, addresses, openAuthModal } = useCustomerAuth();
 
     // Steps: 1 = Contact & Customer, 2 = Shipping Address & Method, 3 = Payment & Login Gate
     const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
@@ -64,6 +66,28 @@ function CheckoutPageContent({
     const [stateRegion, setStateRegion] = useState<string>('Región Metropolitana');
     const [zipCode, setZipCode] = useState<string>('');
     const [shippingNotes, setShippingNotes] = useState<string>('');
+
+    // Auto-fill from CustomerAuthContext
+    useEffect(() => {
+        if (customer) {
+            if (!customerName && customer.name) setCustomerName(customer.name);
+            if (!customerEmail && customer.email) setCustomerEmail(customer.email);
+            if (!customerPhone && customer.phone) setCustomerPhone(customer.phone);
+            if (!customerDoc && customer.document_id) setCustomerDoc(customer.document_id);
+        }
+    }, [customer]);
+
+    useEffect(() => {
+        if (addresses && addresses.length > 0 && !address) {
+            const defaultAddr = addresses.find((a) => a.is_default) || addresses[0];
+            if (defaultAddr) {
+                setAddress(defaultAddr.address);
+                setCity(defaultAddr.city);
+                if (defaultAddr.state) setStateRegion(defaultAddr.state);
+                if (defaultAddr.zip_code) setZipCode(defaultAddr.zip_code);
+            }
+        }
+    }, [addresses]);
     // Shipping & Payment selection
     const [selectedShippingMethodId, setSelectedShippingMethodId] = useState<string>(
         shipping_methods.length > 0 ? shipping_methods[0].id : 'standard'
@@ -291,6 +315,41 @@ function CheckoutPageContent({
                                         </Badge>
                                     )}
                                 </div>
+
+                                {/* OwO Pass Integration Banner */}
+                                {customer ? (
+                                    <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 p-3 rounded-xl flex items-center justify-between text-xs font-semibold text-blue-800 dark:text-blue-300">
+                                        <div className="flex items-center gap-2">
+                                            <HiCheckCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                            <span>Conectado con OwO Pass: <strong>{customer.name}</strong> ({customer.email})</span>
+                                        </div>
+                                    </div>
+                                ) : !auth_user && (
+                                    <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 border border-blue-200 dark:border-blue-800/60 p-3 rounded-xl flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs shadow-sm">
+                                                <HiShieldCheck className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs font-bold text-gray-900 dark:text-white">
+                                                    ¿Tienes una cuenta en OwOMarket?
+                                                </p>
+                                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                                    Inicia sesión con OwO Pass para autocompletar tus datos y direcciones.
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="xs"
+                                            color="blue"
+                                            type="button"
+                                            onClick={() => openAuthModal('login')}
+                                            className="font-bold shrink-0"
+                                        >
+                                            ⚡ Iniciar con OwO Pass
+                                        </Button>
+                                    </div>
+                                )}
 
                                 <form onSubmit={handleProceedToStep2} className="space-y-4 pt-2">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

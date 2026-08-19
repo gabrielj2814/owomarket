@@ -18,3 +18,4 @@ use Src\User\Infrastructure\Eloquent\Models\User;
 Route::prefix('auth')->group(callback: base_path('src/Authentication/Infrastructure/Http/Routes/api.php'));
 Route::prefix('user')->group(callback: base_path('src/User/Infrastructure/Http/Routes/api.php'));
 Route::prefix('tenant')->group(callback: base_path('src/Tenant/Infrastructure/Http/Routes/api.php'));
+Route::prefix('central/customer')->group(callback: base_path('src/CentralCustomer/Infrastructure/Http/Routes/apiCentral.php'));

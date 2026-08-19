@@ -22,6 +22,7 @@ final class Customer extends Model
 
     protected $fillable = [
         'id',
+        'central_uuid',
         'name',
         'email',
         'phone',
