@@ -3,11 +3,13 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Src\Shared\Domain\Contracts\PasswordGenerator;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Infrastructure\Security\LaravelPasswordHasher;
 use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
+use Src\Shared\Infrastructure\Security\RandomPasswordGenerator;
 use Src\Shared\Infrastructure\Security\StrictPasswordValidator;
 
 /**
@@ -23,6 +25,7 @@ class SharedServiceProvider extends ServiceProvider
         $this->app->bind(UuidGenerator::class, LaravelUuidGenerator::class);
         $this->app->bind(PasswordHasher::class, LaravelPasswordHasher::class);
         $this->app->bind(PasswordValidator::class, StrictPasswordValidator::class);
+        $this->app->bind(PasswordGenerator::class, RandomPasswordGenerator::class);
     }
 
     public function boot(): void
