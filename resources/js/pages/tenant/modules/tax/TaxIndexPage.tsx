@@ -91,7 +91,7 @@ const TaxIndexPage: FC<TaxIndexPageProps> = ({ user_id, title, host, user_name }
         setActionLoading(true);
         try {
             const res = await TaxServices.delete(taxToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setDeleteModalOpen(false);
                 setTaxToDelete(null);
                 fetchTaxRates(currentPage);

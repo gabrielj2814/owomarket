@@ -231,7 +231,7 @@ const BillingIndexPage: FC<BillingIndexPageProps> = ({ user_id, title }) => {
         setCancelling(true);
         try {
             const res = await BillingServices.cancelInvoice(invoiceToCancel.id, cancelReason);
-            if (res?.data?.code === 200 || res?.data?.status === "success") {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 showToast(`Factura ${invoiceToCancel.invoice_number} anulada`);
                 setCancelModalOpen(false);
                 setInvoiceToCancel(null);
@@ -251,8 +251,8 @@ const BillingIndexPage: FC<BillingIndexPageProps> = ({ user_id, title }) => {
         setResending(true);
         try {
             const res = await BillingServices.resendEmail(invoiceToResend.id, resendEmail || undefined);
-            if (res?.data?.code === 200 || res?.data?.status === "success") {
-                showToast(res.data.message || "Factura enviada por correo");
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
+                showToast((res as any)?.message || res?.data?.message || "Factura enviada por correo");
                 setResendModalOpen(false);
                 setInvoiceToResend(null);
             }

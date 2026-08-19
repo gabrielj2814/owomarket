@@ -97,10 +97,10 @@ const BillingSettingsPage: FC<BillingSettingsPageProps> = ({ user_id, title }) =
 
         try {
             const res = await BillingServices.updateBillingProfile(form);
-            if (res?.data?.code === 200 || res?.data?.status === "success") {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 showToast("Datos fiscales actualizados exitosamente");
-            } else if (res?.data?.errors) {
-                setErrors(res.data.errors);
+            } else if ((res as any)?.errors || (res as any)?.data?.errors) {
+                setErrors((res as any)?.errors || (res as any)?.data?.errors);
             }
         } catch (error: any) {
             showToast("Error al guardar los datos fiscales");

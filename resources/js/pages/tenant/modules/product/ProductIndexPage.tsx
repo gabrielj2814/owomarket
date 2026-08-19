@@ -153,7 +153,7 @@ const ProductIndexPage: FC<ProductIndexPageProps> = ({ user_id, title, host, use
     const handleToggleVisibility = async (product: Product) => {
         try {
             const res = await ProductServices.toggleVisibility(product.id, !product.is_visible);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setProducts((prev) =>
                     prev.map((p) => (p.id === product.id ? { ...p, is_visible: !p.is_visible } : p))
                 );
@@ -173,7 +173,7 @@ const ProductIndexPage: FC<ProductIndexPageProps> = ({ user_id, title, host, use
         setActionLoading(true);
         try {
             const res = await ProductServices.delete(productToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setDeleteModalOpen(false);
                 setProductToDelete(null);
                 fetchProducts(currentPage);
@@ -197,7 +197,7 @@ const ProductIndexPage: FC<ProductIndexPageProps> = ({ user_id, title, host, use
         setActionLoading(true);
         try {
             const res = await ProductServices.updateStock(productToStock.id, newStockQty);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setStockModalOpen(false);
                 setProductToStock(null);
                 setProducts((prev) =>

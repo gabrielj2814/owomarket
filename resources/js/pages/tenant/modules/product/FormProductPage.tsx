@@ -269,10 +269,10 @@ const FormProductPage: FC<FormProductPageProps> = ({
                 res = await ProductServices.create(payload);
             }
 
-            if (res?.data?.code === 200 || res?.data?.code === 201) {
+            if ((res as any)?.code === 200 || (res as any)?.code === 201 || (res as any)?.status === "success" || res?.data?.code === 200 || res?.data?.code === 201) {
                 window.location.href = `/product/backoffice/${user_id}/module`;
-            } else if (res?.data?.errors) {
-                setErrors(res.data.errors);
+            } else if ((res as any)?.errors || (res as any)?.data?.errors) {
+                setErrors((res as any)?.errors || (res as any)?.data?.errors);
             }
         } catch (err) {
             console.error("Error guardando producto", err);

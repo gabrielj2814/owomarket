@@ -177,7 +177,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
         setActionLoading(true);
         try {
             const res = await BrandServices.delete(brandToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setDeleteModalOpen(false);
                 setBrandToDelete(null);
                 fetchBrands(currentPage);

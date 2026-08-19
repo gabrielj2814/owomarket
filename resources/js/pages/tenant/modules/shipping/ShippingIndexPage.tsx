@@ -89,7 +89,7 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
         setActionLoading(true);
         try {
             const res = await ShippingServices.eliminarZona(zoneToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setDeleteModalOpen(false);
                 setZoneToDelete(null);
                 fetchZones(currentPage);

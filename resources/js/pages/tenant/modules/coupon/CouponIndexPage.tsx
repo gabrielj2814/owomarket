@@ -149,7 +149,7 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
         setActionLoading(true);
         try {
             const res = await CouponServices.delete(couponToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
                 setDeleteModalOpen(false);
                 setCouponToDelete(null);
                 fetchCoupons(currentPage);

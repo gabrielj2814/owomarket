@@ -88,8 +88,8 @@ const ShowInvoiceDetailPage: FC<ShowInvoiceDetailPageProps> = ({ user_id, invoic
         setResending(true);
         try {
             const res = await BillingServices.resendEmail(invoice.id);
-            if (res?.data?.code === 200 || res?.data?.status === "success") {
-                showToast(res.data.message || "Correo enviado");
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
+                showToast((res as any)?.message || res?.data?.message || "Correo enviado");
             }
         } catch (error) {
             showToast("Error al enviar correo");
