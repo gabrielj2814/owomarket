@@ -20,3 +20,4 @@ Route::prefix('user')->group(callback: base_path('src/User/Infrastructure/Http/R
 Route::prefix('tenant')->group(callback: base_path('src/Tenant/Infrastructure/Http/Routes/api.php'));
 Route::prefix('central/customer')->group(callback: base_path('src/CentralCustomer/Infrastructure/Http/Routes/apiCentral.php'));
 Route::prefix('central/monetization')->group(callback: base_path('src/Monetization/Infrastructure/Http/Routes/apiCentral.php'));
+Route::prefix('central/marketplace')->group(callback: base_path('src/CentralMarketplace/Infrastructure/Http/Routes/apiCentral.php'));
