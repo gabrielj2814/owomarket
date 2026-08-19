@@ -138,7 +138,7 @@ class TenantRepository implements TenantRepositoryInterface
 
         $id = Uuid::make($consulta->id);
         $name = TenantName::make($consulta->name);
-        $slug = Slug::make($consulta->slug, env('APP_CENTRAL_DOMAIN'));
+        $slug = Slug::make($consulta->slug, config('app.central_domain'));
         $status = TenantStatus::make($consulta->status);
         $timezone = Timezone::make($consulta->timezone);
         $currency = Currency::make($consulta->currency);
@@ -306,7 +306,7 @@ class TenantRepository implements TenantRepositoryInterface
 
         $id = Uuid::make($consulta->id);
         $name = TenantName::make($consulta->name);
-        $slug = Slug::make($consulta->slug, env('APP_CENTRAL_DOMAIN'));
+        $slug = Slug::make($consulta->slug, config('app.central_domain'));
         $status = TenantStatus::make($consulta->status);
         $timezone = Timezone::make($consulta->timezone);
         $currency = Currency::make($consulta->currency);

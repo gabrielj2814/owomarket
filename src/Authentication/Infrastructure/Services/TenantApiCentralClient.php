@@ -16,7 +16,7 @@ class TenantApiCentralClient extends BaseApiClient implements TenantServices
         try {
             $endpoint = '/api/tenant/interna/consult/login-is-active/'.$slug;
             $data = $this->get($endpoint, [], $domain);
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment('local')) {
                 Log::info(' Ok ');
                 Log::info(__METHOD__.' Endpoint => '.$domain.$endpoint);
                 Log::info('slug '.json_encode($slug));
@@ -26,7 +26,7 @@ class TenantApiCentralClient extends BaseApiClient implements TenantServices
 
             return $data;
         } catch (RequestException $error) {
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment('local')) {
                 Log::info(' ERROR ');
                 Log::info(__METHOD__.' Endpoint => '.$error->response->effectiveUri());
                 Log::info('slug '.json_encode($slug));

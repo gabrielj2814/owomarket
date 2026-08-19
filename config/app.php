@@ -118,7 +118,9 @@ return [
     |
     */
 
-    "default_passwords_tenant_owner" => env('DEFAULT_USER_TENANT_OWNER_PASSWORD_DEV', 'EndAdmin_12345678'),
+    'default_passwords_tenant_owner' => env('DEFAULT_USER_TENANT_OWNER_PASSWORD_DEV', 'EndAdmin_12345678'),
+    'central_domain' => env('APP_CENTRAL_DOMAIN', 'owomarket.test'),
+    'dev_user_password' => env('USER_PASSWORD_DEV'),
 
     'maintenance' => [
         'driver' => env('APP_MAINTENANCE_DRIVER', 'file'),

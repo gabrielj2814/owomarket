@@ -19,7 +19,7 @@ class UserApiTenantClient extends BaseApiClient implements UserServices
         try {
             $endpoint = '/api-tenant/user/interna/consulta-usuario-por-email';
             $data = $this->post($endpoint, $body, [], $host);
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment('local')) {
                 Log::info(' Ok ');
                 Log::info(__METHOD__.' Endpoint => '.$host.$endpoint);
                 Log::info('body '.json_encode($body));
@@ -29,7 +29,7 @@ class UserApiTenantClient extends BaseApiClient implements UserServices
 
             return $data;
         } catch (RequestException $error) {
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment('local')) {
                 Log::info(' ERROR ');
                 Log::info(__METHOD__.' Endpoint => '.$host.$endpoint);
                 Log::info('body '.json_encode($body));

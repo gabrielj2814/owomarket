@@ -18,7 +18,7 @@ class AuthApiClient extends BaseApiClient implements AuthServices
         try {
 
             $data = $this->get($endpoint);
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment('local')) {
                 Log::info(' Ok ');
                 Log::info(__METHOD__.' Endpoint => '.config('app.url').$endpoint);
                 Log::info('response '.json_encode($data));
@@ -27,7 +27,7 @@ class AuthApiClient extends BaseApiClient implements AuthServices
 
             return $data;
         } catch (RequestException $error) {
-            if (env('APP_ENV') == 'local') {
+            if (app()->environment('local')) {
                 Log::info(' ERROR ');
                 Log::info(__METHOD__.' Endpoint => '.config('app.url').$endpoint);
                 Log::info(' ');
