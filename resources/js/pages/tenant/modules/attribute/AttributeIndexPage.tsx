@@ -1,5 +1,7 @@
 import Dashboard from "@/components/layouts/Dashboard";
 import AttributeServices from "@/Services/AttributeServices";
+import { FormAttribute, FormAttributeValue } from "@/types/FormAttribute";
+import { ErrorsFormAttribute } from "@/types/ErrorsFormAttribute";
 import { ProductAttribute } from "@/types/models/ProductAttribute";
 import { Head } from "@inertiajs/react";
 import {
@@ -8,10 +10,13 @@ import {
     BreadcrumbItem,
     Button,
     Card,
+    Checkbox,
+    Label,
     Modal,
     ModalBody,
     ModalHeader,
     Pagination,
+    Select,
     Spinner,
     Table,
     TableBody,
@@ -25,9 +30,11 @@ import { FC, useEffect, useState } from "react";
 import {
     HiAdjustments,
     HiHome,
+    HiPlus,
     HiRefresh,
     HiSearch,
     HiTrash,
+    HiX,
 } from "react-icons/hi";
 import { LuLayers } from "react-icons/lu";
 
@@ -38,6 +45,16 @@ interface AttributeIndexPageProps {
     user_name: string;
 }
 
+const initialFormAttribute: FormAttribute = {
+    name: "",
+    slug: "",
+    type: "select",
+    is_filterable: true,
+    is_visible: true,
+    position: 0,
+    values: [],
+};
+
 const AttributeIndexPage: FC<AttributeIndexPageProps> = ({ user_id, title, host, user_name }) => {
     const [attributes, setAttributes] = useState<ProductAttribute[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
@@ -47,6 +64,14 @@ const AttributeIndexPage: FC<AttributeIndexPageProps> = ({ user_id, title, host,
     const [totalItems, setTotalItems] = useState<number>(0);
     const [perPage, setPerPage] = useState<number>(10);
 
+    // Create Modal State
+    const [createModalOpen, setCreateModalOpen] = useState<boolean>(false);
+    const [formData, setFormData] = useState<FormAttribute>(initialFormAttribute);
+    const [formErrors, setFormErrors] = useState<ErrorsFormAttribute>({});
+    const [newValueText, setNewValueText] = useState<string>("");
+    const [newValueColor, setNewValueColor] = useState<string>("#3b82f6");
+
+    // Delete Modal State
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [attributeToDelete, setAttributeToDelete] = useState<ProductAttribute | null>(null);
     const [actionLoading, setActionLoading] = useState<boolean>(false);
@@ -87,12 +112,80 @@ const AttributeIndexPage: FC<AttributeIndexPageProps> = ({ user_id, title, host,
         fetchAttributes(1);
     };
 
+    const handleOpenCreate = () => {
+        setFormData(initialFormAttribute);
+        setFormErrors({});
+        setNewValueText("");
+        setNewValueColor("#3b82f6");
+        setCreateModalOpen(true);
+    };
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const name = e.target.value;
+        const slug = name
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+
+        setFormData((prev) => ({
+            ...prev,
+            name,
+            slug: prev.slug === "" || prev.slug === prev.name.toLowerCase() ? slug : prev.slug,
+        }));
+    };
+
+    const handleAddValue = () => {
+        if (!newValueText.trim()) return;
+        const newVal: FormAttributeValue = {
+            value: newValueText.trim(),
+            color: formData.type === "color" ? newValueColor : null,
+            position: (formData.values || []).length + 1,
+        };
+        setFormData((prev) => ({
+            ...prev,
+            values: [...(prev.values || []), newVal],
+        }));
+        setNewValueText("");
+    };
+
+    const handleRemoveValue = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            values: (prev.values || []).filter((_, i) => i !== index),
+        }));
+    };
+
+    const handleCreateSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setActionLoading(true);
+        setFormErrors({});
+
+        try {
+            const res = await AttributeServices.create(formData);
+            if ((res as any)?.code === 201 || (res as any)?.code === 200 || (res as any)?.status === "success" || (res as any)?.data?.code === 200) {
+                setCreateModalOpen(false);
+                setFormData(initialFormAttribute);
+                fetchAttributes(1);
+            } else if ((res as any)?.errors || (res as any)?.data?.errors) {
+                setFormErrors((res as any)?.errors || (res as any)?.data?.errors);
+            }
+        } catch (err: any) {
+            if (err.response?.data?.errors) {
+                setFormErrors(err.response.data.errors);
+            }
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const confirmDelete = async () => {
         if (!attributeToDelete) return;
         setActionLoading(true);
         try {
             const res = await AttributeServices.delete(attributeToDelete.id);
-            if (res?.data?.code === 200) {
+            if ((res as any)?.code === 200 || (res as any)?.status === "success" || (res as any)?.data?.code === 200) {
                 setDeleteModalOpen(false);
                 setAttributeToDelete(null);
                 fetchAttributes(currentPage);
@@ -136,6 +229,10 @@ const AttributeIndexPage: FC<AttributeIndexPageProps> = ({ user_id, title, host,
                         <Button color="gray" onClick={() => fetchAttributes(currentPage)} disabled={loading}>
                             <HiRefresh className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
                             Actualizar
+                        </Button>
+                        <Button color="indigo" onClick={handleOpenCreate}>
+                            <HiPlus className="w-4 h-4 mr-2" />
+                            Crear Atributo
                         </Button>
                     </div>
                 </div>
@@ -200,7 +297,13 @@ const AttributeIndexPage: FC<AttributeIndexPageProps> = ({ user_id, title, host,
                                                 <div className="flex flex-wrap gap-1">
                                                     {a.values && a.values.length > 0 ? (
                                                         a.values.map((val) => (
-                                                            <Badge key={val.id} color="gray" size="xs">
+                                                            <Badge key={val.id || val.value} color="gray" size="xs" className="flex items-center gap-1">
+                                                                {val.color && (
+                                                                    <span
+                                                                        className="w-2.5 h-2.5 rounded-full inline-block mr-1 border border-gray-300"
+                                                                        style={{ backgroundColor: val.color }}
+                                                                    />
+                                                                )}
                                                                 {val.value}
                                                             </Badge>
                                                         ))
@@ -242,6 +345,188 @@ const AttributeIndexPage: FC<AttributeIndexPageProps> = ({ user_id, title, host,
                         </div>
                     )}
                 </Card>
+
+                {/* Create Attribute Modal */}
+                <Modal show={createModalOpen} onClose={() => setCreateModalOpen(false)} size="lg">
+                    <ModalHeader>
+                        <span className="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
+                            <HiAdjustments className="w-5 h-5 text-indigo-600" />
+                            Crear Nuevo Atributo
+                        </span>
+                    </ModalHeader>
+                    <ModalBody>
+                        <form onSubmit={handleCreateSubmit} className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <div className="mb-1 block">
+                                        <Label htmlFor="name">Nombre del Atributo *</Label>
+                                    </div>
+                                    <TextInput
+                                        id="name"
+                                        placeholder="Ej: Talla, Color, Memoria..."
+                                        value={formData.name}
+                                        onChange={handleNameChange}
+                                        required
+                                    />
+                                    {formErrors.name && (
+                                        <span className="text-xs text-red-600 dark:text-red-400 mt-1 block">
+                                            {formErrors.name[0]}
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <div className="mb-1 block">
+                                        <Label htmlFor="slug">Slug *</Label>
+                                    </div>
+                                    <TextInput
+                                        id="slug"
+                                        placeholder="ej: talla, color, memoria"
+                                        value={formData.slug || ""}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value }))}
+                                        required
+                                    />
+                                    {formErrors.slug && (
+                                        <span className="text-xs text-red-600 dark:text-red-400 mt-1 block">
+                                            {formErrors.slug[0]}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <div className="mb-1 block">
+                                        <Label htmlFor="type">Tipo de Visualización</Label>
+                                    </div>
+                                    <Select
+                                        id="type"
+                                        value={formData.type}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, type: e.target.value as any }))}
+                                    >
+                                        <option value="select">Lista Desplegable (Select)</option>
+                                        <option value="color">Muestra de Color (Color Swatch)</option>
+                                        <option value="button">Botones (Pills/Buttons)</option>
+                                        <option value="radio">Radio Buttons</option>
+                                    </Select>
+                                </div>
+
+                                <div>
+                                    <div className="mb-1 block">
+                                        <Label htmlFor="position">Posición / Orden</Label>
+                                    </div>
+                                    <TextInput
+                                        id="position"
+                                        type="number"
+                                        value={formData.position ?? 0}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, position: parseInt(e.target.value, 10) || 0 }))}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex gap-6 py-2">
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="is_filterable"
+                                        checked={formData.is_filterable ?? true}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, is_filterable: e.target.checked }))}
+                                    />
+                                    <Label htmlFor="is_filterable" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Usar en filtros de tienda
+                                    </Label>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <Checkbox
+                                        id="is_visible"
+                                        checked={formData.is_visible ?? true}
+                                        onChange={(e) => setFormData((prev) => ({ ...prev, is_visible: e.target.checked }))}
+                                    />
+                                    <Label htmlFor="is_visible" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                                        Visible en ficha de producto
+                                    </Label>
+                                </div>
+                            </div>
+
+                            {/* Values section */}
+                            <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                <Label className="text-sm font-bold text-gray-800 dark:text-gray-200 block mb-2">
+                                    Valores del Atributo
+                                </Label>
+
+                                <div className="flex gap-2 mb-3">
+                                    <TextInput
+                                        placeholder={formData.type === "color" ? "Ej: Rojo, Azul..." : "Ej: S, M, L, XL, 128GB..."}
+                                        value={newValueText}
+                                        onChange={(e) => setNewValueText(e.target.value)}
+                                        className="flex-1"
+                                        onKeyDown={(e) => {
+                                            if (e.key === "Enter") {
+                                                e.preventDefault();
+                                                handleAddValue();
+                                            }
+                                        }}
+                                    />
+
+                                    {formData.type === "color" && (
+                                        <input
+                                            type="color"
+                                            value={newValueColor}
+                                            onChange={(e) => setNewValueColor(e.target.value)}
+                                            className="h-10 w-12 rounded cursor-pointer border border-gray-300"
+                                            title="Seleccionar color"
+                                        />
+                                    )}
+
+                                    <Button type="button" color="gray" onClick={handleAddValue}>
+                                        <HiPlus className="w-4 h-4 mr-1" />
+                                        Añadir
+                                    </Button>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2 min-h-[40px] p-2 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+                                    {formData.values && formData.values.length > 0 ? (
+                                        formData.values.map((v, idx) => (
+                                            <span
+                                                key={idx}
+                                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-full text-xs font-semibold text-gray-800 dark:text-gray-200 shadow-sm"
+                                            >
+                                                {v.color && (
+                                                    <span
+                                                        className="w-3 h-3 rounded-full inline-block border border-gray-300"
+                                                        style={{ backgroundColor: v.color }}
+                                                    />
+                                                )}
+                                                {v.value}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveValue(idx)}
+                                                    className="text-gray-400 hover:text-red-500 ml-1"
+                                                >
+                                                    <HiX className="w-3.5 h-3.5" />
+                                                </button>
+                                            </span>
+                                        ))
+                                    ) : (
+                                        <span className="text-xs text-gray-400 m-auto">
+                                            Añade los valores iniciales para este atributo (ej: Rojo, Azul, Verde)
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <Button color="gray" onClick={() => setCreateModalOpen(false)}>
+                                    Cancelar
+                                </Button>
+                                <Button type="submit" color="indigo" disabled={actionLoading}>
+                                    {actionLoading ? <Spinner size="sm" className="mr-2" /> : null}
+                                    Guardar Atributo
+                                </Button>
+                            </div>
+                        </form>
+                    </ModalBody>
+                </Modal>
 
                 {/* Delete Modal */}
                 <Modal show={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} size="md" popup>

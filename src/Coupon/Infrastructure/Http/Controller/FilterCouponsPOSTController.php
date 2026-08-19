@@ -23,7 +23,7 @@ final class FilterCouponsPOSTController
             $criteria = new CouponFilterCriteria(
                 search: $request->filled('search') ? (string) $request->input('search') : null,
                 type: $request->filled('type') ? (string) $request->input('type') : null,
-                isActive: $request->has('is_active') && $request->input('is_active') !== ''
+                isActive: $request->has('is_active') && $request->input('is_active') !== '' && $request->input('is_active') !== null
                     ? filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
                     : null,
                 validDate: $request->filled('valid_date') ? (string) $request->input('valid_date') : null,

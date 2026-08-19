@@ -22,7 +22,7 @@ final class FilterShippingZonesPOSTController
         try {
             $criteria = new ShippingZoneFilterCriteria(
                 search: $request->filled('search') ? (string) $request->input('search') : null,
-                isActive: $request->has('is_active') && $request->input('is_active') !== ''
+                isActive: $request->has('is_active') && $request->input('is_active') !== '' && $request->input('is_active') !== null
                     ? filter_var($request->input('is_active'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
                     : null,
                 page: (int) $request->input('page', 1),

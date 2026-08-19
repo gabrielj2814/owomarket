@@ -23,10 +23,10 @@ final class FilterAttributesPOSTController
             $criteria = new AttributeFilterCriteria(
                 search: $request->filled('search') ? (string) $request->input('search') : null,
                 type: $request->filled('type') ? (string) $request->input('type') : null,
-                isFilterable: $request->has('is_filterable') && $request->input('is_filterable') !== ''
+                isFilterable: $request->has('is_filterable') && $request->input('is_filterable') !== '' && $request->input('is_filterable') !== null
                     ? filter_var($request->input('is_filterable'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
                     : null,
-                isVisible: $request->has('is_visible') && $request->input('is_visible') !== ''
+                isVisible: $request->has('is_visible') && $request->input('is_visible') !== '' && $request->input('is_visible') !== null
                     ? filter_var($request->input('is_visible'), FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE)
                     : null,
                 page: (int) $request->input('page', 1),
