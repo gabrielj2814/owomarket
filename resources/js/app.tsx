@@ -3,6 +3,7 @@ import '../css/app.css';
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import { CustomerAuthProvider } from './contexts/CustomerAuthContext';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -12,9 +13,14 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
 
-        root.render(<App {...props} />);
+        root.render(
+            <CustomerAuthProvider>
+                <App {...props} />
+            </CustomerAuthProvider>
+        );
     },
     progress: {
         color: '#4B5563',
     },
 });
+
