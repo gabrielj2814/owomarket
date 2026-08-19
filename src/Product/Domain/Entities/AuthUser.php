@@ -6,7 +6,7 @@ use Src\Product\Domain\ValueObjects\AvatarUrl;
 use Src\Product\Domain\ValueObjects\UserEmail;
 use Src\Product\Domain\ValueObjects\UserName;
 use Src\Product\Domain\ValueObjects\UserType;
-use Src\Product\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class AuthUser
 {

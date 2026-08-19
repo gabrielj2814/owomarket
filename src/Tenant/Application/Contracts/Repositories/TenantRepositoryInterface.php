@@ -3,9 +3,9 @@
 namespace Src\Tenant\Application\Contracts\Repositories;
 
 use Src\Shared\Collection\Pagination;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Domain\Entities\Tenant;
 use Src\Tenant\Domain\ValueObjects\Slug;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 interface TenantRepositoryInterface
 {

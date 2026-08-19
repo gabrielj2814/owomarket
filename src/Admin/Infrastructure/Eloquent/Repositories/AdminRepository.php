@@ -13,12 +13,12 @@ use Src\Admin\Domain\ValueObjects\UserEmail;
 use Src\Admin\Domain\ValueObjects\UserName;
 use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\UserType;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Models\User as AdminModel;
 use Src\Shared\Collection\Collection;
 use Src\Shared\Collection\Pagination;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class AdminRepository implements AdminRepositoryInterface
 {

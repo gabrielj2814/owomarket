@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Src\Tenant\Application\UseCase;
 
 use InvalidArgumentException;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Domain\Entities\Tenant;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class ConsultTenantByUuidUseCase
 {

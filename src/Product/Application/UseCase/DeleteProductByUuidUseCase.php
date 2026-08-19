@@ -4,7 +4,7 @@ namespace Src\Product\Application\UseCase;
 
 use Exception;
 use Src\Product\Application\Contracts\Repositories\ProductRepositoryInterface;
-use Src\Product\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class DeleteProductByUuidUseCase
 {

@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Src\Product\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
-use Src\Product\Domain\ValueObjects\Uuid;
 use Src\Product\Infrastructure\Http\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ViewProductIndexGETController extends Controller
 {

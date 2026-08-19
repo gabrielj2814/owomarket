@@ -6,8 +6,8 @@ use Src\Authentication\Domain\ValueObjects\AvatarUrl;
 use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserType;
-use Src\Authentication\Domain\ValueObjects\Uuid;
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class AuthUser
 {

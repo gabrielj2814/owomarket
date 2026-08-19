@@ -3,7 +3,7 @@
 namespace Src\Authentication\Application\UseCase;
 
 use Src\Authentication\Application\Contracts\Repositories\LoginWebRepositoryInterface;
-use Src\Authentication\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class LogoutWebUseCase
 {

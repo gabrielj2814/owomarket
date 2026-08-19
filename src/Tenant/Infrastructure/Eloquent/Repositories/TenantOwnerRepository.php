@@ -6,6 +6,7 @@ use Exception;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValueObjects\AvatarUrl;
@@ -15,7 +16,6 @@ use Src\Tenant\Domain\ValueObjects\UserEmail;
 use Src\Tenant\Domain\ValueObjects\UserName;
 use Src\Tenant\Domain\ValueObjects\UserStatus;
 use Src\Tenant\Domain\ValueObjects\UserType;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Eloquent\Models\User as TenantOwnerModel;
 
 class TenantOwnerRepository implements TenantOwnerRepositoryInterface

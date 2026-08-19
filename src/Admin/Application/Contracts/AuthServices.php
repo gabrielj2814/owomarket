@@ -2,7 +2,7 @@
 
 namespace Src\Admin\Application\Contracts;
 
-use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 interface AuthServices
 {

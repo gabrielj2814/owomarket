@@ -5,10 +5,10 @@ namespace Src\Tenant\Application\UseCase;
 use Exception;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValueObjects\Password;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class UpdatePasswordTenantOwnerUseCase
 {

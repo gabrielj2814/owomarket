@@ -5,8 +5,8 @@ namespace Src\Tenant\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 use Src\Tenant\Infrastructure\Http\Services\ApiGateway;
 
 class ViewModuleTenantSuspendedIndexGETController extends Controller

@@ -2,8 +2,8 @@
 
 namespace Src\Tenant\Application\UseCase;
 
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class DeleteTenantOwnerByUuidUseCase
 {

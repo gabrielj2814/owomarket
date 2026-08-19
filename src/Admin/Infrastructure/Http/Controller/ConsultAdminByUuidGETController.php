@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Shared\Helper\ApiResponse;
 
 class ConsultAdminByUuidGETController extends Controller

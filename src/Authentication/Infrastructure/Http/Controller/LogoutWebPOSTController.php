@@ -5,9 +5,9 @@ namespace Src\Authentication\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Src\Authentication\Application\UseCase\LogoutWebUseCase;
-use Src\Authentication\Domain\ValueObjects\Uuid;
 use Src\Authentication\Infrastructure\Eloquent\Repositories\LoginWebRepository;
 use Src\Authentication\Infrastructure\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Shared\Helper\ApiResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 

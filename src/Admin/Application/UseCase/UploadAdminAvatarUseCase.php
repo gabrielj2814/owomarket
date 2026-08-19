@@ -7,7 +7,7 @@ use InvalidArgumentException;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Application\Contracts\Services\AvatarStorageInterface;
 use Src\Admin\Domain\Entities\Admin;
-use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class UploadAdminAvatarUseCase
 {

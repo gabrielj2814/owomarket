@@ -9,8 +9,8 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Src\Product\Application\UseCase\ConsultAuthUserApiByUuidUseCase;
-use Src\Product\Domain\ValueObjects\Uuid;
 use Src\Product\Infrastructure\Http\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 final class ViewProductFormGETController extends Controller
 {

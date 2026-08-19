@@ -5,10 +5,10 @@ namespace Src\Tenant\Domain\Entities;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Domain\ValueObjects\Domain as ValueObjectsDomain;
 use Src\Tenant\Domain\ValueObjects\DomainFallback;
 use Src\Tenant\Domain\ValueObjects\DomainPrimary;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class Domain
 {

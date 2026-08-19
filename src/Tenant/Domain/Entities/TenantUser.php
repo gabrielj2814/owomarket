@@ -5,8 +5,8 @@ namespace Src\Tenant\Domain\Entities;
 use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Domain\ValueObjects\RoleTenantUser;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class TenantUser
 {

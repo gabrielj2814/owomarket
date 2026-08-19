@@ -7,8 +7,8 @@ use Illuminate\Http\JsonResponse;
 use Src\Admin\Application\UseCase\ChangeStatuAdminByUuidUseCase;
 use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
 use Src\Admin\Domain\ValueObjects\UserStatus;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Http\Request\ChangeStatuAdminFormRequest;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Shared\Helper\ApiResponse;
 
 class ChangeStatuAdminByUuidPATCHController extends Controller

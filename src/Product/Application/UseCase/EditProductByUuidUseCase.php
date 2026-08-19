@@ -8,7 +8,7 @@ use Src\Product\Domain\ValueObjects\NameProduct;
 use Src\Product\Domain\ValueObjects\PriceProduct;
 use Src\Product\Domain\ValueObjects\Sku;
 use Src\Product\Domain\ValueObjects\Slug;
-use Src\Product\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class EditProductByUuidUseCase
 {

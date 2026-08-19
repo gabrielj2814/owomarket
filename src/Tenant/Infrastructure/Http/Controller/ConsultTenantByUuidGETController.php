@@ -5,9 +5,9 @@ namespace Src\Tenant\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Application\UseCase\ConsultTenantByUuidUseCase;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class ConsultTenantByUuidGETController extends Controller
 {

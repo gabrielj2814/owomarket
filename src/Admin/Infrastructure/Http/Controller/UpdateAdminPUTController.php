@@ -8,9 +8,9 @@ use Src\Admin\Application\UseCase\ConsultAdminByEmailUseCase;
 use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
 use Src\Admin\Application\UseCase\UpdateAdminUseCase;
 use Src\Admin\Domain\ValueObjects\UserEmail;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Http\Request\UpdateAdminFormRequest;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Shared\Helper\ApiResponse;
 
 class UpdateAdminPUTController extends Controller

@@ -5,7 +5,7 @@ namespace Src\Admin\Application\UseCase;
 use InvalidArgumentException;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Application\Contracts\Services\SecurityPinMailerInterface;
-use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class GenerateSecurityPinUseCase
 {

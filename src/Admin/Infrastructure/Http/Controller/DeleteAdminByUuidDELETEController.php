@@ -7,7 +7,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
 use Src\Admin\Application\UseCase\DeleteAdminByUuidUseCase;
-use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Shared\Helper\ApiResponse;
 
 class DeleteAdminByUuidDELETEController extends Controller

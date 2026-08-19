@@ -6,6 +6,7 @@ use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Domain\ValueObjects\AvatarUrl;
 use Src\Tenant\Domain\ValueObjects\EmailVerifiedAt;
 use Src\Tenant\Domain\ValueObjects\Password;
@@ -15,7 +16,6 @@ use Src\Tenant\Domain\ValueObjects\UserEmail;
 use Src\Tenant\Domain\ValueObjects\UserName;
 use Src\Tenant\Domain\ValueObjects\UserStatus;
 use Src\Tenant\Domain\ValueObjects\UserType;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class TenantOwner
 {

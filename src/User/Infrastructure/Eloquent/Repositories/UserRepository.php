@@ -5,6 +5,7 @@ namespace Src\User\Infrastructure\Eloquent\Repositories;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\Timestamps;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\User\Application\Contracts\Repositories\UserRepositoryInterface;
 use Src\User\Domain\Entities\User as EntitiesUser;
 use Src\User\Domain\ValueObjects\AvatarUrl;
@@ -17,7 +18,6 @@ use Src\User\Domain\ValueObjects\UserEmail;
 use Src\User\Domain\ValueObjects\UserName;
 use Src\User\Domain\ValueObjects\UserStatus;
 use Src\User\Domain\ValueObjects\UserType;
-use Src\User\Domain\ValueObjects\Uuid;
 use Src\User\Infrastructure\Eloquent\Models\User;
 
 class UserRepository implements UserRepositoryInterface

@@ -3,9 +3,9 @@
 namespace Src\Tenant\Application\UseCase;
 
 use Exception;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class DeleteTenantByUuidUseCase
 {

@@ -9,11 +9,11 @@ use Src\Shared\Domain\ValueObjects\Currency;
 use Src\Shared\Domain\ValueObjects\SoftDeleteAt;
 use Src\Shared\Domain\ValueObjects\Timezone;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\ValueObjects\Uuid;
 use Src\Tenant\Domain\ValueObjects\Slug;
 use Src\Tenant\Domain\ValueObjects\TenantName;
 use Src\Tenant\Domain\ValueObjects\TenantRequest;
 use Src\Tenant\Domain\ValueObjects\TenantStatus;
-use Src\Tenant\Domain\ValueObjects\Uuid;
 
 class Tenant
 {

@@ -4,7 +4,7 @@ namespace Src\Authentication\Application\UseCase;
 
 use Src\Authentication\Application\Contracts\Repositories\AuthUserRepositoryInterface;
 use Src\Authentication\Domain\Entities\AuthUser;
-use Src\Authentication\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ConsultarAuthUserByUuidUseCase
 {

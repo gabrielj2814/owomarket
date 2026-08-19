@@ -4,7 +4,7 @@ namespace Src\Authentication\Application\Contracts\Repositories;
 
 use Src\Authentication\Domain\Entities\AuthUser;
 use Src\Authentication\Domain\Entities\User;
-use Src\Authentication\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 interface AuthUserRepositoryInterface
 {

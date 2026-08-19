@@ -8,8 +8,8 @@ use Src\Authentication\Domain\ValueObjects\UserEmail;
 use Src\Authentication\Domain\ValueObjects\UserName;
 use Src\Authentication\Domain\ValueObjects\UserStatus;
 use Src\Authentication\Domain\ValueObjects\UserType;
-use Src\Authentication\Domain\ValueObjects\Uuid;
 use Src\Shared\Domain\Contracts\UuidGenerator;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class User
 {

@@ -7,9 +7,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Src\Admin\Application\UseCase\ConsultAdminByUuidUseCase;
 use Src\Admin\Application\UseCase\ConsultAuthUserApiByUuid;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Eloquent\Repositories\AdminRepository;
 use Src\Admin\Infrastructure\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ViewModuloAdminFormGETController extends Controller
 {

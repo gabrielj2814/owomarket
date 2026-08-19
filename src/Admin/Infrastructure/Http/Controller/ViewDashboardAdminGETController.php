@@ -6,8 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Src\Admin\Application\UseCase\ConsultAuthUserApiByUuid;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Admin\Infrastructure\Services\ApiGateway;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ViewDashboardAdminGETController extends Controller
 {

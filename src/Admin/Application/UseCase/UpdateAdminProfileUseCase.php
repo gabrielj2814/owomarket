@@ -7,7 +7,7 @@ use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\Entities\Admin;
 use Src\Admin\Domain\ValueObjects\PhoneNumber;
 use Src\Admin\Domain\ValueObjects\UserName;
-use Src\Admin\Domain\ValueObjects\Uuid;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class UpdateAdminProfileUseCase
 {

@@ -5,9 +5,9 @@ namespace Src\Admin\Application\UseCase;
 use InvalidArgumentException;
 use Src\Admin\Application\Contracts\Repositories\AdminRepositoryInterface;
 use Src\Admin\Domain\ValueObjects\Password;
-use Src\Admin\Domain\ValueObjects\Uuid;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
+use Src\Shared\Domain\ValueObjects\Uuid;
 
 class ChangePasswordWithPinUseCase
 {
