@@ -4,8 +4,7 @@ namespace Src\Tenant\Application\UseCase;
 
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
-use Src\Shared\Domain\ValueObjects\CreatedAt;
-use Src\Shared\Domain\ValueObjects\UpdatedAt;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantOwner;
 use Src\Tenant\Domain\ValueObjects\AvatarUrl;
@@ -24,7 +23,8 @@ class CreateTenantOwnerUseCase
     public function __construct(
         protected TenantOwnerRepositoryInterface $repository,
         protected PasswordValidator $validator,
-        protected PasswordHasher $hasher
+        protected PasswordHasher $hasher,
+        protected UuidGenerator $generator
     ) {}
 
     /**
@@ -46,13 +46,12 @@ class CreateTenantOwnerUseCase
         $avatar = AvatarUrl::make($urlAvatarDefault);
         $status = UserStatus::active();
 
-        $create_at = CreatedAt::now();
-        $update_at = UpdatedAt::now();
-
         $emailVerifiedAt = null;
         $pin = null;
 
+        // La entidad TenantOwner establece internamente createdAt y updatedAt.
         $tenantOwner = TenantOwner::create(
+            $this->generator,
             $name,
             $email,
             $password,
@@ -61,9 +60,7 @@ class CreateTenantOwnerUseCase
             $type,
             $phone,
             $avatar,
-            $status,
-            $create_at,
-            $update_at
+            $status
         );
 
         $record = $this->repository->createTenantOwner($tenantOwner);

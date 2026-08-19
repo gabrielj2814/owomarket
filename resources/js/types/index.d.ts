@@ -2,10 +2,18 @@ export interface Auth {
     user: User;
 }
 
+export interface Tenant {
+    id: string;
+    name: string;
+    [key: string]: unknown;
+}
+
 export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    tenant: Tenant | null;
+    current_domain: string;
     [key: string]: unknown;
 }
 

@@ -2,7 +2,6 @@
 
 use App\Http\Middleware\CorsHeaders;
 use App\Http\Middleware\HandleInertiaRequests;
-use App\Http\Middleware\HandleInertiaTenancy;
 use App\Http\Middleware\TenantAuthentication;
 use App\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Foundation\Application;
@@ -36,7 +35,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            HandleInertiaTenancy::class,
             CorsHeaders::class
 
         ]);

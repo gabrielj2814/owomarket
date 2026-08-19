@@ -2,6 +2,7 @@
 
 namespace Src\Tenant\Application\UseCase;
 
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
 use Src\Tenant\Domain\Entities\TenantUser;
@@ -14,7 +15,8 @@ class CreateTenantUserUseCase
      * Constructor de la clase.
      */
     public function __construct(
-        protected TenantUserRepositoryInterface $tenant_user_repository
+        protected TenantUserRepositoryInterface $tenant_user_repository,
+        protected UuidGenerator $generator
     ) {}
 
     /**
@@ -28,6 +30,7 @@ class CreateTenantUserUseCase
         $permisos = null;
         $create_at = CreatedAt::now();
         $tenantUser = TenantUser::create(
+            $this->generator,
             $uuid_tenant,
             $uuid_owner,
             $role,

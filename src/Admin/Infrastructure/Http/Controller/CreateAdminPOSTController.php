@@ -46,10 +46,6 @@ class CreateAdminPOSTController extends Controller
             $password = $this->generarContrasena(12);
         }
 
-        // $repository= new AdminRepository();
-
-        // $createAdminUseCase= new CreateAdminUseCase($repository, $validator, $hasher);
-
         $admin = $this->create_admin_use_case->execute($name, $email, $phone, $password);
 
         $dataRespose = [

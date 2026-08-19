@@ -140,7 +140,7 @@ class Slug
         }
 
         // Validar longitud para DNS (RFC 1035)
-        $totalLength = strlen($slug) + 1 + strlen(config('app.domain'));
+        $totalLength = strlen($slug) + 1 + strlen($this->domain);
         if ($totalLength > 253) {
             throw new InvalidArgumentException(
                 'El subdominio completo excede la longitud máxima permitida para DNS', 400

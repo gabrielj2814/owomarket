@@ -13,6 +13,7 @@ use Src\Admin\Domain\ValueObjects\UserStatus;
 use Src\Admin\Domain\ValueObjects\UserType;
 use Src\Shared\Domain\Contracts\PasswordHasher;
 use Src\Shared\Domain\Contracts\PasswordValidator;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\CreatedAt;
 use Src\Shared\Domain\ValueObjects\UpdatedAt;
 
@@ -24,7 +25,8 @@ class CreateAdminUseCase
     public function __construct(
         protected AdminRepositoryInterface $admin_repository,
         protected PasswordValidator $validator,
-        protected PasswordHasher $hasher
+        protected PasswordHasher $hasher,
+        protected UuidGenerator $generator
     ) {}
 
     /**
@@ -49,6 +51,7 @@ class CreateAdminUseCase
         $update_at = UpdatedAt::now();
 
         $admin = Admin::create(
+            $this->generator,
             $name,
             $email,
             $password,

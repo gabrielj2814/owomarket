@@ -3,6 +3,7 @@
 namespace Src\Tenant\Application\UseCase;
 
 use Exception;
+use Src\Shared\Domain\Contracts\UuidGenerator;
 use Src\Shared\Domain\ValueObjects\Currency;
 use Src\Shared\Domain\ValueObjects\Timezone;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
@@ -19,6 +20,7 @@ class CreateTenantUseCase
      */
     public function __construct(
         protected TenantRepositoryInterface $tenantRepository,
+        protected UuidGenerator $generator,
     ) {}
 
     /**
@@ -33,7 +35,15 @@ class CreateTenantUseCase
         $request = TenantRequest::inProgress();
         $timezone = Timezone::make('UTC');
         $currency = Currency::make('USD');
+
+        $tenantConSlugEnUso = $this->tenantRepository->consultTenantBySlug($slug);
+
+        if ($tenantConSlugEnUso !== null) {
+            throw new Exception('Slug already in use', 400);
+        }
+
         $tenant = Tenant::create(
+            $this->generator,
             $name,
             $slug,
             $status,
@@ -41,12 +51,6 @@ class CreateTenantUseCase
             $currency,
             $request,
         );
-
-        $tenantConSlugEnUso = $this->tenantRepository->consultTenantBySlug($slug);
-
-        if ($tenantConSlugEnUso !== null) {
-            throw new Exception('Slug already in use', 400);
-        }
 
         return $this->tenantRepository->save($tenant);
     }

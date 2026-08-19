@@ -45,6 +45,11 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'tenant' => tenancy()->initialized ? [
+                'id' => tenant()->id,
+                'name' => tenant()->name,
+            ] : null,
+            'current_domain' => $request->getHost(),
         ];
     }
 }
