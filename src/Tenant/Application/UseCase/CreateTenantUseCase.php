@@ -30,7 +30,7 @@ class CreateTenantUseCase
     {
 
         $name = TenantName::make($name);
-        $slug = Slug::make($name->value(), $domain);
+        $slug = Slug::fromString($name->value(), $domain);
         $status = TenantStatus::active();
         $request = TenantRequest::inProgress();
         $timezone = Timezone::make('UTC');

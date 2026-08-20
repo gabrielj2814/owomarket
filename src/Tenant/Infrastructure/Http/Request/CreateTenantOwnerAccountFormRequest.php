@@ -29,42 +29,44 @@ class CreateTenantOwnerAccountFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|min:2',
-            'email' => 'required|email|unique:Src\Tenant\Infrastructure\Eloquent\Models\User,email',
-            'phone' => 'required|min:11|max:11',
-            'password' => 'required|min:8|max:72',
-            'store_name' => 'required|min:2|unique:Src\Tenant\Infrastructure\Eloquent\Models\Tenant,name',
-            'tenant_name' => 'required|min:2|max:253|unique:Src\Tenant\Infrastructure\Eloquent\Models\Domain,domain',
+            'name' => 'required|string|min:3|max:100',
+            'email' => 'required|email|max:150|unique:Src\Tenant\Infrastructure\Eloquent\Models\User,email',
+            'phone' => 'required|string|min:8|max:25',
+            'password' => 'required|string|min:8|max:72',
+            'confirmPassword' => 'nullable|same:password',
+            'store_name' => 'required|string|min:3|max:100|unique:Src\Tenant\Infrastructure\Eloquent\Models\Tenant,name',
+            'tenant_name' => 'required|string|min:2|max:253|unique:Src\Tenant\Infrastructure\Eloquent\Models\Domain,domain',
         ];
     }
 
     public function messages(): array
     {
         return [
-            'name.required' => 'El campo name es obligatorio.',
-            'name.min' => 'El campo tiene que tener minimo de 2 caracteres',
+            'name.required' => 'El nombre del titular es obligatorio.',
+            'name.min' => 'El nombre debe tener al menos 3 caracteres.',
+            'name.max' => 'El nombre no debe exceder los 100 caracteres.',
 
-            'email.required' => 'El campo email es obligatorio.',
-            'email.email' => 'El campo email debe ser una dirección de correo electrónico válida.',
-            'email.unique' => 'No se puede usar un correo que ya esta en uso.',
+            'email.required' => 'El correo electrónico es obligatorio.',
+            'email.email' => 'Ingresa un formato de correo electrónico válido.',
+            'email.unique' => 'Este correo electrónico ya se encuentra registrado.',
 
-            'phone.required' => 'El campo phone es obligatorio.',
-            'phone.min' => 'El campo tiene que tener minimo de 11 caracteres',
-            'phone.max' => 'El campo solo permite un  maximo de 11 caracteres',
+            'phone.required' => 'El número telefónico de contacto es obligatorio.',
+            'phone.min' => 'El número telefónico debe tener al menos 8 dígitos.',
+            'phone.max' => 'El número telefónico no debe exceder 25 caracteres.',
 
-            'password.required' => 'El campo password es obligatorio.',
-            'password.min' => 'El campo password debe tener al menos 8 caracteres.',
-            'password.max' => 'El campo password no debe exceder los 72 caracteres',
+            'password.required' => 'La contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.max' => 'La contraseña no debe exceder los 72 caracteres.',
 
-            'store_name.required' => 'El campo store_name es obligatorio.',
-            'store_name.min' => 'El campo store_name debe tener al menos 2 caracteres.',
-            'store_name.unique' => 'El nombre de la tienda ya está en uso.',
+            'confirmPassword.same' => 'Las contraseñas no coinciden.',
 
-            'tenant_name.required' => 'El campo tenant_name es obligatorio.',
-            'tenant_name.min' => 'El campo tenant_name debe tener al menos 2 caracteres.',
-            'tenant_name.max' => 'El campo tenant_name no debe exceder los 253 caracteres',
-            'tenant_name.unique' => 'El nombre del tenant ya está en uso.',
+            'store_name.required' => 'El nombre de la tienda es obligatorio.',
+            'store_name.min' => 'El nombre de la tienda debe tener al menos 3 caracteres.',
+            'store_name.unique' => 'Ya existe una tienda registrada con este nombre.',
 
+            'tenant_name.required' => 'El subdominio de la tienda es obligatorio.',
+            'tenant_name.min' => 'El subdominio debe tener al menos 2 caracteres.',
+            'tenant_name.unique' => 'Este subdominio ya está en uso por otro comercio.',
         ];
     }
 

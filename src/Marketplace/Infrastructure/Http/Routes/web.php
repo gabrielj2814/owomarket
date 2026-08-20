@@ -7,11 +7,14 @@ use Src\Marketplace\Infrastructure\Http\Controller\ViewCartCentralGETController;
 use Src\Marketplace\Infrastructure\Http\Controller\ViewCatalogCentralGETController;
 use Src\Marketplace\Infrastructure\Http\Controller\ViewCheckoutCentralGETController;
 use Src\Marketplace\Infrastructure\Http\Controller\ViewHomePageCentralGETController;
+use Src\Marketplace\Infrastructure\Http\Controller\ViewMerchantLandingGETController;
 use Src\Marketplace\Infrastructure\Http\Controller\ViewOrderConfirmationCentralGETController;
 use Src\Marketplace\Infrastructure\Http\Controller\ViewProductDetailCentralGETController;
 
 Route::get('/', [ViewHomePageCentralGETController::class, 'index'])->name('central.home');
 Route::get('/marketplace', [ViewCatalogCentralGETController::class, 'index'])->name('central.catalog');
+Route::get('/vender', ViewMerchantLandingGETController::class)->name('central.merchant.landing');
+Route::get('/vende-con-nosotros', ViewMerchantLandingGETController::class);
 Route::get('/product/{slug}', [ViewProductDetailCentralGETController::class, 'index'])->name('central.product');
 Route::get('/cart', [ViewCartCentralGETController::class, 'index'])->name('central.cart');
 Route::get('/checkout', [ViewCheckoutCentralGETController::class, 'index'])->name('central.checkout');

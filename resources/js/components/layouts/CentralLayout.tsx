@@ -93,6 +93,14 @@ const CentralNavbar: React.FC = () => {
                             Explorar Catálogo
                         </Link>
 
+                        <Link
+                            href="/vender"
+                            className="hidden sm:flex items-center gap-1 px-3 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/60 transition"
+                        >
+                            <HiOutlineBuildingStorefront className="w-4 h-4" />
+                            <span>Vende con Nosotros</span>
+                        </Link>
+
                         {/* Customer Auth / OwO Pass SSO */}
                         {isAuthenticated && customer ? (
                             <Dropdown
@@ -201,6 +209,7 @@ const CentralFooter: React.FC = () => {
                         <ul className="space-y-2 text-xs">
                             <li><Link href="/" className="hover:text-white transition">Inicio</Link></li>
                             <li><Link href="/marketplace" className="hover:text-white transition">Explorar Catálogo</Link></li>
+                            <li><Link href="/vender" className="text-blue-400 hover:text-blue-300 font-bold transition">Vende con Nosotros (Crear Tienda)</Link></li>
                             <li><Link href="/cart" className="hover:text-white transition">Carrito Multi-Tienda</Link></li>
                             <li><Link href="/checkout" className="hover:text-white transition">Checkout Unificado</Link></li>
                         </ul>
