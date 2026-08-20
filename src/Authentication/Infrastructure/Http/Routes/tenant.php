@@ -8,6 +8,7 @@ use Src\Authentication\Infrastructure\Http\Controller\LogoutWebPOSTController;
 use Src\Authentication\Infrastructure\Http\Controller\PaginaInicialTestGETController;
 
 Route::get('login', [LoginTenantScreenGETController::class, 'index'])->name('tenant.web.auth.login-tenant');
+Route::get('sso-consume', \Src\Tenant\Infrastructure\Http\Controller\ConsumeTenantOwnerSsoTokenGETController::class)->name('tenant.web.auth.sso-consume');
 
 Route::post('/login', [LoginWebTenantPOSTController::class, 'index'])->name('tenant.web.auth.login');
 Route::post('/logout', [LogoutWebPOSTController::class, 'index'])->name('tenant.web.auth.logout')->middleware('auth');

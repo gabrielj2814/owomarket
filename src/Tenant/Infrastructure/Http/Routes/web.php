@@ -38,11 +38,19 @@ Route::get('/create/account', [ViewCreateAccountTenantGETController::class, 'ind
 Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index']);
 
 // Rutas del Tenant Owner Central
+Route::get('/auth/sso-consume', \Src\Tenant\Infrastructure\Http\Controller\ConsumeTenantOwnerSsoTokenGETController::class)->name('central.tenant.sso-consume');
 Route::get('/owner/backoffice/{user_uuid}/dashboard', [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware('auth');
+Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerWalletGETController::class)->name('central.backoffice.web.tenant.owner.wallet')->middleware('auth');
+Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware('auth');
+Route::get('/owner/backoffice/{user_uuid}/billing', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerBillingGETController::class)->name('central.backoffice.web.tenant.owner.billing')->middleware('auth');
 
-// Route::put('/owner/update/personal-data/{id}',                     [TenantOwnerUpdatePersonalDataPUTController::class, 'index']);
-// Route::put('/owner/update/password/{id}',                          [TenantOwnerUpdatePasswordPUTController::class, 'index']);
-// Route::delete('/owner/cancel-account/{id}',                        [CancelAccountTenantOwnerDELETEController::class, 'index']);
 Route::post('/owner/filter/tenants', [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
 Route::post('/owner/tenant', [CreateTenantPOSTController::class, 'index'])->middleware('auth');
 Route::delete('/owner/tenant', [DeleteTenantDELETEController::class, 'index'])->middleware('auth');
+
+// APIs del Tenant Owner Central
+Route::post('/owner/api/sso-token', \Src\Tenant\Infrastructure\Http\Controller\GenerateTenantOwnerSsoTokenPOSTController::class);
+Route::get('/owner/api/wallet-summary', \Src\Tenant\Infrastructure\Http\Controller\GetTenantOwnerWalletSummaryGETController::class);
+Route::post('/owner/api/payout-request', \Src\Tenant\Infrastructure\Http\Controller\CreateTenantOwnerPayoutRequestPOSTController::class);
+Route::get('/owner/api/products', \Src\Tenant\Infrastructure\Http\Controller\ListTenantOwnerProductsGETController::class);
+Route::post('/owner/api/products/{id}/toggle-marketplace', \Src\Tenant\Infrastructure\Http\Controller\ToggleTenantOwnerProductPublicationPOSTController::class);

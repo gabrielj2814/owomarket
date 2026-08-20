@@ -23,12 +23,7 @@ class ViewDashboardCentralTenantOwnerIndexGETController extends Controller
      */
     public function index(Request $request)
     {
-
-        $fullUrl = request()->getSchemeAndHttpHost();
-        $user_uuid = $request->user_uuid;
-        $uuid = Uuid::make($user_uuid);
-        $ConsultAuthUserApiByUuid = new ConsultAuthUserApiByUuidUseCase($this->apiGateway->authCentral());
-        $usuario = $ConsultAuthUserApiByUuid->execute($uuid, $fullUrl);
+        $user_uuid = (string) ($request->user_uuid ?: auth()->id());
 
         $type = null;
         $title = null;
@@ -43,12 +38,11 @@ class ViewDashboardCentralTenantOwnerIndexGETController extends Controller
             component: 'tenant/dashboard/TenantOwnerDashboardCentralPage',
             props: [
                 'title' => 'Dashboard Central Tenant Owner - OwOMarket',
-                'user_id' => $usuario->getUserId()->value(),
+                'user_id' => $user_uuid,
                 'type' => $type,
                 'titleToast' => $title,
                 'message' => $message,
             ]
         );
-
     }
 }
