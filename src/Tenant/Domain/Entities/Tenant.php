@@ -178,7 +178,12 @@ class Tenant
 
     public function getSoftdeleteAt(): ?SoftDeleteAt
     {
-        return $this->softdeleteAt;
+        return $this->deletedAt;
+    }
+
+    public function getDeletedAt(): ?SoftDeleteAt
+    {
+        return $this->deletedAt;
     }
 
     public function suspended()

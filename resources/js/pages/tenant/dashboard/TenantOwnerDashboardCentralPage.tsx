@@ -70,14 +70,18 @@ const TenantOwnerDashboardCentralPage: FC<TenantOwnerDashboardCentralPageProps> 
     };
 
     const consultOwnerCompanies = async (page: number = 1) => {
-        const respuestaApi = await TenantServices.consultMyCompanies(user_id, page, 50);
+        try {
+            const respuestaApi = await TenantServices.consultMyCompanies(user_id, page, 50);
 
-        if (respuestaApi.data.code != 200) {
-            return;
+            if (!respuestaApi || !respuestaApi.data || respuestaApi.data.code != 200) {
+                return;
+            }
+
+            const data = (respuestaApi.data.data != null) ? respuestaApi.data.data : [];
+            setTenants(data);
+        } catch (error) {
+            console.error("Error al consultar las tiendas:", error);
         }
-
-        const data = (respuestaApi.data.data != null) ? respuestaApi.data.data : [];
-        setTenants(data);
     };
 
     const createToast = (type: string, title: string, message?: string, icon?: ReactNode) => {
