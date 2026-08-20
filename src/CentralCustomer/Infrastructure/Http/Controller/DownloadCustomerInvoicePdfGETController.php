@@ -18,10 +18,14 @@ final class DownloadCustomerInvoicePdfGETController
 
     public function __invoke(Request $request, string $id): Response|JsonResponse
     {
-        $customerId = (string) $request->input('customer_id', $request->header('X-Customer-Id', ''));
+        $customerId = $request->input('customer_id') 
+            ?: $request->header('X-Customer-Id') 
+            ?: session('central_customer_id');
+
+        $customerIdStr = ! empty($customerId) ? (string) $customerId : null;
 
         try {
-            $pdf = $this->downloadPdfUseCase->execute($customerId, $id);
+            $pdf = $this->downloadPdfUseCase->execute($customerIdStr, $id);
 
             return response($pdf['content'], 200, [
                 'Content-Type' => 'application/pdf',

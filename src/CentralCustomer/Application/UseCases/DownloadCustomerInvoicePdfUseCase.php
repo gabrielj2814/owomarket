@@ -13,15 +13,21 @@ final class DownloadCustomerInvoicePdfUseCase
     /**
      * @return array{filename: string, content: string}
      */
-    public function execute(string $customerId, string $orderId): array
+    public function execute(?string $customerId, string $orderId): array
     {
         $order = CentralOrder::with('items')
-            ->where('id', $orderId)
-            ->where('customer_id', $customerId)
+            ->where(function ($q) use ($orderId) {
+                $q->where('id', $orderId)
+                    ->orWhere('order_number', $orderId);
+            })
             ->first();
 
         if (! $order) {
-            throw new Exception('Factura no encontrada o no pertenece a este usuario.', 404);
+            throw new Exception('Factura no encontrada.', 404);
+        }
+
+        if (! empty($customerId) && ! empty($order->customer_id) && $order->customer_id !== $customerId) {
+            throw new Exception('Esta factura no pertenece al usuario especificado.', 403);
         }
 
         $bcvRate = 775.3356;

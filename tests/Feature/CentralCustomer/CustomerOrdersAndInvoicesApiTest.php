@@ -203,4 +203,14 @@ test('GET /api/central/customer/invoices/{id}/pdf downloads invoice PDF with 200
     $response->assertStatus(200);
     expect($response->headers->get('content-type'))->toBe('application/pdf');
     expect($response->headers->get('content-disposition'))->toContain('attachment; filename="Factura-FAC-2026-888999.pdf"');
+
+    // Also download directly without query params
+    $directResponse = $this->get("/api/central/customer/invoices/{$order->id}/pdf");
+    $directResponse->assertStatus(200);
+    expect($directResponse->headers->get('content-type'))->toBe('application/pdf');
+
+    // Forbidden when wrong customer_id is passed
+    $wrongCustomer = (string) Str::uuid();
+    $forbiddenResponse = $this->get("/api/central/customer/invoices/{$order->id}/pdf?customer_id={$wrongCustomer}");
+    $forbiddenResponse->assertStatus(403);
 });
