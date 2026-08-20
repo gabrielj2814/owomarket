@@ -65,4 +65,37 @@ class CentralOrder extends Model
     {
         return $this->hasMany(CentralOrderItem::class, 'central_order_id', 'id');
     }
+
+    public function commissions(): HasMany
+    {
+        return $this->hasMany(PlatformCommission::class, 'order_id', 'id');
+    }
+
+    public function getTotalUsdAttribute(): float
+    {
+        return (float) $this->total;
+    }
+
+    public function getTotalVesAttribute(): ?float
+    {
+        return isset($this->metadata['total_ves']) ? (float) $this->metadata['total_ves'] : null;
+    }
+
+    public function getPaymentReferenceAttribute(): ?string
+    {
+        return $this->payment_details['reference']
+            ?? $this->payment_details['payment_reference']
+            ?? $this->metadata['payment_reference']
+            ?? null;
+    }
+
+    public function getShippingTrackingNumberAttribute(): ?string
+    {
+        return $this->metadata['tracking_number'] ?? null;
+    }
+
+    public function getTenantIdAttribute(): ?string
+    {
+        return $this->metadata['tenant_id'] ?? $this->items()->first()?->tenant_id ?? null;
+    }
 }

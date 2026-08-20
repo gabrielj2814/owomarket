@@ -6,7 +6,7 @@ import { FC, ReactNode, useEffect, useState } from "react";
 import dateUtils from "@/utils/date";
 import { ToastInterface } from "@/types/ToastInterface";
 import LoaderSpinner from "@/components/LoaderSpinner";
-import { Head } from "@inertiajs/react";
+import { Head, Link } from "@inertiajs/react";
 import HeaderToasts from "@/components/HeaderToasts";
 import Dashboard from "@/components/layouts/Dashboard";
 import { Avatar, Badge, Breadcrumb, BreadcrumbItem, Button, Card, HelperText, TableCell, TableHead, TableHeadCell, TableRow } from "flowbite-react";
@@ -217,23 +217,34 @@ const IndexPage:FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_i
         rows= data.map<ReactNode>( (item) => {
             return (
             <TableRow className="bg-white dark:border-gray-700 dark:bg-gray-800">
-                <TableCell className="" onClick={() => openModalDetails(item.id)}>
-                   {item.name}
+                <TableCell className="font-semibold text-blue-600 dark:text-blue-400">
+                   <Link href={`/backoffice/${user_id}/module/tenant/${item.id}/360`} className="hover:underline">
+                       {item.name}
+                   </Link>
                 </TableCell>
-                <TableCell className="" onClick={() => openModalDetails(item.id)}>
+                <TableCell className="">
                    {item.slug}
                 </TableCell>
-                <TableCell className="" onClick={() => openModalDetails(item.id)}>
+                <TableCell className="">
                    {item.currency.code}
                 </TableCell>
-                <TableCell className="" onClick={() => openModalDetails(item.id)}>
+                <TableCell className="">
                    {item.timezone}
                 </TableCell>
-                <TableCell className="" onClick={() => openModalDetails(item.id)}>
+                <TableCell className="">
                    {dayjs.utc(item.created_at.date).tz(zonaHorariaSistema).format("DD/MM/YYYY")}
                 </TableCell>
-                <TableCell>
-                    <Button color="red" title="delete" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>  <LuArchiveRestore className=" w-5 h-5" />  </Button>
+                <TableCell className="flex items-center gap-2">
+                    <Link
+                        href={`/backoffice/${user_id}/module/tenant/${item.id}/360`}
+                        className="p-2 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-bold text-xs flex items-center gap-1"
+                        title="Ver Expediente 360°"
+                    >
+                        <LuEye className="w-4 h-4" /> 360°
+                    </Link>
+                    <Button color="red" size="xs" title="Suspender" onClick={() => mostrarModalConfirmatedSuspended(item.id)}>
+                        <LuArchiveRestore className="w-4 h-4" />
+                    </Button>
                 </TableCell>
             </TableRow>
             )

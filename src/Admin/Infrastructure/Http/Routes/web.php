@@ -55,3 +55,20 @@ Route::get('/backoffice/{user_uuid}/support', [ViewAdminSupportTicketsPageGETCon
 Route::post('/api/support/tickets/filter', FilterAdminSupportTicketsPOSTController::class)->middleware('auth');
 Route::post('/api/support/tickets/{id}/reply', AdminReplySupportTicketPOSTController::class)->middleware('auth');
 Route::patch('/api/support/tickets/{id}/status', UpdateAdminSupportTicketStatusPATCHController::class)->middleware('auth');
+
+// Rutas del Directorio Central de Clientes
+Route::get('/backoffice/{user_uuid}/customers', \Src\Admin\Infrastructure\Http\Controller\ViewAdminCustomersPageGETController::class)->name('central.backoffice.web.admin.customers')->middleware('auth');
+Route::get('/api/customers', \Src\Admin\Infrastructure\Http\Controller\ListAdminCustomersGETController::class)->middleware('auth');
+Route::get('/api/customers/{id}/detail', \Src\Admin\Infrastructure\Http\Controller\GetAdminCustomerDetailGETController::class)->middleware('auth');
+Route::patch('/api/customers/{id}/toggle-status', \Src\Admin\Infrastructure\Http\Controller\ToggleAdminCustomerStatusPATCHController::class)->middleware('auth');
+
+// Rutas del Monitor Global de Órdenes & Disputas
+Route::get('/backoffice/{user_uuid}/orders', \Src\Admin\Infrastructure\Http\Controller\ViewAdminGlobalOrdersPageGETController::class)->name('central.backoffice.web.admin.orders')->middleware('auth');
+Route::get('/api/orders', \Src\Admin\Infrastructure\Http\Controller\ListAdminGlobalOrdersGETController::class)->middleware('auth');
+Route::get('/api/orders/{id}/detail', \Src\Admin\Infrastructure\Http\Controller\GetAdminGlobalOrderDetailGETController::class)->middleware('auth');
+Route::post('/api/orders/{id}/resolve-dispute', \Src\Admin\Infrastructure\Http\Controller\ResolveAdminOrderDisputePOSTController::class)->middleware('auth');
+
+// Rutas de API Expediente 360° y Gobernanza de Tenants
+Route::get('/api/tenants/{id}/360-data', \Src\Tenant\Infrastructure\Http\Controller\GetAdminTenant360DataGETController::class)->middleware('auth');
+Route::post('/api/tenants/{id}/sso-token', \Src\Tenant\Infrastructure\Http\Controller\AdminGenerateTenantSsoTokenPOSTController::class)->middleware('auth');
+Route::patch('/api/tenants/{id}/governance-status', \Src\Tenant\Infrastructure\Http\Controller\UpdateTenantGovernanceStatusPATCHController::class)->middleware('auth');

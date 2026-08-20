@@ -34,6 +34,12 @@ Route::get('/backoffice/{user_uuid}/module/request', [ViewModuleTenantRequestInd
 Route::patch('/backoffice/{id}/rejected', [RejectedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
 Route::patch('/backoffice/{id}/approved', [ApprovedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
 
+// Expediente 360° del Tenant & Gobernanza Super Admin
+Route::get('/backoffice/{user_uuid}/module/tenant/{id}/360', \Src\Tenant\Infrastructure\Http\Controller\ViewAdminTenantDetail360PageGETController::class)->name('central.backoffice.web.admin.module.tenant.360')->middleware('auth');
+Route::get('/admin/api/tenants/{id}/360-data', \Src\Tenant\Infrastructure\Http\Controller\GetAdminTenant360DataGETController::class)->middleware('auth');
+Route::post('/admin/api/tenants/{id}/sso-token', \Src\Tenant\Infrastructure\Http\Controller\AdminGenerateTenantSsoTokenPOSTController::class)->middleware('auth');
+Route::patch('/admin/api/tenants/{id}/governance-status', \Src\Tenant\Infrastructure\Http\Controller\UpdateTenantGovernanceStatusPATCHController::class)->middleware('auth');
+
 Route::get('/create/account', [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
 Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index']);
 

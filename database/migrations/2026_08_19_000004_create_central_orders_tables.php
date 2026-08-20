@@ -29,8 +29,8 @@ return new class extends Migration
             $table->decimal('discount_amount', 10, 2)->default(0.00);
             $table->decimal('total', 10, 2);
             $table->string('currency')->default('USD');
-            $table->enum('status', ['pending', 'paid', 'processing', 'completed', 'cancelled'])->default('pending');
-            $table->enum('payment_status', ['pending', 'paid', 'failed'])->default('pending');
+            $table->string('status', 30)->default('pending');
+            $table->string('payment_status', 30)->default('pending');
             $table->json('metadata')->nullable();
             $table->timestamps();
 

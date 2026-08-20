@@ -119,11 +119,11 @@ const NavBarMovilDashboardComponent = () => {
                                             <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/dashboard`} icon={HiChartPie}>
                                                 Dashboard
                                             </SidebarItem>
-                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser}>
-                                                My Perfil
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/orders`} icon={HiShoppingBag}>
+                                                Monitor Órdenes
                                             </SidebarItem>
-                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers}>
-                                                Admins
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/customers`} icon={HiUsers}>
+                                                Clientes Marketplace
                                             </SidebarItem>
                                             <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/payouts`} icon={HiCreditCard}>
                                                 Retiros & Finanzas
@@ -134,19 +134,25 @@ const NavBarMovilDashboardComponent = () => {
                                             <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/exchange-rates`} icon={HiCurrencyDollar}>
                                                 Tasa BCV / Monedas
                                             </SidebarItem>
-                                            <SidebarCollapse icon={LuStore} label="Tenants">
+                                            <SidebarCollapse icon={LuStore} label="Tiendas Inquilinas">
                                                 <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>
-                                                    Tenants
+                                                    Directorio Tiendas
                                                 </SidebarItem>
                                                 <SidebarItem icon={LuUserPlus} href={`/tenant/backoffice/${state.authUser.user_id}/module/request`}>
-                                                    Request
+                                                    Solicitudes
                                                 </SidebarItem>
                                                 <SidebarItem icon={LuUserRoundSearch} href={`/tenant/backoffice/${state.authUser.user_id}/module/suspended`}>
-                                                    Suspended
+                                                    Suspendidas
                                                 </SidebarItem>
                                             </SidebarCollapse>
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={LuUsers}>
+                                                Staff & Admins
+                                            </SidebarItem>
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser}>
+                                                Mi Perfil
+                                            </SidebarItem>
                                             <SidebarItem icon={HiLogout} onClick={logout}>
-                                                Log Out
+                                                Cerrar Sesión
                                             </SidebarItem>
                                         </SidebarItemGroup>
                                         <SidebarItemGroup>

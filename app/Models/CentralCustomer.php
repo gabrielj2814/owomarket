@@ -58,4 +58,26 @@ class CentralCustomer extends Authenticatable
     {
         return $this->hasMany(CentralCustomerSsoToken::class, 'customer_id', 'id');
     }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(CentralOrder::class, 'customer_id', 'id');
+    }
+
+    public function supportTickets(): HasMany
+    {
+        return $this->hasMany(SupportTicket::class, 'user_id', 'id');
+    }
+
+    public function getNotesAttribute(): ?string
+    {
+        return $this->metadata['notes'] ?? null;
+    }
+
+    public function setNotesAttribute(?string $value): void
+    {
+        $meta = $this->metadata ?? [];
+        $meta['notes'] = $value;
+        $this->metadata = $meta;
+    }
 }
