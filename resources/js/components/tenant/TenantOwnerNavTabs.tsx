@@ -5,12 +5,12 @@ import {
     HiOutlineCreditCard,
     HiOutlineCurrencyDollar,
     HiOutlineCube,
-    HiOutlineHome,
+    HiOutlineChatBubbleLeftRight,
 } from 'react-icons/hi2';
 
 interface TenantOwnerNavTabsProps {
     userId: string;
-    activeTab: 'dashboard' | 'wallet' | 'catalog' | 'billing';
+    activeTab: 'dashboard' | 'wallet' | 'catalog' | 'billing' | 'support';
 }
 
 export const TenantOwnerNavTabs: React.FC<TenantOwnerNavTabsProps> = ({ userId, activeTab }) => {
@@ -38,6 +38,12 @@ export const TenantOwnerNavTabs: React.FC<TenantOwnerNavTabsProps> = ({ userId, 
             label: 'Suscripciones & Facturas B2B',
             href: `/tenant/owner/backoffice/${userId}/billing`,
             icon: HiOutlineCreditCard,
+        },
+        {
+            id: 'support',
+            label: 'Centro de Soporte & Reportes',
+            href: `/tenant/owner/backoffice/${userId}/support`,
+            icon: HiOutlineChatBubbleLeftRight,
         },
     ];
 

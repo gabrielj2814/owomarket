@@ -81,6 +81,12 @@ export const CustomerAccountLayout: React.FC<CustomerAccountLayoutProps> = ({
             active: url.startsWith('/account/addresses'),
         },
         {
+            name: 'Soporte & Reporte de Errores',
+            href: '/account/support',
+            icon: HiOutlineSparkles,
+            active: url.startsWith('/account/support'),
+        },
+        {
             name: 'Mi Perfil & Seguridad',
             href: '/account/profile',
             icon: HiOutlineUserCircle,
