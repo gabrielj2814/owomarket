@@ -42,4 +42,5 @@ Route::middleware([
     Route::prefix('review')->group(callback: base_path('src/Review/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('settings')->group(callback: base_path('src/TenantSettings/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('monetization')->group(callback: base_path('src/Monetization/Infrastructure/Http/Routes/tenant.php'));
+    Route::prefix('support')->group(callback: base_path('src/SupportTicket/Infrastructure/Http/Routes/tenant.php'));
 });

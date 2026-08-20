@@ -4,6 +4,7 @@ import {
     HiAdjustments,
     HiBookmark,
     HiChartPie,
+    HiChatAlt2,
     HiCog,
     HiCurrencyDollar,
     HiDocumentText,
@@ -163,6 +164,10 @@ const SidebarDashboardComponent = () => {
                                 Envíos
                             </SidebarItem>
                         </SidebarCollapse>
+
+                        <SidebarItem icon={HiChatAlt2} href={`/support/backoffice/${state.authUser.user_id}/module`}>
+                            Soporte & Ayuda
+                        </SidebarItem>
 
                         <SidebarItem href="#" icon={LuLogOut} onClick={logout}>
                             Log Out

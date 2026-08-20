@@ -23,6 +23,7 @@ import {
     HiAdjustments,
     HiBookmark,
     HiChartPie,
+    HiChatAlt2,
     HiCog,
     HiDocumentText,
     HiIdentification,
@@ -221,6 +222,10 @@ const NavBarMovilDashboardComponent = () => {
                                                     Envíos
                                                 </SidebarItem>
                                             </SidebarCollapse>
+
+                                            <SidebarItem icon={HiChatAlt2} href={`/support/backoffice/${state.authUser.user_id}/module`}>
+                                                Soporte & Ayuda
+                                            </SidebarItem>
 
                                             <SidebarItem icon={HiLogout} onClick={logout}>
                                                 Log Out
