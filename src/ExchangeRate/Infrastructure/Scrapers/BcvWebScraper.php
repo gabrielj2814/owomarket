@@ -123,7 +123,7 @@ final class BcvWebScraper implements BcvScraperInterface
 
     private function extractRateDate(string $html): string
     {
-        // Buscar patrón de fecha valor en formato: Fecha Valor: ... o <span class="date-display-single" ...>
+        // Buscar patrón de fecha valor en formato: <span class="date-display-single" ...>
         if (preg_match('/<span[^>]*class=["\'][^"\']*date-display-single[^"\']*["\'][^>]*content=["\']([^"\']+)["\']/si', $html, $dateMatch)) {
             $date = date_create_immutable($dateMatch[1]);
             if ($date !== false) {
@@ -131,7 +131,15 @@ final class BcvWebScraper implements BcvScraperInterface
             }
         }
 
-        if (preg_match('/Fecha Valor:\s*<span[^>]*>([^<]+)<\/span>/si', $html, $dateMatch)) {
+        // Buscar patrón de fecha valor con spans adyacentes o texto directo (ej: <span> Fecha Valor: </span> <span> Miércoles, 19 Agosto 2026</span>)
+        if (preg_match('/Fecha Valor:\s*(?:<\/span>\s*<span[^>]*>)?([^<]+)<\/span>/si', $html, $dateMatch)) {
+            $parsed = $this->parseSpanishDate(trim($dateMatch[1]));
+            if ($parsed !== null) {
+                return $parsed;
+            }
+        }
+
+        if (preg_match('/Fecha Valor:\s*([^\n\r<]+)/si', $html, $dateMatch)) {
             $parsed = $this->parseSpanishDate(trim($dateMatch[1]));
             if ($parsed !== null) {
                 return $parsed;
