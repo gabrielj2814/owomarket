@@ -13,9 +13,10 @@ return new class extends Migration
      */
     public function up(): void
     {
+        $isTesting = app()->runningUnitTests() || app()->environment('testing');
         $connections = array_unique(array_filter([
             config('database.default'),
-            config('database.connections.central') ? 'central' : null,
+            (! $isTesting && config('database.connections.central')) ? 'central' : null,
         ]));
 
         foreach ($connections as $conn) {

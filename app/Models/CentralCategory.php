@@ -13,7 +13,14 @@ class CentralCategory extends Model
 {
     use HasUuids;
 
-    protected $connection = 'central';
+    public function getConnectionName()
+    {
+        if (app()->runningUnitTests() || app()->environment('testing')) {
+            return config('database.default');
+        }
+
+        return config('tenancy.database.central_connection') ?: 'central';
+    }
 
     protected $table = 'tenant_categories';
 

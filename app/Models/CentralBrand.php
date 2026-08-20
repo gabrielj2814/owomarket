@@ -11,7 +11,14 @@ class CentralBrand extends Model
 {
     use HasUuids;
 
-    protected $connection = 'central';
+    public function getConnectionName()
+    {
+        if (app()->runningUnitTests() || app()->environment('testing')) {
+            return config('database.default');
+        }
+
+        return config('tenancy.database.central_connection') ?: 'central';
+    }
 
     protected $table = 'central_brands';
 

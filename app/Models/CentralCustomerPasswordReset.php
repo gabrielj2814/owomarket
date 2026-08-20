@@ -14,7 +14,11 @@ class CentralCustomerPasswordReset extends Model
 
     public function getConnectionName()
     {
-        return app()->environment('testing') ? config('database.default') : 'central';
+        if (app()->runningUnitTests() || app()->environment('testing')) {
+            return config('database.default');
+        }
+
+        return config('tenancy.database.central_connection') ?: 'central';
     }
 
     protected $table = 'central_customer_password_resets';

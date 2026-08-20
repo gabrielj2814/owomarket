@@ -18,6 +18,7 @@ class Category extends Model
     protected $guarded = [];
 
     protected $casts = [
+        'central_uuid' => 'string',
         'position' => 'integer',
         'is_active' => 'boolean',
     ];

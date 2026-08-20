@@ -25,6 +25,8 @@ import {
     HiChartPie,
     HiChatAlt2,
     HiCog,
+    HiCreditCard,
+    HiCurrencyDollar,
     HiDocumentText,
     HiIdentification,
     HiLogout,
@@ -122,6 +124,15 @@ const NavBarMovilDashboardComponent = () => {
                                             </SidebarItem>
                                             <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={HiUsers}>
                                                 Admins
+                                            </SidebarItem>
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/payouts`} icon={HiCreditCard}>
+                                                Retiros & Finanzas
+                                            </SidebarItem>
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/support`} icon={HiChatAlt2}>
+                                                Mesa de Soporte
+                                            </SidebarItem>
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/exchange-rates`} icon={HiCurrencyDollar}>
+                                                Tasa BCV / Monedas
                                             </SidebarItem>
                                             <SidebarCollapse icon={LuStore} label="Tenants">
                                                 <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>
