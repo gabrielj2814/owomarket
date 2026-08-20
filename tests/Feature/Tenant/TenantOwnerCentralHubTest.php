@@ -84,7 +84,7 @@ test('Tenant Owner can generate and consume SSO token to login directly into sto
 
     // 2. Consume SSO Token
     $consumeResponse = $this->get("/auth/sso-consume?token={$token}");
-    $consumeResponse->assertStatus(302)->assertRedirect('/dashboard');
+    $consumeResponse->assertStatus(302)->assertRedirect("/tenant/backoffice/{$user->id}/dashboard");
 
     $this->assertAuthenticatedAs($user);
 });

@@ -26,8 +26,8 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::prefix('tenant')->group(callback: base_path('src/SupportTicket/Infrastructure/Http/Routes/web.php'));
 
         Route::get('/login', function (Request $request) {
-            return redirect('/');
-        });
+            return redirect('/auth/login');
+        })->name('login');
     });
 
 }

@@ -21,7 +21,7 @@ final class ConsumeTenantOwnerSsoTokenGETController
         $token = (string) $request->query('token', '');
 
         if (empty($token)) {
-            return redirect('/login')->with('error', 'Token SSO no proporcionado');
+            return redirect('/auth/login')->with('error', 'Token SSO no proporcionado');
         }
 
         try {
@@ -32,7 +32,7 @@ final class ConsumeTenantOwnerSsoTokenGETController
 
             return redirect($result['redirect_to']);
         } catch (Exception $e) {
-            return redirect('/login')->with('error', $e->getMessage());
+            return redirect('/auth/login')->with('error', $e->getMessage());
         }
     }
 }

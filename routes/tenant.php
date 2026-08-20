@@ -25,6 +25,7 @@ Route::middleware([
 ])->group(function () {
 
     require base_path('src/Marketplace/Infrastructure/Http/Routes/tenant.php');
+    Route::get('/login', fn () => redirect('/auth/login'))->name('tenant.login.alias');
 
     Route::prefix('auth')->group(callback: base_path('src/Authentication/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('admin')->group(callback: base_path('src/Admin/Infrastructure/Http/Routes/web.php'));
