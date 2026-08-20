@@ -17,14 +17,19 @@ final class GenerateTenantOwnerSsoTokenUseCase
      */
     public function execute(string $userId, string $tenantId): array
     {
+        $isTesting = app()->runningUnitTests() || app()->environment('testing');
+        $centralConn = $isTesting
+            ? config('database.default')
+            : (config('tenancy.database.central_connection') ?: 'central');
+
         // 1. Verificar que el usuario exista
-        $user = User::find($userId);
+        $user = User::on($centralConn)->find($userId);
         if (! $user) {
             throw new Exception('Usuario no encontrado', 404);
         }
 
         // 2. Verificar que el tenant exista
-        $tenant = Tenant::with('domains')->find($tenantId);
+        $tenant = Tenant::on($centralConn)->with('domains')->find($tenantId);
         if (! $tenant) {
             throw new Exception('Tienda no encontrada', 404);
         }
@@ -37,7 +42,7 @@ final class GenerateTenantOwnerSsoTokenUseCase
         $tokenString = bin2hex(random_bytes(32));
         $expiresAt = now()->addMinutes(15);
 
-        TenantOwnerSsoToken::create([
+        TenantOwnerSsoToken::on($centralConn)->create([
             'id' => (string) Str::uuid(),
             'user_id' => $userId,
             'tenant_id' => $tenantId,
