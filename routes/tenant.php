@@ -28,7 +28,10 @@ Route::middleware([
     Route::get('/login', fn () => redirect('/auth/login'))->name('tenant.login.alias');
 
     Route::prefix('auth')->group(callback: base_path('src/Authentication/Infrastructure/Http/Routes/tenant.php'));
-    Route::prefix('admin')->group(callback: base_path('src/Admin/Infrastructure/Http/Routes/web.php'));
+    // NOTA: el backoffice central de SuperAdmin (src/Admin/.../Routes/web.php) NO se monta aquí.
+    // Se registra únicamente en routes/web.php, dentro del grupo Route::domain(central_domain).
+    // Montarlo en el grupo de tenancy exponía payouts, roles RBAC, impersonación de tiendas y
+    // la pista de auditoría en cada subdominio de tienda, protegidos sólo por 'auth' (sin rol).
     Route::prefix('tenant')->group(callback: base_path('src/Tenant/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('product')->group(callback: base_path('src/Product/Infrastructure/Http/Routes/tenant.php'));
     Route::prefix('category')->group(callback: base_path('src/Category/Infrastructure/Http/Routes/tenant.php'));
