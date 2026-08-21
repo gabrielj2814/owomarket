@@ -85,6 +85,37 @@ final class TenantDemoDataSeeder extends Seeder
             );
         }
 
+        // 1.b Datos de cobro de la tienda (grupo `payment`).
+        //
+        // Fase 0.5 (hallazgo G1) sacó los datos bancarios de demostración que estaban
+        // incrustados en el checkout y los movió a los settings del comerciante, con una
+        // regla estricta: **un método de pago que no esté completamente configurado no se
+        // ofrece**. Como ningún seeder llenaba el grupo `payment`, cada instalación nueva
+        // dejaba todas las tiendas SIN NINGÚN método de pago en el checkout.
+        //
+        // Son datos de mentira, igual que el resto de este seeder, y sólo se cargan en
+        // local y testing por la guarda de la Fase 2.1 (hallazgo F6).
+        $paymentSettings = [
+            'pago_movil_bank_name' => '0102 - Banco de Venezuela',
+            'pago_movil_document_id' => 'J-40123456-7',
+            'pago_movil_phone' => '0414-1234567',
+            'pago_movil_holder_name' => $storeName.' C.A.',
+            'binance_pay_id' => '123456789',
+            'bank_transfer_instructions' => "Banco Mercantil
+Cuenta corriente 0105-0000-00-0000000000
+Titular: {$storeName} C.A.
+RIF: J-40123456-7
+Envía el comprobante por WhatsApp tras realizar la transferencia.",
+            'cash_on_delivery_enabled' => '1',
+        ];
+
+        foreach ($paymentSettings as $key => $val) {
+            TenantSetting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $val, 'group' => 'payment']
+            );
+        }
+
         // 2. Categories
         $categoriesData = [
             ['name' => 'Calzado Urbano', 'slug' => 'calzado-urbano', 'position' => 1, 'image' => 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=100&h=100&fit=crop'],

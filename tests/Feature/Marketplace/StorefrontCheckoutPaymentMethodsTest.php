@@ -138,3 +138,36 @@ test('El pago contra entrega requiere que el comercio lo habilite', function () 
             ->where('payment_methods.0.id', 'cash_on_delivery')
         );
 });
+
+/**
+ * Guarda contra la deriva entre `TenantDemoDataSeeder` y este proveedor.
+ *
+ * Como un método mal configurado sencillamente no se ofrece —sin error ni aviso—, si
+ * alguien renombra una clave en un sitio y no en el otro, el checkout de desarrollo se
+ * queda en blanco y nada lo delata. Las claves de abajo son literalmente las que siembra
+ * el seeder de demostración.
+ */
+test('Las claves que siembra el seeder de demostración habilitan los cuatro métodos', function () {
+    $seededByDemoSeeder = [
+        'pago_movil_bank_name' => '0102 - Banco de Venezuela',
+        'pago_movil_document_id' => 'J-40123456-7',
+        'pago_movil_phone' => '0414-1234567',
+        'pago_movil_holder_name' => 'Tienda Demo C.A.',
+        'binance_pay_id' => '123456789',
+        'bank_transfer_instructions' => 'Banco Mercantil, cuenta 0105-0000-00-0000000000.',
+        'cash_on_delivery_enabled' => '1',
+    ];
+
+    foreach ($seededByDemoSeeder as $key => $value) {
+        seedPaymentSetting($key, $value);
+    }
+
+    $this->get("http://{$this->domain}/checkout")
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('payment_methods', 4)
+            ->where('payment_methods.0.id', 'pago_movil')
+            ->where('payment_methods.1.id', 'binance_pay')
+            ->where('payment_methods.2.id', 'bank_transfer')
+            ->where('payment_methods.3.id', 'cash_on_delivery')
+        );
+});
