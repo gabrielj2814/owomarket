@@ -10,12 +10,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use Src\Coupon\Infrastructure\Eloquent\Models\Coupon;
+use Src\Coupon\Application\UseCase\ValidateCouponUseCase;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
-use Src\Order\Application\DTOs\CreateOrderData;
-use Src\Order\Application\DTOs\OrderItemInputData;
+use Src\Marketplace\Application\Service\CouponRedeemer;
 use Src\Marketplace\Application\Service\StockReserver;
 use Src\Marketplace\Application\Service\StorefrontItemPriceResolver;
+use Src\Order\Application\DTOs\CreateOrderData;
+use Src\Order\Application\DTOs\OrderItemInputData;
 use Src\Order\Application\UseCases\CreateOrderUseCase;
 use Src\Shared\Helper\ApiResponse;
 
@@ -24,7 +25,9 @@ final class CreateStorefrontOrderPOSTController extends Controller
     public function __construct(
         private readonly CreateOrderUseCase $createOrderUseCase,
         private readonly StorefrontItemPriceResolver $priceResolver,
-        private readonly StockReserver $stockReserver
+        private readonly StockReserver $stockReserver,
+        private readonly ValidateCouponUseCase $validateCoupon,
+        private readonly CouponRedeemer $couponRedeemer
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -67,141 +70,157 @@ final class CreateStorefrontOrderPOSTController extends Controller
             // que garantiza que, si el pedido no llega a crearse, el stock no
             // quede descontado ni el cupón consumido.
             [$orderId, $orderNum, $orderTotal, $paymentMethod] = DB::transaction(function () use ($request) {
-            // 2. Customer resolution (find or create in tenant DB)
-            $customerEmail = trim((string) $request->input('customer.email'));
-            $customerName = trim((string) $request->input('customer.name'));
-            $customerPhone = (string) $request->input('customer.phone');
-            $customerDoc = (string) $request->input('customer.document_id');
+                // 2. Customer resolution (find or create in tenant DB)
+                $customerEmail = trim((string) $request->input('customer.email'));
+                $customerName = trim((string) $request->input('customer.name'));
+                $customerPhone = (string) $request->input('customer.phone');
+                $customerDoc = (string) $request->input('customer.document_id');
 
-            $customer = Customer::firstOrCreate(
-                ['email' => $customerEmail],
-                [
-                    'id' => Str::uuid()->toString(),
-                    'name' => $customerName,
-                    'phone' => $customerPhone,
-                    'is_active' => true,
-                    'accepts_marketing' => true,
-                    'metadata' => ['document_id' => $customerDoc],
-                ]
-            );
-
-            // 3. Process items and calculate subtotal
-            $rawItems = $request->input('items', []);
-            $orderItemsDto = [];
-            $calculatedSubtotal = 0.0;
-
-            foreach ($rawItems as $item) {
-                // Hallazgo B1: precio, nombre y SKU salen de la base de datos
-                // del inquilino. Lo que venga en $item['price'] se descarta.
-                $resolved = $this->priceResolver->resolve($item);
-
-                $pId = $resolved['product_id'];
-                $qty = $resolved['quantity'];
-                $varId = $resolved['variant_id'];
-                $attrs = isset($item['attributes']) && is_array($item['attributes']) ? $item['attributes'] : null;
-
-                $calculatedSubtotal += ($resolved['price'] * $qty);
-
-                $orderItemsDto[] = new OrderItemInputData(
-                    productId: $pId,
-                    productName: $resolved['name'],
-                    sku: $resolved['sku'],
-                    price: $resolved['price'],
-                    quantity: $qty,
-                    productVariantId: $varId,
-                    attributes: $attrs
+                $customer = Customer::firstOrCreate(
+                    ['email' => $customerEmail],
+                    [
+                        'id' => Str::uuid()->toString(),
+                        'name' => $customerName,
+                        'phone' => $customerPhone,
+                        'is_active' => true,
+                        'accepts_marketing' => true,
+                        'metadata' => ['document_id' => $customerDoc],
+                    ]
                 );
 
-                // Hallazgo C1: la reserva bloquea la fila y falla con 409 si no
-                // hay existencias, en vez de crear el pedido igual. Corre
-                // dentro de la transacción abierta más abajo, que es lo que
-                // hace efectivo el lockForUpdate.
-                $this->stockReserver->reserve($pId, $varId, $qty, $resolved['name']);
-            }
+                // 3. Process items and calculate subtotal
+                $rawItems = $request->input('items', []);
+                $orderItemsDto = [];
+                $calculatedSubtotal = 0.0;
 
-            $calculatedSubtotal = round($calculatedSubtotal, 2);
+                foreach ($rawItems as $item) {
+                    // Hallazgo B1: precio, nombre y SKU salen de la base de datos
+                    // del inquilino. Lo que venga en $item['price'] se descarta.
+                    $resolved = $this->priceResolver->resolve($item);
 
-            // 4. Calculate discount if coupon provided
-            $discountAmount = 0.0;
-            $couponCode = trim((string) $request->input('coupon_code', ''));
-            if ($couponCode !== '') {
-                $coupon = Coupon::where('code', $couponCode)->where('is_active', true)->first();
-                if ($coupon) {
-                    if ($coupon->type === 'percentage') {
-                        $discountAmount = round($calculatedSubtotal * ($coupon->value / 100), 2);
-                    } else {
-                        $discountAmount = min($calculatedSubtotal, (float) $coupon->value);
-                    }
-                    $coupon->increment('used_count');
+                    $pId = $resolved['product_id'];
+                    $qty = $resolved['quantity'];
+                    $varId = $resolved['variant_id'];
+                    $attrs = isset($item['attributes']) && is_array($item['attributes']) ? $item['attributes'] : null;
+
+                    $calculatedSubtotal += ($resolved['price'] * $qty);
+
+                    $orderItemsDto[] = new OrderItemInputData(
+                        productId: $pId,
+                        productName: $resolved['name'],
+                        sku: $resolved['sku'],
+                        price: $resolved['price'],
+                        quantity: $qty,
+                        productVariantId: $varId,
+                        attributes: $attrs
+                    );
+
+                    // Hallazgo C1: la reserva bloquea la fila y falla con 409 si no
+                    // hay existencias, en vez de crear el pedido igual. Corre
+                    // dentro de la transacción abierta más abajo, que es lo que
+                    // hace efectivo el lockForUpdate.
+                    $this->stockReserver->reserve($pId, $varId, $qty, $resolved['name']);
                 }
-            }
 
-            $shippingAmount = (float) $request->input('shipping_amount', 0.0);
-            $taxAmount = 0.0; // Included in price or flat
-            $shippingMethod = (string) $request->input('shipping_method', 'standard');
-            $paymentMethod = (string) $request->input('payment_method', 'bank_transfer');
-            $orderNumber = 'ORD-'.strtoupper(Str::random(8));
+                $calculatedSubtotal = round($calculatedSubtotal, 2);
 
-            $paymentDetails = $request->input('payment_details', []);
+                // 4. Cupon (hallazgos B3 y C6)
+                //
+                // Este flujo NO usaba `ValidateCouponUseCase` ni `Coupon::validateUsability()`:
+                // solo comprobaba `is_active`, asi que se ignoraban `valid_from`/`valid_to`,
+                // `usage_limit` y `min_order_amount`. Un cupon con `valid_to` en 2025 y el
+                // limite de usos agotado seguia descontando en agosto de 2026, sin limite.
+                //
+                // Ahora pasa por la misma validacion que el endpoint `/validate` que consulta
+                // el carrito, y sobre el subtotal calculado en el servidor: no el que envia el
+                // navegador (hallazgo B1, Fase 0.4).
+                $discountAmount = 0.0;
+                $couponCode = trim((string) $request->input('coupon_code', ''));
 
-            $metadata = [
-                'shipping_address' => $request->input('shipping_address'),
-                'customer_info' => $request->input('customer'),
-                'payment_details' => $paymentDetails,
-                'source' => 'storefront_checkout',
-            ];
+                if ($couponCode !== '') {
+                    $validation = $this->validateCoupon->execute($couponCode, $calculatedSubtotal);
 
-            // 5. Build DTO and Execute UseCase
-            $dto = new CreateOrderData(
-                customerId: (string) $customer->id,
-                paymentMethod: $paymentMethod,
-                items: $orderItemsDto,
-                taxAmount: $taxAmount,
-                shippingAmount: $shippingAmount,
-                discountAmount: $discountAmount,
-                orderNumber: $orderNumber,
-                currency: 'USD',
-                shippingMethod: $shippingMethod,
-                notes: 'Pedido realizado desde la tienda web pública',
-                customerNote: (string) $request->input('shipping_address.notes', ''),
-                metadata: $metadata
-            );
+                    // Se rechaza el pedido en vez de cobrarlo sin descuento en silencio: el
+                    // comprador pulso «pagar» contando con ese precio y tiene que enterarse.
+                    if (! $validation->isValid) {
+                        throw new Exception($validation->message, 422);
+                    }
 
-            $order = $this->createOrderUseCase->execute($dto);
+                    $discountAmount = $validation->discountAmount;
 
-            $orderId = $order->id()->value();
-            $orderNum = $order->orderNumber()->value();
-            $orderTotal = $order->total()->amount();
+                    // El consumo del uso va despues de validar y dentro de la transaccion, de
+                    // modo que un pedido que falle no deje el cupon gastado (hallazgo C6).
+                    $this->couponRedeemer->redeem($couponCode);
+                }
 
-            // 6. Record Payment in payments table.
-            //    Ya no lleva `catch (\Throwable)` vacío: si el pago no se puede
-            //    registrar, la transacción revierte el pedido entero en vez de
-            //    dejar una venta sin rastro de cobro.
-            $txId = $paymentDetails['transaction_hash']
-                ?? $paymentDetails['reference_number']
-                ?? ('TX-'.strtoupper(Str::random(10)));
+                $shippingAmount = (float) $request->input('shipping_amount', 0.0);
+                $taxAmount = 0.0; // Included in price or flat
+                $shippingMethod = (string) $request->input('shipping_method', 'standard');
+                $paymentMethod = (string) $request->input('payment_method', 'bank_transfer');
+                $orderNumber = 'ORD-'.strtoupper(Str::random(8));
 
-            DB::table('payments')->insert([
-                'id' => (string) Str::uuid(),
-                'order_id' => $orderId,
-                'payment_gateway' => $paymentMethod,
-                'transaction_id' => (string) $txId,
-                'amount' => $orderTotal,
-                'fee' => 0.0,
-                'status' => 'pending',
-                'currency' => 'USD',
-                'gateway_response' => json_encode([
-                    'gateway' => $paymentMethod,
+                $paymentDetails = $request->input('payment_details', []);
+
+                $metadata = [
+                    'shipping_address' => $request->input('shipping_address'),
+                    'customer_info' => $request->input('customer'),
                     'payment_details' => $paymentDetails,
-                    'customer' => $request->input('customer'),
-                    'created_at' => now()->toIso8601String(),
-                ]),
-                'paid_at' => null,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+                    'source' => 'storefront_checkout',
+                    'coupon_code' => $couponCode !== '' ? $couponCode : null,
+                    'discount_amount' => $discountAmount,
+                ];
 
-            return [$orderId, $orderNum, $orderTotal, $paymentMethod];
+                // 5. Build DTO and Execute UseCase
+                $dto = new CreateOrderData(
+                    customerId: (string) $customer->id,
+                    paymentMethod: $paymentMethod,
+                    items: $orderItemsDto,
+                    taxAmount: $taxAmount,
+                    shippingAmount: $shippingAmount,
+                    discountAmount: $discountAmount,
+                    orderNumber: $orderNumber,
+                    currency: 'USD',
+                    shippingMethod: $shippingMethod,
+                    notes: 'Pedido realizado desde la tienda web pública',
+                    customerNote: (string) $request->input('shipping_address.notes', ''),
+                    metadata: $metadata
+                );
+
+                $order = $this->createOrderUseCase->execute($dto);
+
+                $orderId = $order->id()->value();
+                $orderNum = $order->orderNumber()->value();
+                $orderTotal = $order->total()->amount();
+
+                // 6. Record Payment in payments table.
+                //    Ya no lleva `catch (\Throwable)` vacío: si el pago no se puede
+                //    registrar, la transacción revierte el pedido entero en vez de
+                //    dejar una venta sin rastro de cobro.
+                $txId = $paymentDetails['transaction_hash']
+                    ?? $paymentDetails['reference_number']
+                    ?? ('TX-'.strtoupper(Str::random(10)));
+
+                DB::table('payments')->insert([
+                    'id' => (string) Str::uuid(),
+                    'order_id' => $orderId,
+                    'payment_gateway' => $paymentMethod,
+                    'transaction_id' => (string) $txId,
+                    'amount' => $orderTotal,
+                    'fee' => 0.0,
+                    'status' => 'pending',
+                    'currency' => 'USD',
+                    'gateway_response' => json_encode([
+                        'gateway' => $paymentMethod,
+                        'payment_details' => $paymentDetails,
+                        'customer' => $request->input('customer'),
+                        'created_at' => now()->toIso8601String(),
+                    ]),
+                    'paid_at' => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                return [$orderId, $orderNum, $orderTotal, $paymentMethod];
             });
 
             // 7. Calculate and Record Platform Commission in Central DB.

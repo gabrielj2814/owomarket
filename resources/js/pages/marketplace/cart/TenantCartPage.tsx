@@ -70,14 +70,19 @@ function CartPageContent({
                 order_subtotal: subtotal,
             });
 
-            const apiData = res.data;
-            if (apiData && apiData.code === 200 && apiData.data) {
-                const couponData = apiData.data;
+            // Hallazgo G2: aquí se hacía `res.data` y se comprobaba `apiData.code`. Como
+            // `res` YA es el sobre del backend, `res.data` es la carga útil y no tiene
+            // `code`, así que la condición nunca se cumplía y ningún cupón se aplicaba.
+            if (res && res.code === 200 && res.data) {
+                const couponData = res.data;
                 applyCoupon({
                     code: couponData.coupon?.code || code,
                     type: (couponData.coupon?.type as 'percentage' | 'fixed_amount') || 'fixed_amount',
                     value: Number(couponData.coupon?.value || 0),
                     discountAmount: Number(couponData.discount_amount || 0),
+                    // Hallazgo G3: se guarda contra qué subtotal lo validó el backend, para
+                    // que el descuento caduque si el carrito cambia en vez de reescalarse.
+                    validatedSubtotal: subtotal,
                     description: couponData.message || `Cupón ${code} aplicado`,
                 });
                 setCouponMessage({
@@ -88,7 +93,7 @@ function CartPageContent({
             } else {
                 setCouponMessage({
                     type: 'error',
-                    text: apiData?.message || 'El cupón ingresado no es válido o ha expirado.',
+                    text: res?.message || 'El cupón ingresado no es válido o ha expirado.',
                 });
             }
         } catch {

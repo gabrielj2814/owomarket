@@ -1,7 +1,7 @@
 import { ErrorsFormCoupon } from '@/types/ErrorsFormCoupon';
 import { FormCoupon } from '@/types/FormCoupon';
 import { Coupon } from '@/types/models/Coupon';
-import { ApiResponse } from '@/types/ResponseApi';
+import { ApiResponse, Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -37,7 +37,7 @@ const CouponServices = {
         prePage: number = 10,
         page: number = 1,
         sortBy: string = 'created_at',
-        sortDirection: string = 'desc'
+        sortDirection: string = 'desc',
     ): Promise<ApiResponse<Coupon[]>> => {
         try {
             const body = {
@@ -129,9 +129,17 @@ const CouponServices = {
         }
     },
 
-    validate: async (data: ValidateCouponPayload): Promise<ApiResponse<ValidateCouponResponse>> => {
+    /**
+     * Hallazgo G2: devolvia `response.data` —el sobre del backend— pero estaba tipada como
+     * `ApiResponse`, que en este proyecto describe la respuesta COMPLETA de axios. El
+     * componente desenvolvia una capa de mas y el tipo lo tapaba, asi que la condicion
+     * `apiData.code === 200` era falsa siempre y **ningun cupon se podia aplicar**.
+     *
+     * `Data<T>` es el sobre real: `{ status, code, message, data, meta }`.
+     */
+    validate: async (data: ValidateCouponPayload): Promise<Data<ValidateCouponResponse>> => {
         try {
-            const response = await axiosCoupon.post<ApiResponse<ValidateCouponResponse>>('validate', data);
+            const response = await axiosCoupon.post<Data<ValidateCouponResponse>>('validate', data);
             return response.data;
         } catch (error: any) {
             return (

@@ -38,8 +38,6 @@ final class SyncProductToCentralMarketplaceUseCase
             return null;
         }
 
-        $product->loadMissing(['category', 'brand', 'images', 'variants.attributeValues']);
-
         $existing = CentralProduct::where('tenant_id', $tenantId)
             ->where('tenant_product_id', (string) $product->id)
             ->first();
@@ -54,6 +52,11 @@ final class SyncProductToCentralMarketplaceUseCase
 
             return $existing;
         }
+
+        // Las relaciones se cargan sólo cuando de verdad hay que proyectar el producto:
+        // el observador corre en cada guardado, incluido el descuento de stock del
+        // checkout, y un producto no publicado no necesita nada de esto.
+        $product->loadMissing(['category', 'brand', 'images', 'variants.attributeValues']);
 
         $imagesData = $product->images->map(fn ($img) => [
             'id' => (string) $img->id,

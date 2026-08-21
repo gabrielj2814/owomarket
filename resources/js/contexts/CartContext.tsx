@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { AppliedCoupon, CartItem } from '@/types/models/Cart';
+import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 interface CartContextType {
     items: CartItem[];
@@ -30,11 +30,7 @@ interface CartProviderProps {
     domain?: string;
 }
 
-export const CartProvider: React.FC<CartProviderProps> = ({
-    children,
-    currency = 'USD',
-    domain = 'default',
-}) => {
+export const CartProvider: React.FC<CartProviderProps> = ({ children, currency = 'USD', domain = 'default' }) => {
     const storageKey = useMemo(() => `owomarket_cart_${domain.replace(/[^a-zA-Z0-9_-]/g, '_')}`, [domain]);
 
     const [items, setItems] = useState<CartItem[]>(() => {
@@ -128,7 +124,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({
                     return { ...item, quantity: validQty };
                 }
                 return item;
-            })
+            }),
         );
     };
 
@@ -157,12 +153,33 @@ export const CartProvider: React.FC<CartProviderProps> = ({
         return items.reduce((acc, item) => acc + item.price * item.quantity, 0);
     }, [items]);
 
+    /**
+     * Hallazgo G3: aqui se recalculaba el descuento en el cliente y se descartaba el que
+     * habia calculado el backend, que se guardaba en `AppliedCoupon.discountAmount` y no
+     * se leia en ningun sitio. Ademas el `Math.round` redondeaba a unidades enteras: un
+     * 10% sobre $45,50 son $4,55 en el backend y se mostraban $5,00.
+     *
+     * Ahora manda el importe del backend. Y si el carrito cambia despues de aplicar el
+     * cupon, el descuento **no se reescala**: se descarta, porque reescalarlo por nuestra
+     * cuenta se salta los minimos y topes que solo el backend valida.
+     */
     const discountAmount = useMemo(() => {
         if (!coupon) return 0;
-        if (coupon.type === 'percentage') {
-            return Math.round((subtotal * coupon.value) / 100);
+        if (coupon.validatedSubtotal !== undefined && coupon.validatedSubtotal !== subtotal) {
+            return 0;
         }
-        return Math.min(coupon.value, subtotal);
+
+        return Math.min(coupon.discountAmount, subtotal);
+    }, [coupon, subtotal]);
+
+    /**
+     * Un cupon validado contra otro subtotal se retira solo, para que el comprador vea que
+     * tiene que volver a aplicarlo en vez de creer que conserva un descuento que ya no es.
+     */
+    useEffect(() => {
+        if (coupon && coupon.validatedSubtotal !== undefined && coupon.validatedSubtotal !== subtotal) {
+            setCoupon(null);
+        }
     }, [coupon, subtotal]);
 
     const total = useMemo(() => {

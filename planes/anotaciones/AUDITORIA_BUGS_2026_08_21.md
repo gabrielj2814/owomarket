@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 24 de 50 hallazgos cerrados (~48%). Fases 0 y 1 completas, Fase 2 casi cerrada.**
+> **Avance: 28 de 50 hallazgos cerrados (~56%). Fases 0, 1 y 2 completas, Fase 3 empezada.**
 >
 > **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
 > Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
@@ -27,12 +27,12 @@
 > | Bloque | Cerrados | Parciales | Abiertos |
 > | :--- | :--- | :--- | :--- |
 > | **A. Autenticación** | A1 A2 A3 A4 A5 A6 | A9 | A7 A8 |
-> | **B. Datos del cliente** | B1 B2 | B4 | B3 |
-> | **C. Concurrencia** | C1 C2 C3 C4 | — | C5 C6 |
+> | **B. Datos del cliente** | B1 B2 B3 | B4 | — |
+> | **C. Concurrencia** | C1 C2 C3 C4 C6 | — | C5 |
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1 F2 F6 | F4 | F3 F5 |
-> | **G. Frontend** | G1 | G8 G13 | los otros 12 |
+> | **G. Frontend** | G1 G2 G3 | G8 G13 | los otros 10 |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
 > alias») lo cerró la Fase 0.2, y era la **causa raíz de todo el bloque A**: no
@@ -58,12 +58,12 @@
 > | 1.4 | D3, D4 | `PLAN_FASE1_4_TASA_DE_CAMBIO_FIABLE.md` |
 > | 2.1 | F1, F6 | `PLAN_FASE2_1_SESIONES_Y_SEEDERS_DE_PRODUCCION.md` |
 > | 2.2 | E1, E2, E3, E4 | `PLAN_FASE2_2_SINCRONIZACION_DEL_CATALOGO_CENTRAL.md` |
+> | 3.1 | G2, G3, B3, C6 | `PLAN_FASE3_1_FLUJO_DE_CUPONES.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Fase 3 (bloque G)** — el grupo más grande y el único bloque sin empezar. G2
->    destaca: **ningún cupón funciona en la tienda** por un `response.data` desenvuelto
->    de más.
+> 1. **Seguir con la Fase 3 (bloque G)** — quedan G4, G5, G6, G7, G9, G10, G11, G12,
+>    G14 y G15, más rematar G8 y G13.
 > 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
 >    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
 > 3. **`domains.id` casteado a int** (P2/N23): `$domain->id` devuelve siempre `0` y
@@ -367,7 +367,7 @@ Además `isVerified` se pone a `true` con la mera presencia de un `order_id`, va
 
 ### B3. 🔴 El checkout aplica cupones sin validar fechas, límite de uso ni monto mínimo
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.1) — el checkout pasa por `ValidateCouponUseCase` sobre el subtotal del servidor, y un cupón inválido rechaza el pedido con 422
 
 **Archivo:** `src/Marketplace/Infrastructure/Http/Controller/CreateStorefrontOrderPOSTController.php:125-135`
 
@@ -488,7 +488,7 @@ if ($affected === 0) { throw new Exception('Token inválido o ya usado', 410); }
 
 ### C6. 🟠 `increment('used_count')` sin condición permite superar el límite de un cupón
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.1) — `CouponRedeemer` comprueba el techo y consume el uso en la misma sentencia, dentro de la transacción
 
 Ya citado en B3. `increment()` es atómico a nivel de columna pero no verifica el techo, así que N peticiones paralelas pasan todas la comprobación previa.
 
@@ -826,7 +826,7 @@ src={(method as any).qr_code || 'https://api.qrserver.com/...binancepay://pay?id
 
 ### G2. 🔴 Ningún cupón se puede aplicar en la tienda
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.1) — el servicio se tipa con `Data<T>`, el sobre real del backend, y el componente deja de desenvolver una capa de más
 
 **Archivo:** `resources/js/pages/marketplace/cart/TenantCartPage.tsx:72`
 
@@ -844,7 +844,7 @@ if (apiData && apiData.code === 200 && apiData.data) { // .code y .data no exist
 
 ### G3. 🟠 El descuento del cupón se recalcula en el cliente y se descarta el del backend
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.1) — manda el importe del backend, y el cupón se retira si cambia el subtotal en vez de reescalarse
 
 **Archivo:** `resources/js/contexts/CartContext.tsx:160-166`
 
@@ -1037,8 +1037,8 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ## Plan de acción sugerido
 
-> **Estado al 21/08/2026: 11 de 13 puntos completados.**
-> Fases 0 y 1 completas · Fase 2 al 67% · Fase 3 sin empezar.
+> **Estado al 21/08/2026: 12 de 13 puntos completados.**
+> Fases 0, 1 y 2 completas · Fase 3 empezada.
 
 ### Fase 0 — Antes de exponer nada (bloqueante) — ✅ COMPLETA
 1. ✅ **Borrar `routes/tenant.php:31`** (A1). — *Fase 0.1*
@@ -1060,8 +1060,10 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
     (F4 — 🟡 ya creado en la Fase 0.3-D), permisos en tenant (F5 — ⬜),
     seeders condicionados (F6 — ✅ *Fase 2.1*).
 
-### Fase 3 — Frontend — ⬜ Sin empezar (lo único que queda entero)
-13. ⬜ Cupones (G2, G3), revalidación de carrito (G4), `isCentralDomain` desde el servidor (G7), refresco de sesión SSO (G10).
+### Fase 3 — Frontend — 🟡 empezada
+13. 🟡 Cupones (G2, G3 — ✅ *Fase 3.1*, junto con B3 y C6 del backend), revalidación de
+    carrito (G4 — ⬜), `isCentralDomain` desde el servidor (G7 — ⬜), refresco de sesión
+    SSO (G10 — ⬜).
 
 ---
 
@@ -1094,6 +1096,9 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ⬜ Abierto |
+| N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ⬜ Abierto |
+| N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ⬜ Abierto |
+| N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto |
 | N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ⬜ Abierto |
 | N25 | La sincronización con el catálogo central es **síncrona**: escribe en la base central dentro de la misma petición, incluida la transacción del checkout. Si el marketplace no responde, la fila queda desincronizada y sólo queda el log. Lo natural es un job en cola con reintentos | Fase 2.2 | ⬜ Abierto |
 | N26 | El `metadata` de `central_products` se sobrescribía con el del producto de la tienda en cada sincronización, **borrando el historial de moderación y la comisión personalizada**. Pasaba desapercibido porque la sincronización casi nunca corría | Fase 2.2 | ✅ Cerrado |
