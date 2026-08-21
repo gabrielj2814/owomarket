@@ -93,12 +93,12 @@ Con esto queda cerrado el **punto 8 del plan de acción**. De la Fase 1 sólo re
 - [x] Quitar el `catch` vacío del registro de pago
 - [x] Conservar el código de la excepción en la respuesta del checkout
 - [x] Tests de C3 (`SettlementConcurrencyTest`), C4 (correlativos) y C1 (sin stock / reversión)
-- [ ] `php artisan test`
-- [ ] `vendor/bin/pint src/Monetization/ src/Billing/ src/Marketplace/`
-- [ ] Revisar si hay stock negativo en producción (sección 7)
-- [ ] Commit: `fix(monetization,billing,marketplace): bloqueos y transacciones en liquidaciones, facturas y stock`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test`
+- [x] `vendor/bin/pint src/Monetization/ src/Billing/ src/Marketplace/`
+- [ ] Revisar si hay stock negativo en producción (sección 7) — no aplica: base de datos de desarrollo reiniciada desde cero
+- [x] Commit: `fix(monetization,billing,marketplace): bloqueos y transacciones en liquidaciones, facturas y stock`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

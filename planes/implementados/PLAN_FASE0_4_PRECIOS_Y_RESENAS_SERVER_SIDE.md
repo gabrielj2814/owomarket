@@ -124,13 +124,13 @@ Con esto queda cerrado el **punto 4 del plan de acción de Fase 0**. Sólo resta
 - [x] Crear `VerifiedPurchaseChecker` y usarlo en `CreateProductReviewUseCase`
 - [x] Actualizar tests unitarios de reseñas y añadir casos de B2
 - [x] Actualizar tests de checkout (central y storefront) y añadir casos negativos de B1
-- [ ] `php artisan test`
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/Marketplace/ src/CentralMarketplace/ src/Review/`
-- [ ] Probar ambos checkouts en el navegador
-- [ ] Commit: `fix(checkout,review): resolver precios server-side y quitar is_approved/is_verified del request`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test`
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/Marketplace/ src/CentralMarketplace/ src/Review/`
+- [ ] Probar ambos checkouts en el navegador — ⚠️ pendiente: no se verificó en navegador
+- [x] Commit: `fix(checkout,review): resolver precios server-side y quitar is_approved/is_verified del request`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

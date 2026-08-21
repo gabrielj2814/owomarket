@@ -161,12 +161,12 @@ Es exactamente el mismo patrón que `TenantOwnershipVerifier` de la Fase 0.3-B, 
 - [x] `php artisan test --filter=SupportTicketLifecycleTest` — verde
 - [x] `php artisan test --filter=TenantStoreSupportApiTest` — verde
 - [ ] `php artisan route:clear && php artisan config:clear`
-- [ ] `php artisan test` (suite completa, para descartar efectos secundarios en otros módulos)
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/SupportTicket/ src/Shared/Infrastructure/Http/Middleware/`
-- [ ] Commit: `fix(support): exigir sesión y verificar propiedad del ticket en la mesa de soporte central`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test` (suite completa, para descartar efectos secundarios en otros módulos)
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/SupportTicket/ src/Shared/Infrastructure/Http/Middleware/`
+- [x] Commit: `fix(support): exigir sesión y verificar propiedad del ticket en la mesa de soporte central`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

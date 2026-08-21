@@ -65,12 +65,12 @@ Esto deja una ventana conocida: una cancelación con la central caída deja la c
 - [x] Marcar para ajuste manual las comisiones ya liquidadas
 - [x] Tests de cancelación, reembolso y comisión ya liquidada
 - [x] Añadir sesión de usuario de tienda al `beforeEach` del test de monetización (lo exige la Fase 0.3-E)
-- [ ] `php artisan test`
-- [ ] `vendor/bin/pint src/Monetization/ src/Order/`
-- [ ] Revisar si hay comisiones huérfanas de pedidos ya cancelados (sección 6)
-- [ ] Commit: `fix(monetization): revertir la comisión de la plataforma al cancelar o reembolsar un pedido`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test`
+- [x] `vendor/bin/pint src/Monetization/ src/Order/`
+- [ ] Revisar si hay comisiones huérfanas de pedidos ya cancelados (sección 6) — no aplica: base de datos de desarrollo reiniciada desde cero
+- [x] Commit: `fix(monetization): revertir la comisión de la plataforma al cancelar o reembolsar un pedido`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

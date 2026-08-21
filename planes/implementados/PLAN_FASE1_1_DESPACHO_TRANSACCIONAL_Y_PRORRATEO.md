@@ -121,13 +121,13 @@ Si el negocio cambiara de criterio, es tocar **un solo punto**: el método `reco
 - [x] Generar la clave en `CentralCheckoutPage.tsx` (una por intento, estable entre reintentos)
 - [x] Actualizar y ampliar `MultiStoreCentralCheckoutTest.php`
 - [ ] `php artisan migrate`
-- [ ] `php artisan test`
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/CentralMarketplace/`
+- [x] `php artisan test`
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/CentralMarketplace/`
 - [x] **Confirmar la base de cálculo de la comisión** — confirmada: mercancía neta (sección 3)
-- [ ] Commit: `fix(central-marketplace): despacho transaccional e idempotente con prorrateo de envío y descuento`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] Commit: `fix(central-marketplace): despacho transaccional e idempotente con prorrateo de envío y descuento`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

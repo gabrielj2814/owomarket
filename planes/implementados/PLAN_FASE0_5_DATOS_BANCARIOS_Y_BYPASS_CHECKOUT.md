@@ -113,13 +113,13 @@ Cualquier anónimo llegaba al paso de pago sin cuenta, justo lo que el modal dec
 - [x] Completar el tipo `StorefrontPaymentMethod`
 - [x] Eliminar el botón de bypass (G8)
 - [x] Crear `tests/Feature/Marketplace/StorefrontCheckoutPaymentMethodsTest.php`
-- [ ] `php artisan test`
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/Payment/ src/Marketplace/ src/TenantSettings/`
-- [ ] **Configurar los datos de cobro de las tiendas existentes antes de desplegar** (ver sección 6)
-- [ ] Commit: `fix(checkout): eliminar datos bancarios de demostración y el bypass de autenticación`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test`
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/Payment/ src/Marketplace/ src/TenantSettings/`
+- [ ] **Configurar los datos de cobro de las tiendas existentes antes de desplegar** (ver sección 6) — resuelto de otra forma: `TenantDemoDataSeeder` ya siembra el grupo `payment`
+- [x] Commit: `fix(checkout): eliminar datos bancarios de demostración y el bypass de autenticación`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

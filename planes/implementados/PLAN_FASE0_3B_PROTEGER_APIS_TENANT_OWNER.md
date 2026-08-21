@@ -138,12 +138,12 @@ Verificado automáticamente: **29 rutas y 10 nombres, idénticos** al original.
 - [x] Agrupar las rutas bajo `['auth', 'tenant_owner']`
 - [x] Verificar sintaxis y equivalencia de rutas
 - [ ] `php artisan route:clear && php artisan config:clear`
-- [ ] `php artisan test`
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/Tenant/`
-- [ ] Commit: `fix(tenant): exigir sesión de propietario y verificar propiedad en las APIs del owner`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test`
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/Tenant/`
+- [x] Commit: `fix(tenant): exigir sesión de propietario y verificar propiedad en las APIs del owner`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

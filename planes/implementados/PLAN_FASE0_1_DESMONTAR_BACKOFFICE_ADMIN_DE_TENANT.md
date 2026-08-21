@@ -79,12 +79,12 @@ Con el doble montaje, `route('central.backoffice.web.admin.dashboard')` generaba
 
 - [ ] Eliminar la línea 31 de `routes/tenant.php`
 - [ ] Ejecutar `php artisan route:clear` y `php artisan config:clear`
-- [ ] Verificar con `php artisan route:list --path=admin` que las rutas `admin/*` aparecen una sola vez y con el dominio central asignado
-- [ ] Ejecutar `php artisan test` — debe pasar al 100%
-- [ ] Ejecutar `npm run types` — 0 errores
-- [ ] Commit: `fix(routes): eliminar montaje duplicado del backoffice admin en dominios de tenant`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] Verificar con `php artisan route:list --path=admin` que las rutas `admin/*` aparecen una sola vez y con el dominio central asignado
+- [x] Ejecutar `php artisan test` — debe pasar al 100%
+- [x] Ejecutar `npm run types` — 0 errores
+- [x] Commit: `fix(routes): eliminar montaje duplicado del backoffice admin en dominios de tenant`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

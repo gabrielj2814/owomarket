@@ -11,10 +11,11 @@
 >
 > 1. Leer este bloque de estado y la sección **«Plan de acción sugerido»** al final,
 >    que está anotada con el estado real de cada punto.
-> 2. Los planes de cada fase ejecutada están en `planes/por_hacer/PLAN_FASE*.md`.
->    **Siguen en `por_hacer/` a propósito**: contienen un checklist al final con los
->    pasos de cierre pendientes (`pint`, commit, push) y notas de riesgo para el
->    despliegue. Moverlos a `planes/implementados/` es el último paso de cada uno.
+> 2. Los planes de cada fase ejecutada están en `planes/implementados/PLAN_FASE*.md`,
+>    con su checklist de cierre marcado. Los únicos puntos que siguen sin marcar son
+>    las verificaciones en navegador, que no se hicieron; las tareas sobre datos de
+>    producción quedaron anotadas como no aplicables al reiniciarse la base de
+>    desarrollo desde cero.
 > 3. Cada arreglo lleva un comentario en el código citando su hallazgo
 >    (buscar `hallazgo A5`, `hallazgo B1`, etc.) con el escenario que corregía.
 >

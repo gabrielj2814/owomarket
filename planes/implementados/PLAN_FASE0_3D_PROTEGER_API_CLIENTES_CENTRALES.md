@@ -139,13 +139,13 @@ Ninguno de los **casos de uso** (`Application/UseCases/*`) se tocó: ya recibía
 - [x] Frontend: `logoutCentral()` en `CustomerAuthServices.ts` + `CustomerAuthContext.tsx`
 - [x] Actualizar `CentralCustomerAuthTest.php`, `CustomerOrdersAndInvoicesApiTest.php`, `CustomerReturnsAndWishlistApiTest.php`, `CustomerPasswordResetAndProfileTest.php` (sesión vía `actingAs($customer, 'central_customer')`, casos negativos nuevos)
 - [ ] `php artisan route:clear && php artisan config:clear`
-- [ ] `php artisan test` (suite completa — este módulo tiene tests unitarios de casos de uso que no deberían verse afectados, pero conviene confirmarlo)
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/CentralCustomer/`
-- [ ] Verificar manualmente el flujo de login/checkout en el navegador antes de desplegar (ver sección 6)
-- [ ] Commit: `fix(central-customer): exigir sesión real de comprador en toda la API del portal`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test` (suite completa — este módulo tiene tests unitarios de casos de uso que no deberían verse afectados, pero conviene confirmarlo)
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/CentralCustomer/`
+- [ ] Verificar manualmente el flujo de login/checkout en el navegador antes de desplegar (ver sección 6) — ⚠️ pendiente: no se verificó en navegador
+- [x] Commit: `fix(central-customer): exigir sesión real de comprador en toda la API del portal`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

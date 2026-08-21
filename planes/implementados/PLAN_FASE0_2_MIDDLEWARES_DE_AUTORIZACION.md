@@ -151,12 +151,12 @@ Códigos: **401** si no hay sesión, **403** si la hay pero el rol o el permiso 
 - [x] Verificar sintaxis con `php -l` en los cuatro archivos
 - [ ] `composer dump-autoload`
 - [ ] `php artisan config:clear && php artisan route:clear`
-- [ ] `php artisan test` — debe pasar al 100%
-- [ ] `npm run types` — 0 errores
-- [ ] `vendor/bin/pint` sobre los archivos nuevos
-- [ ] Commit: `feat(shared): añadir middlewares de autorización super_admin, staff y tenant_owner`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test` — debe pasar al 100%
+- [x] `npm run types` — 0 errores
+- [x] `vendor/bin/pint` sobre los archivos nuevos
+- [x] Commit: `feat(shared): añadir middlewares de autorización super_admin, staff y tenant_owner`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

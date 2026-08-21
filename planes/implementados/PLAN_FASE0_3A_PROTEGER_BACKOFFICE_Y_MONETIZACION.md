@@ -128,13 +128,13 @@ Cuando se construya la pantalla de monetización del superadmin, tendrá que env
 - [x] Verificar sintaxis con `php -l`
 - [x] Verificar que rutas, nombres y controladores son idénticos a los originales
 - [ ] `php artisan route:clear && php artisan config:clear`
-- [ ] `php artisan route:list --path=admin` — confirmar los 58 endpoints y su columna de middleware
-- [ ] `php artisan test`
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint src/Admin/Infrastructure/Http/Routes/ src/Monetization/Infrastructure/Http/Routes/`
-- [ ] Commit: `fix(admin,monetization): exigir rol de super admin y permisos RBAC en el backoffice central`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan route:list --path=admin` — confirmar los 58 endpoints y su columna de middleware
+- [x] `php artisan test`
+- [x] `npm run types`
+- [x] `vendor/bin/pint src/Admin/Infrastructure/Http/Routes/ src/Monetization/Infrastructure/Http/Routes/`
+- [x] Commit: `fix(admin,monetization): exigir rol de super admin y permisos RBAC en el backoffice central`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

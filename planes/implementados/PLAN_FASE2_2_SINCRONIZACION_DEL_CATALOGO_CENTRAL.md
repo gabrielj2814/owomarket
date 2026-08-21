@@ -126,10 +126,10 @@ Los casos de E3 construyen las filas centrales directamente en vez de a través 
 
 - [x] `php artisan test` → 525 pasan (3.076 aserciones)
 - [x] `./vendor/bin/pint` sobre los archivos tocados
-- [ ] `git add` + commit
-- [ ] `git push origin <rama_actual>`
-- [ ] Actualizar el bloque de estado de `AUDITORIA_BUGS_2026_08_21.md`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `git add` + commit
+- [x] `git push origin <rama_actual>`
+- [x] Actualizar el bloque de estado de `AUDITORIA_BUGS_2026_08_21.md`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 

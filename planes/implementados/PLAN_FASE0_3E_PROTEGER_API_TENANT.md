@@ -115,13 +115,13 @@ Con esto, **el bloque A de la auditoría queda cerrado salvo A7, A8 y A9**, que 
 - [x] Añadir sesión de usuario de tienda al `beforeEach` de los 26 archivos de test de `/api-tenant`
 - [x] Crear `tests/Feature/Tenant/TenantApiAuthorizationTest.php` (401 en backoffice, lista blanca accesible)
 - [ ] `php artisan route:clear && php artisan config:clear`
-- [ ] `php artisan test` (suite completa — esta fase toca el arranque de rutas, no sólo un módulo)
-- [ ] `npm run types`
-- [ ] `vendor/bin/pint routes/ src/Customer/ src/Coupon/ src/Review/`
-- [ ] Probar el storefront y el backoffice en el navegador (ver sección 6)
-- [ ] Commit: `fix(tenant-api): exigir sesión de usuario de tienda en /api-tenant y acotar la lista blanca pública`
-- [ ] `git push origin <rama_actual>`
-- [ ] Mover este documento a `planes/implementados/`
+- [x] `php artisan test` (suite completa — esta fase toca el arranque de rutas, no sólo un módulo)
+- [x] `npm run types`
+- [x] `vendor/bin/pint routes/ src/Customer/ src/Coupon/ src/Review/`
+- [ ] Probar el storefront y el backoffice en el navegador (ver sección 6) — ⚠️ pendiente: no se verificó en navegador
+- [x] Commit: `fix(tenant-api): exigir sesión de usuario de tienda en /api-tenant y acotar la lista blanca pública`
+- [x] `git push origin <rama_actual>`
+- [x] Mover este documento a `planes/implementados/`
 
 ---
 
