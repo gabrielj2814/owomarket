@@ -18,6 +18,7 @@ import {
     HiTruck,
     HiUser,
     HiUsers,
+    HiViewBoards,
     HiViewGrid,
 } from "react-icons/hi";
 import {
@@ -70,6 +71,19 @@ const SidebarDashboardComponent = () => {
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/exchange-rates`} icon={HiCurrencyDollar}>
                             Tasa BCV / Monedas
                         </SidebarItem>
+
+                        <SidebarCollapse icon={LuFolderTree} label="Catálogo Central">
+                            <SidebarItem icon={HiViewGrid} href={`/admin/backoffice/${state.authUser.user_id}/catalog/master-categories`}>
+                                Categorías Maestras
+                            </SidebarItem>
+                            <SidebarItem icon={HiBookmark} href={`/admin/backoffice/${state.authUser.user_id}/catalog/master-brands`}>
+                                Marcas Maestras
+                            </SidebarItem>
+                            <SidebarItem icon={HiShoppingBag} href={`/admin/backoffice/${state.authUser.user_id}/catalog/moderation`}>
+                                Moderación Productos
+                            </SidebarItem>
+                        </SidebarCollapse>
+
                         <SidebarCollapse icon={LuStore} label="Tiendas Inquilinas">
                             <SidebarItem icon={LuUsers} href={`/tenant/backoffice/${state.authUser.user_id}/module`}>
                                 Directorio Tiendas
@@ -81,6 +95,15 @@ const SidebarDashboardComponent = () => {
                                 Suspendidas
                             </SidebarItem>
                         </SidebarCollapse>
+
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/cms/banners`} icon={HiViewBoards}>
+                            Home CMS Banners
+                        </SidebarItem>
+
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/plans`} icon={HiCreditCard}>
+                            Planes Suscripción B2B
+                        </SidebarItem>
+
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={LuUsers}>
                             Staff & Admins
                         </SidebarItem>

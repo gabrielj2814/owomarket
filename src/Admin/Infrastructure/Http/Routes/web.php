@@ -72,3 +72,33 @@ Route::post('/api/orders/{id}/resolve-dispute', \Src\Admin\Infrastructure\Http\C
 Route::get('/api/tenants/{id}/360-data', \Src\Tenant\Infrastructure\Http\Controller\GetAdminTenant360DataGETController::class)->middleware('auth');
 Route::post('/api/tenants/{id}/sso-token', \Src\Tenant\Infrastructure\Http\Controller\AdminGenerateTenantSsoTokenPOSTController::class)->middleware('auth');
 Route::patch('/api/tenants/{id}/governance-status', \Src\Tenant\Infrastructure\Http\Controller\UpdateTenantGovernanceStatusPATCHController::class)->middleware('auth');
+
+// Rutas de Catálogo Maestro: Marcas
+Route::get('/backoffice/{user_uuid}/catalog/master-brands', \Src\Admin\Infrastructure\Http\Controller\ViewAdminMasterBrandsPageGETController::class)->name('central.backoffice.web.admin.master_brands')->middleware('auth');
+Route::get('/api/catalog/master-brands', \Src\Admin\Infrastructure\Http\Controller\ListAdminMasterBrandsGETController::class)->middleware('auth');
+Route::post('/api/catalog/master-brands', \Src\Admin\Infrastructure\Http\Controller\SaveAdminMasterBrandPOSTController::class)->middleware('auth');
+Route::delete('/api/catalog/master-brands/{id}', \Src\Admin\Infrastructure\Http\Controller\DeleteAdminMasterBrandDELETEController::class)->middleware('auth');
+
+// Rutas de Catálogo Maestro: Categorías
+Route::get('/backoffice/{user_uuid}/catalog/master-categories', \Src\Admin\Infrastructure\Http\Controller\ViewAdminMasterCategoriesPageGETController::class)->name('central.backoffice.web.admin.master_categories')->middleware('auth');
+Route::get('/api/catalog/master-categories', \Src\Admin\Infrastructure\Http\Controller\ListAdminMasterCategoriesGETController::class)->middleware('auth');
+Route::post('/api/catalog/master-categories', \Src\Admin\Infrastructure\Http\Controller\SaveAdminMasterCategoryPOSTController::class)->middleware('auth');
+Route::delete('/api/catalog/master-categories/{id}', \Src\Admin\Infrastructure\Http\Controller\DeleteAdminMasterCategoryDELETEController::class)->middleware('auth');
+
+// Rutas de Moderación de Productos Marketplace
+Route::get('/backoffice/{user_uuid}/catalog/moderation', \Src\Admin\Infrastructure\Http\Controller\ViewAdminProductsModerationPageGETController::class)->name('central.backoffice.web.admin.products_moderation')->middleware('auth');
+Route::get('/api/catalog/moderation-products', \Src\Admin\Infrastructure\Http\Controller\ListAdminProductsForModerationGETController::class)->middleware('auth');
+Route::post('/api/catalog/moderation-products/{id}/moderate', \Src\Admin\Infrastructure\Http\Controller\ModerateAdminProductPOSTController::class)->middleware('auth');
+
+// Rutas de CMS de Banners de la Home Central
+Route::get('/backoffice/{user_uuid}/cms/banners', \Src\Admin\Infrastructure\Http\Controller\ViewAdminHomeBannersPageGETController::class)->name('central.backoffice.web.admin.home_banners')->middleware('auth');
+Route::get('/api/cms/home-banners', \Src\Admin\Infrastructure\Http\Controller\ListAdminHomeBannersGETController::class)->middleware('auth');
+Route::post('/api/cms/home-banners', \Src\Admin\Infrastructure\Http\Controller\SaveAdminHomeBannerPOSTController::class)->middleware('auth');
+Route::delete('/api/cms/home-banners/{id}', \Src\Admin\Infrastructure\Http\Controller\DeleteAdminHomeBannerDELETEController::class)->middleware('auth');
+
+// Rutas de Planes de Suscripción B2B
+Route::get('/backoffice/{user_uuid}/plans', \Src\Admin\Infrastructure\Http\Controller\ViewAdminSubscriptionPlansPageGETController::class)->name('central.backoffice.web.admin.subscription_plans')->middleware('auth');
+Route::get('/api/plans/subscription-plans', \Src\Admin\Infrastructure\Http\Controller\ListAdminSubscriptionPlansGETController::class)->middleware('auth');
+Route::post('/api/plans/subscription-plans', \Src\Admin\Infrastructure\Http\Controller\SaveAdminSubscriptionPlanPOSTController::class)->middleware('auth');
+Route::delete('/api/plans/subscription-plans/{id}', \Src\Admin\Infrastructure\Http\Controller\DeleteAdminSubscriptionPlanDELETEController::class)->middleware('auth');
+
