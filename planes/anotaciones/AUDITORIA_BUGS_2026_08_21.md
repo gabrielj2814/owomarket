@@ -67,6 +67,13 @@
 > 3. **Fase 3 (bloque G)** — el grupo más grande pero el de menor riesgo.
 > 4. **D5 y D6** — lo que queda del bloque de dinero tras la Fase 1.4.
 >
+> ### 📋 Pendientes explícitos (fuera de los bloques A-G)
+>
+> | # | Pendiente | Por qué | Estado |
+> | :--- | :--- | :--- | :--- |
+> | **P1** | **Comando `admin:create-super`** para crear el primer superadmin por consola | La Fase 2.1 vetó `RootUserSeeder` fuera de desarrollo, así que **una instalación nueva no tiene ningún camino para crear el superadmin inicial**. No rompe los despliegues existentes, que ya tienen el suyo. Debe pedir nombre, email y contraseña de forma interactiva, validarla con `PasswordValidator` y negarse a sobrescribir un usuario existente | ⬜ Abierto |
+> | **P2** | **`domains.id` es UUID pero el modelo lo declara `int`** | Ver N23: `$domain->id` devuelve **siempre `0`**, y con ~6% de los UUID revienta la petición entera | ⬜ Abierto |
+>
 > ### ⚠️ Deuda operativa pendiente de revisar antes de desplegar
 >
 > Cada plan tiene su sección «Riesgo», pero estas cuatro requieren acción sobre
@@ -1080,8 +1087,8 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto |
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
-| N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` | Fase 2.1 | ⬜ Abierto |
-| N23 | Test intermitente: `AdminPhaseTwoOperationsTest > super admin can view tenant 360 detail...` falla ~1 de cada 3 suites completas con «The float-string "26e63005-…" is not representable as an int», y pasa siempre en aislamiento. Es previo a la Fase 2.1 | Fase 2.1 | ⬜ Abierto |
+| N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ⬜ Abierto |
+| N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ⬜ Abierto |
 
 ---
 
