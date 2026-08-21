@@ -9,27 +9,28 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\SupportTicket\Application\UseCase\ListUserSupportTicketsUseCase;
+use Src\SupportTicket\Infrastructure\Http\Support\ResolvesSupportRequester;
 
 final class ListSupportTicketsGETController
 {
+    use ResolvesSupportRequester;
+
     public function __construct(
         private readonly ListUserSupportTicketsUseCase $useCase
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
-        $userId = (string) ($request->query('user_id') 
-            ?: $request->input('user_id') 
-            ?: auth('central_customer')->id() 
-            ?: auth()->id());
+        // La identidad SIEMPRE sale de la sesión, nunca del request (hallazgo A6).
+        $requester = $this->resolveSupportRequester($request);
 
-        if (empty($userId)) {
-            return ApiResponse::error('El parámetro user_id es obligatorio', 400);
+        if ($requester === null) {
+            return ApiResponse::error('Debes iniciar sesión para acceder a soporte.', 401);
         }
 
         try {
             $data = $this->useCase->execute(
-                $userId,
+                $requester['id'],
                 $request->query('status'),
                 $request->query('tenant_id')
             );

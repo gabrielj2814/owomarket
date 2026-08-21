@@ -88,7 +88,7 @@ final class CreateTenantOwnerPayoutRequestUseCase
         $pendingPayouts = 0.0;
 
         if (Schema::hasTable('platform_commissions')) {
-            $grossSales = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('order_amount');
+            $grossSales = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('order_total');
             $totalCommissions = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('commission_amount');
         }
 

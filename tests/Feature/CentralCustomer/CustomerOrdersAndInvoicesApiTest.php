@@ -73,7 +73,7 @@ test('GET /api/central/customer/orders returns customer orders with items', func
         'payment_status' => 'paid',
     ]);
 
-    $response = $this->getJson("/api/central/customer/orders?customer_id={$customer->id}");
+    $response = $this->actingAs($customer, 'central_customer')->getJson('/api/central/customer/orders');
 
     $response->assertStatus(200)
         ->assertJson([
@@ -108,7 +108,7 @@ test('GET /api/central/customer/orders/{id}/tracking returns live tracking timel
         ],
     ]);
 
-    $response = $this->getJson("/api/central/customer/orders/{$order->id}/tracking?customer_id={$customer->id}");
+    $response = $this->actingAs($customer, 'central_customer')->getJson("/api/central/customer/orders/{$order->id}/tracking");
 
     $response->assertStatus(200)
         ->assertJson([
@@ -148,7 +148,7 @@ test('GET /api/central/customer/invoices returns invoice listing with BCV rate a
         ],
     ]);
 
-    $response = $this->getJson("/api/central/customer/invoices?customer_id={$customer->id}");
+    $response = $this->actingAs($customer, 'central_customer')->getJson('/api/central/customer/invoices');
 
     $response->assertStatus(200)
         ->assertJson([
@@ -198,19 +198,29 @@ test('GET /api/central/customer/invoices/{id}/pdf downloads invoice PDF with 200
         'total' => 120.00,
     ]);
 
-    $response = $this->get("/api/central/customer/invoices/{$order->id}/pdf?customer_id={$customer->id}");
+    // Sin sesión, ni siquiera llega al caso de uso: 401.
+    // (va primero: actingAs() deja la sesión "pegada" al cliente de pruebas
+    // para el resto del test, así que el chequeo anónimo debe ir antes de
+    // cualquier actingAs, no después. Se manda el header Accept a mano porque
+    // este endpoint responde con un PDF —no getJson()— y sin ese header el
+    // middleware 'auth' redirige a /login [302] en vez de devolver 401 JSON.)
+    $this->get("/api/central/customer/invoices/{$order->id}/pdf", ['Accept' => 'application/json'])
+        ->assertStatus(401);
+
+    $response = $this->actingAs($customer, 'central_customer')->get("/api/central/customer/invoices/{$order->id}/pdf");
 
     $response->assertStatus(200);
     expect($response->headers->get('content-type'))->toBe('application/pdf');
     expect($response->headers->get('content-disposition'))->toContain('attachment; filename="Factura-FAC-2026-888999.pdf"');
 
-    // Also download directly without query params
-    $directResponse = $this->get("/api/central/customer/invoices/{$order->id}/pdf");
-    $directResponse->assertStatus(200);
-    expect($directResponse->headers->get('content-type'))->toBe('application/pdf');
-
-    // Forbidden when wrong customer_id is passed
-    $wrongCustomer = (string) Str::uuid();
-    $forbiddenResponse = $this->get("/api/central/customer/invoices/{$order->id}/pdf?customer_id={$wrongCustomer}");
+    // Con sesión de OTRO cliente, la factura no le pertenece: 403/404 según el caso de uso.
+    $otherCustomer = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Otro Cliente',
+        'email' => 'other_pdf_'.bin2hex(random_bytes(3)).'@example.com',
+        'password' => 'secret',
+    ]);
+    $forbiddenResponse = $this->actingAs($otherCustomer, 'central_customer')
+        ->get("/api/central/customer/invoices/{$order->id}/pdf");
     $forbiddenResponse->assertStatus(403);
 });

@@ -60,6 +60,12 @@ beforeEach(function () {
     if (! Schema::hasTable('product_reviews')) {
         (require base_path('database/migrations/tenant/2025_10_28_144615_create_product_reviews.php'))->up();
     }
+    // Fase 1.3 (hallazgo C1): el registro del pago dejó de llevar un
+    // `catch (\Throwable)` vacío, así que la tabla `payments` tiene que
+    // existir de verdad. Antes su ausencia pasaba inadvertida.
+    if (! Schema::hasTable('payments')) {
+        (require base_path('database/migrations/tenant/2025_10_28_144517_create_payments.php'))->up();
+    }
     if (! Schema::hasTable('coupons')) {
         (require base_path('database/migrations/tenant/2025_10_28_144655_create_coupons.php'))->up();
     }
@@ -91,6 +97,18 @@ beforeEach(function () {
     ]);
 
     tenancy()->initialize($this->tenant);
+
+    // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5). Las rutas
+    // de backoffice exigen ahora sesión de usuario de la tienda; se autentica
+    // aquí para todo el archivo.
+    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
+        'id' => (string) \Illuminate\Support\Str::uuid(),
+        'name' => 'Store Staff',
+        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+    ]);
+    $this->actingAs($this->tenantUser);
 });
 
 afterEach(function () {
@@ -307,9 +325,15 @@ it('executes full storefront customer lifecycle from browsing to order confirmat
         ->and($createdOrder->total)->toBe(121.99)
         ->and($createdOrder->items)->toHaveCount(1);
 
-    // Verify variant and product stock decremented
+    // Verify variant stock decremented.
+    //
+    // Este assert cambió en la Fase 0.4: antes esperaba que el producto padre
+    // bajara también a 19, porque el checkout descontaba DOS VECES la misma
+    // unidad (de la variante y del producto). Era parte del hallazgo C1 y el
+    // test lo daba por bueno. Ahora, si la línea trae variante, sólo se
+    // descuenta de la variante.
     expect((int) $variant->fresh()->quantity)->toBe(7)
-        ->and((int) $product->fresh()->quantity)->toBe(19);
+        ->and((int) $product->fresh()->quantity)->toBe(20);
 
     // =========================================================================
     // STEP 7: Order Confirmation Page (/order/{id}/confirmation)

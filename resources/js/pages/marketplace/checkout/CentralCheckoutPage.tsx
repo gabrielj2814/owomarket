@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
 import { useCentralCart } from '@/contexts/CentralCartContext';
@@ -72,6 +72,20 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
     const [submitting, setSubmitting] = useState(false);
     const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+    /**
+     * Clave de idempotencia del intento de compra (hallazgo C2).
+     *
+     * Se genera una sola vez al montar la página y NO cambia entre reintentos:
+     * ese es justamente el punto. Si el primer envío creó el pedido pero falló
+     * el despacho a alguna tienda, reintentar con la misma clave devuelve el
+     * pedido existente en lugar de crear otro con sus comisiones duplicadas.
+     */
+    const idempotencyKeyRef = useRef<string>(
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto
+            ? crypto.randomUUID()
+            : `ck-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+    );
+
     const totalBs = (subtotal * bcvRate).toFixed(2);
 
     const handleSubmitOrder = async (e: React.FormEvent) => {
@@ -135,11 +149,15 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                           crypto_currency: 'USDT',
                       },
             currency: 'USD',
+            idempotency_key: idempotencyKeyRef.current,
             items: items.map(i => ({
                 tenant_id: i.tenant_id,
                 product_id: i.product_id,
                 product_name: i.product_name,
                 sku: i.sku || undefined,
+                // El servidor ignora este precio y resuelve el real contra el
+                // catálogo central (hallazgo B1); se sigue enviando sólo para
+                // no romper el tipo del payload.
                 price: i.price,
                 quantity: i.quantity,
                 attributes: i.attributes,

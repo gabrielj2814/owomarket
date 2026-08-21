@@ -7,6 +7,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Support\Facades\Route;
+use Src\Shared\Infrastructure\Http\Middleware\EnsureSupportRequesterIsAuthenticated;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserHasStaffPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserIsSuperAdmin;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserIsTenantOwner;
@@ -21,8 +22,28 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__.'/../routes/console.php',
         health: '/up',
         then: function () {
-              Route::middleware([
-                'api',
+            /*
+            |--------------------------------------------------------------
+            | API del inquilino (/api-tenant/*)
+            |--------------------------------------------------------------
+            |
+            | Hasta la Fase 0.3-E este grupo usaba 'api', que en Laravel 11+
+            | está vacío por defecto: sin sesión, sin CSRF y —sobre todo— sin
+            | nada sobre lo que 'auth' pudiera resolver una identidad. El
+            | resultado era que las ~108 rutas del backoffice de cada tienda
+            | quedaban abiertas a internet (hallazgo A5): crear cupones del
+            | 100%, borrar el catálogo o leer la facturación sin login.
+            |
+            | Se cambia a 'web' —el mismo grupo que ya usa routes/tenant.php—
+            | para tener StartSession y VerifyCsrfToken. El orden importa:
+            | la sesión arranca antes que la tenancy, igual que en
+            | routes/tenant.php, y 'auth' se aplica DESPUÉS de
+            | InitializeTenancyByDomain (ver routes/tenantApi.php) para que
+            | el usuario se resuelva contra la base de datos del inquilino.
+            |
+            */
+            Route::middleware([
+                'web',
                 InitializeTenancyByDomain::class,
                 PreventAccessFromCentralDomains::class,
             ])->prefix('api-tenant')->group(base_path('routes/tenantApi.php'));
@@ -55,6 +76,9 @@ return Application::configure(basePath: dirname(__DIR__))
         |                    El super administrador siempre pasa.
         |   'tenant_owner' → propietarios de tienda ('tenant_owner' u 'owner') y super admin.
         |   'internal'     → comunicación entre servicios internos mediante secreto compartido.
+        |   'support_session' → exige sesión de propietario de tienda (guard 'web') o de
+        |                    cliente central (session('central_customer_id')). No resuelve
+        |                    identidad, sólo exige que exista una de las dos.
         |
         */
         $middleware->alias([
@@ -62,6 +86,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => EnsureUserHasStaffPermission::class,
             'tenant_owner' => EnsureUserIsTenantOwner::class,
             'internal' => InternalServiceMiddleware::class,
+            'support_session' => EnsureSupportRequesterIsAuthenticated::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

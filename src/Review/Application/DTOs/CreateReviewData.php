@@ -18,6 +18,14 @@ final class CreateReviewData
         public readonly ?string $id = null
     ) {}
 
+    /**
+     * Construye el DTO a partir de datos que vienen de una petición HTTP.
+     *
+     * Hallazgo B2: `is_approved` e `is_verified` NO se leen del array aunque
+     * vengan en él. Una reseña nace siempre sin aprobar y sin verificar; el
+     * comerciante aprueba desde el backoffice y el servidor decide la
+     * verificación con VerifiedPurchaseChecker.
+     */
     public static function fromArray(array $data): self
     {
         return new self(
@@ -27,8 +35,8 @@ final class CreateReviewData
             orderId: isset($data['order_id']) && $data['order_id'] !== '' ? (string) $data['order_id'] : null,
             title: isset($data['title']) && $data['title'] !== '' ? (string) $data['title'] : null,
             comment: isset($data['comment']) && $data['comment'] !== '' ? (string) $data['comment'] : null,
-            isApproved: (bool) ($data['is_approved'] ?? false),
-            isVerified: (bool) ($data['is_verified'] ?? false),
+            isApproved: false,
+            isVerified: false,
             id: isset($data['id']) && $data['id'] !== '' ? (string) $data['id'] : null
         );
     }

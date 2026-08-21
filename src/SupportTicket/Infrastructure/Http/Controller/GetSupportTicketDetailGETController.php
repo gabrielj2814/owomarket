@@ -9,22 +9,27 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\SupportTicket\Application\UseCase\GetSupportTicketDetailUseCase;
+use Src\SupportTicket\Infrastructure\Http\Support\ResolvesSupportRequester;
 
 final class GetSupportTicketDetailGETController
 {
+    use ResolvesSupportRequester;
+
     public function __construct(
         private readonly GetSupportTicketDetailUseCase $useCase
     ) {}
 
     public function __invoke(Request $request, string $id): JsonResponse
     {
-        $userId = (string) ($request->query('user_id') 
-            ?: $request->input('user_id') 
-            ?: auth('central_customer')->id() 
-            ?: auth()->id());
+        // La identidad SIEMPRE sale de la sesión, nunca del request (hallazgo A6).
+        $requester = $this->resolveSupportRequester($request);
+
+        if ($requester === null) {
+            return ApiResponse::error('Debes iniciar sesión para acceder a soporte.', 401);
+        }
 
         try {
-            $ticket = $this->useCase->execute($id, $userId ?: null);
+            $ticket = $this->useCase->execute($id, $requester['id']);
 
             return ApiResponse::success(
                 data: $ticket,

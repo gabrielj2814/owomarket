@@ -98,7 +98,7 @@ test('PUT /api/central/customer/profile/{id} updates customer profile and addres
         'password' => Hash::make('password123'),
     ]);
 
-    $response = $this->putJson("/api/central/customer/profile/{$customer->id}", [
+    $response = $this->actingAs($customer, 'central_customer')->putJson("/api/central/customer/profile/{$customer->id}", [
         'name' => 'Elena Silva De Martínez',
         'phone' => '0424-7777777',
         'document_id' => 'V-18765432',
@@ -147,7 +147,7 @@ test('Address endpoints (update, set default, delete) work correctly', function 
     ]);
 
     // 1. Update address 1
-    $updateRes = $this->putJson("/api/central/customer/profile/{$customer->id}/address/{$addr1->id}", [
+    $updateRes = $this->actingAs($customer, 'central_customer')->putJson("/api/central/customer/profile/{$customer->id}/address/{$addr1->id}", [
         'label' => 'Casa Principal',
         'city' => 'Chacao, Caracas',
     ]);
@@ -156,7 +156,7 @@ test('Address endpoints (update, set default, delete) work correctly', function 
         ->assertJsonPath('data.address.city', 'Chacao, Caracas');
 
     // 2. Set address 2 as default
-    $defaultRes = $this->patchJson("/api/central/customer/profile/{$customer->id}/address/{$addr2->id}/default");
+    $defaultRes = $this->actingAs($customer, 'central_customer')->patchJson("/api/central/customer/profile/{$customer->id}/address/{$addr2->id}/default");
     $defaultRes->assertStatus(200)
         ->assertJsonPath('data.address.is_default', true);
 
@@ -164,7 +164,18 @@ test('Address endpoints (update, set default, delete) work correctly', function 
     expect($addr1->is_default)->toBeFalse();
 
     // 3. Delete address 1
-    $deleteRes = $this->deleteJson("/api/central/customer/profile/{$customer->id}/address/{$addr1->id}");
+    $deleteRes = $this->actingAs($customer, 'central_customer')->deleteJson("/api/central/customer/profile/{$customer->id}/address/{$addr1->id}");
     $deleteRes->assertStatus(200);
     expect(CentralCustomerAddress::where('id', $addr1->id)->exists())->toBeFalse();
+
+    // 4. Otro cliente no puede tocar las direcciones de este perfil.
+    $stranger = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Stranger',
+        'email' => 'stranger_'.bin2hex(random_bytes(3)).'@example.com',
+        'password' => Hash::make('password123'),
+    ]);
+    $this->actingAs($stranger, 'central_customer')
+        ->patchJson("/api/central/customer/profile/{$customer->id}/address/{$addr2->id}/default")
+        ->assertStatus(403);
 });

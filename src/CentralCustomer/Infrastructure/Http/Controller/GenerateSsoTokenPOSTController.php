@@ -19,13 +19,18 @@ final class GenerateSsoTokenPOSTController
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
-            'customer_id' => 'required|string',
             'target_domain' => 'nullable|string',
         ]);
 
+        // Antes 'customer_id' salía del body sin ninguna verificación: cualquiera
+        // podía emitir un token SSO válido para suplantar a cualquier comprador
+        // (hallazgo A3, el más grave del bloque). Ahora sale del guard de sesión,
+        // que exige haber iniciado sesión con la contraseña real.
+        $customerId = (string) auth('central_customer')->id();
+
         try {
             $ssoToken = $this->useCase->execute(
-                (string) $request->input('customer_id'),
+                $customerId,
                 $request->input('target_domain') ? (string) $request->input('target_domain') : null
             );
 

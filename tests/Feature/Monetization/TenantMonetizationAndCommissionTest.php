@@ -83,6 +83,16 @@ beforeEach(function () {
     ]);
 
     tenancy()->initialize($this->tenant);
+
+    // Fase 0.3-E: /api-tenant/* exige sesión de usuario de la tienda.
+    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Store Staff',
+        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+    ]);
+    $this->actingAs($this->tenantUser);
 });
 
 afterEach(function () {
@@ -242,4 +252,135 @@ test('Storefront checkout automatically records platform commission in central d
     expect($commission->commission_amount)->toBe(3.85); // 110 * 3.5% = 3.85
     expect($commission->status)->toBe('pending');
     expect($commission->payment_gateway)->toBe('pago_movil');
+});
+
+test('Cancelar un pedido anula la comisión de la plataforma (hallazgo D2)', function () {
+    // No hace falta suscribir a ningún plan: lo que se prueba es que la
+    // comisión se anula, sea cual sea su tasa.
+    $category = Category::create([
+        'name' => 'Cancelables',
+        'slug' => 'cancelables-'.Str::random(5),
+        'is_active' => true,
+    ]);
+
+    $product = Product::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Producto Cancelable',
+        'slug' => 'producto-cancelable-'.Str::random(5),
+        'sku' => 'CANCEL-001',
+        'price' => 1000.00,
+        'quantity' => 5,
+        'category_id' => $category->id,
+        'is_visible' => true,
+    ]);
+
+    // Escenario textual de la auditoría: el cliente pide $1.000 con Pago Móvil
+    // —cuyo payment_status nace siempre 'pending'— y nunca paga.
+    $response = $this->postJson("http://{$this->domain}/checkout/create-order", [
+        'customer' => ['name' => 'Cliente Moroso', 'email' => 'moroso@example.com'],
+        'shipping_address' => ['address' => 'Av. Principal', 'city' => 'Caracas'],
+        'shipping_method' => 'standard',
+        'payment_method' => 'pago_movil',
+        'items' => [['product_id' => $product->id, 'quantity' => 1]],
+    ]);
+    $response->assertStatus(201);
+    $orderId = $response->json('data.order_id');
+
+    $commission = PlatformCommission::where('order_id', $orderId)->first();
+    expect($commission)->not->toBeNull();
+    expect($commission->status)->toBe('pending');
+
+    // La tienda cancela porque el pago nunca llegó.
+    $cancelResponse = $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/cancel", [
+        'reason' => 'El cliente nunca reportó el pago',
+    ]);
+    $cancelResponse->assertStatus(200);
+
+    // Antes la comisión seguía en 'pending' y entraba en la siguiente
+    // liquidación: se le cobraba a la tienda por una venta que no existió.
+    $commission->refresh();
+    expect($commission->status)->toBe('waived');
+    expect($commission->metadata['reversal']['reason'])->toBe('order_cancelled');
+
+    // Y ya no la recoge el generador de liquidaciones.
+    $pendientes = PlatformCommission::where('tenant_id', $this->tenant->id)
+        ->where('status', 'pending')
+        ->whereNull('settlement_id')
+        ->count();
+    expect($pendientes)->toBe(0);
+});
+
+test('Reembolsar un pedido marca la comisión como devuelta (hallazgo D2)', function () {
+    $category = Category::create([
+        'name' => 'Reembolsables',
+        'slug' => 'reembolsables-'.Str::random(5),
+        'is_active' => true,
+    ]);
+
+    $product = Product::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Producto Reembolsable',
+        'slug' => 'producto-reembolsable-'.Str::random(5),
+        'sku' => 'REF-001',
+        'price' => 200.00,
+        'quantity' => 5,
+        'category_id' => $category->id,
+        'is_visible' => true,
+    ]);
+
+    $response = $this->postJson("http://{$this->domain}/checkout/create-order", [
+        'customer' => ['name' => 'Cliente Devolución', 'email' => 'devolucion@example.com'],
+        'shipping_address' => ['address' => 'Av. Principal', 'city' => 'Caracas'],
+        'shipping_method' => 'standard',
+        'payment_method' => 'pago_movil',
+        'items' => [['product_id' => $product->id, 'quantity' => 1]],
+    ]);
+    $response->assertStatus(201);
+    $orderId = $response->json('data.order_id');
+
+    // El pedido avanza hasta un estado desde el que se puede reembolsar.
+    foreach (['confirmed', 'processing', 'shipped', 'delivered'] as $estado) {
+        $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/status", [
+            'status' => $estado,
+        ]);
+    }
+
+    $refundResponse = $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/status", [
+        'status' => 'refunded',
+    ]);
+    $refundResponse->assertStatus(200);
+
+    $commission = PlatformCommission::where('order_id', $orderId)->first();
+    expect($commission->status)->toBe('refunded');
+    expect($commission->metadata['reversal']['reason'])->toBe('order_refunded');
+});
+
+test('Revertir una comisión ya liquidada la marca para ajuste manual (hallazgo D2)', function () {
+    $orderId = (string) Str::uuid();
+
+    $commission = PlatformCommission::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $this->tenant->id,
+        'order_id' => $orderId,
+        'order_number' => 'ORD-YA-LIQUIDADA',
+        'order_total' => 500.00,
+        'commission_rate' => 8.00,
+        'commission_amount' => 40.00,
+        'currency' => 'USD',
+        // 'collected' basta para disparar la marca de ajuste manual, sin
+        // necesidad de una liquidación real (settlement_id tiene clave foránea).
+        'status' => 'collected',
+    ]);
+
+    app(\Src\Monetization\Application\UseCases\ReverseOrderCommissionUseCase::class)
+        ->execute($orderId, 'order_refunded');
+
+    $commission->refresh();
+
+    // Se marca para que no vuelva a liquidarse...
+    expect($commission->status)->toBe('refunded');
+    // ...pero queda señalada: puede que a la tienda ya se le haya descontado,
+    // así que hace falta una nota de crédito en la próxima liquidación.
+    expect($commission->metadata['reversal']['requires_manual_adjustment'])->toBeTrue();
+    expect($commission->metadata['reversal']['previous_status'])->toBe('collected');
 });

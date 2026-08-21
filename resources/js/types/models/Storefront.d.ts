@@ -189,11 +189,34 @@ export interface StorefrontShippingMethod {
     price: number;
 }
 
+/**
+ * Hallazgo G1: este tipo sólo declaraba id, name, description e instructions,
+ * así que el checkout accedía al resto de campos con `(method as any).campo`
+ * y TypeScript no avisaba de que SIEMPRE caían en el literal de demostración
+ * que había detrás del `||`.
+ *
+ * Los campos de cobro son opcionales porque el servidor sólo ofrece el método
+ * cuando la tienda los tiene configurados: si `pago_movil` llega en la lista,
+ * bank_name / document_id / phone vienen con datos reales.
+ */
 export interface StorefrontPaymentMethod {
     id: string;
     name: string;
     description: string;
     instructions?: string;
+
+    /** Pago Móvil */
+    bank_name?: string;
+    document_id?: string;
+    phone?: string;
+    holder_name?: string | null;
+    /** Tasa BCV activa (Src\ExchangeRate). Ausente si no hay tasa vigente. */
+    exchange_rate_ves?: number;
+
+    /** Binance Pay */
+    binance_pay_id?: string;
+    crypto_currency?: string;
+    qr_code?: string | null;
 }
 
 export interface StorefrontCheckoutPageProps {

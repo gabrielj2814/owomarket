@@ -1,0 +1,140 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
+use Inertia\Testing\AssertableInertia as Assert;
+use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
+use Src\TenantSettings\Infrastructure\Eloquent\Models\TenantSetting;
+use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
+use Stancl\Tenancy\Events\TenantCreated;
+use Stancl\Tenancy\Events\TenantDeleted;
+
+/**
+ * Fase 0.5 — hallazgo G1.
+ *
+ * El checkout servía datos de cobro de demostración hardcodeados (RIF
+ * 'J-50123456-0', Binance Pay ID '284759302', tasa 40,50 Bs/USD). El comprador
+ * transfería a una cuenta que no era la de la tienda. Ahora los métodos de
+ * pago se construyen desde la configuración real del comercio, y el que no
+ * esté configurado no se ofrece.
+ */
+beforeEach(function () {
+    Event::fake([TenantCreated::class, TenantDeleted::class]);
+
+    config([
+        'tenancy.bootstrappers' => array_values(array_filter(
+            config('tenancy.bootstrappers', []),
+            fn ($bootstrapper) => $bootstrapper !== DatabaseTenancyBootstrapper::class
+        )),
+    ]);
+
+    if (! Schema::hasTable('categories')) {
+        (require base_path('database/migrations/tenant/2025_10_28_142911_create_categories.php'))->up();
+    }
+    if (! Schema::hasTable('tenant_settings')) {
+        (require base_path('database/migrations/tenant/2025_10_28_144914_create_tenant_settings.php'))->up();
+    }
+
+    $tenantId = 't_'.bin2hex(random_bytes(4));
+    $this->tenant = ModelsTenant::create([
+        'id' => $tenantId,
+        'name' => 'Tienda Pagos',
+        'slug' => $tenantId,
+        'status' => 'active',
+        'request' => 'approved',
+    ]);
+    $this->domain = "{$tenantId}.localhost";
+    $this->tenant->domains()->create([
+        'id' => (string) Str::uuid(),
+        'domain' => $this->domain,
+    ]);
+});
+
+afterEach(function () {
+    if (tenancy()->initialized) {
+        tenancy()->end();
+    }
+});
+
+function seedPaymentSetting(string $key, string $value): void
+{
+    TenantSetting::create([
+        'id' => (string) Str::uuid(),
+        'key' => $key,
+        'value' => $value,
+        'type' => 'string',
+        'group' => 'payment',
+    ]);
+}
+
+test('Una tienda sin datos de cobro configurados no ofrece ningún método de pago', function () {
+    $response = $this->get("http://{$this->domain}/checkout");
+
+    $response->assertStatus(200);
+    $response->assertInertia(fn (Assert $page) => $page
+        ->component('marketplace/checkout/TenantCheckoutPage')
+        ->has('payment_methods', 0)
+    );
+});
+
+test('El checkout no expone nunca los datos de demostración hardcodeados', function () {
+    $response = $this->get("http://{$this->domain}/checkout");
+
+    $response->assertStatus(200);
+
+    // Los literales que veía el comprador antes de la Fase 0.5.
+    $response->assertDontSee('J-50123456-0');
+    $response->assertDontSee('284759302');
+    $response->assertDontSee('api.qrserver.com');
+    $response->assertDontSee('0412-1234567');
+});
+
+test('Pago Móvil sólo se ofrece con banco, RIF y teléfono configurados', function () {
+    // Con configuración incompleta (falta el teléfono) no debe ofrecerse.
+    seedPaymentSetting('pago_movil_bank_name', '0134 - Banesco');
+    seedPaymentSetting('pago_movil_document_id', 'J-40111222-3');
+
+    $this->get("http://{$this->domain}/checkout")
+        ->assertInertia(fn (Assert $page) => $page->has('payment_methods', 0));
+
+    // Al completar el teléfono, aparece con los datos reales de la tienda.
+    seedPaymentSetting('pago_movil_phone', '0414-9998877');
+
+    $this->get("http://{$this->domain}/checkout")
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('payment_methods', 1)
+            ->where('payment_methods.0.id', 'pago_movil')
+            ->where('payment_methods.0.bank_name', '0134 - Banesco')
+            ->where('payment_methods.0.document_id', 'J-40111222-3')
+            ->where('payment_methods.0.phone', '0414-9998877')
+        );
+});
+
+test('Binance Pay sólo se ofrece con un Pay ID propio configurado', function () {
+    seedPaymentSetting('binance_pay_id', '999888777');
+
+    $this->get("http://{$this->domain}/checkout")
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('payment_methods', 1)
+            ->where('payment_methods.0.id', 'binance_pay')
+            ->where('payment_methods.0.binance_pay_id', '999888777')
+            // El QR no se inventa: sin uno propio configurado, va vacío.
+            ->where('payment_methods.0.qr_code', null)
+        );
+});
+
+test('El pago contra entrega requiere que el comercio lo habilite', function () {
+    $this->get("http://{$this->domain}/checkout")
+        ->assertInertia(fn (Assert $page) => $page->has('payment_methods', 0));
+
+    seedPaymentSetting('cash_on_delivery_enabled', 'true');
+
+    $this->get("http://{$this->domain}/checkout")
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('payment_methods', 1)
+            ->where('payment_methods.0.id', 'cash_on_delivery')
+        );
+});

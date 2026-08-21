@@ -8,9 +8,12 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\CreateCustomerReturnRequestUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class CreateCustomerReturnPOSTController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly CreateCustomerReturnRequestUseCase $createReturnUseCase
     ) {}
@@ -18,7 +21,6 @@ final class CreateCustomerReturnPOSTController
     public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'customer_id' => ['required', 'string'],
             'order_id' => ['required', 'string'],
             'product_id' => ['required', 'string'],
             'reason' => ['required', 'string', 'max:255'],
@@ -26,8 +28,12 @@ final class CreateCustomerReturnPOSTController
             'photos' => ['nullable', 'array'],
         ]);
 
+        // Antes 'customer_id' salía del body: cualquiera podía registrar una
+        // devolución sobre el pedido de otro comprador (hallazgo A3).
+        $customerId = $this->currentCustomerId();
+
         try {
-            $returnRequest = $this->createReturnUseCase->execute($validated['customer_id'], $validated);
+            $returnRequest = $this->createReturnUseCase->execute($customerId, $validated);
 
             return response()->json([
                 'code' => 200,

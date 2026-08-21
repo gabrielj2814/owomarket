@@ -8,25 +8,23 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\ListCustomerOrdersUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class ListCustomerOrdersGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly ListCustomerOrdersUseCase $listOrdersUseCase
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
-        $customerId = (string) $request->input('customer_id', $request->header('X-Customer-Id', ''));
-        $email = $request->input('email');
-
-        if (empty($customerId) && empty($email)) {
-            return response()->json([
-                'code' => 400,
-                'status' => 'error',
-                'message' => 'Se requiere el customer_id o email para consultar pedidos.',
-            ], 400);
-        }
+        // Antes 'customer_id' salía de la query o de la cabecera X-Customer-Id:
+        // cualquiera podía leer el historial de pedidos de otro comprador con
+        // solo conocer su UUID (hallazgo A3). La ruta ya exige sesión.
+        $customerId = $this->currentCustomerId();
+        $email = null;
 
         try {
             $filters = [

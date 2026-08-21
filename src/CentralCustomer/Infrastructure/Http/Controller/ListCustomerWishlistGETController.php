@@ -8,24 +8,19 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\ListCustomerWishlistUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class ListCustomerWishlistGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly ListCustomerWishlistUseCase $listWishlistUseCase
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
-        $customerId = (string) $request->input('customer_id', $request->header('X-Customer-Id', ''));
-
-        if (empty($customerId)) {
-            return response()->json([
-                'code' => 400,
-                'status' => 'error',
-                'message' => 'Se requiere el customer_id para consultar la lista de deseos.',
-            ], 400);
-        }
+        $customerId = $this->currentCustomerId();
 
         try {
             $wishlist = $this->listWishlistUseCase->execute($customerId);

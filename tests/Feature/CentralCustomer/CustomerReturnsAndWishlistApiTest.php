@@ -92,8 +92,7 @@ test('POST /api/central/customer/returns and GET /api/central/customer/returns m
     ]);
 
     // 1. Create return request
-    $createRes = $this->postJson('/api/central/customer/returns', [
-        'customer_id' => $customer->id,
+    $createRes = $this->actingAs($customer, 'central_customer')->postJson('/api/central/customer/returns', [
         'order_id' => $order->id,
         'product_id' => 'p-ret-55',
         'reason' => 'Producto defectuoso',
@@ -109,7 +108,7 @@ test('POST /api/central/customer/returns and GET /api/central/customer/returns m
     expect(CustomerReturnRequest::where('customer_id', $customer->id)->exists())->toBeTrue();
 
     // 2. List return requests
-    $listRes = $this->getJson("/api/central/customer/returns?customer_id={$customer->id}");
+    $listRes = $this->actingAs($customer, 'central_customer')->getJson('/api/central/customer/returns');
     $listRes->assertStatus(200)
         ->assertJsonPath('data.0.reason', 'Producto defectuoso')
         ->assertJsonPath('data.0.product_name', 'Teclado Mecánico RGB');
@@ -137,8 +136,7 @@ test('POST /api/central/customer/wishlist/toggle and GET /api/central/customer/w
     ]);
 
     // 1. Toggle Add
-    $toggleRes1 = $this->postJson('/api/central/customer/wishlist/toggle', [
-        'customer_id' => $customer->id,
+    $toggleRes1 = $this->actingAs($customer, 'central_customer')->postJson('/api/central/customer/wishlist/toggle', [
         'product_id' => 'p-fav-99',
         'tenant_id' => 'tienda-ret-wish',
         'product_name' => 'Audífonos Bluetooth Pro',
@@ -149,13 +147,12 @@ test('POST /api/central/customer/wishlist/toggle and GET /api/central/customer/w
         ->assertJsonPath('data.in_wishlist', true);
 
     // 2. List wishlist
-    $listRes = $this->getJson("/api/central/customer/wishlist?customer_id={$customer->id}");
+    $listRes = $this->actingAs($customer, 'central_customer')->getJson('/api/central/customer/wishlist');
     $listRes->assertStatus(200)
         ->assertJsonPath('data.0.product_name', 'Audífonos Bluetooth Pro');
 
     // 3. Toggle Remove
-    $toggleRes2 = $this->postJson('/api/central/customer/wishlist/toggle', [
-        'customer_id' => $customer->id,
+    $toggleRes2 = $this->actingAs($customer, 'central_customer')->postJson('/api/central/customer/wishlist/toggle', [
         'product_id' => 'p-fav-99',
         'tenant_id' => 'tienda-ret-wish',
         'product_name' => 'Audífonos Bluetooth Pro',

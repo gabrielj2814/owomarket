@@ -28,7 +28,7 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->timestamps();
 
-            $table->index(['position_type', 'is_active', 'order_position']);
+            $table->index(['position_type', 'is_active', 'order_position'], 'idx_banners_pos_active_ord');
         });
     }
 

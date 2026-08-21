@@ -17,6 +17,12 @@ use Src\Billing\Domain\Entities\Invoice;
 use Src\Billing\Domain\Exceptions\InvoiceNotFoundException;
 use Src\Billing\Domain\ValueObjects\InvoiceId;
 
+// Fase 1.3 (hallazgo C4): CreateDirectInvoiceUseCase corre dentro de una
+// transacción para que un fallo al guardar la factura no consuma el
+// correlativo. Eso necesita la aplicación levantada para resolver la fachada
+// DB, así que este archivo se apoya en el TestCase de Laravel.
+uses(Tests\TestCase::class);
+
 it('CreateDirectInvoiceUseCase creates invoice and increments billing profile number', function () {
     $invRepo = Mockery::mock(InvoiceRepositoryInterface::class);
     $profileRepo = Mockery::mock(BillingProfileRepositoryInterface::class);
@@ -37,8 +43,13 @@ it('CreateDirectInvoiceUseCase creates invoice and increments billing profile nu
         nextInvoiceNumber: 15
     );
 
+    // El correlativo ya no se calcula en memoria: lo reserva el repositorio de
+    // forma atómica, con la fila del perfil bloqueada (hallazgo C4).
+    $year = date('Y');
+    $profileRepo->shouldReceive('reserveNextInvoiceNumber')
+        ->once()
+        ->andReturn("FAC-{$year}-000015");
     $profileRepo->shouldReceive('getProfile')->once()->andReturn($profile);
-    $profileRepo->shouldReceive('save')->once()->with($profile)->andReturn($profile);
 
     $invRepo->shouldReceive('save')
         ->once()
@@ -68,13 +79,13 @@ it('CreateDirectInvoiceUseCase creates invoice and increments billing profile nu
 
     $invoice = $useCase->execute($dto);
 
-    $year = date('Y');
     expect($invoice->invoiceNumber()->value())->toBe("FAC-{$year}-000015")
         ->and($invoice->customer()->name())->toBe('Comprador Uno')
         ->and($invoice->subtotal())->toBe(300.00)
         ->and($invoice->taxAmount())->toBe(57.00)
-        ->and($invoice->total())->toBe(357.00)
-        ->and($profile->nextInvoiceNumber())->toBe(16);
+        ->and($invoice->total())->toBe(357.00);
+    // El incremento del contador ya no ocurre aquí, sino dentro de
+    // reserveNextInvoiceNumber(); se prueba en BillingInvoiceApiTest.
 });
 
 it('ConsultInvoiceByIdUseCase finds invoice or throws exception', function () {

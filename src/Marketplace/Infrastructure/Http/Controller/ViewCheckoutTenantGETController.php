@@ -9,12 +9,14 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
+use Src\Payment\Application\Service\StorefrontPaymentMethodsProvider;
 use Src\TenantSettings\Application\UseCases\GetStoreSettingsUseCase;
 
 final class ViewCheckoutTenantGETController extends Controller
 {
     public function __construct(
-        private readonly ?GetStoreSettingsUseCase $getStoreSettingsUseCase = null
+        private readonly ?GetStoreSettingsUseCase $getStoreSettingsUseCase = null,
+        private readonly ?StorefrontPaymentMethodsProvider $paymentMethodsProvider = null
     ) {}
 
     public function index(Request $request): Response
@@ -77,37 +79,18 @@ final class ViewCheckoutTenantGETController extends Controller
         ];
 
         // 4. Available Payment Methods
-        $paymentMethods = [
-            [
-                'id' => 'pago_movil',
-                'name' => 'Pago Móvil Interbancario (VES)',
-                'description' => 'Transfiere en Bolívares (VES) al instante a través de Pago Móvil e ingresa el número de referencia.',
-                'bank_name' => '0102 - Banco de Venezuela',
-                'phone' => $storeSettings['contact_phone'] ?? '0412-1234567',
-                'document_id' => 'J-50123456-0',
-                'holder_name' => $storeSettings['store_name'] ?? 'OwOMarket Store',
-                'exchange_rate_ves' => 40.50,
-            ],
-            [
-                'id' => 'binance_pay',
-                'name' => 'Binance Pay / USDT (Cripto)',
-                'description' => 'Pago instantáneo en USDT sin comisiones de red usando Binance Pay ID o escaneando el código QR.',
-                'binance_pay_id' => '284759302',
-                'crypto_currency' => 'USDT',
-                'qr_code' => 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=binancepay://pay?id=284759302',
-            ],
-            [
-                'id' => 'bank_transfer',
-                'name' => 'Transferencia Bancaria Directa',
-                'description' => 'Realiza tu pago directamente en nuestra cuenta bancaria. Tu pedido será procesado tras verificar el comprobante.',
-                'instructions' => 'Banco: Banco de Venezuela / Mercantil | Tipo: Cuenta Corriente | Titular: '.($storeSettings['store_name'] ?? 'Comercio').' | Email: '.($storeSettings['store_email'] ?? 'pagos@tienda.com'),
-            ],
-            [
-                'id' => 'cash_on_delivery',
-                'name' => 'Pago Contra Entrega / Efectivo',
-                'description' => 'Paga en efectivo al momento de recibir tu paquete en tu domicilio.',
-            ],
-        ];
+        //
+        // Hallazgo G1: esta lista estaba hardcodeada con datos de demostración
+        // —RIF 'J-50123456-0', Binance Pay ID '284759302', un QR servido por
+        // api.qrserver.com y una tasa de 40,50 Bs/USD cuando la real ronda
+        // 775—. El comprador transfería el dinero a una cuenta que no era la
+        // de la tienda.
+        //
+        // Ahora se construye desde los datos que el comerciante haya
+        // configurado (grupo de settings `payment`). Un método sin configurar
+        // NO se ofrece: mejor una opción menos que un cobro a un tercero.
+        $provider = $this->paymentMethodsProvider ?? app(StorefrontPaymentMethodsProvider::class);
+        $paymentMethods = $provider->forStore($storeSettings);
 
         // 5. Auth User
         $authUser = null;

@@ -700,10 +700,19 @@ function CheckoutPageContent({
                                                                     <span className="text-[11px] font-bold uppercase tracking-wider text-blue-700 dark:text-blue-400 flex items-center gap-1.5">
                                                                         📱 Datos para realizar el Pago Móvil
                                                                     </span>
-                                                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                                                        Monto a transferir: <strong className="text-blue-700 dark:text-blue-300 font-black">Bs. {(finalGrandTotal * ((method as any).exchange_rate_ves || 40.50)).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
-                                                                        <span className="text-[10px] text-gray-400 ml-1.5 font-mono">(Tasa ref: Bs. {(method as any).exchange_rate_ves || 40.50} / USD)</span>
-                                                                    </p>
+                                                                    {/* Hallazgo G1: la tasa ya no cae a un literal (40.50, ~19 veces
+                                                                        menor que la real). Si el servidor no envía una tasa activa,
+                                                                        no se muestra un monto inventado en bolívares. */}
+                                                                    {method.exchange_rate_ves ? (
+                                                                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                                                                            Monto a transferir: <strong className="text-blue-700 dark:text-blue-300 font-black">Bs. {(finalGrandTotal * method.exchange_rate_ves).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong>
+                                                                            <span className="text-[10px] text-gray-400 ml-1.5 font-mono">(Tasa BCV: Bs. {method.exchange_rate_ves} / USD)</span>
+                                                                        </p>
+                                                                    ) : (
+                                                                        <p className="text-xs text-amber-700 dark:text-amber-400">
+                                                                            Tasa de cambio no disponible en este momento. Transfiere el equivalente a <strong>${finalGrandTotal.toFixed(2)}</strong> según la tasa BCV del día.
+                                                                        </p>
+                                                                    )}
                                                                 </div>
                                                                 {copyFeedback && (
                                                                     <span className="text-[11px] bg-green-100 text-green-800 px-2 py-0.5 rounded font-bold self-start">
@@ -713,25 +722,28 @@ function CheckoutPageContent({
                                                             </div>
 
                                                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs">
+                                                                {/* Hallazgo G1: sin literales de reserva. El servidor sólo ofrece
+                                                                    Pago Móvil si la tienda tiene configurados banco, RIF y teléfono,
+                                                                    así que estos campos siempre vienen con datos reales. */}
                                                                 <div className="bg-white dark:bg-gray-800/80 p-2.5 rounded-lg border dark:border-gray-700">
                                                                     <span className="text-[10px] text-gray-400 block font-semibold">BANCO RECEPTOR</span>
-                                                                    <span className="font-bold text-gray-900 dark:text-white truncate block">{(method as any).bank_name || '0102 - Banco de Venezuela'}</span>
+                                                                    <span className="font-bold text-gray-900 dark:text-white truncate block">{method.bank_name}</span>
                                                                 </div>
                                                                 <div className="bg-white dark:bg-gray-800/80 p-2.5 rounded-lg border dark:border-gray-700 flex justify-between items-center">
                                                                     <div>
                                                                         <span className="text-[10px] text-gray-400 block font-semibold">CÉDULA / RIF</span>
-                                                                        <span className="font-bold text-gray-900 dark:text-white">{(method as any).document_id || 'J-50123456-0'}</span>
+                                                                        <span className="font-bold text-gray-900 dark:text-white">{method.document_id}</span>
                                                                     </div>
-                                                                    <button type="button" onClick={() => handleCopy((method as any).document_id || 'J-50123456-0', 'RIF')} className="text-gray-400 hover:text-blue-600 p-1">
+                                                                    <button type="button" onClick={() => handleCopy(method.document_id ?? '', 'RIF')} className="text-gray-400 hover:text-blue-600 p-1">
                                                                         <FaCopy className="w-3.5 h-3.5" />
                                                                     </button>
                                                                 </div>
                                                                 <div className="bg-white dark:bg-gray-800/80 p-2.5 rounded-lg border dark:border-gray-700 flex justify-between items-center">
                                                                     <div>
                                                                         <span className="text-[10px] text-gray-400 block font-semibold">TELÉFONO RECEPTOR</span>
-                                                                        <span className="font-bold text-gray-900 dark:text-white">{(method as any).phone || '0412-1234567'}</span>
+                                                                        <span className="font-bold text-gray-900 dark:text-white">{method.phone}</span>
                                                                     </div>
-                                                                    <button type="button" onClick={() => handleCopy((method as any).phone || '0412-1234567', 'Teléfono')} className="text-gray-400 hover:text-blue-600 p-1">
+                                                                    <button type="button" onClick={() => handleCopy(method.phone ?? '', 'Teléfono')} className="text-gray-400 hover:text-blue-600 p-1">
                                                                         <FaCopy className="w-3.5 h-3.5" />
                                                                     </button>
                                                                 </div>
@@ -799,9 +811,10 @@ function CheckoutPageContent({
                                                                     <div className="bg-white dark:bg-gray-800/80 p-3 rounded-lg border dark:border-gray-700 flex justify-between items-center">
                                                                         <div>
                                                                             <span className="text-[10px] text-gray-400 block font-semibold">BINANCE PAY ID</span>
-                                                                            <span className="font-mono text-base font-black text-gray-900 dark:text-white">{(method as any).binance_pay_id || '284759302'}</span>
+                                                                            {/* Hallazgo G1: sin literal de reserva ('284759302' era un ID ajeno). */}
+                                                                            <span className="font-mono text-base font-black text-gray-900 dark:text-white">{method.binance_pay_id}</span>
                                                                         </div>
-                                                                        <Button size="xs" color="light" type="button" onClick={() => handleCopy((method as any).binance_pay_id || '284759302', 'Binance Pay ID')}>
+                                                                        <Button size="xs" color="light" type="button" onClick={() => handleCopy(method.binance_pay_id ?? '', 'Binance Pay ID')}>
                                                                             <FaCopy className="mr-1 w-3 h-3" /> Copiar ID
                                                                         </Button>
                                                                     </div>
@@ -813,14 +826,20 @@ function CheckoutPageContent({
                                                                     </div>
                                                                 </div>
 
-                                                                <div className="flex flex-col items-center justify-center p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
-                                                                    <img
-                                                                        src={(method as any).qr_code || 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=binancepay://pay?id=284759302'}
-                                                                        alt="Binance Pay QR"
-                                                                        className="w-28 h-28 object-contain rounded"
-                                                                    />
-                                                                    <span className="text-[10px] text-gray-400 font-semibold mt-1">Escanear con Binance App</span>
-                                                                </div>
+                                                                {/* Hallazgo G1: el QR de reserva lo generaba api.qrserver.com —un
+                                                                    tercero al que se le filtraba el identificador de cobro— y
+                                                                    apuntaba a un Pay ID ajeno. Ahora sólo se muestra si la tienda
+                                                                    configuró uno propio. */}
+                                                                {method.qr_code && (
+                                                                    <div className="flex flex-col items-center justify-center p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-700">
+                                                                        <img
+                                                                            src={method.qr_code}
+                                                                            alt="Binance Pay QR"
+                                                                            className="w-28 h-28 object-contain rounded"
+                                                                        />
+                                                                        <span className="text-[10px] text-gray-400 font-semibold mt-1">Escanear con Binance App</span>
+                                                                    </div>
+                                                                )}
                                                             </div>
 
                                                             <div className="pt-2 border-t border-amber-100 dark:border-gray-800 space-y-2">
@@ -994,6 +1013,10 @@ function CheckoutPageContent({
                             </p>
                         </div>
 
+                        {/* Hallazgo G8: aquí había un botón "Continuar como Invitado
+                            (Modo Pruebas)" que cerraba el modal y saltaba al paso 3,
+                            anulando por completo la puerta de autenticación que este
+                            mismo modal dice que es obligatoria. Eliminado. */}
                         <div className="space-y-2 pt-2">
                             <Button
                                 color="blue"
@@ -1005,17 +1028,13 @@ function CheckoutPageContent({
                                 Iniciar Sesión / Registrarme
                             </Button>
 
-                            {/* Optional dev/test bypass button */}
                             <Button
                                 color="light"
                                 size="sm"
                                 className="w-full text-xs font-semibold"
-                                onClick={() => {
-                                    setIsAuthGateModalOpen(false);
-                                    setCurrentStep(3);
-                                }}
+                                onClick={() => setIsAuthGateModalOpen(false)}
                             >
-                                Continuar como Invitado (Modo Pruebas)
+                                Volver al carrito
                             </Button>
                         </div>
                     </ModalBody>

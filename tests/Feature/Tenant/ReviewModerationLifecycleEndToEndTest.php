@@ -9,6 +9,7 @@ use Src\Brand\Infrastructure\Eloquent\Models\Brand as EloquentBrand;
 use Src\Category\Infrastructure\Eloquent\Models\Category as EloquentCategory;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer as EloquentCustomer;
 use Src\Order\Infrastructure\Eloquent\Models\Order as EloquentOrder;
+use Src\Order\Infrastructure\Eloquent\Models\OrderItem as EloquentOrderItem;
 use Src\Product\Infrastructure\Eloquent\Models\Product as EloquentProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -40,6 +41,16 @@ beforeEach(function () {
     if (! Schema::hasTable('orders')) {
         (require base_path('database/migrations/tenant/2025_10_28_144320_create_orders.php'))->up();
     }
+    // Hallazgo B2: la insignia de "compra verificada" ahora comprueba que el
+    // pedido contenga el producto reseñado, así que hace falta order_items.
+    // Y order_items tiene una clave foránea a product_variants, de modo que
+    // esa tabla debe existir antes.
+    if (! Schema::hasTable('product_variants')) {
+        (require base_path('database/migrations/tenant/2025_10_28_143954_create_product_variants.php'))->up();
+    }
+    if (! Schema::hasTable('order_items')) {
+        (require base_path('database/migrations/tenant/2025_10_28_144403_create_order_items.php'))->up();
+    }
     if (! Schema::hasTable('product_reviews')) {
         (require base_path('database/migrations/tenant/2025_10_28_144615_create_product_reviews.php'))->up();
     }
@@ -59,6 +70,18 @@ beforeEach(function () {
     ]);
 
     tenancy()->initialize($this->tenant);
+
+    // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5). Las rutas
+    // de backoffice exigen ahora sesión de usuario de la tienda; se autentica
+    // aquí para todo el archivo.
+    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
+        'id' => (string) \Illuminate\Support\Str::uuid(),
+        'name' => 'Store Staff',
+        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+    ]);
+    $this->actingAs($this->tenantUser);
 });
 
 afterEach(function () {
@@ -124,6 +147,20 @@ it('executes full product review moderation and rating lifecycle end-to-end', fu
         'total' => 1899.99,
     ]);
 
+    // Hallazgo B2: la insignia de "compra verificada" ahora exige que el
+    // pedido contenga realmente el producto reseñado, así que el pedido de
+    // prueba necesita su línea. Antes bastaba con que el order_id existiera.
+    EloquentOrderItem::create([
+        'id' => (string) Str::uuid(),
+        'order_id' => $order2->id,
+        'product_id' => $product->id,
+        'product_name' => $product->name,
+        'sku' => $product->sku,
+        'price' => 1899.99,
+        'quantity' => 1,
+        'total' => 1899.99,
+    ]);
+
     // 3. Customer 1 writes a 5-star review (pending moderation, is_approved = false)
     $create1Res = $this->postJson("http://{$this->domain}/api-tenant/review/create", [
         'product_id' => $product->id,
@@ -169,14 +206,22 @@ it('executes full product review moderation and rating lifecycle end-to-end', fu
         'rating' => 3,
         'title' => 'Buen rendimiento pero ventiladores ruidosos',
         'comment' => 'Suena bastante al jugar juegos pesados.',
-        'is_approved' => true,
     ]);
 
+    // is_verified sale en true porque el pedido es de este cliente y contiene
+    // el producto; is_approved sigue en false hasta que el comerciante modere.
     $create2Res->assertStatus(201)
         ->assertJsonPath('data.is_verified', true)
+        ->assertJsonPath('data.is_approved', false)
         ->assertJsonPath('data.rating', 3);
 
     $review2Id = $create2Res->json('data.id');
+
+    // Como ninguna reseña nace aprobada, hace falta moderarla también para que
+    // entre en el resumen público.
+    $this->postJson("http://{$this->domain}/api-tenant/review/{$review2Id}/moderate", [
+        'is_approved' => true,
+    ])->assertStatus(200);
 
     // Summary calculation: 5 and 3 -> avg = 4.0
     $summary2Reviews = $this->getJson("http://{$this->domain}/api-tenant/review/summary/{$product->id}");

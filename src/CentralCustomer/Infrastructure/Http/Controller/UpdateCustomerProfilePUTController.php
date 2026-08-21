@@ -8,15 +8,24 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\UpdateCentralCustomerProfileUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class UpdateCustomerProfilePUTController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly UpdateCentralCustomerProfileUseCase $updateProfileUseCase
     ) {}
 
     public function __invoke(Request $request, string $id): JsonResponse
     {
+        // Antes cualquiera podía editar el perfil/contraseña de otro comprador
+        // con solo cambiar el {id} de la URL (hallazgo A3).
+        if ($denied = $this->denyIfNotOwnProfile($id)) {
+            return $denied;
+        }
+
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],

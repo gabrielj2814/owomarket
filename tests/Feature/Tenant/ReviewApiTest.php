@@ -88,6 +88,18 @@ beforeEach(function () {
         'email' => 'carolina@actores.cl',
         'is_active' => true,
     ]);
+
+    // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5). Las rutas
+    // de backoffice exigen ahora sesión de usuario de la tienda; se autentica
+    // aquí para todo el archivo.
+    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
+        'id' => (string) \Illuminate\Support\Str::uuid(),
+        'name' => 'Store Staff',
+        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+    ]);
+    $this->actingAs($this->tenantUser);
 });
 
 afterEach(function () {
@@ -106,6 +118,8 @@ it('GET /api-tenant/review/summary returns initial summary', function () {
 });
 
 it('POST /api-tenant/review/create creates a review and returns 201', function () {
+    // Hallazgo B2: se envía 'is_approved' => true a propósito. Debe ignorarse:
+    // la reseña nace pendiente de moderación, la apruebe quien la apruebe.
     $response = $this->postJson("http://{$this->domain}/api-tenant/review/create", [
         'product_id' => $this->product->id,
         'customer_id' => $this->customer->id,
@@ -113,6 +127,7 @@ it('POST /api-tenant/review/create creates a review and returns 201', function (
         'title' => 'Increíble pantalla y cámara',
         'comment' => 'Muy superior a modelos anteriores, 100% recomendado.',
         'is_approved' => true,
+        'is_verified' => true,
     ]);
 
     $response->assertStatus(201)
@@ -121,7 +136,8 @@ it('POST /api-tenant/review/create creates a review and returns 201', function (
         ->assertJsonPath('data.customer_id', $this->customer->id)
         ->assertJsonPath('data.rating', 5)
         ->assertJsonPath('data.title', 'Increíble pantalla y cámara')
-        ->assertJsonPath('data.is_approved', true);
+        ->assertJsonPath('data.is_approved', false)
+        ->assertJsonPath('data.is_verified', false);
 });
 
 it('POST /api-tenant/review/create returns 422 on invalid rating or missing fields', function () {
@@ -229,13 +245,18 @@ it('PUT /api-tenant/review/{id} updates review content and DELETE /api-tenant/re
 });
 
 it('POST /api-tenant/review/filter filters reviews with search and pagination', function () {
-    $this->postJson("http://{$this->domain}/api-tenant/review/create", [
+    $createRes = $this->postJson("http://{$this->domain}/api-tenant/review/create", [
         'product_id' => $this->product->id,
         'customer_id' => $this->customer->id,
         'rating' => 5,
         'title' => 'Excelente compra',
-        'is_approved' => true,
     ]);
+
+    // Ninguna reseña nace aprobada (hallazgo B2): hay que moderarla para que
+    // el filtro por is_approved = true la encuentre.
+    $this->postJson("http://{$this->domain}/api-tenant/review/{$createRes->json('data.id')}/moderate", [
+        'is_approved' => true,
+    ])->assertStatus(200);
 
     $filterRes = $this->postJson("http://{$this->domain}/api-tenant/review/filter", [
         'rating' => 5,

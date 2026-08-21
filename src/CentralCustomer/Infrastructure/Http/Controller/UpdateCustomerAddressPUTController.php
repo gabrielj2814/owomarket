@@ -8,15 +8,22 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\UpdateCentralCustomerAddressUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class UpdateCustomerAddressPUTController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly UpdateCentralCustomerAddressUseCase $updateAddressUseCase
     ) {}
 
     public function __invoke(Request $request, string $id, string $address_id): JsonResponse
     {
+        if ($denied = $this->denyIfNotOwnProfile($id)) {
+            return $denied;
+        }
+
         $validated = $request->validate([
             'label' => ['nullable', 'string', 'max:100'],
             'address' => ['nullable', 'string', 'max:255'],

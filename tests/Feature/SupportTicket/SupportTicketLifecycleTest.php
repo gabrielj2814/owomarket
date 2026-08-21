@@ -86,7 +86,7 @@ test('Customer can create support ticket, list tickets, and reply with attachmen
     $image = UploadedFile::fake()->image('product_defect.jpg', 600, 600);
 
     // 1. Create Ticket
-    $createResponse = $this->withSession(['customer_id' => $customer->id])->post('/api/support/tickets', [
+    $createResponse = $this->withSession(['central_customer_id' => $customer->id])->post('/api/support/tickets', [
         'user_id' => $customer->id,
         'requester_type' => 'customer',
         'subject' => 'Producto recibido con detalle',
@@ -99,14 +99,14 @@ test('Customer can create support ticket, list tickets, and reply with attachmen
     $ticketId = $createResponse->json('data.id');
 
     // 2. List user tickets
-    $listResponse = $this->withSession(['customer_id' => $customer->id])->getJson("/api/support/tickets?user_id={$customer->id}");
+    $listResponse = $this->withSession(['central_customer_id' => $customer->id])->getJson("/api/support/tickets?user_id={$customer->id}");
     $listResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
         ->assertJsonPath('data.counts.total', 1);
 
     // 3. Add message reply with video
     $video = UploadedFile::fake()->create('unboxing_proof.mp4', 3000, 'video/mp4');
-    $replyResponse = $this->withSession(['customer_id' => $customer->id])->post("/api/support/tickets/{$ticketId}/messages", [
+    $replyResponse = $this->withSession(['central_customer_id' => $customer->id])->post("/api/support/tickets/{$ticketId}/messages", [
         'user_id' => $customer->id,
         'sender_type' => 'customer',
         'message' => 'Adjunto video del desempaque para corroborar el estado.',
@@ -118,7 +118,7 @@ test('Customer can create support ticket, list tickets, and reply with attachmen
         ->assertJsonPath('data.attachments.0.type', 'video');
 
     // 4. Update ticket status to resolved
-    $statusResponse = $this->withSession(['customer_id' => $customer->id])->patchJson("/api/support/tickets/{$ticketId}/status", [
+    $statusResponse = $this->withSession(['central_customer_id' => $customer->id])->patchJson("/api/support/tickets/{$ticketId}/status", [
         'status' => 'resolved',
     ]);
 
@@ -148,5 +148,87 @@ test('Support ticket web views render successfully', function () {
     ]);
 
     $this->actingAs($user)->get("/tenant/owner/backoffice/{$user->id}/support")->assertStatus(200);
-    $this->withSession(['customer_id' => $customer->id])->get("/account/support")->assertStatus(200);
+    $this->withSession(['central_customer_id' => $customer->id])->get("/account/support")->assertStatus(200);
+});
+
+test('Anonymous requests to the central support API are rejected', function () {
+    $response = $this->getJson('/api/support/tickets');
+
+    $response->assertStatus(401);
+});
+
+test('A customer cannot read or reply to another customer ticket', function () {
+    $victim = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Víctima',
+        'email' => 'victim_'.bin2hex(random_bytes(3)).'@example.com',
+        'phone' => '04141111111',
+        'password' => bcrypt('Password123!'),
+        'is_active' => true,
+    ]);
+
+    $attacker = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Atacante',
+        'email' => 'attacker_'.bin2hex(random_bytes(3)).'@example.com',
+        'phone' => '04142222222',
+        'password' => bcrypt('Password123!'),
+        'is_active' => true,
+    ]);
+
+    $createResponse = $this->withSession(['central_customer_id' => $victim->id])->post('/api/support/tickets', [
+        'subject' => 'Ticket privado de la víctima',
+        'description' => 'Contiene datos sensibles.',
+    ]);
+    $createResponse->assertStatus(201);
+    $ticketId = $createResponse->json('data.id');
+
+    // Pasar user_id ajeno en la query ya no cambia nada: la identidad sale de la sesión.
+    $this->withSession(['central_customer_id' => $attacker->id])
+        ->getJson("/api/support/tickets/{$ticketId}?user_id={$victim->id}")
+        ->assertStatus(404);
+
+    $this->withSession(['central_customer_id' => $attacker->id])
+        ->post("/api/support/tickets/{$ticketId}/messages", [
+            'user_id' => $victim->id,
+            'sender_type' => 'admin',
+            'sender_name' => 'Soporte OwoMarket',
+            'message' => 'Confirme su contraseña',
+        ])
+        ->assertStatus(403);
+
+    $this->withSession(['central_customer_id' => $attacker->id])
+        ->patchJson("/api/support/tickets/{$ticketId}/status", ['status' => 'closed'])
+        ->assertStatus(403);
+
+    expect(SupportTicket::find($ticketId)->status)->toBe('open');
+    expect(SupportTicketMessage::where('ticket_id', $ticketId)->count())->toBe(1); // sólo el mensaje inicial
+});
+
+test('A customer message cannot spoof sender_type as admin', function () {
+    $customer = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Cliente Normal',
+        'email' => 'normal_'.bin2hex(random_bytes(3)).'@example.com',
+        'phone' => '04143333333',
+        'password' => bcrypt('Password123!'),
+        'is_active' => true,
+    ]);
+
+    $createResponse = $this->withSession(['central_customer_id' => $customer->id])->post('/api/support/tickets', [
+        'subject' => 'Consulta',
+        'description' => 'Necesito ayuda con mi pedido.',
+    ]);
+    $ticketId = $createResponse->json('data.id');
+
+    $replyResponse = $this->withSession(['central_customer_id' => $customer->id])
+        ->post("/api/support/tickets/{$ticketId}/messages", [
+            'sender_type' => 'admin',
+            'sender_name' => 'Soporte OwoMarket',
+            'message' => 'Este mensaje no debería verse como oficial.',
+        ]);
+
+    $replyResponse->assertStatus(201)
+        ->assertJsonPath('data.sender_type', 'customer')
+        ->assertJsonPath('data.sender_id', $customer->id);
 });

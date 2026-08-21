@@ -18,12 +18,24 @@ final class SettingGroup
 
     public const NOTIFICATIONS = 'notifications';
 
+    /**
+     * Datos de cobro del comercio (Pago Móvil, Binance Pay, transferencia).
+     *
+     * Añadido en la Fase 0.5 por el hallazgo G1: hasta entonces no existía
+     * ningún sitio donde el comerciante configurara su banco, RIF, teléfono
+     * o Binance Pay ID, y el checkout servía datos de demostración
+     * hardcodeados — el comprador transfería a una cuenta que no era la de
+     * la tienda.
+     */
+    public const PAYMENT = 'payment';
+
     private const VALID_GROUPS = [
         self::GENERAL,
         self::APPEARANCE,
         self::SOCIAL,
         self::SEO,
         self::NOTIFICATIONS,
+        self::PAYMENT,
     ];
 
     private string $value;
@@ -61,6 +73,11 @@ final class SettingGroup
     public static function notifications(): self
     {
         return new self(self::NOTIFICATIONS);
+    }
+
+    public static function payment(): self
+    {
+        return new self(self::PAYMENT);
     }
 
     public static function fromString(string $group): self

@@ -150,7 +150,13 @@ it('CancelOrderUseCase and RefundOrderUseCase transition order status', function
     $repository->shouldReceive('findById')->once()->andReturn($order);
     $repository->shouldReceive('save')->once()->with($order);
 
-    $cancelUseCase = new CancelOrderUseCase($repository);
+    // Fase 1.2 (hallazgo D2): cancelar revierte también la comisión de la
+    // plataforma. Aquí se comprueba que se invoque; su lógica se prueba en
+    // tests/Feature/Monetization/TenantMonetizationAndCommissionTest.php.
+    $reverseCommission = m::mock(\Src\Monetization\Application\UseCases\ReverseOrderCommissionUseCase::class);
+    $reverseCommission->shouldReceive('execute')->once();
+
+    $cancelUseCase = new CancelOrderUseCase($repository, $reverseCommission);
     $cancelUseCase->execute($order->id()->value(), 'Cliente cambió de opinión');
 
     expect($order->status())->toBe(OrderStatus::CANCELLED);

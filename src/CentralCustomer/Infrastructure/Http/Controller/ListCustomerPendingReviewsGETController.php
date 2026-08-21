@@ -8,28 +8,22 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\ListCustomerPurchasedProductsForReviewUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class ListCustomerPendingReviewsGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly ListCustomerPurchasedProductsForReviewUseCase $listReviewsUseCase
     ) {}
 
     public function __invoke(Request $request): JsonResponse
     {
-        $customerId = (string) $request->input('customer_id', $request->header('X-Customer-Id', ''));
-        $email = $request->input('email');
-
-        if (empty($customerId) && empty($email)) {
-            return response()->json([
-                'code' => 400,
-                'status' => 'error',
-                'message' => 'Se requiere el customer_id o email para consultar reseñas.',
-            ], 400);
-        }
+        $customerId = $this->currentCustomerId();
 
         try {
-            $data = $this->listReviewsUseCase->execute($customerId, $email ? (string) $email : null);
+            $data = $this->listReviewsUseCase->execute($customerId, null);
 
             return response()->json([
                 'code' => 200,

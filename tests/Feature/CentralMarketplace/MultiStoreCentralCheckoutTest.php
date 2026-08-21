@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -73,6 +74,13 @@ beforeEach(function () {
     if (! Schema::hasTable('central_orders')) {
         (require base_path('database/migrations/2026_08_19_000004_create_central_orders_tables.php'))->up();
     }
+    if (! Schema::hasTable('central_products')) {
+        (require base_path('database/migrations/2026_08_19_000007_create_central_products_table.php'))->up();
+    }
+    // Fase 1.1 (hallazgo C2): idempotencia del checkout y del despacho.
+    if (! Schema::hasTable('central_order_dispatches')) {
+        (require base_path('database/migrations/2026_08_21_100000_add_idempotency_to_central_orders.php'))->up();
+    }
 
     app(ListSubscriptionPlansUseCase::class)->execute();
 
@@ -133,6 +141,33 @@ beforeEach(function () {
         'is_visible' => true,
     ]);
     tenancy()->end();
+
+    // Hallazgo B1: el checkout central ya no acepta el precio del navegador;
+    // lo resuelve contra `central_products`, así que ambos productos deben
+    // estar publicados en el catálogo central para poder comprarse.
+    CentralProduct::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $this->tenantA->id,
+        'tenant_product_id' => $this->productA->id,
+        'name' => $this->productA->name,
+        'slug' => $this->productA->slug,
+        'sku' => $this->productA->sku,
+        'price' => 50.00,
+        'quantity' => 10,
+        'is_visible' => true,
+    ]);
+
+    CentralProduct::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $this->tenantB->id,
+        'tenant_product_id' => $this->productB->id,
+        'name' => $this->productB->name,
+        'slug' => $this->productB->slug,
+        'sku' => $this->productB->sku,
+        'price' => 100.00,
+        'quantity' => 20,
+        'is_visible' => true,
+    ]);
 });
 
 afterEach(function () {
@@ -214,12 +249,17 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     expect($itemB->tenant_order_id)->not->toBeNull();
 
     // Verify Tenant A local order in DB
+    // Hallazgo D1: el envío de $10 se reparte entre las dos tiendas (mitad y
+    // mitad, porque aportan $100 cada una), en vez de perderse. Antes cada
+    // pedido de tienda quedaba en $100 y la suma no cuadraba con los $210 que
+    // pagó el cliente.
     tenancy()->initialize($this->tenantA);
     $localOrderA = DB::table('orders')->where('id', $itemA->tenant_order_id)->first();
     expect($localOrderA)->not->toBeNull();
-    expect((float) $localOrderA->total)->toBe(100.00);
+    expect((float) $localOrderA->total)->toBe(105.00);
     $paymentA = DB::table('payments')->where('order_id', $itemA->tenant_order_id)->first();
     expect($paymentA)->not->toBeNull();
+    expect((float) $paymentA->amount)->toBe(105.00);
     expect($paymentA->payment_gateway)->toBe('pago_movil');
     tenancy()->end();
 
@@ -227,10 +267,15 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     tenancy()->initialize($this->tenantB);
     $localOrderB = DB::table('orders')->where('id', $itemB->tenant_order_id)->first();
     expect($localOrderB)->not->toBeNull();
-    expect((float) $localOrderB->total)->toBe(100.00);
+    expect((float) $localOrderB->total)->toBe(105.00);
     $paymentB = DB::table('payments')->where('order_id', $itemB->tenant_order_id)->first();
     expect($paymentB)->not->toBeNull();
+    expect((float) $paymentB->amount)->toBe(105.00);
     tenancy()->end();
+
+    // La suma de los pedidos de tienda cuadra ahora con el total central.
+    expect((float) $localOrderA->total + (float) $localOrderB->total)
+        ->toBe((float) $masterOrder->total);
 
     // 4. Verify Platform Commissions in Central DB
     $commissions = PlatformCommission::where('order_id', $itemA->tenant_order_id)
@@ -239,10 +284,15 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
 
     expect($commissions->count())->toBe(2);
 
+    // Hallazgo D1: la comisión se cobra sobre la mercancía neta de descuento,
+    // SIN incluir el envío. Aquí no hay descuento, así que la base sigue siendo
+    // $100 por tienda y los importes no cambian respecto al comportamiento
+    // anterior — pero el envío prorrateado ya NO infla la base.
     $commA = $commissions->firstWhere('tenant_id', $this->tenantA->id);
     expect($commA)->not->toBeNull();
     expect($commA->commission_rate)->toBe(3.50); // Pro plan
     expect($commA->commission_amount)->toBe(3.50); // 100 * 3.5%
+    expect((float) $commA->order_total)->toBe(100.00); // base, no los $105 cobrados
 
     $commB = $commissions->firstWhere('tenant_id', $this->tenantB->id);
     expect($commB)->not->toBeNull();
@@ -258,4 +308,185 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
 
     $breakdowns = $confResponse->json('data.stores_breakdown');
     expect(count($breakdowns))->toBe(2);
+});
+
+test('El checkout central ignora el precio que envía el navegador (hallazgo B1)', function () {
+    $payload = [
+        'customer' => [
+            'name' => 'Comprador Malicioso',
+            'email' => 'malicioso@example.com',
+        ],
+        'shipping_address' => [
+            'address' => 'Calle Falsa 123',
+            'city' => 'Caracas',
+        ],
+        'payment_method' => 'pago_movil',
+        'shipping_amount' => 0.00,
+        'items' => [
+            [
+                'tenant_id' => $this->tenantA->id,
+                'product_id' => $this->productA->id,
+                // El producto vale 50.00 en el catálogo central.
+                'product_name' => 'Balón regalado',
+                'sku' => 'FAKE',
+                'price' => 0.01,
+                'quantity' => 2,
+            ],
+        ],
+    ];
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', $payload);
+    $response->assertStatus(201);
+
+    $order = CentralOrder::with('items')->find($response->json('data.order_id'));
+
+    // 2 x 50.00 = 100.00, no 2 x 0.01 = 0.02.
+    expect($order->subtotal)->toBe(100.00);
+    expect($order->total)->toBe(100.00);
+
+    $item = $order->items->first();
+    expect($item->price)->toBe(50.00);
+    expect($item->total)->toBe(100.00);
+    // El nombre y el SKU también salen del catálogo, no del navegador.
+    expect($item->product_name)->toBe($this->productA->name);
+    expect($item->sku)->toBe($this->productA->sku);
+});
+
+test('El checkout central rechaza productos despublicados del catálogo', function () {
+    CentralProduct::where('tenant_id', $this->tenantA->id)->update(['is_visible' => false]);
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente', 'email' => 'cliente@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            [
+                'tenant_id' => $this->tenantA->id,
+                'product_id' => $this->productA->id,
+                'price' => 50.00,
+                'quantity' => 1,
+            ],
+        ],
+    ]);
+
+    expect($response->getStatusCode())->toBeGreaterThanOrEqual(400);
+    expect(CentralOrder::count())->toBe(0);
+});
+
+test('El envío y el descuento se prorratean entre las tiendas (hallazgo D1)', function () {
+    // Escenario numérico textual de la auditoría, adaptado a los productos del
+    // test: A aporta $60 (no divisible con el balón de $50, así que se usa
+    // 1 balón = $50) y B aporta $100. Envío $10, cupón −$30.
+    //
+    // Subtotal = 150, total central = 150 + 10 - 30 = $130.
+    // Pesos: A = 50/150 = 1/3, B = 100/150 = 2/3.
+    // Envío:     A = $3,33   B = $6,67   (suma exacta $10)
+    // Descuento: A = $10,00  B = $20,00  (suma exacta $30)
+    // Total A = 50 + 3,33 - 10 = $43,33
+    // Total B = 100 + 6,67 - 20 = $86,67
+    // Suma = $130 ✓
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Prorrateo', 'email' => 'prorrateo@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'shipping_amount' => 10.00,
+        'discount_amount' => 30.00,
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+            ['tenant_id' => $this->tenantB->id, 'product_id' => $this->productB->id, 'quantity' => 1],
+        ],
+    ]);
+
+    $response->assertStatus(201);
+
+    $order = CentralOrder::with('items')->find($response->json('data.order_id'));
+    expect($order->subtotal)->toBe(150.00);
+    expect($order->total)->toBe(130.00);
+
+    $itemA = $order->items->firstWhere('tenant_id', $this->tenantA->id);
+    $itemB = $order->items->firstWhere('tenant_id', $this->tenantB->id);
+
+    tenancy()->initialize($this->tenantA);
+    $localA = DB::table('orders')->where('id', $itemA->tenant_order_id)->first();
+    expect((float) $localA->shipping_amount)->toBe(3.33);
+    expect((float) $localA->discount_amount)->toBe(10.00);
+    expect((float) $localA->total)->toBe(43.33);
+    tenancy()->end();
+
+    tenancy()->initialize($this->tenantB);
+    $localB = DB::table('orders')->where('id', $itemB->tenant_order_id)->first();
+    expect((float) $localB->shipping_amount)->toBe(6.67);
+    expect((float) $localB->discount_amount)->toBe(20.00);
+    expect((float) $localB->total)->toBe(86.67);
+    tenancy()->end();
+
+    // Lo esencial: la suma de los pedidos de tienda es EXACTAMENTE lo que pagó
+    // el cliente. Ni un céntimo perdido ni inventado por el redondeo.
+    expect(round((float) $localA->total + (float) $localB->total, 2))->toBe(130.00);
+
+    // Y la comisión se cobra sobre la mercancía neta de descuento (sin envío):
+    // A → 50 - 10 = $40 ; B → 100 - 20 = $80.
+    $commA = PlatformCommission::where('order_id', $itemA->tenant_order_id)->first();
+    $commB = PlatformCommission::where('order_id', $itemB->tenant_order_id)->first();
+    expect((float) $commA->order_total)->toBe(40.00);
+    expect((float) $commB->order_total)->toBe(80.00);
+});
+
+test('Reenviar el checkout con la misma clave de idempotencia no duplica el pedido (hallazgo C2)', function () {
+    $payload = [
+        'customer' => ['name' => 'Cliente Reintento', 'email' => 'reintento@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'shipping_amount' => 0.00,
+        'idempotency_key' => 'checkout-intento-unico-123',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ];
+
+    $first = $this->postJson('/api/central/marketplace/checkout/create-order', $payload);
+    $first->assertStatus(201);
+    $firstOrderId = $first->json('data.order_id');
+
+    // El cliente reintenta (doble clic, o error de red tras haberse creado).
+    $second = $this->postJson('/api/central/marketplace/checkout/create-order', $payload);
+    $second->assertStatus(201);
+
+    // Mismo pedido, no uno nuevo.
+    expect($second->json('data.order_id'))->toBe($firstOrderId);
+    expect(CentralOrder::count())->toBe(1);
+
+    // Y sobre todo: una sola comisión. Antes el reintento creaba un segundo
+    // CentralOrder y la tienda acababa cobrada dos veces por una compra.
+    expect(PlatformCommission::where('tenant_id', $this->tenantA->id)->count())->toBe(1);
+
+    // El pedido llegó a la tienda una sola vez.
+    tenancy()->initialize($this->tenantA);
+    expect(DB::table('orders')->count())->toBe(1);
+    tenancy()->end();
+});
+
+test('El despacho no repite el pedido en una tienda ya despachada (hallazgo C2)', function () {
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Despacho', 'email' => 'despacho@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $order = CentralOrder::with('items')->find($response->json('data.order_id'));
+
+    // Se fuerza un segundo despacho del MISMO pedido central.
+    app(\Src\CentralMarketplace\Application\UseCases\DispatchCentralOrderToTenantsUseCase::class)
+        ->execute($order);
+
+    tenancy()->initialize($this->tenantA);
+    expect(DB::table('orders')->count())->toBe(1);
+    expect(DB::table('payments')->count())->toBe(1);
+    tenancy()->end();
+
+    expect(PlatformCommission::where('tenant_id', $this->tenantA->id)->count())->toBe(1);
 });

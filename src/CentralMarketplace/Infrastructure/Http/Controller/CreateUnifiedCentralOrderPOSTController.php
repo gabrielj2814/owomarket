@@ -28,12 +28,16 @@ final class CreateUnifiedCentralOrderPOSTController
             'shipping_address.city' => 'required|string',
             'payment_method' => 'required|string',
             'payment_details' => 'nullable|array',
+            // Hallazgo C2: clave que el navegador genera una vez por intento de
+            // compra. Si el checkout se reenvía con la misma clave, se devuelve
+            // el pedido ya creado en lugar de duplicarlo.
+            'idempotency_key' => 'nullable|string|max:100',
             'items' => 'required|array|min:1',
             'items.*.tenant_id' => 'required|string',
             'items.*.product_id' => 'required|string',
-            'items.*.product_name' => 'required|string',
-            'items.*.price' => 'required|numeric|min:0',
             'items.*.quantity' => 'required|integer|min:1',
+            // 'price' y 'product_name' ya no se validan ni se usan: se
+            // resuelven contra el catálogo central (hallazgo B1).
         ]);
 
         try {

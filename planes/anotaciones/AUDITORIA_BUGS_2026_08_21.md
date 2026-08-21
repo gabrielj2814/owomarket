@@ -1,5 +1,102 @@
 # Auditoría de Bugs — OwoMarket
 
+> ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
+>
+> **Avance: 16 de 50 hallazgos cerrados (~32%). Fase 0 completa, Fase 1 al 75%.**
+>
+> **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
+> Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
+>
+> ### Cómo continuar en otra sesión
+>
+> 1. Leer este bloque de estado y la sección **«Plan de acción sugerido»** al final,
+>    que está anotada con el estado real de cada punto.
+> 2. Los planes de cada fase ejecutada están en `planes/por_hacer/PLAN_FASE*.md`.
+>    **Siguen en `por_hacer/` a propósito**: contienen un checklist al final con los
+>    pasos de cierre pendientes (`pint`, commit, push) y notas de riesgo para el
+>    despliegue. Moverlos a `planes/implementados/` es el último paso de cada uno.
+> 3. Cada arreglo lleva un comentario en el código citando su hallazgo
+>    (buscar `hallazgo A5`, `hallazgo B1`, etc.) con el escenario que corregía.
+>
+> ### Leyenda
+> ✅ cerrado · 🟡 parcial · ⬜ abierto
+>
+> ### Estado por hallazgo
+>
+> | Bloque | Cerrados | Parciales | Abiertos |
+> | :--- | :--- | :--- | :--- |
+> | **A. Autenticación** | A1 A2 A3 A4 A5 A6 | A9 | A7 A8 |
+> | **B. Datos del cliente** | B1 B2 | B4 | B3 |
+> | **C. Concurrencia** | C1 C2 C3 C4 | — | C5 C6 |
+> | **D. Dinero** | D1 D2 | — | D3 D4 D5 D6 |
+> | **E. Catálogo** | — | — | E1 E2 E3 E4 |
+> | **F. Infraestructura** | F2 | F4 | F1 F3 F5 F6 |
+> | **G. Frontend** | G1 | G8 G13 | los otros 12 |
+>
+> F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
+> alias») lo cerró la Fase 0.2, y era la **causa raíz de todo el bloque A**: no
+> había con qué proteger las rutas, así que se protegieron sólo con `auth` o con
+> nada.
+>
+> ### Fases ejecutadas
+>
+> | Fase | Hallazgos | Documento |
+> | :--- | :--- | :--- |
+> | 0.1 | A1 | `PLAN_FASE0_1_DESMONTAR_BACKOFFICE_ADMIN_DE_TENANT.md` |
+> | 0.2 | Middlewares de rol (base de F2) | `PLAN_FASE0_2_MIDDLEWARES_DE_AUTORIZACION.md` |
+> | 0.3-A | A4, A9 (parcial) | `PLAN_FASE0_3A_PROTEGER_BACKOFFICE_Y_MONETIZACION.md` |
+> | 0.3-B | A2 | `PLAN_FASE0_3B_PROTEGER_APIS_TENANT_OWNER.md` |
+> | 0.3-C | A6 | `PLAN_FASE0_3C_PROTEGER_MESA_DE_SOPORTE.md` |
+> | 0.3-D | A3, F4 (parcial) | `PLAN_FASE0_3D_PROTEGER_API_CLIENTES_CENTRALES.md` |
+> | 0.3-E | A5 | `PLAN_FASE0_3E_PROTEGER_API_TENANT.md` |
+> | 0.4 | B1, B2, C1 (parcial) | `PLAN_FASE0_4_PRECIOS_Y_RESENAS_SERVER_SIDE.md` |
+> | 0.5 | G1, G8 (parcial) | `PLAN_FASE0_5_DATOS_BANCARIOS_Y_BYPASS_CHECKOUT.md` |
+> | 1.1 | C2, D1 | `PLAN_FASE1_1_DESPACHO_TRANSACCIONAL_Y_PRORRATEO.md` |
+> | 1.2 | D2 | `PLAN_FASE1_2_REVERSION_DE_COMISIONES.md` |
+> | 1.3 | C3, C4, C1 | `PLAN_FASE1_3_BLOQUEOS_Y_TRANSACCIONES.md` |
+>
+> ### 🔜 Siguiente paso recomendado
+>
+> 1. **Fase 1 punto 9 (D3 + D4)** — cierra la Fase 1. Corto y toca dinero.
+> 2. **F1 y F6**, aunque no estén en ninguna fase del plan formal: son de una línea
+>    cada uno y evitan dos formas de romper producción (login caído al pasar a
+>    `SESSION_DRIVER=database`, y superadmin con contraseña conocida si alguien
+>    corre `db:seed --force`).
+> 3. **Fase 2 (bloque E)** — subió de prioridad: desde la Fase 0.4 el checkout
+>    central toma los precios de `central_products`, así que un catálogo
+>    desincronizado ya no es sólo cosmético, es dinero mal cobrado.
+> 4. **Fase 3 (bloque G)** — el grupo más grande pero el de menor riesgo.
+>
+> ### ⚠️ Deuda operativa pendiente de revisar antes de desplegar
+>
+> Cada plan tiene su sección «Riesgo», pero estas cuatro requieren acción sobre
+> datos existentes, no sobre código:
+>
+> - **Fase 0.5:** ninguna tienda tiene datos de cobro configurados (el grupo de
+>   settings `payment` no existía), así que **se quedarán sin métodos de pago**
+>   hasta que se carguen.
+> - **Fase 1.2:** las comisiones de pedidos cancelados *antes* del cambio siguen
+>   vivas en `pending` y se cobrarán en la próxima liquidación.
+> - **Fase 1.3:** puede haber stock negativo heredado de los pedidos que se
+>   aceptaban sin existencias.
+> - **Fase 1.1:** los pedidos ya despachados no tienen fila en
+>   `central_order_dispatches`; relanzar el despacho de uno antiguo lo duplicaría.
+>
+> ### 🧠 Contexto útil que no está en el texto original
+>
+> Cosas que se descubrieron al implementar y que cambian lo que dice la auditoría:
+>
+> - **G1 era peor:** los datos bancarios de demostración no eran sólo un fallback
+>   del frontend, estaban hardcodeados también en el backend.
+> - **A3 era más profundo:** el login central nunca creaba sesión — devolvía un
+>   token de 64 caracteres que nadie verificaba. Hubo que construir el guard.
+> - **El formulario de reseñas del storefront lleva roto desde siempre:** exige
+>   `customer_id` y `TenantProductDetailPage.tsx` nunca lo envía (422 garantizado).
+> - **`lockForUpdate` no hace nada en SQLite**, que es lo que usa la suite: los
+>   tests de concurrencia validan la lógica, no la ausencia de la carrera.
+>
+> ---
+
 > **Fecha:** 21 de agosto de 2026
 > **Alcance:** `src/` (25 bounded contexts, ~1.083 archivos PHP), `routes/`, `app/`, `bootstrap/`, `config/`, `database/`, `resources/js/` (~218 archivos TSX/TS)
 > **Método:** lectura directa del código. Cada hallazgo cita archivo y línea, y describe un escenario de fallo concreto. Los hallazgos marcados ✅ los verifiqué personalmente releyendo el archivo.
@@ -30,6 +127,8 @@ En segundo lugar, el flujo de compra **confía en datos que envía el navegador*
 
 ### A1. 🔴 El backoffice de SuperAdmin se monta también en **cada dominio de tenant** ✅
 
+> **Estado:** ✅ CERRADO (Fase 0.1)
+
 **Archivo:** `routes/tenant.php:31` (y `routes/web.php:23`)
 
 ```php
@@ -49,6 +148,8 @@ El mismo archivo de rutas se carga dos veces. La copia central está protegida p
 ---
 
 ### A2. 🔴 Emisión pública de tokens SSO de dueño de tienda ✅
+
+> **Estado:** ✅ CERRADO (Fase 0.3-B)
 
 **Archivo:** `src/Tenant/Infrastructure/Http/Routes/web.php:58-62`
 
@@ -71,6 +172,8 @@ Y `ConsumeTenantOwnerSsoTokenGETController.php:31` hace `Auth::login($user, true
 ---
 
 ### A3. 🔴 Toda la API de clientes centrales, anónima y con la identidad en la URL ✅
+
+> **Estado:** ✅ CERRADO (Fase 0.3-D)
 
 **Archivo:** `routes/api.php:21` → `src/CentralCustomer/Infrastructure/Http/Routes/apiCentral.php:35-67`
 
@@ -95,6 +198,8 @@ Route::get('/invoices/{id}/pdf', DownloadCustomerInvoicePdfGETController::class)
 
 ### A4. 🔴 API de monetización (comisiones y liquidaciones) sin autenticación ✅
 
+> **Estado:** ✅ CERRADO (Fase 0.3-A)
+
 **Archivo:** `routes/api.php:22` → `src/Monetization/Infrastructure/Http/Routes/apiCentral.php:12-18`
 
 ```php
@@ -109,6 +214,8 @@ Route::post('/settlements/{id}/confirm', ConfirmCommissionSettlementPOSTControll
 ---
 
 ### A5. 🔴 Toda la API de administración del tenant (`/api-tenant/*`) sin autenticación ✅
+
+> **Estado:** ✅ CERRADO (Fase 0.3-E)
 
 **Archivo:** `bootstrap/app.php:22-26`
 
@@ -135,6 +242,8 @@ Route::patch('/{id}/stock', UpdateProductStockPATCHController::class);
 
 ### A6. 🔴 Mesa de soporte central abierta: lectura, escritura y suplantación de agentes
 
+> **Estado:** ✅ CERRADO (Fase 0.3-C)
+
 **Archivo:** `src/SupportTicket/Infrastructure/Http/Routes/web.php:23-29`
 
 El grupo `api/support` del dominio central no tiene middleware — aunque la versión tenant del mismo módulo (`tenant.php:19`) **sí** lo tiene, lo que confirma que fue un olvido. Además el controlador prioriza el `user_id` del query string sobre la sesión, y `GetSupportTicketDetailUseCase.php:19-23` solo filtra por propietario **si** ese `user_id` viene:
@@ -151,6 +260,8 @@ if ($userId) { $query->where('user_id', $userId); }   // sin userId => sin filtr
 
 ### A7. 🟠 PIN de 6 dígitos fuerza-brutable y aplicable a cualquier administrador
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `src/Admin/Infrastructure/Http/Routes/web.php:37-38` + `ChangePasswordWithPinUseCase.php:36-45`
 
 El destinatario del cambio de contraseña es el `{user_uuid}` de la URL, **no** el usuario en sesión. No hay contador de intentos, ni `throttle` en la ruta, ni rate limiting global (`bootstrap/app.php` no invoca `throttleApi()`). Un fallo no invalida el PIN ni incrementa nada.
@@ -162,6 +273,8 @@ El destinatario del cambio de contraseña es el `{user_uuid}` de la URL, **no** 
 ---
 
 ### A8. 🟠 El token SSO no se ata al destino: se puede redimir en otra tienda
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivos:** `src/CentralCustomer/Application/UseCases/ValidateAndConsumeSsoTokenUseCase.php:20-44` y `src/Tenant/Application/UseCase/ConsumeTenantOwnerSsoTokenUseCase.php:25-47`
 
@@ -175,6 +288,8 @@ El primero **recibe `$currentDomain` y nunca lo usa**; el campo `target_domain` 
 
 ### A9. 🟠 Impersonación de tenant sin control de rol, sin auditoría y con URL rota
 
+> **Estado:** 🟡 PARCIAL (Fase 0.3-A: ya exige super_admin; faltan la auditoría y la URL rota)
+
 **Archivo:** `src/Tenant/Application/UseCase/AdminImpersonateTenantUseCase.php:23-53`
 
 Cuatro problemas en el mismo flujo: la ruta solo exige `auth` (cualquier autenticado impersona); el controlador acepta un `admin_user_id` del request como respaldo; el caso de uso **no escribe nada en `CentralAuditLog`** (a diferencia de `AssignUserRolesUseCase.php:37`, que sí lo hace); y la URL generada apunta a `/auth/sso`, ruta que **no existe** — la real es `/auth/sso-consume`.
@@ -186,6 +301,8 @@ Cuatro problemas en el mismo flujo: la ruta solo exige `auth` (cualquier autenti
 ## Bloque B — Confianza en datos del cliente
 
 ### B1. 🔴 El precio de cada producto lo envía el navegador y se persiste sin validar ✅
+
+> **Estado:** ✅ CERRADO (Fase 0.4)
 
 **Archivos:** `src/CentralMarketplace/Application/UseCases/CreateUnifiedCentralOrderUseCase.php:36,69,78` y `src/Marketplace/Infrastructure/Http/Controller/CreateStorefrontOrderPOSTController.php:55,89,94`
 
@@ -209,6 +326,8 @@ Nunca se consulta el precio real del producto en la BD del tenant. La validació
 
 ### B2. 🔴 El cliente decide si su reseña está aprobada y "verificada"
 
+> **Estado:** ✅ CERRADO (Fase 0.4)
+
 **Archivos:** `src/Review/Infrastructure/Http/Request/CreateProductReviewFormRequest.php:28-29`, `CreateProductReviewUseCase.php:36`
 
 ```php
@@ -226,6 +345,8 @@ Además `isVerified` se pone a `true` con la mera presencia de un `order_id`, va
 ---
 
 ### B3. 🔴 El checkout aplica cupones sin validar fechas, límite de uso ni monto mínimo
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `src/Marketplace/Infrastructure/Http/Controller/CreateStorefrontOrderPOSTController.php:125-135`
 
@@ -247,6 +368,8 @@ Se ignoran `valid_from`/`valid_to`, `usage_limit`, `usage_limit_per_customer` y 
 
 ### B4. 🔴 La identidad del cliente del portal sale de `localStorage`
 
+> **Estado:** 🟡 PARCIAL (Fase 0.3-D: el backend ya no confía en localStorage; el frontend sigue cacheando el perfil)
+
 **Archivos:** `resources/js/Services/CustomerPortalServices.ts:181-247` y `resources/js/contexts/CustomerAuthContext.tsx:59,206`
 
 ```ts
@@ -264,6 +387,8 @@ isAuthenticated: !!customer,
 ## Bloque C — Transacciones y concurrencia
 
 ### C1. 🔴 Ningún punto del checkout descuenta stock correctamente
+
+> **Estado:** ✅ CERRADO (Fase 0.4 + 1.3) — salvo la reposición de stock al cancelar, ver seguimiento de 1.3
 
 **Archivos:** `CreateOrderUseCase.php:18-53` (no toca stock en absoluto) y `CreateStorefrontOrderPOSTController.php:106-119`:
 
@@ -287,6 +412,8 @@ Tres bugs en nueve líneas: si no hay stock **el pedido se crea igual** (el `if`
 
 ### C2. 🔴 El despacho multi-tienda no es transaccional ni idempotente ✅
 
+> **Estado:** ✅ CERRADO (Fase 1.1)
+
 **Archivos:** `CreateUnifiedCentralOrderUseCase.php:43-89`, `DispatchCentralOrderToTenantsUseCase.php:35-153`
 
 No hay `DB::transaction` en ningún nivel ni clave de idempotencia. El bucle usa `try { ... } finally { ... }` **sin `catch`**.
@@ -299,6 +426,8 @@ No hay `DB::transaction` en ningún nivel ni clave de idempotencia. El bucle usa
 
 ### C3. 🟠 Carrera al generar liquidaciones: doble cobro de comisiones
 
+> **Estado:** ✅ CERRADO (Fase 1.3)
+
 **Archivo:** `src/Monetization/Application/UseCases/GenerateTenantCommissionSettlementUseCase.php:28-64`
 
 Se leen las comisiones pendientes, se crea la liquidación con los totales y **después** se enlazan con un `update` que no revalida `whereNull('settlement_id')`. Sin transacción y sin `lockForUpdate()`.
@@ -309,6 +438,8 @@ Se leen las comisiones pendientes, se crea la liquidación con los totales y **d
 
 ### C4. 🟠 Números de factura correlativos duplicados
 
+> **Estado:** ✅ CERRADO (Fase 1.3)
+
 **Archivos:** `CreateDirectInvoiceUseCase.php:24-46`, `BillingProfile.php:106-115`
 
 `getProfile()` hace un `first()` sin bloqueo, el incremento ocurre en memoria y se persiste aparte. La transacción del repositorio de facturas es posterior y no cubre el contador.
@@ -318,6 +449,8 @@ Se leen las comisiones pendientes, se crea la liquidación con los totales y **d
 ---
 
 ### C5. 🟠 Consumo de tokens SSO sin atomicidad (replay por carrera)
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivos:** `ValidateAndConsumeSsoTokenUseCase.php:30-39`, `ConsumeTenantOwnerSsoTokenUseCase.php:25-36`
 
@@ -334,6 +467,8 @@ if ($affected === 0) { throw new Exception('Token inválido o ya usado', 410); }
 
 ### C6. 🟠 `increment('used_count')` sin condición permite superar el límite de un cupón
 
+> **Estado:** ⬜ ABIERTO
+
 Ya citado en B3. `increment()` es atómico a nivel de columna pero no verifica el techo, así que N peticiones paralelas pasan todas la comprobación previa.
 
 **Arreglo:** `UPDATE coupons SET used_count = used_count + 1 WHERE id = ? AND (usage_limit IS NULL OR used_count < usage_limit)` comprobando filas afectadas.
@@ -343,6 +478,8 @@ Ya citado en B3. `increment()` es atómico a nivel de columna pero no verifica e
 ## Bloque D — Cálculo de dinero
 
 ### D1. 🔴 El envío, el descuento y los impuestos se pierden al repartir el pedido central ✅
+
+> **Estado:** ✅ CERRADO (Fase 1.1) — base de comisión confirmada por negocio: mercancía neta de descuento, sin envío
 
 **Archivo:** `src/CentralMarketplace/Application/UseCases/DispatchCentralOrderToTenantsUseCase.php:88-107,124,161`
 
@@ -372,6 +509,8 @@ Ese `$tenantOrderTotal` (subtotal bruto) se usa como (a) importe del registro en
 
 ### D2. 🔴 La comisión se registra al crear el pedido y nunca se revierte
 
+> **Estado:** ✅ CERRADO (Fase 1.2)
+
 **Archivos:** `CalculateAndRecordOrderCommissionUseCase.php:41-55`, `CancelOrderUseCase.php:26-27`, `RefundOrderUseCase.php:26-27`
 
 La `PlatformCommission` se crea con `status='pending'` en el despacho, sin importar el `payment_status` (que para `pago_movil`, `manual_transfer` y `cash_on_delivery` es siempre `pending`). No existe ninguna ruta que la ponga en `cancelled`: `CancelOrderUseCase` y `RefundOrderUseCase` solo mutan el agregado `Order` del tenant y no tocan la BD central.
@@ -381,6 +520,8 @@ La `PlatformCommission` se crea con `status='pending'` en el despacho, sin impor
 ---
 
 ### D3. 🟠 Conversión de moneda con fallback silencioso a tasa 1.0
+
+> **Estado:** ⬜ ABIERTO (sólo el panel de Pago Móvil del checkout del inquilino usa ya la tasa real, Fase 0.5)
 
 **Archivo:** `src/ExchangeRate/Application/UseCase/ConvertCurrencyAmountUseCase.php:34-38,67-71`
 
@@ -399,6 +540,8 @@ Y `SyncBcvExchangeRateUseCase.php:53-72` hace `deactivateAll()` y **después** `
 
 ### D4. 🟠 El scraper del BCV rompe en cuanto la tasa supera 999,99
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `src/ExchangeRate/Infrastructure/Scrapers/BcvWebScraper.php:95-108`
 
 ```php
@@ -416,6 +559,8 @@ Se elimina el espacio y se cambia la coma decimal por punto, pero **no se quita 
 ---
 
 ### D5. 🟠 Tarifas de envío: `free` ignora su umbral y `weight_based` cobra plano
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `src/Shipping/Domain/Entities/ShippingRate.php:130-132,147-154`
 
@@ -438,6 +583,8 @@ public function calculateCost(): float
 
 ### D6. 🟠 Sin país, se suman **todas** las tasas de impuesto activas
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivos:** `TaxRateRepository.php:120-151`, `CalculateTaxUseCase.php:28-37`
 
 Cada filtro geográfico solo se aplica si el parámetro no es null, y el caso de uso **suma** todas las tasas devueltas. `priority` solo ordena, nunca selecciona.
@@ -458,6 +605,8 @@ Cada filtro geográfico solo se aplica si el parámetro no es null, y el caso de
 ## Bloque E — Sincronización de catálogo
 
 ### E1. 🔴 Borrar u ocultar un producto en el tenant no lo retira del marketplace central
+
+> **Estado:** ⬜ ABIERTO — subió de prioridad: el checkout central toma precios de central_products desde la Fase 0.4
 
 **Archivo:** `src/Product/Infrastructure/Eloquent/Repositories/ProductRepository.php:188-191, 270-273`
 
@@ -481,6 +630,8 @@ Solo `updateStock()` propaga a `central_products`. `Product` usa `SoftDeletes`, 
 
 ### E2. 🔴 Cambios de precio y nombre nunca llegan al catálogo central
 
+> **Estado:** ⬜ ABIERTO — misma razón que E1
+
 **Archivo:** `ProductRepository.php:115-186`
 
 `update()` reescribe precio, nombre, descripción, imágenes y variantes en el tenant y **no toca** `central_products`. Y el `decrement('quantity')` del checkout no pasa por `updateStock()`, así que el stock central tampoco baja con las ventas.
@@ -492,6 +643,8 @@ Solo `updateStock()` propaga a `central_products`. `Product` usa `SoftDeletes`, 
 ---
 
 ### E3. 🟠 Colisión de slugs entre tenants en la ficha de producto central
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `src/Marketplace/Infrastructure/Http/Controller/GetCentralProductDetailAPIController.php:123-128`
 
@@ -512,6 +665,8 @@ Sin filtrar por `tenant_id`. El slug se copia tal cual desde cada tenant, así q
 
 ### E4. 🟠 Editar un producto regenera los IDs de todas sus variantes
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `ProductRepository.php:151-183`
 
 En cada `update()` se borran físicamente todas las filas de `product_variants` y `product_images` y se recrean con UUIDs nuevos.
@@ -525,6 +680,8 @@ En cada `update()` se borran físicamente todas las filas de `product_variants` 
 ## Bloque F — Infraestructura y configuración
 
 ### F1. 🔴 `sessions.user_id` es NOT NULL con clave foránea ✅
+
+> **Estado:** ⬜ ABIERTO — recomendado hacerlo ya: rompe el login con SESSION_DRIVER=database
 
 **Archivo:** `database/migrations/0001_01_01_000000_create_users_table.php:52-61` (y la copia en `database/migrations/tenant/`)
 
@@ -546,6 +703,8 @@ Schema::create('sessions', function (Blueprint $table) {
 
 ### F2. 🔴 `bootstrap/app.php` importa middlewares que no existen y no registra ningún alias ✅
 
+> **Estado:** ✅ CERRADO (Fase 0.2: alias de rol registrados y middlewares creados)
+
 ```php
 use App\Http\Middleware\TenantAuthentication;   // ← la clase no existe en disco
 use App\Http\Middleware\VerifyCsrfToken;        // ← tampoco
@@ -560,6 +719,8 @@ use App\Http\Middleware\VerifyCsrfToken;        // ← tampoco
 ---
 
 ### F3. 🟠 Cookie de sesión compartida por todos los subdominios
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `config/session.php:159, 172`
 
@@ -578,6 +739,8 @@ Comodín para todos los subdominios y un único nombre de cookie para toda la ap
 
 ### F4. 🟠 Guard `central_customer` usado en el código pero inexistente en `config/auth.php`
 
+> **Estado:** 🟡 PARCIAL (Fase 0.3-D: guard central_customer creado y en uso; revisar si queda algún otro guard inexistente)
+
 `config/auth.php:40-52` solo define `web` y `central`. Pero `ListSupportTicketsGETController.php:23` llama a `auth('central_customer')->id()`.
 
 **Escenario:** `GET /api/support/tickets` sin `user_id` explícito lanza `InvalidArgumentException: Auth guard [central_customer] is not defined` → HTTP 500. El único camino que funciona es pasar `user_id` a mano, que es justo el vector de IDOR de A6.
@@ -586,6 +749,8 @@ Comodín para todos los subdominios y un único nombre de cookie para toda la ap
 
 ### F5. 🟠 Tablas de permisos (Spatie) solo en la BD central, pero `User` usa `HasRoles` también en tenants
 
+> **Estado:** ⬜ ABIERTO
+
 La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `database/migrations/`, no en `migrations/tenant/`. `Src\User\...\User` (el provider `users`) no fija conexión, así que en un dominio de tenant resuelve la BD del tenant, donde `roles` y `permissions` no existen.
 
 **Escenario:** cualquier `$user->hasRole(...)` o `$user->can(...)` en un dominio de tienda lanza `Base table or view not found: 'roles'`. Todo el RBAC que añadas al panel del tenant fallará en runtime.
@@ -593,6 +758,8 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 ---
 
 ### F6. 🟠 Seeders de demo sin condicionar al entorno
+
+> **Estado:** ⬜ ABIERTO — recomendado hacerlo ya: db:seed --force crea un superadmin con contraseña conocida
 
 `DatabaseSeeder.php:18-26` invoca `RootUserSeeder` y los seeders de demo sin ninguna guarda. `RootUserSeeder.php:53-61` hace `updateOrCreate` de `root@owomarket.local` con `USER_PASSWORD_DEV` (`Test_12345678` en el `.env.example`).
 
@@ -611,6 +778,8 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 ## Bloque G — Frontend
 
 ### G1. 🔴 Los datos bancarios de Pago Móvil / Binance son valores de demo hardcodeados
+
+> **Estado:** ✅ CERRADO (Fase 0.5)
 
 **Archivo:** `resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx:704,718,723,732,802,818`
 
@@ -632,6 +801,8 @@ src={(method as any).qr_code || 'https://api.qrserver.com/...binancepay://pay?id
 
 ### G2. 🔴 Ningún cupón se puede aplicar en la tienda
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `resources/js/pages/marketplace/cart/TenantCartPage.tsx:72`
 
 ```tsx
@@ -648,6 +819,8 @@ if (apiData && apiData.code === 200 && apiData.data) { // .code y .data no exist
 
 ### G3. 🟠 El descuento del cupón se recalcula en el cliente y se descarta el del backend
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `resources/js/contexts/CartContext.tsx:160-166`
 
 ```tsx
@@ -661,6 +834,8 @@ El backend devuelve `discount_amount`, se guarda en `AppliedCoupon.discountAmoun
 ---
 
 ### G4. 🟠 Precio y stock del carrito congelados en `localStorage` y enviados así al crear el pedido
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivos:** `CartContext.tsx:40-48` → `TenantCheckoutPage.tsx:213-221`
 
@@ -677,6 +852,8 @@ No hay ninguna revalidación de precio ni de stock. Es el lado cliente de B1: ed
 
 ### G5. 🟠 `CentralCartContext.addItem` muta el estado previo
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `resources/js/contexts/CentralCartContext.tsx:77`
 
 ```tsx
@@ -690,6 +867,8 @@ updated[existingIndex].quantity += item.quantity;   // muta prevItems[i], no una
 
 ### G6. 🟠 En el marketplace central se pueden añadir productos agotados, hasta 99 unidades
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `resources/js/pages/marketplace/product/CentralProductDetailPage.tsx:252,259,266`
 
 ```tsx
@@ -701,6 +880,8 @@ Con `quantity: 0`, el `||` convierte el tope en 99. Ni el botón ni `handleAddTo
 ---
 
 ### G7. 🟠 `isCentralDomain()` clasifica contando etiquetas del dominio
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `resources/js/Services/CustomerAuthServices.ts:67-79`
 
@@ -718,6 +899,8 @@ return false;                          // "www.mitienda.com" → "tenant"
 
 ### G8. 🟠 Botón "Continuar como Invitado (Modo Pruebas)" que anula la puerta de autenticación
 
+> **Estado:** 🟡 PARCIAL (Fase 0.5: botón de bypass eliminado; la recarga que pierde el formulario sigue)
+
 **Archivo:** `resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx:1009-1019`
 
 ```tsx
@@ -732,6 +915,8 @@ Cualquier anónimo llega al paso de pago sin cuenta, justo lo que el modal dice 
 ---
 
 ### G9. 🟠 Checkout central: tasa BCV hardcodeada, carrera con la petición, y sin envío ni impuestos
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `resources/js/pages/marketplace/checkout/CentralCheckoutPage.tsx:31,75,129-130`
 
@@ -749,6 +934,8 @@ Nada bloquea el submit mientras la tasa no ha cargado, y el `.catch` es silencio
 
 ### G10. 🟠 Al volver a la tienda, la sesión SSO no se restablece y el caché no se limpia
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivo:** `resources/js/contexts/CustomerAuthContext.tsx:77-82`
 
 Si el tenant responde "no autenticado", `refreshSession` no hace nada: ni reintenta el SSO ni borra el caché.
@@ -758,6 +945,8 @@ Si el tenant responde "no autenticado", `refreshSession` no hace nada: ni reinte
 ---
 
 ### G11. 🟡 Pedido creado y carrito vaciado con redirección no validada
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivos:** `CentralCheckoutPage.tsx:149-157`, `TenantCheckoutPage.tsx:227-232`
 
@@ -774,6 +963,8 @@ if (res.status === 'success' && res.data) {
 
 ### G12. 🟡 Lectura de `localStorage` sin validar
 
+> **Estado:** ⬜ ABIERTO
+
 **Archivos:** `CartContext.tsx:40-48`, `CentralCartContext.tsx:46-54`
 
 `JSON.parse` sobre `"null"`, `"{}"` o ítems de una versión anterior no lanza excepción, así que el `try/catch` no ayuda: `items.reduce(...)` revienta con "items.reduce is not a function", o el subtotal queda `NaN` y toda la tienda muestra "$ NaN" sin forma de recuperarse salvo limpiar el navegador a mano.
@@ -784,6 +975,8 @@ if (res.status === 'success' && res.data) {
 
 ### G13. 🟡 `CurrencyPriceDisplay` dispara una petición por instancia y etiqueta una tasa inventada como "oficial BCV"
 
+> **Estado:** 🟡 PARCIAL (Fase 0.5: el checkout del inquilino ya usa la tasa real; el componente CurrencyPriceDisplay sigue igual)
+
 **Archivo:** `resources/js/components/ui/CurrencyPriceDisplay.tsx:19,53,62`
 
 Usado en `ProductCard`, ambos checkouts y ambos detalles de producto. Un catálogo con 24 tarjetas lanza 24 GET simultáneos a `/api/exchange-rate/current`, sin caché ni deduplicación ni `AbortController`. Mientras responden —o si fallan, porque el `.catch` es silencioso— cada precio muestra bolívares calculados con `775.3356` bajo el rótulo **"Tasa oficial BCV"**.
@@ -793,6 +986,8 @@ Usado en `ProductCard`, ambos checkouts y ambos detalles de producto. Un catálo
 ---
 
 ### G14. 🟡 `axios` directo dentro de un componente (prohibido por `reglas.md`)
+
+> **Estado:** ⬜ ABIERTO
 
 **Archivo:** `resources/js/pages/customer/support/CustomerSupportPage.tsx:15,147,184,209`
 
@@ -806,6 +1001,8 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 ---
 
 ### G15. Otros defectos verificados
+
+> **Estado:** ⬜ ABIERTO
 - `CustomerOrdersPage.tsx:52-64` reconstruye el carrito con `tenant_name: item.tenant_id` y `slug: item.product_id` → el drawer muestra el UUID de la tienda y el enlace al producto rompe.
 - `CustomerAccountLayout.tsx:97` ignora `loading` del contexto → muestra "Inicia sesión" durante cada carga antes de resolver la sesión.
 - `CentralProductDetailPage.tsx:60-63` deja "Cargando producto…" para siempre si la petición falla.
@@ -815,26 +1012,80 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ## Plan de acción sugerido
 
-### Fase 0 — Antes de exponer nada (bloqueante)
-1. **Borrar `routes/tenant.php:31`** (A1). Una línea, cierra la escalada de privilegios más grave.
-2. **Crear los middlewares de rol** que `bootstrap/app.php` finge tener (F2) y registrarlos como aliases.
-3. **Aplicar `auth` + rol** a: Monetization apiCentral (A4), Tenant owner APIs (A2), CentralCustomer apiCentral (A3), SupportTicket web (A6), grupo `api-tenant` (A5), y todo `Admin/.../web.php`.
-4. **Resolver precios server-side** en ambos checkouts (B1) y quitar `is_approved`/`is_verified` del FormRequest de reseñas (B2).
-5. **Quitar el botón de bypass del checkout y los datos bancarios hardcodeados** (G8, G1).
+> **Estado al 21/08/2026: 8 de 13 puntos completados.**
+> Fase 0 completa · Fase 1 al 75% · Fases 2 y 3 sin empezar.
 
-### Fase 1 — Integridad del dinero
-6. Transacción + idempotencia en el despacho multi-tienda (C2) y prorrateo de envío/descuento (D1).
-7. Reversión de comisiones al cancelar o reembolsar (D2).
-8. `lockForUpdate` en liquidaciones (C3), factura correlativa (C4) y stock (C1).
-9. Excepción en lugar de tasa 1.0 (D3) y arreglo del scraper BCV (D4).
+### Fase 0 — Antes de exponer nada (bloqueante) — ✅ COMPLETA
+1. ✅ **Borrar `routes/tenant.php:31`** (A1). — *Fase 0.1*
+2. ✅ **Crear los middlewares de rol** que `bootstrap/app.php` finge tener (F2) y registrarlos como aliases. — *Fase 0.2*
+3. ✅ **Aplicar `auth` + rol** a: Monetization apiCentral (A4), Tenant owner APIs (A2), CentralCustomer apiCentral (A3), SupportTicket web (A6), grupo `api-tenant` (A5), y todo `Admin/.../web.php`. — *Fases 0.3-A a 0.3-E*
+4. ✅ **Resolver precios server-side** en ambos checkouts (B1) y quitar `is_approved`/`is_verified` del FormRequest de reseñas (B2). — *Fase 0.4*
+5. ✅ **Quitar el botón de bypass del checkout y los datos bancarios hardcodeados** (G8, G1). — *Fase 0.5*
 
-### Fase 2 — Consistencia
-10. Sincronización central por eventos de modelo (E1, E2) y `(tenant_id, slug)` único (E3).
-11. Upsert de variantes en vez de borrar y recrear (E4).
-12. `sessions.user_id` nullable (F1), guard `central_customer` (F4), permisos en tenant (F5), seeders condicionados (F6).
+### Fase 1 — Integridad del dinero — 🟡 3 de 4
+6. ✅ Transacción + idempotencia en el despacho multi-tienda (C2) y prorrateo de envío/descuento (D1). — *Fase 1.1*
+7. ✅ Reversión de comisiones al cancelar o reembolsar (D2). — *Fase 1.2*
+8. ✅ `lockForUpdate` en liquidaciones (C3), factura correlativa (C4) y stock (C1). — *Fase 1.3*
+9. ⬜ **Excepción en lugar de tasa 1.0 (D3) y arreglo del scraper BCV (D4).** ← **SIGUIENTE**
 
-### Fase 3 — Frontend
-13. Cupones (G2, G3), revalidación de carrito (G4), `isCentralDomain` desde el servidor (G7), refresco de sesión SSO (G10).
+### Fase 2 — Consistencia — ⬜ Sin empezar
+10. ⬜ Sincronización central por eventos de modelo (E1, E2) y `(tenant_id, slug)` único (E3).
+    **Subió de prioridad:** desde la Fase 0.4 el checkout central toma los precios de
+    `central_products`, así que un catálogo desincronizado ya no es cosmético.
+11. ⬜ Upsert de variantes en vez de borrar y recrear (E4).
+12. ⬜ `sessions.user_id` nullable (F1), guard `central_customer` (F4 — 🟡 ya creado en la
+    Fase 0.3-D), permisos en tenant (F5), seeders condicionados (F6).
+    **F1 y F6 conviene adelantarlos:** son de una línea y evitan dos formas de romper producción.
+
+### Fase 3 — Frontend — ⬜ Sin empezar
+13. ⬜ Cupones (G2, G3), revalidación de carrito (G4), `isCentralDomain` desde el servidor (G7), refresco de sesión SSO (G10).
+
+---
+
+## Hallazgos nuevos surgidos durante la remediación
+
+No estaban en la auditoría original; se descubrieron al implementar los arreglos.
+Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
+
+| # | Hallazgo | Origen | Estado |
+| :--- | :--- | :--- | :--- |
+| N1 | El login del cliente central nunca creaba sesión: devolvía un token de 64 caracteres que no se persistía ni verificaba en ningún sitio | Fase 0.3-D | ✅ Cerrado |
+| N2 | No existía logout en el dominio central | Fase 0.3-D | ✅ Cerrado |
+| N3 | `GetTenantOwnerWalletSummaryUseCase` y `ListTenantOwnerProductsUseCase` caían a las tiendas de OTROS comerciantes cuando el usuario no tenía ninguna | Fase 0.3-B | ✅ Cerrado |
+| N4 | `ToggleProductMarketplacePublicationUseCase` recibía `$userId` y no lo miraba nunca | Fase 0.3-B | ✅ Cerrado |
+| N5 | Los retiros no validaban el importe contra el saldo disponible | Fase 0.3-B | ✅ Cerrado |
+| N6 | `sum('order_amount')` sobre una columna que se llama `order_total`: el saldo de la billetera daba siempre 0 | Fase 0.3-B | ✅ Cerrado |
+| N7 | `ViewCustomerSupportGETController` leía `session('customer_id')`, clave que no se escribe en ningún punto del proyecto | Fase 0.3-C | ✅ Cerrado |
+| N8 | `AddMessageToTicketUseCase` no verificaba que el ticket fuera de quien escribe | Fase 0.3-C | ✅ Cerrado |
+| N9 | Los datos bancarios de demostración estaban hardcodeados también en el **backend**, no sólo como fallback del frontend | Fase 0.5 | ✅ Cerrado |
+| N10 | No existía ningún lugar donde el comerciante configurara sus datos de cobro | Fase 0.5 | ✅ Cerrado (grupo de settings `payment`) |
+| N11 | El tipo `StorefrontPaymentMethod` sólo declaraba 4 campos, lo que obligaba a `(method as any)` y hacía invisible G1 para TypeScript | Fase 0.5 | ✅ Cerrado |
+| N12 | **El formulario de reseñas del storefront lleva roto desde siempre:** exige `customer_id` y `TenantProductDetailPage.tsx` nunca lo envía (422 garantizado) | Fase 0.4 | ⬜ Abierto |
+| N13 | `StockReserver::release()` existe pero nadie lo llama: **nadie repone stock al cancelar un pedido**. Falta decidir en qué estados corresponde (decisión de producto) | Fase 1.3 | ⬜ Abierto |
+| N14 | **El checkout central no reserva stock en absoluto:** `DispatchCentralOrderToTenantsUseCase` crea pedidos de tienda sin tocar el inventario | Fase 1.3 | ⬜ Abierto |
+| N15 | La comisión sigue naciendo al despachar y no al cobrar. Es la raíz de D2: mientras no cambie, dependemos de que alguien cancele el pedido para anularla | Fase 1.2 | ⬜ Abierto |
+| N16 | No existen notas de crédito: revertir una comisión ya liquidada sólo deja una marca `requires_manual_adjustment` | Fase 1.2 | ⬜ Abierto |
+| N17 | Los despachos fallidos quedan en `status = 'failed'` y nada los reintenta; el despacho sigue siendo síncrono | Fase 1.1 | ⬜ Abierto |
+| N18 | Ningún endpoint tiene límite de tasa. Al pasar `api-tenant` de `api` a `web` se perdió incluso la posibilidad de `throttleApi()` (aunque nunca estuvo activo) | Fase 0.3-E | ⬜ Abierto |
+| N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto |
+
+---
+
+## Notas técnicas para quien retome
+
+- **`lockForUpdate` no hace nada en SQLite**, que es lo que usa la suite de tests.
+  Los tests de concurrencia (C1, C3, C4) validan que la lógica de comprobación sea
+  correcta, **no** que la carrera esté cerrada. Esa garantía depende de MySQL/PostgreSQL
+  en producción. Si el volumen lo justifica, hace falta una prueba de carga real.
+- **Los tests que tocan `/api-tenant/*` necesitan `actingAs`** desde la Fase 0.3-E.
+  El patrón usado es crear un `Src\Tenant\...\User` con `type => 'tenant_owner'` en el
+  `beforeEach` y llamar a `$this->actingAs(...)`; cubre todo el archivo.
+- **Las clases que se sustituyen por dobles de Mockery no pueden ser `final`.**
+  Ya pasó con `VerifiedPurchaseChecker` y `ReverseOrderCommissionUseCase`; ambas llevan
+  un comentario explicando por qué rompen la convención del proyecto.
+- **Decisión de negocio confirmada (21/08/2026):** la comisión de la plataforma se cobra
+  sobre la **mercancía neta de descuento, sin incluir el envío**. Punto único de cambio:
+  `DispatchCentralOrderToTenantsUseCase::recordCommission()`.
 
 ---
 

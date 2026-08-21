@@ -9,20 +9,19 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Src\CentralCustomer\Application\UseCases\DownloadCustomerInvoicePdfUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class DownloadCustomerInvoicePdfGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly DownloadCustomerInvoicePdfUseCase $downloadPdfUseCase
     ) {}
 
     public function __invoke(Request $request, string $id): Response|JsonResponse
     {
-        $customerId = $request->input('customer_id') 
-            ?: $request->header('X-Customer-Id') 
-            ?: session('central_customer_id');
-
-        $customerIdStr = ! empty($customerId) ? (string) $customerId : null;
+        $customerIdStr = $this->currentCustomerId();
 
         try {
             $pdf = $this->downloadPdfUseCase->execute($customerIdStr, $id);

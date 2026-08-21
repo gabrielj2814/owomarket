@@ -8,16 +8,25 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\GetCentralCustomerProfileUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 use Src\Shared\Helper\ApiResponse;
 
 final class GetCustomerProfileGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly GetCentralCustomerProfileUseCase $useCase
     ) {}
 
     public function __invoke(string $id): JsonResponse
     {
+        // Antes cualquier sesión (o ninguna) podía leer el perfil de otro
+        // comprador con solo cambiar el {id} de la URL (hallazgo A3).
+        if ($denied = $this->denyIfNotOwnProfile($id)) {
+            return $denied;
+        }
+
         try {
             $customer = $this->useCase->execute($id);
 

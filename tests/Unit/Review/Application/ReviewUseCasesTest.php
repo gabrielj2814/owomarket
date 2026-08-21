@@ -10,6 +10,7 @@ use Src\Review\Application\DTOs\ProductRatingSummaryData;
 use Src\Review\Application\DTOs\RespondReviewData;
 use Src\Review\Application\DTOs\UpdateReviewData;
 use Src\Review\Application\Repositories\ReviewRepositoryInterface;
+use Src\Review\Application\Service\VerifiedPurchaseChecker;
 use Src\Review\Application\UseCases\ConsultReviewByIdUseCase;
 use Src\Review\Application\UseCases\CreateProductReviewUseCase;
 use Src\Review\Application\UseCases\DeleteProductReviewUseCase;
@@ -42,7 +43,15 @@ it('CreateProductReviewUseCase creates and saves review', function () {
         ->once()
         ->with(Mockery::type(ProductReview::class));
 
-    $useCase = new CreateProductReviewUseCase($this->repository);
+    // Hallazgo B2: la verificación de compra la decide el servidor. Se simula
+    // un pedido que sí pertenece a este cliente y contiene este producto.
+    $checker = Mockery::mock(VerifiedPurchaseChecker::class);
+    $checker->shouldReceive('isVerifiedPurchase')
+        ->once()
+        ->with('ord-1', 'cust-1', 'prod-1')
+        ->andReturnTrue();
+
+    $useCase = new CreateProductReviewUseCase($this->repository, $checker);
     $data = new CreateReviewData(
         productId: 'prod-1',
         customerId: 'cust-1',
@@ -57,7 +66,52 @@ it('CreateProductReviewUseCase creates and saves review', function () {
     expect($review->productId())->toBe('prod-1')
         ->and($review->customerId())->toBe('cust-1')
         ->and($review->rating()->value())->toBe(5)
-        ->and($review->isVerified())->toBeTrue();
+        ->and($review->isVerified())->toBeTrue()
+        // Nace siempre pendiente de moderación.
+        ->and($review->isApproved())->toBeFalse();
+});
+
+it('CreateProductReviewUseCase no marca como verificada una reseña con un pedido ajeno', function () {
+    $this->repository->shouldReceive('findByCustomerAndProduct')
+        ->once()
+        ->with('cust-1', 'prod-1')
+        ->andReturnNull();
+
+    $this->repository->shouldReceive('save')->once();
+
+    // El pedido existe pero no es de este cliente / no contiene el producto.
+    $checker = Mockery::mock(VerifiedPurchaseChecker::class);
+    $checker->shouldReceive('isVerifiedPurchase')->once()->andReturnFalse();
+
+    $useCase = new CreateProductReviewUseCase($this->repository, $checker);
+
+    // Aunque el DTO pidiera isApproved/isVerified en true, se ignoran.
+    $data = new CreateReviewData(
+        productId: 'prod-1',
+        customerId: 'cust-1',
+        rating: 5,
+        orderId: 'ord-de-otro',
+        isApproved: true,
+        isVerified: true
+    );
+
+    $review = $useCase->execute($data);
+
+    expect($review->isVerified())->toBeFalse()
+        ->and($review->isApproved())->toBeFalse();
+});
+
+it('CreateReviewData::fromArray descarta is_approved e is_verified del request', function () {
+    $data = CreateReviewData::fromArray([
+        'product_id' => 'prod-1',
+        'customer_id' => 'cust-1',
+        'rating' => 5,
+        'is_approved' => true,
+        'is_verified' => true,
+    ]);
+
+    expect($data->isApproved)->toBeFalse()
+        ->and($data->isVerified)->toBeFalse();
 });
 
 it('CreateProductReviewUseCase throws DuplicateReviewException when duplicate review exists', function () {
@@ -72,7 +126,10 @@ it('CreateProductReviewUseCase throws DuplicateReviewException when duplicate re
         ->with('cust-1', 'prod-1')
         ->andReturn($existing);
 
-    $useCase = new CreateProductReviewUseCase($this->repository);
+    $useCase = new CreateProductReviewUseCase(
+        $this->repository,
+        Mockery::mock(VerifiedPurchaseChecker::class)
+    );
     $data = new CreateReviewData(
         productId: 'prod-1',
         customerId: 'cust-1',

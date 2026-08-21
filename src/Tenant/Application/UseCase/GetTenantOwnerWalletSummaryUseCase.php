@@ -37,7 +37,7 @@ final class GetTenantOwnerWalletSummaryUseCase
 
         if ($tenantIds !== []) {
             if (Schema::hasTable('platform_commissions')) {
-                $grossSales = (float) PlatformCommission::whereIn('tenant_id', $tenantIds)->sum('order_amount');
+                $grossSales = (float) PlatformCommission::whereIn('tenant_id', $tenantIds)->sum('order_total');
                 $totalCommissions = (float) PlatformCommission::whereIn('tenant_id', $tenantIds)->sum('commission_amount');
             }
 

@@ -45,6 +45,18 @@ beforeEach(function () {
     ]);
 
     tenancy()->initialize($this->tenant);
+
+    // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5). Las rutas
+    // de backoffice exigen ahora sesión de usuario de la tienda; se autentica
+    // aquí para todo el archivo.
+    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
+        'id' => (string) \Illuminate\Support\Str::uuid(),
+        'name' => 'Store Staff',
+        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+    ]);
+    $this->actingAs($this->tenantUser);
 });
 
 afterEach(function () {
@@ -162,4 +174,50 @@ it('GET /api-tenant/billing/metrics returns billing KPI metrics', function () {
         ->assertJsonStructure([
             'data' => ['total_billed', 'total_issued', 'total_paid', 'total_cancelled'],
         ]);
+});
+
+test('Los números de factura son correlativos y no se repiten (hallazgo C4)', function () {
+    // Antes, `getProfile()` leía el contador sin bloqueo, el incremento ocurría
+    // en memoria y se persistía aparte: dos emisiones con next_invoice_number
+    // = 42 generaban ambas FAC-2026-000042.
+    $numeros = [];
+
+    foreach (range(1, 5) as $i) {
+        $response = $this->postJson("http://{$this->domain}/api-tenant/billing/invoices", [
+            'customer_name' => "Cliente {$i}",
+            'customer_tax_id' => 'J-1234567-'.$i,
+            'customer_email' => "cliente{$i}@example.com",
+            'customer_address_line_1' => 'Av. Principal 100',
+            'customer_city' => 'Caracas',
+            'customer_state' => 'Miranda',
+            'customer_postal_code' => '1050',
+            'customer_country' => 'Venezuela',
+            'items' => [
+                [
+                    'description' => 'Servicio de prueba',
+                    'quantity' => 1,
+                    'unit_price' => 100.00,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(201);
+        $numeros[] = $response->json('data.invoice_number');
+    }
+
+    // Ni uno repetido.
+    expect(count(array_unique($numeros)))->toBe(5);
+
+    // Y son consecutivos: el correlativo avanza de uno en uno.
+    $correlativos = array_map(
+        fn (string $n) => (int) substr($n, strrpos($n, '-') + 1),
+        $numeros
+    );
+    expect($correlativos)->toBe([
+        $correlativos[0],
+        $correlativos[0] + 1,
+        $correlativos[0] + 2,
+        $correlativos[0] + 3,
+        $correlativos[0] + 4,
+    ]);
 });

@@ -8,9 +8,12 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\ToggleCustomerWishlistProductUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class ToggleCustomerWishlistPOSTController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly ToggleCustomerWishlistProductUseCase $toggleWishlistUseCase
     ) {}
@@ -18,7 +21,6 @@ final class ToggleCustomerWishlistPOSTController
     public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'customer_id' => ['required', 'string'],
             'product_id' => ['required', 'string'],
             'tenant_id' => ['required', 'string'],
             'product_name' => ['required', 'string'],
@@ -27,8 +29,12 @@ final class ToggleCustomerWishlistPOSTController
             'product_image' => ['nullable', 'string'],
         ]);
 
+        // Antes 'customer_id' salía del body: cualquiera podía manipular la
+        // wishlist de otro comprador (hallazgo A3).
+        $customerId = $this->currentCustomerId();
+
         try {
-            $result = $this->toggleWishlistUseCase->execute($validated['customer_id'], $validated);
+            $result = $this->toggleWishlistUseCase->execute($customerId, $validated);
 
             return response()->json([
                 'code' => 200,

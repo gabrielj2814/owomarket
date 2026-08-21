@@ -121,11 +121,12 @@ test('POST /api/central/customer/sso/generate-token creates ephemeral token and 
         'is_active' => true,
     ]);
 
-    // 1. Generate SSO Token on Central
-    $tokenResponse = $this->postJson('/api/central/customer/sso/generate-token', [
-        'customer_id' => $customerId,
-        'target_domain' => $this->domain,
-    ]);
+    // 1. Generate SSO Token on Central (requiere sesión propia del comprador
+    // desde la Fase 0.3-D — antes bastaba mandar cualquier customer_id).
+    $tokenResponse = $this->actingAs($centralCustomer, 'central_customer')
+        ->postJson('/api/central/customer/sso/generate-token', [
+            'target_domain' => $this->domain,
+        ]);
 
     $tokenResponse->assertStatus(200);
     $token = $tokenResponse->json('data.token');
@@ -204,4 +205,62 @@ test('GET /api-tenant/customer/auth/session and POST /api-tenant/customer/auth/l
                 'authenticated' => false,
             ],
         ]);
+});
+
+test('POST /api/central/customer/login establishes a real session usable by protected endpoints', function () {
+    $email = 'session_' . bin2hex(random_bytes(3)) . '@example.com';
+    $customer = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Sesión Real',
+        'email' => $email,
+        'password' => Hash::make('mypassword2026'),
+        'is_active' => true,
+    ]);
+
+    // Antes del login, cualquier endpoint protegido del portal rechaza.
+    $this->getJson("/api/central/customer/profile/{$customer->id}")->assertStatus(401);
+
+    $loginResponse = $this->postJson('/api/central/customer/login', [
+        'email' => $email,
+        'password' => 'mypassword2026',
+    ]);
+    $loginResponse->assertStatus(200);
+
+    // La sesión creada por el login basta: no hace falta mandar el ID en la URL de más.
+    $this->getJson("/api/central/customer/profile/{$customer->id}")
+        ->assertStatus(200)
+        ->assertJsonPath('data.id', $customer->id);
+});
+
+test('Anonymous requests to the protected central customer API are rejected', function () {
+    $this->getJson('/api/central/customer/orders')->assertStatus(401);
+    $this->postJson('/api/central/customer/sso/generate-token')->assertStatus(401);
+});
+
+test('A customer cannot read or edit another customer profile', function () {
+    $victim = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Víctima',
+        'email' => 'victim_'.bin2hex(random_bytes(3)).'@example.com',
+        'password' => Hash::make('secretpass'),
+        'is_active' => true,
+    ]);
+
+    $attacker = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Atacante',
+        'email' => 'attacker_'.bin2hex(random_bytes(3)).'@example.com',
+        'password' => Hash::make('secretpass'),
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($attacker, 'central_customer')
+        ->getJson("/api/central/customer/profile/{$victim->id}")
+        ->assertStatus(403);
+
+    $this->actingAs($attacker, 'central_customer')
+        ->putJson("/api/central/customer/profile/{$victim->id}", ['name' => 'Hackeado'])
+        ->assertStatus(403);
+
+    expect($victim->fresh()->name)->toBe('Víctima');
 });

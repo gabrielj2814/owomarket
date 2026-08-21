@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
@@ -45,6 +46,10 @@ beforeEach(function () {
     if (! Schema::hasTable('commission_settlements')) {
         (require base_path('database/migrations/2026_08_19_000005_create_commission_settlements_tables.php'))->up();
     }
+
+    if (! Schema::hasTable('platform_commissions')) {
+        (require base_path('database/migrations/2026_08_19_000003_create_monetization_tables.php'))->up();
+    }
 });
 
 test('Tenant Owner can generate and consume SSO token to login directly into store backoffice', function () {
@@ -68,6 +73,11 @@ test('Tenant Owner can generate and consume SSO token to login directly into sto
         'id' => (string) Str::uuid(),
         'domain' => 'store-sso-test.owomarket.local',
         'tenant_id' => 'store-sso-test',
+    ]);
+
+    $tenant->users()->attach($user->id, [
+        'id' => (string) Str::uuid(),
+        'role' => 'owner',
     ]);
 
     // 1. Generate SSO Token
@@ -104,6 +114,24 @@ test('Tenant Owner can view wallet summary and request payout', function () {
         'slug' => 'wallet-store',
         'status' => 'active',
         'request' => 'approved',
+    ]);
+
+    $tenant->users()->attach($user->id, [
+        'id' => (string) Str::uuid(),
+        'role' => 'owner',
+    ]);
+
+    // Ventas previas que respaldan el saldo disponible para el retiro.
+    PlatformCommission::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => 'wallet-store-test',
+        'order_id' => (string) Str::uuid(),
+        'order_number' => 'ORD-TEST-001',
+        'order_total' => 500.00,
+        'commission_rate' => 8.00,
+        'commission_amount' => 40.00,
+        'currency' => 'USD',
+        'status' => 'collected',
     ]);
 
     // 1. Get Wallet Summary
@@ -147,6 +175,11 @@ test('Tenant Owner can list products and toggle publication in central marketpla
         'slug' => 'catalog-store',
         'status' => 'active',
         'request' => 'approved',
+    ]);
+
+    $tenant->users()->attach($user->id, [
+        'id' => (string) Str::uuid(),
+        'role' => 'owner',
     ]);
 
     $product = CentralProduct::create([

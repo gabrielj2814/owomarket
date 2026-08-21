@@ -8,9 +8,12 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\SubmitCustomerProductReviewUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class SubmitCustomerReviewPOSTController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly SubmitCustomerProductReviewUseCase $submitReviewUseCase
     ) {}
@@ -18,7 +21,6 @@ final class SubmitCustomerReviewPOSTController
     public function __invoke(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'customer_id' => ['required', 'string'],
             'order_id' => ['required', 'string'],
             'product_id' => ['required', 'string'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
@@ -26,8 +28,12 @@ final class SubmitCustomerReviewPOSTController
             'comment' => ['required', 'string', 'max:1000'],
         ]);
 
+        // Antes 'customer_id' salía del body: cualquiera podía publicar una
+        // reseña "verificada" a nombre de otro comprador (hallazgo A3).
+        $customerId = $this->currentCustomerId();
+
         try {
-            $result = $this->submitReviewUseCase->execute($validated['customer_id'], $validated);
+            $result = $this->submitReviewUseCase->execute($customerId, $validated);
 
             return response()->json([
                 'code' => 200,

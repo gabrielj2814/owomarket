@@ -183,6 +183,23 @@ export const CustomerAuthServices = {
             );
         }
     },
+
+    // 7. Cerrar sesión en el dominio Central
+    logoutCentral: async (): Promise<Data<null>> => {
+        try {
+            const res = await axiosCentral.post<Data<null>>('logout');
+            return res.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error al cerrar sesión',
+                    data: null,
+                }
+            );
+        }
+    },
 };
 
 export default CustomerAuthServices;

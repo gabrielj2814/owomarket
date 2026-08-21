@@ -185,7 +185,9 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const logout = async (): Promise<void> => {
         try {
-            if (!isCentralDomain()) {
+            if (isCentralDomain()) {
+                await CustomerAuthServices.logoutCentral();
+            } else {
                 await CustomerAuthServices.logoutTenant();
             }
         } finally {

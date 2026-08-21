@@ -9,9 +9,12 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;
 use Src\SupportTicket\Application\UseCase\AddMessageToTicketUseCase;
+use Src\SupportTicket\Infrastructure\Http\Support\ResolvesSupportRequester;
 
 final class AddSupportTicketMessagePOSTController
 {
+    use ResolvesSupportRequester;
+
     public function __construct(
         private readonly AddMessageToTicketUseCase $useCase
     ) {}
@@ -20,19 +23,21 @@ final class AddSupportTicketMessagePOSTController
     {
         $request->validate([
             'message' => 'required|string',
-            'user_id' => 'nullable|string',
-            'sender_type' => 'nullable|in:tenant_owner,customer,support_agent,admin',
-            'sender_name' => 'nullable|string',
             'files' => 'nullable|array',
             'files.*' => 'file|max:51200',
         ]);
 
-        $userId = (string) ($request->input('user_id') 
-            ?: auth('central_customer')->id() 
-            ?: auth()->id());
+        // La identidad y el tipo de remitente SIEMPRE salen de la sesión.
+        // Antes se aceptaban 'user_id' y 'sender_type' del body, incluyendo
+        // 'admin'/'support_agent': cualquiera podía insertar un mensaje que
+        // la víctima veía como oficial de OwoMarket (hallazgo A6). El envío
+        // como staff real sigue disponible en AdminReplySupportTicketPOSTController,
+        // protegido por ['auth','staff:manage_support'].
+        $requester = $this->resolveSupportRequester($request);
 
-        $senderType = (string) ($request->input('sender_type') 
-            ?: (auth('central_customer')->check() ? 'customer' : 'tenant_owner'));
+        if ($requester === null) {
+            return ApiResponse::error('Debes iniciar sesión para responder en soporte.', 401);
+        }
 
         try {
             $files = $request->file('files');
@@ -42,12 +47,12 @@ final class AddSupportTicketMessagePOSTController
 
             $message = $this->useCase->execute([
                 'ticket_id' => $id,
-                'sender_type' => $senderType,
-                'sender_id' => $userId,
-                'sender_name' => (string) ($request->input('sender_name') ?: (auth()->user()?->name ?? 'Usuario')),
+                'sender_type' => $requester['type'],
+                'sender_id' => $requester['id'],
+                'sender_name' => $requester['name'],
                 'message' => (string) $request->input('message'),
                 'files' => $files ?? [],
-            ]);
+            ], requesterId: $requester['id']);
 
             return ApiResponse::success(
                 data: $message,

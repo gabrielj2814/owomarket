@@ -30,6 +30,9 @@ class CentralOrder extends Model
     protected $fillable = [
         'id',
         'order_number',
+        // Hallazgo C2: clave de idempotencia del checkout. Dos envíos del mismo
+        // pedido con la misma clave devuelven el mismo CentralOrder.
+        'idempotency_key',
         'customer_id',
         'customer_name',
         'customer_email',

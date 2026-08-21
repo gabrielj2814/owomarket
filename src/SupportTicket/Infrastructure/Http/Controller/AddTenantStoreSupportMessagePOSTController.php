@@ -43,7 +43,7 @@ final class AddTenantStoreSupportMessagePOSTController
                 'sender_name' => auth()->user()?->name ?? 'Administrador de Tienda',
                 'message' => (string) $request->input('message'),
                 'files' => $files ?? [],
-            ]);
+            ], requesterId: $userId);
 
             return ApiResponse::success(
                 data: $message,

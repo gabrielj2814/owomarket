@@ -8,16 +8,19 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\GetCustomerOrderTrackingUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class GetCustomerOrderTrackingGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly GetCustomerOrderTrackingUseCase $getTrackingUseCase
     ) {}
 
     public function __invoke(Request $request, string $id): JsonResponse
     {
-        $customerId = (string) $request->input('customer_id', $request->header('X-Customer-Id', ''));
+        $customerId = $this->currentCustomerId();
 
         try {
             $tracking = $this->getTrackingUseCase->execute($customerId, $id);

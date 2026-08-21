@@ -26,13 +26,22 @@ final class AddMessageToTicketUseCase
      *     is_internal_note?: bool,
      *     files?: array<\Illuminate\Http\UploadedFile>
      * } $data
+     * @param  string|null  $requesterId  ID resuelto de la sesión de quien hace la petición.
+     *                                    Null = ruta de staff (AdminReplySupportTicketPOSTController),
+     *                                    que puede responder cualquier ticket. Si viene informado,
+     *                                    se exige que sea el dueño del ticket (hallazgo A6: antes
+     *                                    cualquier sesión válida podía escribir en el ticket de otro).
      * @return SupportTicketMessage
      */
-    public function execute(array $data): SupportTicketMessage
+    public function execute(array $data, ?string $requesterId = null): SupportTicketMessage
     {
         $ticket = SupportTicket::find($data['ticket_id']);
         if (! $ticket) {
             throw new Exception('Ticket de soporte no encontrado.', 404);
+        }
+
+        if ($requesterId !== null && (string) $ticket->user_id !== $requesterId) {
+            throw new Exception('No tienes acceso a este ticket de soporte.', 403);
         }
 
         if (empty(trim($data['message']))) {

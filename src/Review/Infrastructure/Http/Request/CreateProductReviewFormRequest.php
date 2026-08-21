@@ -25,8 +25,16 @@ class CreateProductReviewFormRequest extends FormRequest
             'order_id' => ['nullable', 'string', 'exists:orders,id'],
             'title' => ['nullable', 'string', 'max:255'],
             'comment' => ['nullable', 'string', 'max:2000'],
-            'is_approved' => ['nullable', 'boolean'],
-            'is_verified' => ['nullable', 'boolean'],
+            // 'is_approved' e 'is_verified' YA NO se aceptan del cliente
+            // (hallazgo B2). Antes, un POST con {"is_approved":true,
+            // "is_verified":true} publicaba al instante una reseña de 5
+            // estrellas marcada como "compra verificada", saltándose la
+            // moderación. Ahora:
+            //   - is_approved nace SIEMPRE en false; aprobar es potestad del
+            //     comerciante vía ModerateReviewPOSTController.
+            //   - is_verified lo decide el servidor con VerifiedPurchaseChecker,
+            //     comprobando que el pedido sea de quien reseña y contenga
+            //     el producto reseñado.
         ];
     }
 

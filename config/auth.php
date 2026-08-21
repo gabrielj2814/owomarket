@@ -1,5 +1,6 @@
 <?php
 
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Src\User\Infrastructure\Eloquent\Models\User;
 
 return [
@@ -47,6 +48,16 @@ return [
             'driver' => 'session',
             'provider' => 'central_users',
         ],
+
+        // Sesión de comprador del marketplace central (Src\CentralCustomer\...\CentralCustomer).
+        // No existía hasta la Fase 0.3-D: el código llamaba a auth('central_customer')
+        // en más de diez controladores sin que este guard estuviera registrado, lo que
+        // lanzaba InvalidArgumentException (hallazgo F4) o, peor, dejaba esos endpoints
+        // sin ninguna verificación real de identidad (hallazgo A3).
+        'central_customer' => [
+            'driver' => 'session',
+            'provider' => 'central_customers',
+        ],
     ],
 
     /*
@@ -76,6 +87,11 @@ return [
         'central_users' => [
             'driver' => 'eloquent',
             'model' => User::class,
+        ],
+
+        'central_customers' => [
+            'driver' => 'eloquent',
+            'model' => CentralCustomer::class,
         ],
 
         // 'users' => [

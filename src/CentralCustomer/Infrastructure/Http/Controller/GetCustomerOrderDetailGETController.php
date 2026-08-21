@@ -8,16 +8,19 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\GetCustomerOrderDetailUseCase;
+use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
 final class GetCustomerOrderDetailGETController
 {
+    use ResolvesAuthenticatedCustomer;
+
     public function __construct(
         private readonly GetCustomerOrderDetailUseCase $getOrderDetailUseCase
     ) {}
 
     public function __invoke(Request $request, string $id): JsonResponse
     {
-        $customerId = (string) $request->input('customer_id', $request->header('X-Customer-Id', ''));
+        $customerId = $this->currentCustomerId();
 
         try {
             $order = $this->getOrderDetailUseCase->execute($customerId, $id);

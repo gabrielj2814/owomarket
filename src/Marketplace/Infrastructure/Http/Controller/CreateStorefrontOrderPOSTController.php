@@ -14,15 +14,17 @@ use Src\Coupon\Infrastructure\Eloquent\Models\Coupon;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
 use Src\Order\Application\DTOs\CreateOrderData;
 use Src\Order\Application\DTOs\OrderItemInputData;
+use Src\Marketplace\Application\Service\StockReserver;
+use Src\Marketplace\Application\Service\StorefrontItemPriceResolver;
 use Src\Order\Application\UseCases\CreateOrderUseCase;
-use Src\Product\Infrastructure\Eloquent\Models\Product;
-use Src\Product\Infrastructure\Eloquent\Models\ProductVariant;
 use Src\Shared\Helper\ApiResponse;
 
 final class CreateStorefrontOrderPOSTController extends Controller
 {
     public function __construct(
-        private readonly CreateOrderUseCase $createOrderUseCase
+        private readonly CreateOrderUseCase $createOrderUseCase,
+        private readonly StorefrontItemPriceResolver $priceResolver,
+        private readonly StockReserver $stockReserver
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -50,15 +52,21 @@ final class CreateStorefrontOrderPOSTController extends Controller
             'coupon_code' => ['nullable', 'string', 'max:50'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => ['required', 'string'],
-            'items.*.product_name' => ['required', 'string'],
-            'items.*.sku' => ['required', 'string'],
-            'items.*.price' => ['required', 'numeric', 'min:0'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.variant_id' => ['nullable', 'string'],
             'items.*.attributes' => ['nullable', 'array'],
+            // 'price', 'product_name' y 'sku' ya NO se validan ni se usan:
+            // se resuelven contra la base de datos (hallazgo B1). El frontend
+            // puede seguir enviándolos; simplemente se ignoran.
         ]);
 
         try {
+            // Hallazgo C1: todo el checkout —reserva de stock, consumo del
+            // cupón y creación del pedido— ocurre dentro de una transacción.
+            // Es lo que hace efectivos los lockForUpdate del StockReserver y lo
+            // que garantiza que, si el pedido no llega a crearse, el stock no
+            // quede descontado ni el cupón consumido.
+            [$orderId, $orderNum, $orderTotal, $paymentMethod] = DB::transaction(function () use ($request) {
             // 2. Customer resolution (find or create in tenant DB)
             $customerEmail = trim((string) $request->input('customer.email'));
             $customerName = trim((string) $request->input('customer.name'));
@@ -83,41 +91,35 @@ final class CreateStorefrontOrderPOSTController extends Controller
             $calculatedSubtotal = 0.0;
 
             foreach ($rawItems as $item) {
-                $pId = (string) $item['product_id'];
-                $pName = (string) $item['product_name'];
-                $sku = (string) $item['sku'];
-                $price = (float) $item['price'];
-                $qty = (int) $item['quantity'];
-                $varId = isset($item['variant_id']) && $item['variant_id'] !== '' ? (string) $item['variant_id'] : null;
+                // Hallazgo B1: precio, nombre y SKU salen de la base de datos
+                // del inquilino. Lo que venga en $item['price'] se descarta.
+                $resolved = $this->priceResolver->resolve($item);
+
+                $pId = $resolved['product_id'];
+                $qty = $resolved['quantity'];
+                $varId = $resolved['variant_id'];
                 $attrs = isset($item['attributes']) && is_array($item['attributes']) ? $item['attributes'] : null;
 
-                $calculatedSubtotal += ($price * $qty);
+                $calculatedSubtotal += ($resolved['price'] * $qty);
 
                 $orderItemsDto[] = new OrderItemInputData(
                     productId: $pId,
-                    productName: $pName,
-                    sku: $sku,
-                    price: $price,
+                    productName: $resolved['name'],
+                    sku: $resolved['sku'],
+                    price: $resolved['price'],
                     quantity: $qty,
                     productVariantId: $varId,
                     attributes: $attrs
                 );
 
-                // Decrement stock if trackable
-                try {
-                    if ($varId) {
-                        $variant = ProductVariant::find($varId);
-                        if ($variant && $variant->quantity >= $qty) {
-                            $variant->decrement('quantity', $qty);
-                        }
-                    }
-                    $product = Product::find($pId);
-                    if ($product && $product->quantity >= $qty) {
-                        $product->decrement('quantity', $qty);
-                    }
-                } catch (\Throwable) {
-                }
+                // Hallazgo C1: la reserva bloquea la fila y falla con 409 si no
+                // hay existencias, en vez de crear el pedido igual. Corre
+                // dentro de la transacción abierta más abajo, que es lo que
+                // hace efectivo el lockForUpdate.
+                $this->stockReserver->reserve($pId, $varId, $qty, $resolved['name']);
             }
+
+            $calculatedSubtotal = round($calculatedSubtotal, 2);
 
             // 4. Calculate discount if coupon provided
             $discountAmount = 0.0;
@@ -171,36 +173,42 @@ final class CreateStorefrontOrderPOSTController extends Controller
             $orderNum = $order->orderNumber()->value();
             $orderTotal = $order->total()->amount();
 
-            // 6. Record Payment in payments table
-            try {
-                $txId = $paymentDetails['transaction_hash'] 
-                    ?? $paymentDetails['reference_number'] 
-                    ?? ('TX-'.strtoupper(Str::random(10)));
+            // 6. Record Payment in payments table.
+            //    Ya no lleva `catch (\Throwable)` vacío: si el pago no se puede
+            //    registrar, la transacción revierte el pedido entero en vez de
+            //    dejar una venta sin rastro de cobro.
+            $txId = $paymentDetails['transaction_hash']
+                ?? $paymentDetails['reference_number']
+                ?? ('TX-'.strtoupper(Str::random(10)));
 
-                DB::table('payments')->insert([
-                    'id' => (string) Str::uuid(),
-                    'order_id' => $orderId,
-                    'payment_gateway' => $paymentMethod,
-                    'transaction_id' => (string) $txId,
-                    'amount' => $orderTotal,
-                    'fee' => 0.0,
-                    'status' => 'pending',
-                    'currency' => 'USD',
-                    'gateway_response' => json_encode([
-                        'gateway' => $paymentMethod,
-                        'payment_details' => $paymentDetails,
-                        'customer' => $request->input('customer'),
-                        'created_at' => now()->toIso8601String(),
-                    ]),
-                    'paid_at' => null,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            } catch (\Throwable) {
-                // Keep order creation robust if payments table constraint differs
-            }
+            DB::table('payments')->insert([
+                'id' => (string) Str::uuid(),
+                'order_id' => $orderId,
+                'payment_gateway' => $paymentMethod,
+                'transaction_id' => (string) $txId,
+                'amount' => $orderTotal,
+                'fee' => 0.0,
+                'status' => 'pending',
+                'currency' => 'USD',
+                'gateway_response' => json_encode([
+                    'gateway' => $paymentMethod,
+                    'payment_details' => $paymentDetails,
+                    'customer' => $request->input('customer'),
+                    'created_at' => now()->toIso8601String(),
+                ]),
+                'paid_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
-            // 7. Calculate and Record Platform Commission in Central DB
+            return [$orderId, $orderNum, $orderTotal, $paymentMethod];
+            });
+
+            // 7. Calculate and Record Platform Commission in Central DB.
+            //    Va FUERA de la transacción a propósito: escribe en la base
+            //    central, otra conexión, así que incluirla no daría atomicidad
+            //    real. Si falla, el pedido de la tienda es válido igualmente y
+            //    lo que queda pendiente es registrar la comisión.
             try {
                 $tenantId = (string) (tenant('id') ?? '');
                 if ($tenantId !== '') {
@@ -233,9 +241,14 @@ final class CreateStorefrontOrderPOSTController extends Controller
                 code: 201
             );
         } catch (Exception $e) {
+            // Se conserva el código de la excepción: la falta de existencias
+            // devuelve 409 (hallazgo C1), no un 400 genérico que el frontend
+            // no puede distinguir de un error de validación.
+            $code = (int) $e->getCode();
+
             return ApiResponse::error(
                 message: $e->getMessage(),
-                code: 400
+                code: $code >= 400 && $code < 600 ? $code : 400
             );
         }
     }

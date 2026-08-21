@@ -223,3 +223,112 @@ test('Storefront checkout creates order and records payment with Binance Pay USD
     expect($payment->payment_gateway)->toBe('binance_pay');
     expect($payment->transaction_id)->toBe($txHash);
 });
+
+test('El checkout del storefront ignora el precio que envía el navegador (hallazgo B1)', function () {
+    $payload = [
+        'customer' => [
+            'name' => 'Comprador Malicioso',
+            'email' => 'malicioso@example.com',
+        ],
+        'shipping_address' => [
+            'address' => 'Calle Falsa 123',
+            'city' => 'Caracas',
+        ],
+        'shipping_method' => 'standard',
+        'shipping_amount' => 0.00,
+        'payment_method' => 'pago_movil',
+        'items' => [
+            [
+                'product_id' => $this->product->id,
+                // El producto vale 120.00 en la base de datos del inquilino.
+                'product_name' => 'Zapatillas regaladas',
+                'sku' => 'FAKE',
+                'price' => 0.01,
+                'quantity' => 1,
+            ],
+        ],
+    ];
+
+    $response = $this->postJson("http://{$this->domain}/checkout/create-order", $payload);
+    $response->assertStatus(201);
+
+    $orderId = $response->json('data.order_id');
+    $order = DB::table('orders')->where('id', $orderId)->first();
+
+    expect((float) $order->subtotal)->toBe(120.00);
+    expect((float) $order->total)->toBe(120.00);
+
+    // El nombre y el SKU también salen de la base, no del navegador.
+    $item = DB::table('order_items')->where('order_id', $orderId)->first();
+    expect($item->product_name)->toBe('Zapatillas Nike Pegasus');
+    expect($item->sku)->toBe('NIKE-PEG-01');
+
+    // Y el pago se registra por el importe real, no por el manipulado.
+    $payment = DB::table('payments')->where('order_id', $orderId)->first();
+    expect((float) $payment->amount)->toBe(120.00);
+});
+
+test('El checkout del storefront rechaza productos inexistentes u ocultos', function () {
+    $basePayload = [
+        'customer' => ['name' => 'Cliente', 'email' => 'cliente@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'shipping_method' => 'standard',
+        'payment_method' => 'pago_movil',
+    ];
+
+    // Producto inexistente.
+    $noExiste = $this->postJson("http://{$this->domain}/checkout/create-order", $basePayload + [
+        'items' => [['product_id' => (string) Str::uuid(), 'quantity' => 1]],
+    ]);
+    expect($noExiste->getStatusCode())->toBeGreaterThanOrEqual(400);
+
+    // Producto oculto del catálogo.
+    $this->product->update(['is_visible' => false]);
+    $oculto = $this->postJson("http://{$this->domain}/checkout/create-order", $basePayload + [
+        'items' => [['product_id' => $this->product->id, 'quantity' => 1]],
+    ]);
+    expect($oculto->getStatusCode())->toBeGreaterThanOrEqual(400);
+});
+
+test('El checkout rechaza el pedido si no hay existencias suficientes (hallazgo C1)', function () {
+    // El producto tiene 15 unidades; se piden 20.
+    $response = $this->postJson("http://{$this->domain}/checkout/create-order", [
+        'customer' => ['name' => 'Cliente Ansioso', 'email' => 'ansioso@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'shipping_method' => 'standard',
+        'payment_method' => 'pago_movil',
+        'items' => [['product_id' => $this->product->id, 'quantity' => 20]],
+    ]);
+
+    // Antes el pedido se creaba igual: el `if ($product->quantity >= $qty)`
+    // simplemente no descontaba y nadie se enteraba.
+    $response->assertStatus(409);
+
+    expect(DB::table('orders')->count())->toBe(0);
+
+    // Y el stock queda intacto, no en negativo.
+    expect((int) $this->product->fresh()->quantity)->toBe(15);
+});
+
+test('Si el pedido falla, el stock y el cupón no quedan consumidos (hallazgo C1)', function () {
+    $stockInicial = (int) $this->product->fresh()->quantity;
+
+    // Segunda línea con un producto inexistente: la primera ya habrá reservado
+    // stock cuando la segunda reviente, así que la transacción debe revertirlo.
+    $response = $this->postJson("http://{$this->domain}/checkout/create-order", [
+        'customer' => ['name' => 'Cliente', 'email' => 'cliente@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'shipping_method' => 'standard',
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['product_id' => $this->product->id, 'quantity' => 1],
+            ['product_id' => (string) Str::uuid(), 'quantity' => 1],
+        ],
+    ]);
+
+    expect($response->getStatusCode())->toBeGreaterThanOrEqual(400);
+    expect(DB::table('orders')->count())->toBe(0);
+
+    // Lo importante: la unidad de la primera línea volvió a su sitio.
+    expect((int) $this->product->fresh()->quantity)->toBe($stockInicial);
+});

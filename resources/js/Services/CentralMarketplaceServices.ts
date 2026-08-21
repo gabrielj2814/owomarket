@@ -49,6 +49,12 @@ export interface CreateCentralOrderPayload {
     shipping_amount?: number;
     discount_amount?: number;
     coupon_code?: string;
+    /**
+     * Clave de idempotencia (hallazgo C2). Se genera UNA vez por intento de
+     * compra y se reutiliza en los reintentos: si el pedido ya se creó, el
+     * servidor devuelve ese mismo en lugar de duplicarlo con sus comisiones.
+     */
+    idempotency_key?: string;
     currency?: string;
     items: CentralCheckoutItemPayload[];
 }
