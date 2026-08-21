@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 16 de 50 hallazgos cerrados (~32%). Fase 0 completa, Fase 1 al 75%.**
+> **Avance: 18 de 50 hallazgos cerrados (~36%). Fases 0 y 1 completas.**
 >
 > **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
 > Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
@@ -28,7 +28,7 @@
 > | **A. Autenticación** | A1 A2 A3 A4 A5 A6 | A9 | A7 A8 |
 > | **B. Datos del cliente** | B1 B2 | B4 | B3 |
 > | **C. Concurrencia** | C1 C2 C3 C4 | — | C5 C6 |
-> | **D. Dinero** | D1 D2 | — | D3 D4 D5 D6 |
+> | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | — | — | E1 E2 E3 E4 |
 > | **F. Infraestructura** | F2 | F4 | F1 F3 F5 F6 |
 > | **G. Frontend** | G1 | G8 G13 | los otros 12 |
@@ -54,18 +54,19 @@
 > | 1.1 | C2, D1 | `PLAN_FASE1_1_DESPACHO_TRANSACCIONAL_Y_PRORRATEO.md` |
 > | 1.2 | D2 | `PLAN_FASE1_2_REVERSION_DE_COMISIONES.md` |
 > | 1.3 | C3, C4, C1 | `PLAN_FASE1_3_BLOQUEOS_Y_TRANSACCIONES.md` |
+> | 1.4 | D3, D4 | `PLAN_FASE1_4_TASA_DE_CAMBIO_FIABLE.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Fase 1 punto 9 (D3 + D4)** — cierra la Fase 1. Corto y toca dinero.
-> 2. **F1 y F6**, aunque no estén en ninguna fase del plan formal: son de una línea
+> 1. **F1 y F6**, aunque no estén en ninguna fase del plan formal: son de una línea
 >    cada uno y evitan dos formas de romper producción (login caído al pasar a
 >    `SESSION_DRIVER=database`, y superadmin con contraseña conocida si alguien
 >    corre `db:seed --force`).
-> 3. **Fase 2 (bloque E)** — subió de prioridad: desde la Fase 0.4 el checkout
+> 2. **Fase 2 (bloque E)** — subió de prioridad: desde la Fase 0.4 el checkout
 >    central toma los precios de `central_products`, así que un catálogo
 >    desincronizado ya no es sólo cosmético, es dinero mal cobrado.
-> 4. **Fase 3 (bloque G)** — el grupo más grande pero el de menor riesgo.
+> 3. **Fase 3 (bloque G)** — el grupo más grande pero el de menor riesgo.
+> 4. **D5 y D6** — lo que queda del bloque de dinero tras la Fase 1.4.
 >
 > ### ⚠️ Deuda operativa pendiente de revisar antes de desplegar
 >
@@ -81,6 +82,9 @@
 >   aceptaban sin existencias.
 > - **Fase 1.1:** los pedidos ya despachados no tienen fila en
 >   `central_order_dispatches`; relanzar el despacho de uno antiguo lo duplicaría.
+> - **Fase 1.4:** `/api/exchange-rate/convert` ahora devuelve 404 en lugar de convertir
+>   con tasa 1.0, así que **tiene que haber una tasa activa en `exchange_rates` antes de
+>   desplegar**. Comprobarlo con la consulta de la sección «Riesgo» de su plan.
 >
 > ### 🧠 Contexto útil que no está en el texto original
 >
@@ -521,7 +525,7 @@ La `PlatformCommission` se crea con `status='pending'` en el despacho, sin impor
 
 ### D3. 🟠 Conversión de moneda con fallback silencioso a tasa 1.0
 
-> **Estado:** ⬜ ABIERTO (sólo el panel de Pago Móvil del checkout del inquilino usa ya la tasa real, Fase 0.5)
+> **Estado:** ✅ CERRADO (Fase 1.4) — el caso de uso lanza excepción, el endpoint responde 404, y `deactivateAll()` + `save()` corren en transacción
 
 **Archivo:** `src/ExchangeRate/Application/UseCase/ConvertCurrencyAmountUseCase.php:34-38,67-71`
 
@@ -540,7 +544,7 @@ Y `SyncBcvExchangeRateUseCase.php:53-72` hace `deactivateAll()` y **después** `
 
 ### D4. 🟠 El scraper del BCV rompe en cuanto la tasa supera 999,99
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 1.4) — se quita el separador de miles y el fallback prolongado se registra como `error`, no como `warning`
 
 **Archivo:** `src/ExchangeRate/Infrastructure/Scrapers/BcvWebScraper.php:95-108`
 
@@ -1012,8 +1016,8 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ## Plan de acción sugerido
 
-> **Estado al 21/08/2026: 8 de 13 puntos completados.**
-> Fase 0 completa · Fase 1 al 75% · Fases 2 y 3 sin empezar.
+> **Estado al 21/08/2026: 9 de 13 puntos completados.**
+> Fases 0 y 1 completas · Fases 2 y 3 sin empezar.
 
 ### Fase 0 — Antes de exponer nada (bloqueante) — ✅ COMPLETA
 1. ✅ **Borrar `routes/tenant.php:31`** (A1). — *Fase 0.1*
@@ -1022,11 +1026,11 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 4. ✅ **Resolver precios server-side** en ambos checkouts (B1) y quitar `is_approved`/`is_verified` del FormRequest de reseñas (B2). — *Fase 0.4*
 5. ✅ **Quitar el botón de bypass del checkout y los datos bancarios hardcodeados** (G8, G1). — *Fase 0.5*
 
-### Fase 1 — Integridad del dinero — 🟡 3 de 4
+### Fase 1 — Integridad del dinero — ✅ COMPLETA
 6. ✅ Transacción + idempotencia en el despacho multi-tienda (C2) y prorrateo de envío/descuento (D1). — *Fase 1.1*
 7. ✅ Reversión de comisiones al cancelar o reembolsar (D2). — *Fase 1.2*
 8. ✅ `lockForUpdate` en liquidaciones (C3), factura correlativa (C4) y stock (C1). — *Fase 1.3*
-9. ⬜ **Excepción en lugar de tasa 1.0 (D3) y arreglo del scraper BCV (D4).** ← **SIGUIENTE**
+9. ✅ Excepción en lugar de tasa 1.0 (D3) y arreglo del scraper BCV (D4). — *Fase 1.4*
 
 ### Fase 2 — Consistencia — ⬜ Sin empezar
 10. ⬜ Sincronización central por eventos de modelo (E1, E2) y `(tenant_id, slug)` único (E3).
@@ -1068,6 +1072,8 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N17 | Los despachos fallidos quedan en `status = 'failed'` y nada los reintenta; el despacho sigue siendo síncrono | Fase 1.1 | ⬜ Abierto |
 | N18 | Ningún endpoint tiene límite de tasa. Al pasar `api-tenant` de `api` a `web` se perdió incluso la posibilidad de `throttleApi()` (aunque nunca estuvo activo) | Fase 0.3-E | ⬜ Abierto |
 | N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto |
+| N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
+| N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 
 ---
 

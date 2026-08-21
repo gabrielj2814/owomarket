@@ -93,11 +93,9 @@ final class BcvWebScraper implements BcvScraperInterface
         }
 
         $rawRate = trim($rateMatches[1]);
-        // Limpiar espacios internos y sustituir coma por punto
-        $cleanedRate = str_replace([' ', "\r", "\n", "\t"], '', $rawRate);
-        $normalizedRate = str_replace(',', '.', $cleanedRate);
+        $rateValue = $this->normalizeRate($rawRate);
 
-        if (! is_numeric($normalizedRate) || (float) $normalizedRate <= 0) {
+        if ($rateValue === null) {
             return [
                 'rate' => 0.0,
                 'rate_date' => date('Y-m-d'),
@@ -106,8 +104,6 @@ final class BcvWebScraper implements BcvScraperInterface
                 'error_message' => "El valor extraído no es numérico válido: '{$rawRate}'",
             ];
         }
-
-        $rateValue = (float) $normalizedRate;
 
         // 2. Extraer fecha valor (ej: "Fecha Valor: Miércoles, 19 Agosto 2026" o span con fecha)
         $rateDate = $this->extractRateDate($html);
@@ -119,6 +115,47 @@ final class BcvWebScraper implements BcvScraperInterface
             'success' => true,
             'error_message' => null,
         ];
+    }
+
+    /**
+     * Convierte la cotización tal y como la publica el BCV ("775,33560000", "1.234,56")
+     * en un float.
+     *
+     * Hallazgo D4: antes sólo se quitaban los espacios y se cambiaba la coma por punto,
+     * pero NO se quitaba el punto separador de miles. En cuanto la tasa superara 999,99
+     * el BCV publicaría "1.234,56", que se convertía en "1.234.56" → `is_numeric()`
+     * falso → el sync caía al fallback y congelaba indefinidamente la última tasa buena,
+     * dejando sólo un aviso en el log mientras todo el sitio facturaba con una tasa vieja.
+     *
+     * @return float|null null si el valor no es una cotización válida y positiva.
+     */
+    private function normalizeRate(string $rawRate): ?float
+    {
+        $cleaned = str_replace([' ', "\r", "\n", "\t"], '', $rawRate);
+
+        if ($cleaned === '') {
+            return null;
+        }
+
+        $hasThousandsDot = str_contains($cleaned, '.');
+        $hasDecimalComma = str_contains($cleaned, ',');
+
+        if ($hasThousandsDot && $hasDecimalComma) {
+            // Formato completo es-VE: "1.234,56" → el punto agrupa miles, la coma separa decimales.
+            $cleaned = str_replace(',', '.', str_replace('.', '', $cleaned));
+        } elseif ($hasDecimalComma) {
+            // "775,33560000" — el formato habitual mientras la tasa tiene tres cifras.
+            $cleaned = str_replace(',', '.', $cleaned);
+        } elseif ($hasThousandsDot && preg_match('/^\d{1,3}(\.\d{3})+$/', $cleaned) === 1) {
+            // "1.234" sin decimales: es agrupación de miles, no un punto decimal.
+            $cleaned = str_replace('.', '', $cleaned);
+        }
+
+        if (! is_numeric($cleaned) || (float) $cleaned <= 0) {
+            return null;
+        }
+
+        return (float) $cleaned;
     }
 
     private function extractRateDate(string $html): string

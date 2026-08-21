@@ -36,3 +36,18 @@ test('ConvertCurrencyAmountUseCase accurately converts USD to VES and VES to USD
     expect($vesConversion['amount_ves'])->toBe(1000.0);
     expect($vesConversion['amount_usd'])->toBe(25.0);
 });
+
+// Hallazgo D3: sin tasa activa se convertía con 1.0 y `source: FALLBACK`, devolviendo
+// 100 Bs por 100 USD como si fuera una conversión buena.
+test('ConvertCurrencyAmountUseCase throws instead of falling back to a 1.0 rate', function () {
+    $mockRepo = Mockery::mock(ExchangeRateRepositoryInterface::class);
+    $mockRepo->shouldReceive('findActive')->andReturnNull();
+
+    $useCase = new ConvertCurrencyAmountUseCase($mockRepo);
+
+    expect(fn () => $useCase->usdToVes(100.0))
+        ->toThrow(Exception::class, 'No existe una tasa de cambio activa');
+
+    expect(fn () => $useCase->vesToUsd(100.0))
+        ->toThrow(Exception::class, 'No existe una tasa de cambio activa');
+});

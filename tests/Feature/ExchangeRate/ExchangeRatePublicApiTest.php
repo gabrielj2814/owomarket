@@ -65,3 +65,13 @@ test('GET /api/exchange-rate/convert calculates USD to VES conversion', function
             ],
         ]);
 });
+
+// Hallazgo D3: este endpoint devolvía 200 con `success: true` y tasa 1.0 cuando no había
+// ninguna tasa activa, y el checkout en bolívares cobraba céntimos.
+test('GET /api/exchange-rate/convert returns 404 when there is no active rate', function () {
+    $response = $this->getJson('/api/exchange-rate/convert?amount=100&from=USD&to=VES');
+
+    $response->assertStatus(404)
+        ->assertJson(['success' => false])
+        ->assertJsonStructure(['success', 'message']);
+});

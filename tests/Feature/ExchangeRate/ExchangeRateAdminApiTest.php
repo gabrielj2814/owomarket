@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Src\User\Infrastructure\Eloquent\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Src\ExchangeRate\Domain\Contracts\ExchangeRateRepositoryInterface;
@@ -12,6 +11,7 @@ use Src\ExchangeRate\Domain\ValueObjects\RateAmount;
 use Src\ExchangeRate\Domain\ValueObjects\RateDate;
 use Src\ExchangeRate\Domain\ValueObjects\RateSource;
 use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
+use Src\User\Infrastructure\Eloquent\Models\User;
 
 beforeEach(function () {
     $this->admin = User::factory()->create([
