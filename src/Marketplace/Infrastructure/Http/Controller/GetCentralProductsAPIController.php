@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
-use App\Models\CentralProduct;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Shared\Helper\ApiResponse;

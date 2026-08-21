@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use App\Models\CentralCustomer;
-use App\Models\CentralCustomerSsoToken;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken;
 use Exception;
 use Illuminate\Support\Str;
 

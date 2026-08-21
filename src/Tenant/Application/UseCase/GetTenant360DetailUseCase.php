@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use App\Models\CentralOrder;
-use App\Models\CentralOrderItem;
-use App\Models\CentralProduct;
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
-use App\Models\SupportTicket;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Exception;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 

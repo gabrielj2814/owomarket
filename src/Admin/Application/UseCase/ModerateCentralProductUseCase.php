@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralProduct;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Exception;
 
 final class ModerateCentralProductUseCase

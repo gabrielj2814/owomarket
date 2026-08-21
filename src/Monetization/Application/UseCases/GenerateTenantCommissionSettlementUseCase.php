@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Exception;
 use Illuminate\Support\Str;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;

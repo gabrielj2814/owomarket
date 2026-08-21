@@ -45,7 +45,7 @@ final class AdminReplySupportTicketPOSTController
             // Actualizar estado si se solicitó explícitamente
             $status = $request->input('status');
             if ($status) {
-                \App\Models\SupportTicket::where('id', $id)->update(['status' => $status]);
+                \Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket::where('id', $id)->update(['status' => $status]);
             }
 
             $ticket = $this->detailUseCase->execute($id);

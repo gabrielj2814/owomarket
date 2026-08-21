@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use App\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Illuminate\Database\Eloquent\Collection;
 
 final class GetTenantSettlementHistoryUseCase

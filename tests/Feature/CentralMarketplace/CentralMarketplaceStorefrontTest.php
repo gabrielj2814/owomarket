@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralProduct;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;

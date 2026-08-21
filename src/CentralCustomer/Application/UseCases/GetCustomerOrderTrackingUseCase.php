@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use App\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Exception;
 
 final class GetCustomerOrderTrackingUseCase

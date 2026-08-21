@@ -1,25 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Shipment extends Model
+/**
+ * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
+ */
+class Shipment extends \Src\Shipment\Infrastructure\Eloquent\Models\Shipment
 {
-    use HasFactory;
-
-    protected $guarded = [];
-
-    protected $casts = [
-        'metadata' => 'array',
-        'shipped_at' => 'datetime',
-        'estimated_delivery' => 'datetime',
-        'delivered_at' => 'datetime',
-    ];
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
 }

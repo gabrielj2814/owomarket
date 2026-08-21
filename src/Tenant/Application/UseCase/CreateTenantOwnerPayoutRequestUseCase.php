@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use App\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Exception;
 use Illuminate\Support\Str;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;

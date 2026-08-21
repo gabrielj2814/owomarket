@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralProduct;
-use App\Models\CommissionSettlement;
-use App\Models\TenantOwnerSsoToken;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;

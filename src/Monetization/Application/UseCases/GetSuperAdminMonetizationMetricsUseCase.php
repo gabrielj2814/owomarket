@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
-use App\Models\SubscriptionPlan;
-use App\Models\TenantSubscription;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class GetSuperAdminMonetizationMetricsUseCase

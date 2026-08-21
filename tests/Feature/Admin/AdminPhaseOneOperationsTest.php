@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\CommissionSettlement;
-use App\Models\SupportTicket;
-use App\Models\SupportTicketMessage;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;

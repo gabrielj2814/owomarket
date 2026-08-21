@@ -1,23 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Cart extends Model
+/**
+ * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
+ */
+class Cart extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\Cart
 {
-    use HasFactory;
-
-    protected $guarded = [];
-
-    protected $casts = [
-        'cart_data' => 'array',
-        'expires_at' => 'datetime',
-    ];
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
 }

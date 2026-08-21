@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\User;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 

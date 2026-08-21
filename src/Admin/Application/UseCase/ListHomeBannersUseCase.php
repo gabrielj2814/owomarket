@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralHomeBanner;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
 use Illuminate\Database\Eloquent\Collection;
 
 final class ListHomeBannersUseCase

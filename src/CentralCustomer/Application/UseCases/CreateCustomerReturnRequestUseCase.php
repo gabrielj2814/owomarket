@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use App\Models\CentralOrder;
-use App\Models\CustomerReturnRequest;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Exception;
 use Illuminate\Support\Str;
 

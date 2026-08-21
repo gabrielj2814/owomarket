@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Models\User;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use Src\ExchangeRate\Domain\Contracts\ExchangeRateRepositoryInterface;

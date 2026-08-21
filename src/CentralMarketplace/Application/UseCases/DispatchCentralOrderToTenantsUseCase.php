@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralMarketplace\Application\UseCases;
 
-use App\Models\CentralOrder;
-use App\Models\CentralOrderItem;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;

@@ -33,7 +33,7 @@ final class UpdateAdminSupportTicketStatusPATCHController
             }
 
             if (! empty($updates)) {
-                \App\Models\SupportTicket::where('id', $id)->update($updates);
+                \Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket::where('id', $id)->update($updates);
             }
 
             $ticket = $this->detailUseCase->execute($id);

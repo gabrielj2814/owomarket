@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use App\Models\CustomerReturnRequest;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Illuminate\Database\Eloquent\Collection;
 
 final class ListCustomerReturnRequestsUseCase

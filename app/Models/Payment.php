@@ -1,24 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Payment extends Model
+/**
+ * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
+ */
+class Payment extends \Src\Payment\Infrastructure\Eloquent\Models\Payment
 {
-    use HasFactory;
-
-    protected $guarded = [];
-
-    protected $casts = [
-        'gateway_response' => 'array',
-        'paid_at' => 'datetime',
-        'refunded_at' => 'datetime',
-    ];
-
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
 }

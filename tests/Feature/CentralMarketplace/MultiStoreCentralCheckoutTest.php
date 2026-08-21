@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralOrder;
-use App\Models\CentralOrderItem;
-use App\Models\PlatformCommission;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralBrand;
-use App\Models\CentralCategory;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;

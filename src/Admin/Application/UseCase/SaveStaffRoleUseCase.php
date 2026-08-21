@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralAuditLog;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 use Exception;
 use Spatie\Permission\Models\Role;
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralAuditLog;
-use App\Models\User;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Exception;
 
 final class AssignUserRolesUseCase

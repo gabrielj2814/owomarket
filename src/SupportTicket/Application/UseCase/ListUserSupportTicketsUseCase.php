@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\SupportTicket\Application\UseCase;
 
-use App\Models\SupportTicket;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 
 final class ListUserSupportTicketsUseCase
 {

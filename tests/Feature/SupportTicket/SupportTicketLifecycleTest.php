@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralCustomer;
-use App\Models\SupportTicket;
-use App\Models\SupportTicketMessage;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;

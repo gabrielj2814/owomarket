@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralOrder;
-use App\Models\PlatformCommission;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Exception;
 
 final class ResolveCentralOrderDisputeUseCase

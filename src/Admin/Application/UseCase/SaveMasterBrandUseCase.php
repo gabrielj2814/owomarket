@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralBrand;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 use Exception;
 use Illuminate\Support\Str;
 

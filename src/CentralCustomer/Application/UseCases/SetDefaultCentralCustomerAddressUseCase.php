@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use App\Models\CentralCustomerAddress;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerAddress;
 use Exception;
 
 final class SetDefaultCentralCustomerAddressUseCase

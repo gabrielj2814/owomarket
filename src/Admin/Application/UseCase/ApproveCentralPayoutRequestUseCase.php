@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Exception;
 
 final class ApproveCentralPayoutRequestUseCase

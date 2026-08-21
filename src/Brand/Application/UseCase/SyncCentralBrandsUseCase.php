@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Brand\Application\UseCase;
 
-use App\Models\CentralBrand;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 use Illuminate\Support\Facades\DB;
 use Src\Brand\Infrastructure\Eloquent\Models\Brand;
 

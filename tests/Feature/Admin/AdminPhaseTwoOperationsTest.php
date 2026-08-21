@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use App\Models\CentralCustomer;
-use App\Models\CentralOrder;
-use App\Models\CentralOrderItem;
-use App\Models\CentralProduct;
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
-use App\Models\TenantOwnerSsoToken;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;

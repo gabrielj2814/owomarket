@@ -278,9 +278,9 @@ final class ProductRepository implements ProductRepositoryInterface
         EloquentProduct::where('id', $id->value())->update(['quantity' => $newQty]);
 
         $tenantId = tenant('id');
-        if ($tenantId && class_exists(\App\Models\CentralProduct::class)) {
+        if ($tenantId && class_exists(\Src\Product\Infrastructure\Eloquent\Models\CentralProduct::class)) {
             try {
-                \App\Models\CentralProduct::where('tenant_id', $tenantId)
+                \Src\Product\Infrastructure\Eloquent\Models\CentralProduct::where('tenant_id', $tenantId)
                     ->where('tenant_product_id', $id->value())
                     ->update(['quantity' => $newQty]);
             } catch (\Throwable) {

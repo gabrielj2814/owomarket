@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use App\Models\CentralOrder;
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Illuminate\Support\Facades\Schema;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 

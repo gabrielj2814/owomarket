@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Product\Application\UseCase;
 
-use App\Models\CentralProduct;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Support\Str;
 use Src\Product\Infrastructure\Eloquent\Models\Product as EloquentProduct;
 

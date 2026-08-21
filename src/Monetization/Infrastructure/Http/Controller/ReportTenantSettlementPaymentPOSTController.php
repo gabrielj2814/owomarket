@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Infrastructure\Http\Controller;
 
-use App\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

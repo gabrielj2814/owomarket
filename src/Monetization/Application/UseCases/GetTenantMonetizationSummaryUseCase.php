@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use App\Models\PlatformCommission;
-use App\Models\TenantSubscription;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class GetTenantMonetizationSummaryUseCase

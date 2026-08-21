@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Category\Application\UseCase;
 
-use App\Models\CentralCategory;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Illuminate\Support\Facades\DB;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
 

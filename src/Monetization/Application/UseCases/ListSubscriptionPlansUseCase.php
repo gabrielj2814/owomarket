@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use App\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Str;
 

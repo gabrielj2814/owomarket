@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralCustomer;
-use App\Models\CentralCustomerWishlist;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerWishlist;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;

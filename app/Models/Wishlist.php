@@ -1,33 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class Wishlist extends Model
+/**
+ * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
+ */
+class Wishlist extends \Src\Customer\Infrastructure\Eloquent\Models\Wishlist
 {
-    use HasFactory;
-
-    protected $guarded = [];
-
-    protected $casts = [
-        'is_public' => 'boolean',
-    ];
-
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class);
-    }
-
-    public function items()
-    {
-        return $this->hasMany(WishlistItem::class);
-    }
-
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'wishlist_items')
-            ->withTimestamps();
-    }
 }

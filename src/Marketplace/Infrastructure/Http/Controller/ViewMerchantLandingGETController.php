@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
-use App\Models\CentralBrand;
-use App\Models\CentralProduct;
-use App\Models\SubscriptionPlan;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;

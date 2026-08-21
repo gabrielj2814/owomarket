@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralCustomer;
-use App\Models\CentralOrder;
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
-use App\Models\SupportTicket;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Src\ExchangeRate\Domain\Repositories\ExchangeRateRepositoryInterface;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 

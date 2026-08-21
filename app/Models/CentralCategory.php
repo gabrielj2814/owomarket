@@ -4,55 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Concerns\HasUuids;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class CentralCategory extends Model
+/**
+ * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
+ */
+class CentralCategory extends \Src\Category\Infrastructure\Eloquent\Models\CentralCategory
 {
-    use HasUuids;
-
-    public function getConnectionName()
-    {
-        if (app()->runningUnitTests() || app()->environment('testing')) {
-            return config('database.default');
-        }
-
-        return config('tenancy.database.central_connection') ?: 'central';
-    }
-
-    protected $table = 'tenant_categories';
-
-    protected $fillable = [
-        'id',
-        'name',
-        'slug',
-        'description',
-        'icon',
-        'image',
-        'parent_id',
-        'lft',
-        'rgt',
-        'depth',
-        'is_active',
-        'position',
-        'metadata',
-    ];
-
-    protected $casts = [
-        'is_active' => 'boolean',
-        'position' => 'integer',
-        'metadata' => 'array',
-    ];
-
-    public function parent(): BelongsTo
-    {
-        return $this->belongsTo(self::class, 'parent_id');
-    }
-
-    public function children(): HasMany
-    {
-        return $this->hasMany(self::class, 'parent_id')->orderBy('position', 'asc');
-    }
 }

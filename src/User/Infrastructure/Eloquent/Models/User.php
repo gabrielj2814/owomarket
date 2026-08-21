@@ -1,20 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Src\User\Infrastructure\Eloquent\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
+use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantUser;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasRoles, HasUuids;
 
-    // protected $connection = 'central';
     public $table = 'users';
 
     public $primaryKey = 'id';
@@ -23,15 +28,25 @@ class User extends Authenticatable
 
     protected $keyType = 'string';
 
+    protected string $guard_name = 'web';
+
+    protected static function newFactory()
+    {
+        return \Database\Factories\UserFactory::new();
+    }
+
     /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
      */
     protected $fillable = [
+        'id',
         'name',
         'email',
         'password',
+        'type',
+        'is_active',
     ];
 
     /**
@@ -54,18 +69,19 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
-    // public function tenants(): BelongsToMany
-    // {
-    //     return $this->belongsToMany(Tenant::class, 'tenant_users')
-    //         ->withPivot(['role', 'permissions'])
-    //         ->withTimestamps();
-    // }
+    public function tenants(): BelongsToMany
+    {
+        return $this->belongsToMany(Tenant::class, 'tenant_users')
+            ->withPivot(['role', 'permissions'])
+            ->withTimestamps();
+    }
 
-    // public function tenantUsers()
-    // {
-    //     return $this->hasMany(TenantUser::class);
-    // }
+    public function tenantUsers(): HasMany
+    {
+        return $this->hasMany(TenantUser::class, 'user_id', 'id');
+    }
 }

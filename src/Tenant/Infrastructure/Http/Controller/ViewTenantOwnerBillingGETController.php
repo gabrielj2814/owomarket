@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Src\Tenant\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
-use App\Models\SubscriptionPlan;
-use App\Models\TenantSubscription;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;

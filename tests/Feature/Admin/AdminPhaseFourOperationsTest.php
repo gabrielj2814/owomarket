@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use App\Models\CentralAuditLog;
-use App\Models\User;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -50,7 +50,7 @@ class AdminPhaseFourOperationsTest extends TestCase
             'name' => 'Carlos Soporte',
             'email' => 'carlos.soporte@owomarket.local',
             'password' => bcrypt('password123'),
-            'type' => 'staff',
+            'type' => 'super_admin',
             'is_active' => true,
         ]);
     }

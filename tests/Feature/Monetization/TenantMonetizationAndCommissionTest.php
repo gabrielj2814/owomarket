@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\PlatformCommission;
-use App\Models\SubscriptionPlan;
-use App\Models\TenantSubscription;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;

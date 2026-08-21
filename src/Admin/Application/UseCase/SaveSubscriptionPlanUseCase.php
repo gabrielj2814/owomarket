@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Exception;
 use Illuminate\Support\Str;
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use App\Models\CentralCustomer;
-use App\Models\CentralCustomerAddress;
-use App\Models\CentralOrder;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerAddress;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 final class ListCentralCustomersForAdminUseCase

@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use App\Models\CentralBrand;
-use App\Models\CentralCategory;
-use App\Models\CentralHomeBanner;
-use App\Models\CentralProduct;
-use App\Models\SubscriptionPlan;
-use App\Models\User;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;

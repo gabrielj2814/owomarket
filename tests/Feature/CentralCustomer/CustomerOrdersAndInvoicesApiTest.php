@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralCustomer;
-use App\Models\CentralOrder;
-use App\Models\CentralOrderItem;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;

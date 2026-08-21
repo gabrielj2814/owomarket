@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\CentralCustomer;
-use App\Models\CentralCustomerSsoToken;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;

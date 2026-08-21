@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use App\Models\CentralCustomer;
-use App\Models\CentralCustomerPasswordReset;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerPasswordReset;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 

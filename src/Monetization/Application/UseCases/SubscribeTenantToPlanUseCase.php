@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use App\Models\SubscriptionPlan;
-use App\Models\TenantSubscription;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Exception;
 use Illuminate\Support\Str;
 

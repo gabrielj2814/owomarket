@@ -1,13 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class TenantSetting extends Model
+/**
+ * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
+ */
+class TenantSetting extends \Src\TenantSettings\Infrastructure\Eloquent\Models\TenantSetting
 {
-    use HasFactory;
-
-    protected $guarded = [];
 }

@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use App\Models\CommissionSettlement;
-use App\Models\PlatformCommission;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
