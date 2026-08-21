@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 20 de 50 hallazgos cerrados (~40%). Fases 0 y 1 completas, Fase 2 empezada.**
+> **Avance: 24 de 50 hallazgos cerrados (~48%). Fases 0 y 1 completas, Fase 2 casi cerrada.**
 >
 > **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
 > Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
@@ -29,7 +29,7 @@
 > | **B. Datos del cliente** | B1 B2 | B4 | B3 |
 > | **C. Concurrencia** | C1 C2 C3 C4 | — | C5 C6 |
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
-> | **E. Catálogo** | — | — | E1 E2 E3 E4 |
+> | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1 F2 F6 | F4 | F3 F5 |
 > | **G. Frontend** | G1 | G8 G13 | los otros 12 |
 >
@@ -56,16 +56,18 @@
 > | 1.3 | C3, C4, C1 | `PLAN_FASE1_3_BLOQUEOS_Y_TRANSACCIONES.md` |
 > | 1.4 | D3, D4 | `PLAN_FASE1_4_TASA_DE_CAMBIO_FIABLE.md` |
 > | 2.1 | F1, F6 | `PLAN_FASE2_1_SESIONES_Y_SEEDERS_DE_PRODUCCION.md` |
+> | 2.2 | E1, E2, E3, E4 | `PLAN_FASE2_2_SINCRONIZACION_DEL_CATALOGO_CENTRAL.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Fase 2 (bloque E)** — el grueso de la fase, y el de mayor riesgo económico:
->    desde la Fase 0.4 el checkout central toma los precios de `central_products`,
->    así que un catálogo desincronizado ya no es sólo cosmético, es dinero mal cobrado.
-> 2. **Un comando para crear el superadmin** (N22): la Fase 2.1 vetó `RootUserSeeder`
+> 1. **Fase 3 (bloque G)** — el grupo más grande y el único bloque sin empezar. G2
+>    destaca: **ningún cupón funciona en la tienda** por un `response.data` desenvuelto
+>    de más.
+> 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
 >    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
-> 3. **Fase 3 (bloque G)** — el grupo más grande pero el de menor riesgo.
-> 4. **D5 y D6** — lo que queda del bloque de dinero tras la Fase 1.4.
+> 3. **`domains.id` casteado a int** (P2/N23): `$domain->id` devuelve siempre `0` y
+>    revienta la petición con ~6% de los UUID.
+> 4. **F3 y F5**, y **D5 y D6** — lo que queda de infraestructura y de dinero.
 >
 > ### 📋 Pendientes explícitos (fuera de los bloques A-G)
 >
@@ -94,6 +96,11 @@
 > - **Fase 2.1:** la migración correctiva de `sessions` hay que correrla en **las dos
 >   rutas** (`migrate` y `tenants:migrate`); si se olvida la segunda, las tiendas
 >   existentes siguen con el esquema que rompe el login.
+> - **Fase 2.2:** el catálogo central existente **sigue desincronizado y no se arregla
+>   solo**: los productos sólo se re-sincronizan al volver a guardarse. Hay que forzar una
+>   pasada por tienda tras desplegar, o los precios viejos seguirán cobrándose. Y el
+>   índice único `(tenant_id, slug)` puede fallar si ya hay slugs repetidos dentro de una
+>   tienda: comprobarlo antes con la consulta del plan.
 >
 > ### 🧠 Contexto útil que no está en el texto original
 >
@@ -619,7 +626,7 @@ Cada filtro geográfico solo se aplica si el parámetro no es null, y el caso de
 
 ### E1. 🔴 Borrar u ocultar un producto en el tenant no lo retira del marketplace central
 
-> **Estado:** ⬜ ABIERTO — subió de prioridad: el checkout central toma precios de central_products desde la Fase 0.4
+> **Estado:** ✅ CERRADO (Fase 2.2) — sincronización por eventos de modelo; `delete()` y `toggleVisibility()` dejaron de usar el query builder, que no los dispara
 
 **Archivo:** `src/Product/Infrastructure/Eloquent/Repositories/ProductRepository.php:188-191, 270-273`
 
@@ -643,7 +650,7 @@ Solo `updateStock()` propaga a `central_products`. `Product` usa `SoftDeletes`, 
 
 ### E2. 🔴 Cambios de precio y nombre nunca llegan al catálogo central
 
-> **Estado:** ⬜ ABIERTO — misma razón que E1
+> **Estado:** ✅ CERRADO (Fase 2.2) — `ProductObserver` sincroniza la fila entera en cada `saved`, incluida la bajada de stock por venta
 
 **Archivo:** `ProductRepository.php:115-186`
 
@@ -657,7 +664,7 @@ Solo `updateStock()` propaga a `central_products`. `Product` usa `SoftDeletes`, 
 
 ### E3. 🟠 Colisión de slugs entre tenants en la ficha de producto central
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 2.2) — `CentralProductResolver` resuelve por prioridad, los enlaces del marketplace usan el id, e índice único `(tenant_id, slug)`
 
 **Archivo:** `src/Marketplace/Infrastructure/Http/Controller/GetCentralProductDetailAPIController.php:123-128`
 
@@ -678,7 +685,7 @@ Sin filtrar por `tenant_id`. El slug se copia tal cual desde cada tenant, así q
 
 ### E4. 🟠 Editar un producto regenera los IDs de todas sus variantes
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 2.2) — upsert por id de variantes e imágenes, y borrado del fichero físico al eliminar una imagen
 
 **Archivo:** `ProductRepository.php:151-183`
 
@@ -1029,8 +1036,8 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ## Plan de acción sugerido
 
-> **Estado al 21/08/2026: 9 de 13 puntos completados.**
-> Fases 0 y 1 completas · Fases 2 y 3 sin empezar.
+> **Estado al 21/08/2026: 11 de 13 puntos completados.**
+> Fases 0 y 1 completas · Fase 2 al 67% · Fase 3 sin empezar.
 
 ### Fase 0 — Antes de exponer nada (bloqueante) — ✅ COMPLETA
 1. ✅ **Borrar `routes/tenant.php:31`** (A1). — *Fase 0.1*
@@ -1045,16 +1052,14 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 8. ✅ `lockForUpdate` en liquidaciones (C3), factura correlativa (C4) y stock (C1). — *Fase 1.3*
 9. ✅ Excepción en lugar de tasa 1.0 (D3) y arreglo del scraper BCV (D4). — *Fase 1.4*
 
-### Fase 2 — Consistencia — ⬜ Sin empezar
-10. ⬜ Sincronización central por eventos de modelo (E1, E2) y `(tenant_id, slug)` único (E3).
-    **Subió de prioridad:** desde la Fase 0.4 el checkout central toma los precios de
-    `central_products`, así que un catálogo desincronizado ya no es cosmético.
-11. ⬜ Upsert de variantes en vez de borrar y recrear (E4).
+### Fase 2 — Consistencia — 🟡 2 de 3
+10. ✅ Sincronización central por eventos de modelo (E1, E2) y `(tenant_id, slug)` único (E3). — *Fase 2.2*
+11. ✅ Upsert de variantes en vez de borrar y recrear (E4). — *Fase 2.2*
 12. 🟡 `sessions.user_id` nullable (F1 — ✅ *Fase 2.1*), guard `central_customer`
     (F4 — 🟡 ya creado en la Fase 0.3-D), permisos en tenant (F5 — ⬜),
     seeders condicionados (F6 — ✅ *Fase 2.1*).
 
-### Fase 3 — Frontend — ⬜ Sin empezar
+### Fase 3 — Frontend — ⬜ Sin empezar (lo único que queda entero)
 13. ⬜ Cupones (G2, G3), revalidación de carrito (G4), `isCentralDomain` desde el servidor (G7), refresco de sesión SSO (G10).
 
 ---
@@ -1088,6 +1093,9 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ⬜ Abierto |
+| N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ⬜ Abierto |
+| N25 | La sincronización con el catálogo central es **síncrona**: escribe en la base central dentro de la misma petición, incluida la transacción del checkout. Si el marketplace no responde, la fila queda desincronizada y sólo queda el log. Lo natural es un job en cola con reintentos | Fase 2.2 | ⬜ Abierto |
+| N26 | El `metadata` de `central_products` se sobrescribía con el del producto de la tienda en cada sincronización, **borrando el historial de moderación y la comisión personalizada**. Pasaba desapercibido porque la sincronización casi nunca corría | Fase 2.2 | ✅ Cerrado |
 | N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ⬜ Abierto |
 
 ---

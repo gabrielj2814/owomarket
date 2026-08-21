@@ -318,7 +318,7 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
                                     >
                                         {/* Image Container */}
                                         <Link
-                                            href={`/product/${product.slug}`}
+                                            href={`/product/${product.id}`}
                                             className="relative block aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden"
                                         >
                                             {mainImage ? (
@@ -350,7 +350,7 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
                                                         {product.category_name}
                                                     </span>
                                                 )}
-                                                <Link href={`/product/${product.slug}`}>
+                                                <Link href={`/product/${product.id}`}>
                                                     <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition line-clamp-2 leading-snug">
                                                         {product.name}
                                                     </h3>

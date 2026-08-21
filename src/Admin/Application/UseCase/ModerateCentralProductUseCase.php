@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Exception;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 
 final class ModerateCentralProductUseCase
 {
@@ -27,6 +27,12 @@ final class ModerateCentralProductUseCase
 
         if (isset($data['is_visible'])) {
             $product->is_visible = (bool) $data['is_visible'];
+
+            // Hallazgos E1/E2: desde que la sincronización es automática, `is_visible` se
+            // recalcula en cada guardado del producto en la tienda. Sin esta bandera, al
+            // comerciante le bastaría con editar el producto para volver a publicar algo
+            // que el moderador acababa de retirar.
+            $product->is_blocked_by_admin = ! (bool) $data['is_visible'];
         }
 
         if (isset($data['is_featured'])) {

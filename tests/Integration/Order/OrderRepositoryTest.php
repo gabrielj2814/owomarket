@@ -71,7 +71,8 @@ beforeEach(function () {
     tenancy()->initialize($this->tenant);
     $this->orderRepository = new EloquentOrderRepository;
     $this->customerRepository = new EloquentCustomerRepository;
-    $this->productRepository = new ProductRepository;
+    // Fase 2.2 (hallazgo E4): el repositorio recibe el almacén de medios por constructor.
+    $this->productRepository = app(ProductRepository::class);
 });
 
 afterEach(function () {

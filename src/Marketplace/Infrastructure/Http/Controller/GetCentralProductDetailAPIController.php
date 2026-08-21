@@ -4,21 +4,23 @@ declare(strict_types=1);
 
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
-use Exception;
 use Illuminate\Http\JsonResponse;
+use Src\Marketplace\Application\Service\CentralProductResolver;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Shared\Helper\ApiResponse;
 
 final class GetCentralProductDetailAPIController
 {
+    public function __construct(
+        private readonly CentralProductResolver $resolver
+    ) {}
+
     public function __invoke(string $slugOrId): JsonResponse
     {
-        $product = CentralProduct::with('tenant.domains')
-            ->where('is_visible', true)
-            ->where(function ($q) use ($slugOrId) {
-                $q->where('slug', $slugOrId)->orWhere('id', $slugOrId)->orWhere('tenant_product_id', $slugOrId);
-            })
-            ->first();
+        // Hallazgo E3: la búsqueda ponía slug, id y tenant_product_id a competir en el
+        // mismo OR sin filtrar por tienda, así que un slug repetido entre tiendas devolvía
+        // la ficha de la tienda equivocada.
+        $product = $this->resolver->resolveVisible($slugOrId);
 
         if (! $product) {
             return ApiResponse::error(
@@ -52,6 +54,7 @@ final class GetCentralProductDetailAPIController
             ->get()
             ->map(function ($p) {
                 $t = $p->tenant;
+
                 return [
                     'id' => $p->id,
                     'tenant_id' => $p->tenant_id,

@@ -90,7 +90,15 @@ final class StockReserver
             return;
         }
 
-        Product::where('id', $productId)->increment('quantity', $quantity);
+        // Hallazgo E2: `increment()` escribe con el query builder y **no dispara eventos de
+        // modelo**, así que la reposición no llegaba al catálogo central. Se guarda sobre
+        // el modelo para que `ProductObserver` sincronice el stock devuelto.
+        $product = Product::where('id', $productId)->first();
+
+        if ($product) {
+            $product->quantity = (int) $product->quantity + $quantity;
+            $product->save();
+        }
     }
 
     /**

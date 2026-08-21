@@ -260,7 +260,7 @@ const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, 
                                             className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
                                         >
                                             <Link
-                                                href={`/product/${product.slug}`}
+                                                href={`/product/${product.id}`}
                                                 className="relative block aspect-square bg-gray-100 dark:bg-gray-800 overflow-hidden"
                                             >
                                                 {mainImage ? (
@@ -290,7 +290,7 @@ const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, 
                                                             {product.category_name}
                                                         </span>
                                                     )}
-                                                    <Link href={`/product/${product.slug}`}>
+                                                    <Link href={`/product/${product.id}`}>
                                                         <h3 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition line-clamp-2 leading-snug">
                                                             {product.name}
                                                         </h3>

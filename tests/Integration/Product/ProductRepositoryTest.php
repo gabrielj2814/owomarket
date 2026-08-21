@@ -34,7 +34,9 @@ beforeEach(function () {
     (require base_path('database/migrations/tenant/2025_10_28_143954_create_product_variants.php'))->up();
     (require base_path('database/migrations/tenant/2025_10_28_144041_create_product_variant_attribute_values.php'))->up();
 
-    $this->repository = new ProductRepository;
+    // Fase 2.2 (hallazgo E4): el repositorio recibe el almacén de medios para poder
+    // borrar el fichero físico de las imágenes que el comerciante elimina.
+    $this->repository = app(ProductRepository::class);
     $this->categoryRepository = new CategoryRepository;
     $this->brandRepository = new BrandRepository;
 });
@@ -221,4 +223,82 @@ test('ProductRepository toggles visibility and updates stock directly', function
     $this->repository->updateStock($saved->id(), 20);
     $foundAfterStock = $this->repository->findById($saved->id());
     expect($foundAfterStock->stock()->quantity())->toBe(20);
+});
+
+/**
+ * Hallazgo E4: `update()` borraba físicamente todas las filas de `product_variants` y
+ * `product_images` y las recreaba con UUID nuevos en cada edición. Corregir una errata en
+ * la descripción bastaba para dejar huérfanos los `order_items.product_variant_id` de los
+ * pedidos históricos y para que los carritos apuntaran a variantes inexistentes.
+ */
+test('ProductRepository keeps variant and image identity across an edit', function () {
+    $saved = $this->repository->save(Product::create(
+        name: ProductName::make('Camiseta Básica'),
+        slug: ProductSlug::fromString('camiseta-basica'),
+        sku: ProductSku::fromString('CAM-BAS-01'),
+        price: ProductPrice::create(20.00),
+        stock: ProductStock::create(30),
+        images: [ProductImage::create(imagePath: 'https://example.com/camiseta.jpg', isDefault: true)],
+        variants: [
+            ProductVariant::create(sku: 'CAM-BAS-01-S', price: 20.00, quantity: 10, attributes: ['Talla' => 'S']),
+            ProductVariant::create(sku: 'CAM-BAS-01-M', price: 20.00, quantity: 15, attributes: ['Talla' => 'M']),
+        ]
+    ));
+
+    $idsOriginales = array_map(fn ($v) => $v->id(), $saved->variants());
+    $idImagenOriginal = $saved->images()[0]->id();
+
+    expect($idsOriginales)->toHaveCount(2);
+
+    // El comerciante sólo corrige la descripción y reenvía las mismas variantes.
+    $editado = $this->repository->update(new Product(
+        id: $saved->id(),
+        name: ProductName::make('Camiseta Básica'),
+        slug: ProductSlug::fromString('camiseta-basica'),
+        sku: ProductSku::fromString('CAM-BAS-01'),
+        price: ProductPrice::create(20.00),
+        stock: ProductStock::create(30),
+        description: ProductDescription::create('Algodón 100%, corte regular.'),
+        images: $saved->images(),
+        variants: $saved->variants()
+    ));
+
+    $idsTrasEditar = array_map(fn ($v) => $v->id(), $editado->variants());
+
+    sort($idsOriginales);
+    sort($idsTrasEditar);
+
+    expect($idsTrasEditar)->toBe($idsOriginales)
+        ->and($editado->images()[0]->id())->toBe($idImagenOriginal)
+        ->and($editado->description()->description())->toBe('Algodón 100%, corte regular.');
+});
+
+test('ProductRepository removes only the variants the merchant actually deleted', function () {
+    $saved = $this->repository->save(Product::create(
+        name: ProductName::make('Gorra'),
+        slug: ProductSlug::fromString('gorra'),
+        sku: ProductSku::fromString('GOR-01'),
+        price: ProductPrice::create(15.00),
+        stock: ProductStock::create(10),
+        variants: [
+            ProductVariant::create(sku: 'GOR-01-NEGRA', price: 15.00, quantity: 5),
+            ProductVariant::create(sku: 'GOR-01-AZUL', price: 15.00, quantity: 5),
+        ]
+    ));
+
+    $conservada = $saved->variants()[0];
+
+    $editado = $this->repository->update(new Product(
+        id: $saved->id(),
+        name: ProductName::make('Gorra'),
+        slug: ProductSlug::fromString('gorra'),
+        sku: ProductSku::fromString('GOR-01'),
+        price: ProductPrice::create(15.00),
+        stock: ProductStock::create(10),
+        variants: [$conservada]
+    ));
+
+    expect($editado->variants())->toHaveCount(1)
+        ->and($editado->variants()[0]->id())->toBe($conservada->id())
+        ->and($editado->variants()[0]->sku())->toBe($conservada->sku());
 });

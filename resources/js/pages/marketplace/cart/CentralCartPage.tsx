@@ -135,7 +135,7 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
                                                     )}
                                                     <div>
                                                         <Link
-                                                            href={`/product/${item.slug}`}
+                                                            href={`/product/${item.product_id}`}
                                                             className="text-sm font-bold text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition line-clamp-1"
                                                         >
                                                             {item.product_name}

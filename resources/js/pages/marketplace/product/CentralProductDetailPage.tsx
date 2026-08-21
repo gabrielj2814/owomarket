@@ -296,7 +296,7 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                             {related.map(rel => (
                                 <Link
                                     key={rel.id}
-                                    href={`/product/${rel.slug}`}
+                                    href={`/product/${rel.id}`}
                                     className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-3 space-y-2 hover:shadow-lg transition"
                                 >
                                     <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800">

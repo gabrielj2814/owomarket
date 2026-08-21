@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Inertia\Response;
+use Src\Marketplace\Application\Service\CentralProductResolver;
 
 final class ViewProductDetailCentralGETController extends Controller
 {
+    public function __construct(
+        private readonly CentralProductResolver $resolver
+    ) {}
+
     public function index(string $slug): Response
     {
-        $product = CentralProduct::with('tenant.domains')
-            ->where('is_visible', true)
-            ->where(function ($q) use ($slug) {
-                $q->where('slug', $slug)->orWhere('id', $slug)->orWhere('tenant_product_id', $slug);
-            })
-            ->first();
+        // Hallazgo E3: ver `CentralProductResolver`.
+        $product = $this->resolver->resolveVisible($slug);
 
         if (! $product) {
             abort(404, 'Producto no disponible en el marketplace central.');

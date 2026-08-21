@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Product\Infrastructure\Eloquent\Repositories;
 
 use Illuminate\Support\Facades\DB;
+use Src\Product\Application\Contracts\ProductMediaStorageInterface;
 use Src\Product\Application\Contracts\ProductRepositoryInterface;
 use Src\Product\Application\DTOs\PaginatedProductsResult;
 use Src\Product\Application\DTOs\ProductFilterCriteria;
@@ -26,6 +27,10 @@ use Src\Product\Infrastructure\Eloquent\Models\ProductVariant as EloquentProduct
 
 final class ProductRepository implements ProductRepositoryInterface
 {
+    public function __construct(
+        private readonly ProductMediaStorageInterface $mediaStorage
+    ) {}
+
     public function save(Product $product): Product
     {
         return DB::transaction(function () use ($product) {
@@ -148,37 +153,11 @@ final class ProductRepository implements ProductRepositoryInterface
             ]);
 
             if (! empty($product->images())) {
-                EloquentProductImage::where('product_id', $model->id)->delete();
-                foreach ($product->images() as $image) {
-                    EloquentProductImage::create([
-                        'product_id' => $model->id,
-                        'image_path' => $image->imagePath(),
-                        'alt_text' => $image->altText(),
-                        'is_default' => $image->isDefault(),
-                        'order' => $image->order(),
-                    ]);
-                }
+                $this->upsertImages($model->id, $product->images());
             }
 
             if (! empty($product->variants())) {
-                EloquentProductVariant::where('product_id', $model->id)->delete();
-                foreach ($product->variants() as $variant) {
-                    $variantModel = EloquentProductVariant::create([
-                        'product_id' => $model->id,
-                        'sku' => $variant->sku(),
-                        'price' => $variant->price(),
-                        'compare_price' => $variant->comparePrice(),
-                        'cost_price' => $variant->costPrice(),
-                        'quantity' => $variant->quantity(),
-                        'image' => $variant->image(),
-                        'weight' => $variant->weight(),
-                        'attributes' => $variant->attributes(),
-                    ]);
-
-                    if (! empty($variant->attributeValueIds())) {
-                        $variantModel->attributeValues()->sync($variant->attributeValueIds());
-                    }
-                }
+                $this->upsertVariants($model->id, $product->variants());
             }
 
             return $this->toDomain($model->fresh(['category', 'brand', 'images', 'variants.attributeValues']));
@@ -187,7 +166,10 @@ final class ProductRepository implements ProductRepositoryInterface
 
     public function delete(ProductId $id): void
     {
-        EloquentProduct::where('id', $id->value())->delete();
+        // Hallazgo E1: borraba con el query builder, que **no dispara eventos de modelo**,
+        // así que la fila de `central_products` se quedaba con `is_visible = true` para
+        // siempre y el producto seguía siendo comprable en el marketplace central.
+        EloquentProduct::where('id', $id->value())->first()?->delete();
     }
 
     public function filter(ProductFilterCriteria $criteria): PaginatedProductsResult
@@ -269,23 +251,114 @@ final class ProductRepository implements ProductRepositoryInterface
 
     public function toggleVisibility(ProductId $id, bool $isVisible): void
     {
-        EloquentProduct::where('id', $id->value())->update(['is_visible' => $isVisible]);
+        // Hallazgo E1: mismo motivo que `delete()`. Ocultar un producto en la tienda no
+        // lo retiraba del marketplace porque este `update()` no pasaba por el observador.
+        EloquentProduct::where('id', $id->value())->first()?->update(['is_visible' => $isVisible]);
     }
 
     public function updateStock(ProductId $id, int $quantity): void
     {
-        $newQty = max(0, $quantity);
-        EloquentProduct::where('id', $id->value())->update(['quantity' => $newQty]);
+        // Hallazgo E2: este método era el ÚNICO que propagaba algo a `central_products`, y
+        // lo hacía con una copia a mano del stock envuelta en un `catch` vacío. Ahora
+        // guarda sobre el modelo y es `ProductObserver` quien sincroniza la fila entera
+        // —precio, nombre e imágenes incluidos—, registrando el fallo si lo hay.
+        EloquentProduct::where('id', $id->value())->first()?->update(['quantity' => max(0, $quantity)]);
+    }
 
-        $tenantId = tenant('id');
-        if ($tenantId && class_exists(\Src\Product\Infrastructure\Eloquent\Models\CentralProduct::class)) {
-            try {
-                \Src\Product\Infrastructure\Eloquent\Models\CentralProduct::where('tenant_id', $tenantId)
-                    ->where('tenant_product_id', $id->value())
-                    ->update(['quantity' => $newQty]);
-            } catch (\Throwable) {
-                // Stock sync resilient
+    /**
+     * Hallazgo E4: `update()` borraba físicamente **todas** las filas de
+     * `product_images` y `product_variants` y las recreaba con UUID nuevos en cada
+     * edición. Corregir una errata en la descripción bastaba para que todas las variantes
+     * cambiaran de id: los `order_items.product_variant_id` de pedidos históricos quedaban
+     * huérfanos, los carritos de los clientes apuntaban a variantes inexistentes y el
+     * array `variants` ya sincronizado en `central_products` quedaba inconsistente.
+     *
+     * Ahora se actualiza lo que ya existía, se crea sólo lo nuevo y se borra únicamente lo
+     * que el comerciante quitó de verdad.
+     *
+     * @param  array<int, ProductVariant>  $variants
+     */
+    private function upsertVariants(string $productId, array $variants): void
+    {
+        $keptIds = [];
+
+        foreach ($variants as $variant) {
+            $attributes = [
+                'product_id' => $productId,
+                'sku' => $variant->sku(),
+                'price' => $variant->price(),
+                'compare_price' => $variant->comparePrice(),
+                'cost_price' => $variant->costPrice(),
+                'quantity' => $variant->quantity(),
+                'image' => $variant->image(),
+                'weight' => $variant->weight(),
+                'attributes' => $variant->attributes(),
+            ];
+
+            $existing = $variant->id() !== null
+                ? EloquentProductVariant::where('product_id', $productId)->find($variant->id())
+                : null;
+
+            if ($existing) {
+                $existing->update($attributes);
+                $variantModel = $existing;
+            } else {
+                $variantModel = EloquentProductVariant::create($attributes);
             }
+
+            $keptIds[] = $variantModel->id;
+
+            if (! empty($variant->attributeValueIds())) {
+                $variantModel->attributeValues()->sync($variant->attributeValueIds());
+            }
+        }
+
+        EloquentProductVariant::where('product_id', $productId)
+            ->whereNotIn('id', $keptIds)
+            ->delete();
+    }
+
+    /**
+     * Mismo criterio que `upsertVariants()` (hallazgo E4). Además, al eliminar una imagen
+     * se borra también el fichero físico: el borrado anterior dejaba huérfano en disco
+     * cada fichero de cada edición.
+     *
+     * @param  array<int, ProductImage>  $images
+     */
+    private function upsertImages(string $productId, array $images): void
+    {
+        $keptIds = [];
+
+        foreach ($images as $image) {
+            $attributes = [
+                'product_id' => $productId,
+                'image_path' => $image->imagePath(),
+                'alt_text' => $image->altText(),
+                'is_default' => $image->isDefault(),
+                'order' => $image->order(),
+            ];
+
+            $existing = $image->id() !== null
+                ? EloquentProductImage::where('product_id', $productId)->find($image->id())
+                : null;
+
+            if ($existing) {
+                $existing->update($attributes);
+                $keptIds[] = $existing->id;
+
+                continue;
+            }
+
+            $keptIds[] = EloquentProductImage::create($attributes)->id;
+        }
+
+        $removed = EloquentProductImage::where('product_id', $productId)
+            ->whereNotIn('id', $keptIds)
+            ->get();
+
+        foreach ($removed as $image) {
+            $this->mediaStorage->deleteImage($image->image_path);
+            $image->delete();
         }
     }
 

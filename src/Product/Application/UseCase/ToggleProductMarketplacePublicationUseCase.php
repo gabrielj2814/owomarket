@@ -9,15 +9,6 @@ use Src\Product\Infrastructure\Eloquent\Models\Product as EloquentProduct;
 
 final class ToggleProductMarketplacePublicationUseCase
 {
-    public function __construct(
-        private readonly SyncProductToCentralMarketplaceUseCase $syncUseCase
-    ) {}
-
-    /**
-     * @param string $productId
-     * @param bool|null $isPublishedCentral
-     * @return EloquentProduct
-     */
     public function execute(string $productId, ?bool $isPublishedCentral = null): EloquentProduct
     {
         $product = EloquentProduct::with(['category', 'brand', 'images', 'variants.attributeValues'])->find($productId);
@@ -32,10 +23,10 @@ final class ToggleProductMarketplacePublicationUseCase
         if ($newStatus) {
             $product->published_to_central_at = now();
         }
+        // La sincronización con el catálogo central la dispara `ProductObserver` desde el
+        // evento `saved` (hallazgos E1 y E2). Antes se invocaba a mano aquí, y éste era el
+        // único camino de toda la aplicación que se acordaba de hacerlo.
         $product->save();
-
-        // Sync with Central Marketplace Catalog
-        $this->syncUseCase->execute($product);
 
         return $product->fresh(['category', 'brand', 'images', 'variants.attributeValues']);
     }

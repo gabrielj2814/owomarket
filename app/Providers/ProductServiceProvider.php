@@ -7,6 +7,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Src\Product\Application\Contracts\ProductMediaStorageInterface;
 use Src\Product\Application\Contracts\ProductRepositoryInterface;
+use Src\Product\Infrastructure\Eloquent\Models\Product;
+use Src\Product\Infrastructure\Eloquent\Observers\ProductObserver;
 use Src\Product\Infrastructure\Eloquent\Repositories\ProductRepository;
 use Src\Product\Infrastructure\Services\LaravelProductMediaStorageService;
 
@@ -24,5 +26,11 @@ class ProductServiceProvider extends ServiceProvider
     /**
      * Bootstrap services.
      */
-    public function boot(): void {}
+    public function boot(): void
+    {
+        // Hallazgos E1 y E2: la sincronización con `central_products` dependía de que cada
+        // camino se acordara de invocarla, y sólo lo hacía el botón de publicación. Desde
+        // aquí la disparan los eventos del modelo, por los que sí pasan todos los caminos.
+        Product::observe(ProductObserver::class);
+    }
 }
