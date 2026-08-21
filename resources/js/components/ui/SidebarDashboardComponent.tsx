@@ -10,7 +10,9 @@ import {
     HiCurrencyDollar,
     HiDocumentText,
     HiIdentification,
+    HiKey,
     HiReceiptTax,
+    HiShieldCheck,
     HiShoppingBag,
     HiShoppingCart,
     HiStar,
@@ -22,6 +24,7 @@ import {
     HiViewGrid,
 } from "react-icons/hi";
 import {
+    LuFingerprint,
     LuFolderTree,
     LuLogOut,
     LuReceipt,
@@ -104,9 +107,18 @@ const SidebarDashboardComponent = () => {
                             Planes Suscripción B2B
                         </SidebarItem>
 
-                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/module`} icon={LuUsers}>
-                            Staff & Admins
-                        </SidebarItem>
+                        <SidebarCollapse icon={HiShieldCheck} label="Seguridad & Staff">
+                            <SidebarItem icon={HiKey} href={`/admin/backoffice/${state.authUser.user_id}/security/roles`}>
+                                Roles & Permisos (RBAC)
+                            </SidebarItem>
+                            <SidebarItem icon={LuUsers} href={`/admin/backoffice/${state.authUser.user_id}/module`}>
+                                Usuarios de Staff
+                            </SidebarItem>
+                            <SidebarItem icon={LuFingerprint} href={`/admin/backoffice/${state.authUser.user_id}/security/audit-logs`}>
+                                Pista de Auditoría
+                            </SidebarItem>
+                        </SidebarCollapse>
+
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/profile`} icon={HiUser}>
                             Mi Perfil
                         </SidebarItem>

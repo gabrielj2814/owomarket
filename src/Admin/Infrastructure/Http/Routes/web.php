@@ -102,3 +102,14 @@ Route::get('/api/plans/subscription-plans', \Src\Admin\Infrastructure\Http\Contr
 Route::post('/api/plans/subscription-plans', \Src\Admin\Infrastructure\Http\Controller\SaveAdminSubscriptionPlanPOSTController::class)->middleware('auth');
 Route::delete('/api/plans/subscription-plans/{id}', \Src\Admin\Infrastructure\Http\Controller\DeleteAdminSubscriptionPlanDELETEController::class)->middleware('auth');
 
+// Rutas de Seguridad & Roles RBAC (Spatie Permission)
+Route::get('/backoffice/{user_uuid}/security/roles', \Src\Admin\Infrastructure\Http\Controller\ViewAdminRolesAndStaffPageGETController::class)->name('central.backoffice.web.admin.roles_staff')->middleware('auth');
+Route::get('/api/security/roles', \Src\Admin\Infrastructure\Http\Controller\ListAdminRolesAndPermissionsGETController::class)->middleware('auth');
+Route::post('/api/security/roles', \Src\Admin\Infrastructure\Http\Controller\SaveAdminStaffRolePOSTController::class)->middleware('auth');
+Route::post('/api/security/staff/{userId}/roles', \Src\Admin\Infrastructure\Http\Controller\AssignAdminUserRolesPOSTController::class)->middleware('auth');
+
+// Rutas de Pista de Auditoría
+Route::get('/backoffice/{user_uuid}/security/audit-logs', \Src\Admin\Infrastructure\Http\Controller\ViewAdminAuditLogsPageGETController::class)->name('central.backoffice.web.admin.audit_logs')->middleware('auth');
+Route::get('/api/security/audit-logs', \Src\Admin\Infrastructure\Http\Controller\ListAdminAuditLogsGETController::class)->middleware('auth');
+
+
