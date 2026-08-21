@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 18 de 50 hallazgos cerrados (~36%). Fases 0 y 1 completas.**
+> **Avance: 20 de 50 hallazgos cerrados (~40%). Fases 0 y 1 completas, Fase 2 empezada.**
 >
 > **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
 > Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
@@ -30,7 +30,7 @@
 > | **C. Concurrencia** | C1 C2 C3 C4 | — | C5 C6 |
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | — | — | E1 E2 E3 E4 |
-> | **F. Infraestructura** | F2 | F4 | F1 F3 F5 F6 |
+> | **F. Infraestructura** | F1 F2 F6 | F4 | F3 F5 |
 > | **G. Frontend** | G1 | G8 G13 | los otros 12 |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
@@ -55,16 +55,15 @@
 > | 1.2 | D2 | `PLAN_FASE1_2_REVERSION_DE_COMISIONES.md` |
 > | 1.3 | C3, C4, C1 | `PLAN_FASE1_3_BLOQUEOS_Y_TRANSACCIONES.md` |
 > | 1.4 | D3, D4 | `PLAN_FASE1_4_TASA_DE_CAMBIO_FIABLE.md` |
+> | 2.1 | F1, F6 | `PLAN_FASE2_1_SESIONES_Y_SEEDERS_DE_PRODUCCION.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **F1 y F6**, aunque no estén en ninguna fase del plan formal: son de una línea
->    cada uno y evitan dos formas de romper producción (login caído al pasar a
->    `SESSION_DRIVER=database`, y superadmin con contraseña conocida si alguien
->    corre `db:seed --force`).
-> 2. **Fase 2 (bloque E)** — subió de prioridad: desde la Fase 0.4 el checkout
->    central toma los precios de `central_products`, así que un catálogo
->    desincronizado ya no es sólo cosmético, es dinero mal cobrado.
+> 1. **Fase 2 (bloque E)** — el grueso de la fase, y el de mayor riesgo económico:
+>    desde la Fase 0.4 el checkout central toma los precios de `central_products`,
+>    así que un catálogo desincronizado ya no es sólo cosmético, es dinero mal cobrado.
+> 2. **Un comando para crear el superadmin** (N22): la Fase 2.1 vetó `RootUserSeeder`
+>    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
 > 3. **Fase 3 (bloque G)** — el grupo más grande pero el de menor riesgo.
 > 4. **D5 y D6** — lo que queda del bloque de dinero tras la Fase 1.4.
 >
@@ -85,6 +84,9 @@
 > - **Fase 1.4:** `/api/exchange-rate/convert` ahora devuelve 404 en lugar de convertir
 >   con tasa 1.0, así que **tiene que haber una tasa activa en `exchange_rates` antes de
 >   desplegar**. Comprobarlo con la consulta de la sección «Riesgo» de su plan.
+> - **Fase 2.1:** la migración correctiva de `sessions` hay que correrla en **las dos
+>   rutas** (`migrate` y `tenants:migrate`); si se olvida la segunda, las tiendas
+>   existentes siguen con el esquema que rompe el login.
 >
 > ### 🧠 Contexto útil que no está en el texto original
 >
@@ -685,7 +687,11 @@ En cada `update()` se borran físicamente todas las filas de `product_variants` 
 
 ### F1. 🔴 `sessions.user_id` es NOT NULL con clave foránea ✅
 
-> **Estado:** ⬜ ABIERTO — recomendado hacerlo ya: rompe el login con SESSION_DRIVER=database
+> **Estado:** ✅ CERRADO (Fase 2.1) — migraciones originales corregidas y dos migraciones correctivas para las bases existentes
+>
+> **Corrección al texto de abajo:** no hay `SQLSTATE[23000]`. `DatabaseSessionHandler::performInsert()`
+> captura la `QueryException`, así que la sesión sencillamente **no se guardaba, sin ningún
+> error en el log**. El login roto no dejaba ni una pista.
 
 **Archivo:** `database/migrations/0001_01_01_000000_create_users_table.php:52-61` (y la copia en `database/migrations/tenant/`)
 
@@ -763,7 +769,7 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 
 ### F6. 🟠 Seeders de demo sin condicionar al entorno
 
-> **Estado:** ⬜ ABIERTO — recomendado hacerlo ya: db:seed --force crea un superadmin con contraseña conocida
+> **Estado:** ✅ CERRADO (Fase 2.1) — guarda de entorno en `DatabaseSeeder` y dentro de cada seeder de demo, más un `ProductionSeeder` con los datos maestros
 
 `DatabaseSeeder.php:18-26` invoca `RootUserSeeder` y los seeders de demo sin ninguna guarda. `RootUserSeeder.php:53-61` hace `updateOrCreate` de `root@owomarket.local` con `USER_PASSWORD_DEV` (`Test_12345678` en el `.env.example`).
 
@@ -1037,9 +1043,9 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
     **Subió de prioridad:** desde la Fase 0.4 el checkout central toma los precios de
     `central_products`, así que un catálogo desincronizado ya no es cosmético.
 11. ⬜ Upsert de variantes en vez de borrar y recrear (E4).
-12. ⬜ `sessions.user_id` nullable (F1), guard `central_customer` (F4 — 🟡 ya creado en la
-    Fase 0.3-D), permisos en tenant (F5), seeders condicionados (F6).
-    **F1 y F6 conviene adelantarlos:** son de una línea y evitan dos formas de romper producción.
+12. 🟡 `sessions.user_id` nullable (F1 — ✅ *Fase 2.1*), guard `central_customer`
+    (F4 — 🟡 ya creado en la Fase 0.3-D), permisos en tenant (F5 — ⬜),
+    seeders condicionados (F6 — ✅ *Fase 2.1*).
 
 ### Fase 3 — Frontend — ⬜ Sin empezar
 13. ⬜ Cupones (G2, G3), revalidación de carrito (G4), `isCentralDomain` desde el servidor (G7), refresco de sesión SSO (G10).
@@ -1074,6 +1080,8 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto |
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
+| N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` | Fase 2.1 | ⬜ Abierto |
+| N23 | Test intermitente: `AdminPhaseTwoOperationsTest > super admin can view tenant 360 detail...` falla ~1 de cada 3 suites completas con «The float-string "26e63005-…" is not representable as an int», y pasa siempre en aislamiento. Es previo a la Fase 2.1 | Fase 2.1 | ⬜ Abierto |
 
 ---
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\RunsOnlyInDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Src\Attribute\Infrastructure\Eloquent\Models\ProductAttribute;
@@ -20,8 +21,14 @@ use Src\TenantSettings\Infrastructure\Eloquent\Models\TenantSetting;
 
 final class TenantDemoDataSeeder extends Seeder
 {
+    use RunsOnlyInDevelopment;
+
     public function run(): void
     {
+        if ($this->shouldSkipOutsideDevelopment()) {
+            return;
+        }
+
         $tenants = Tenant::all();
 
         if ($tenants->isEmpty()) {

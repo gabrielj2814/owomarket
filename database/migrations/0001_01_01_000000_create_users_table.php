@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
 
-         Schema::create('countries', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+        Schema::create('countries', function (Blueprint $table) {
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
@@ -21,10 +21,10 @@ return new class extends Migration
         });
 
         Schema::create('users', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
             $table->string('name');
             $table->string('cedula')->nullable();
-            $table->string('nacionalidad',1)->nullable();
+            $table->string('nacionalidad', 1)->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -51,9 +51,11 @@ return new class extends Migration
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            // $table->foreignId('user_id')->nullable()->index();
-            $table->string('user_id');
-            $table->foreign('user_id')->references('id')->on('users');
+            // Hallazgo F1: `user_id` era NOT NULL con FK a `users`, pero
+            // `DatabaseSessionHandler::addUserInformation()` escribe `auth()->id()`,
+            // que es null para cualquier visitante anónimo. Con SESSION_DRIVER=database
+            // la sesión no llegaba a persistirse y el login quedaba inutilizable.
+            $table->string('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');

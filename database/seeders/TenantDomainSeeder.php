@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\RunsOnlyInDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
@@ -14,6 +15,8 @@ use Stancl\Tenancy\Database\Models\Domain;
 
 class TenantDomainSeeder extends Seeder
 {
+    use RunsOnlyInDevelopment;
+
     public function __construct(
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
@@ -21,6 +24,10 @@ class TenantDomainSeeder extends Seeder
 
     public function run(): void
     {
+        if ($this->shouldSkipOutsideDevelopment()) {
+            return;
+        }
+
         $codes = [
             'tecs',
             'anicomacarigua',

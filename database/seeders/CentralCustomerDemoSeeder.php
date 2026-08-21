@@ -10,14 +10,21 @@ use App\Models\CentralCustomerWishlist;
 use App\Models\CentralOrder;
 use App\Models\CentralOrderItem;
 use App\Models\CustomerReturnRequest;
+use Database\Seeders\Concerns\RunsOnlyInDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 
 final class CentralCustomerDemoSeeder extends Seeder
 {
+    use RunsOnlyInDevelopment;
+
     public function run(): void
     {
+        if ($this->shouldSkipOutsideDevelopment()) {
+            return;
+        }
+
         $conn = app()->environment('testing') ? config('database.default') : 'central';
 
         if (! Schema::connection($conn)->hasTable('central_customers')) {

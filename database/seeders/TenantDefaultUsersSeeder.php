@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Concerns\RunsOnlyInDevelopment;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Src\Shared\Domain\Contracts\PasswordHasher;
@@ -12,6 +13,8 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 class TenantDefaultUsersSeeder extends Seeder
 {
+    use RunsOnlyInDevelopment;
+
     public function __construct(
         protected PasswordValidator $validator,
         protected PasswordHasher $hasher
@@ -19,6 +22,10 @@ class TenantDefaultUsersSeeder extends Seeder
 
     public function run(): void
     {
+        if ($this->shouldSkipOutsideDevelopment()) {
+            return;
+        }
+
         $password = config('app.dev_user_password')
             ?? throw new \RuntimeException('USER_PASSWORD_DEV no está definida en .env; requerida para seeders de desarrollo.');
 
