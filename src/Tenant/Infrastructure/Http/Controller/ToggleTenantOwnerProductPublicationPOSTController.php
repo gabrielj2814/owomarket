@@ -18,7 +18,13 @@ final class ToggleTenantOwnerProductPublicationPOSTController
 
     public function __invoke(Request $request, string $id): JsonResponse
     {
-        $userId = (string) $request->input('user_id', $request->header('X-User-Id', ''));
+        // La identidad SIEMPRE sale de la sesión (hallazgo A2).
+        $userId = (string) (auth()->id() ?? '');
+
+        if ($userId === '') {
+            return ApiResponse::error('Debes iniciar sesión para publicar productos.', 401);
+        }
+
         $status = $request->has('status') ? (bool) $request->input('status') : null;
 
         try {

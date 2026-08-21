@@ -18,13 +18,13 @@ final class GetTenantOwnerWalletSummaryGETController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $userId = (string) ($request->query('user_id') 
-            ?: $request->input('user_id') 
-            ?: $request->header('X-User-Id') 
-            ?: auth()->id());
+        // La identidad SIEMPRE sale de la sesión. Antes se aceptaba 'user_id' por query
+        // string o por la cabecera X-User-Id, lo que permitía leer la facturación de
+        // cualquier comerciante (hallazgo A2).
+        $userId = (string) (auth()->id() ?? '');
 
-        if (empty($userId)) {
-            return ApiResponse::error('El parámetro user_id es obligatorio', 400);
+        if ($userId === '') {
+            return ApiResponse::error('Debes iniciar sesión para consultar tu billetera.', 401);
         }
 
         try {

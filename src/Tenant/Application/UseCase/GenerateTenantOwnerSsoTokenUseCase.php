@@ -34,6 +34,18 @@ final class GenerateTenantOwnerSsoTokenUseCase
             throw new Exception('Tienda no encontrada', 404);
         }
 
+        // 2.b. Verificar que el usuario sea propietario de ESA tienda. Sin esta
+        // comprobación, cualquiera con un user_id y un tenant_id podía emitir un
+        // token que abre sesión como el dueño de una tienda ajena (hallazgo A2).
+        $isOwner = Tenant::on($centralConn)
+            ->where('id', $tenantId)
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
+            ->exists();
+
+        if (! $isOwner) {
+            throw new Exception('No tienes acceso a esta tienda.', 403);
+        }
+
         // 3. Obtener dominio del inquilino
         $domainModel = $tenant->domains->first();
         $tenantDomain = $domainModel ? $domainModel->domain : "{$tenant->slug}.localhost";

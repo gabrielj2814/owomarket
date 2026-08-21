@@ -5,32 +5,56 @@ declare(strict_types=1);
 namespace Src\Tenant\Application\UseCase;
 
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
-use Illuminate\Support\Facades\Schema;
-use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 
 final class ListTenantOwnerProductsUseCase
 {
+    public function __construct(
+        private readonly TenantOwnershipVerifier $ownership
+    ) {}
+
     /**
      * @return array<string, mixed>
      */
     public function execute(string $userId, ?string $filterTenantId = null, ?string $search = null): array
     {
-        $tenants = Tenant::whereHas('users', function ($q) use ($userId) {
-            $q->where('user_id', $userId);
-        })->get();
+        // Sólo las tiendas del propio usuario. Si no tiene ninguna, el catálogo va vacío:
+        // NUNCA se cae hacia las tiendas de otros comerciantes.
+        $tenants = $this->ownership->tenantsOf($userId);
+        $tenantIds = $tenants->pluck('id')->map(fn ($id) => (string) $id)->all();
 
-        if ($tenants->isEmpty()) {
-            $tenants = Tenant::where('status', 'active')->limit(10)->get();
+        $tenantList = $tenants->map(fn ($t) => [
+            'id' => $t->id,
+            'name' => $t->name ?? ucfirst((string) $t->slug),
+            'slug' => $t->slug,
+        ])->toArray();
+
+        if ($tenantIds === []) {
+            return [
+                'tenants' => [],
+                'products' => [],
+                'pagination' => [
+                    'total' => 0,
+                    'current_page' => 1,
+                    'last_page' => 1,
+                    'per_page' => 15,
+                ],
+                'metrics' => [
+                    'total_products' => 0,
+                    'published_in_central' => 0,
+                    'paused_in_central' => 0,
+                ],
+            ];
         }
 
-        $tenantIds = $tenants->pluck('id')->toArray();
+        // Un tenant_id de filtro que no pertenezca al usuario se ignora, de modo que
+        // el listado nunca se amplía más allá de sus propias tiendas.
+        $scopedTenantIds = ($filterTenantId !== null && in_array($filterTenantId, $tenantIds, true))
+            ? [$filterTenantId]
+            : $tenantIds;
 
         $query = CentralProduct::with(['tenant'])
-            ->whereIn('tenant_id', $tenantIds);
-
-        if ($filterTenantId && in_array($filterTenantId, $tenantIds, true)) {
-            $query->where('tenant_id', $filterTenantId);
-        }
+            ->whereIn('tenant_id', $scopedTenantIds);
 
         if ($search) {
             $query->where(function ($q) use ($search) {
@@ -43,11 +67,7 @@ final class ListTenantOwnerProductsUseCase
         $products = $query->orderBy('created_at', 'desc')->paginate(15);
 
         return [
-            'tenants' => $tenants->map(fn ($t) => [
-                'id' => $t->id,
-                'name' => $t->name ?? ucfirst($t->slug),
-                'slug' => $t->slug,
-            ])->toArray(),
+            'tenants' => $tenantList,
             'products' => $products->items(),
             'pagination' => [
                 'total' => $products->total(),

@@ -18,17 +18,16 @@ final class ListTenantOwnerProductsGETController
 
     public function __invoke(Request $request): JsonResponse
     {
-        $userId = (string) ($request->query('user_id') 
-            ?: $request->input('user_id') 
-            ?: $request->header('X-User-Id') 
-            ?: auth()->id());
+        // La identidad SIEMPRE sale de la sesión, nunca de la query string
+        // ni de la cabecera X-User-Id (hallazgo A2).
+        $userId = (string) (auth()->id() ?? '');
+
+        if ($userId === '') {
+            return ApiResponse::error('Debes iniciar sesión para consultar tu catálogo.', 401);
+        }
 
         $tenantId = $request->query('tenant_id');
         $search = $request->query('search');
-
-        if (empty($userId)) {
-            return ApiResponse::error('El parámetro user_id es obligatorio', 400);
-        }
 
         try {
             $result = $this->useCase->execute(

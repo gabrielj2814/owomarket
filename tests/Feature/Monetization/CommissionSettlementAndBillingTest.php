@@ -14,6 +14,7 @@ use Src\Monetization\Application\UseCases\GetSuperAdminMonetizationMetricsUseCas
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\User;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
@@ -37,6 +38,18 @@ beforeEach(function () {
     }
 
     app(ListSubscriptionPlansUseCase::class)->execute();
+
+    // Las rutas de /api/central/monetization/* exigen sesión de super administrador
+    // (middleware 'auth' + 'super_admin'). Antes estaban abiertas al público, que era
+    // precisamente el hallazgo A4 de la auditoría.
+    $this->superAdmin = User::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Super Admin Monetización',
+        'email' => 'monetizacion_'.bin2hex(random_bytes(3)).'@owomarket.local',
+        'password' => bcrypt('Password123!'),
+        'type' => 'super_admin',
+        'is_active' => true,
+    ]);
 
     $tenantId = 't_settle_'.bin2hex(random_bytes(3));
     $this->tenant = ModelsTenant::create([
@@ -95,8 +108,8 @@ test('SuperAdmin can generate and confirm commission settlements converting pend
     expect($comm2->status)->toBe('pending');
     expect($comm3->status)->toBe('pending');
 
-    // 2. Generate Settlement via API
-    $genResponse = $this->postJson('/api/central/monetization/settlements/generate', [
+    // 2. Generate Settlement via API (como super administrador)
+    $genResponse = $this->actingAs($this->superAdmin)->postJson('/api/central/monetization/settlements/generate', [
         'tenant_id' => $this->tenant->id,
         'type' => 'collection',
         'notes' => 'Liquidación mensual de comisiones Agosto 2026',
@@ -133,7 +146,7 @@ test('SuperAdmin can generate and confirm commission settlements converting pend
         ->assertJsonPath('status', 'success');
 
     // 4. SuperAdmin confirms and settles the settlement
-    $confirmResponse = $this->postJson("/api/central/monetization/settlements/{$settlementId}/confirm", [
+    $confirmResponse = $this->actingAs($this->superAdmin)->postJson("/api/central/monetization/settlements/{$settlementId}/confirm", [
         'payment_method' => 'pago_movil',
         'payment_reference' => 'PM-SETTLE-889900',
         'notes' => 'Pago validado en extracto bancario',
@@ -155,8 +168,42 @@ test('SuperAdmin can generate and confirm commission settlements converting pend
     expect(count($historyResponse->json('data')))->toBe(1);
 
     // 7. Verify SuperAdmin Metrics endpoint
-    $metricsResponse = $this->getJson('/api/central/monetization/metrics');
+    $metricsResponse = $this->actingAs($this->superAdmin)->getJson('/api/central/monetization/metrics');
     $metricsResponse->assertStatus(200)
         ->assertJsonPath('status', 'success');
     expect((float) $metricsResponse->json('data.settlements.settled_amount'))->toBe(48.0);
+});
+
+test('los endpoints de monetización central rechazan a quien no es super administrador', function () {
+    // Sin sesión: el middleware 'auth' responde 401 en peticiones JSON.
+    $this->getJson('/api/central/monetization/metrics')
+        ->assertStatus(401);
+
+    $this->postJson('/api/central/monetization/custom-commission', [
+        'tenant_id' => $this->tenant->id,
+        'custom_commission_rate' => 0,
+    ])->assertStatus(401);
+
+    // Con sesión, pero de un usuario que no es super administrador: 403 del middleware 'super_admin'.
+    $owner = User::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Dueño de Tienda',
+        'email' => 'owner_'.bin2hex(random_bytes(3)).'@owomarket.local',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+        'is_active' => true,
+    ]);
+
+    $this->actingAs($owner)
+        ->getJson('/api/central/monetization/metrics')
+        ->assertStatus(403);
+
+    $this->actingAs($owner)
+        ->postJson('/api/central/monetization/custom-commission', [
+            'tenant_id' => $this->tenant->id,
+            'custom_commission_rate' => 0,
+        ])->assertStatus(403);
+
+    // La tasa de comisión de la tienda no debe haber cambiado.
+    expect($this->tenant->fresh()->custom_commission_rate)->toBeNull();
 });

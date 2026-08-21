@@ -50,13 +50,30 @@ Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Ht
 Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware('auth');
 Route::get('/owner/backoffice/{user_uuid}/billing', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerBillingGETController::class)->name('central.backoffice.web.tenant.owner.billing')->middleware('auth');
 
-Route::post('/owner/filter/tenants', [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
 Route::post('/owner/tenant', [CreateTenantPOSTController::class, 'index'])->middleware('auth');
 Route::delete('/owner/tenant', [DeleteTenantDELETEController::class, 'index'])->middleware('auth');
 
-// APIs del Tenant Owner Central
-Route::post('/owner/api/sso-token', \Src\Tenant\Infrastructure\Http\Controller\GenerateTenantOwnerSsoTokenPOSTController::class);
-Route::get('/owner/api/wallet-summary', \Src\Tenant\Infrastructure\Http\Controller\GetTenantOwnerWalletSummaryGETController::class);
-Route::post('/owner/api/payout-request', \Src\Tenant\Infrastructure\Http\Controller\CreateTenantOwnerPayoutRequestPOSTController::class);
-Route::get('/owner/api/products', \Src\Tenant\Infrastructure\Http\Controller\ListTenantOwnerProductsGETController::class);
-Route::post('/owner/api/products/{id}/toggle-marketplace', \Src\Tenant\Infrastructure\Http\Controller\ToggleTenantOwnerProductPublicationPOSTController::class);
+/*
+|--------------------------------------------------------------------------
+| APIs del Tenant Owner Central
+|--------------------------------------------------------------------------
+|
+| Estas rutas estaban SIN middleware alguno y tomaban el 'user_id' del cuerpo
+| de la petición, de modo que un anónimo podía emitir tokens SSO para entrar
+| como cualquier propietario, leer la facturación de cualquier comercio o
+| registrar solicitudes de retiro con sus propios datos bancarios (hallazgo A2).
+|
+| Ahora exigen sesión de propietario, y cada controlador deriva la identidad de
+| auth()->id(). La verificación de PROPIEDAD de cada tienda concreta la hace
+| Src\Tenant\Application\Service\TenantOwnershipVerifier dentro de los casos de uso.
+|
+*/
+Route::middleware(['auth', 'tenant_owner'])->group(function () {
+    Route::post('/owner/filter/tenants', [ConsultTenantByUuidOfOwnerPOSTController::class, 'index']);
+
+    Route::post('/owner/api/sso-token', \Src\Tenant\Infrastructure\Http\Controller\GenerateTenantOwnerSsoTokenPOSTController::class);
+    Route::get('/owner/api/wallet-summary', \Src\Tenant\Infrastructure\Http\Controller\GetTenantOwnerWalletSummaryGETController::class);
+    Route::post('/owner/api/payout-request', \Src\Tenant\Infrastructure\Http\Controller\CreateTenantOwnerPayoutRequestPOSTController::class);
+    Route::get('/owner/api/products', \Src\Tenant\Infrastructure\Http\Controller\ListTenantOwnerProductsGETController::class);
+    Route::post('/owner/api/products/{id}/toggle-marketplace', \Src\Tenant\Infrastructure\Http\Controller\ToggleTenantOwnerProductPublicationPOSTController::class);
+});

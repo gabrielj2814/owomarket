@@ -19,7 +19,6 @@ final class CreateTenantOwnerPayoutRequestPOSTController
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
-            'user_id' => 'required|string',
             'tenant_id' => 'required|string',
             'amount' => 'required|numeric|min:1',
             'payment_method' => 'required|string',
@@ -27,9 +26,18 @@ final class CreateTenantOwnerPayoutRequestPOSTController
             'notes' => 'nullable|string',
         ]);
 
+        // La identidad SIEMPRE sale de la sesión. Antes se aceptaba 'user_id' del cuerpo,
+        // lo que permitía a un anónimo crear solicitudes de retiro contra cualquier
+        // tienda, con sus propios datos bancarios (hallazgo A2).
+        $userId = (string) (auth()->id() ?? '');
+
+        if ($userId === '') {
+            return ApiResponse::error('Debes iniciar sesión para solicitar un retiro.', 401);
+        }
+
         try {
             $settlement = $this->useCase->execute(
-                (string) $request->input('user_id'),
+                $userId,
                 [
                     'tenant_id' => (string) $request->input('tenant_id'),
                     'amount' => (float) $request->input('amount'),

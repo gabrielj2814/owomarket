@@ -20,12 +20,19 @@ final class GenerateTenantOwnerSsoTokenPOSTController
     {
         $request->validate([
             'tenant_id' => 'required|string',
-            'user_id' => 'required|string',
         ]);
+
+        // La identidad SIEMPRE sale de la sesión, nunca del cuerpo de la petición.
+        // El frontend todavía envía 'user_id'; se ignora deliberadamente.
+        $userId = (string) (auth()->id() ?? '');
+
+        if ($userId === '') {
+            return ApiResponse::error('Debes iniciar sesión para acceder a tu tienda.', 401);
+        }
 
         try {
             $result = $this->useCase->execute(
-                (string) $request->input('user_id'),
+                $userId,
                 (string) $request->input('tenant_id')
             );
 
