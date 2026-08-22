@@ -15,8 +15,10 @@ use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
+use Src\Product\Infrastructure\Eloquent\Models\ProductVariant;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -779,4 +781,177 @@ test('una tienda que agota los intentos deja de reintentarse (N17)', function ()
     tenancy()->end();
 
     expect(CentralOrderDispatch::where('central_order_id', $order->id)->first()->status)->toBe('failed');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo N36 — el marketplace central vende por variante
+|--------------------------------------------------------------------------
+|
+| `central_order_items` no guardaba la variante, asi que pasaban dos cosas a la vez: el
+| comprador no podia elegir talla ni color, y la reserva de stock descontaba del producto
+| PADRE, cuyo `quantity` no lo mantiene nadie cuando hay variantes —`StockReserver` solo
+| toca la variante cuando se le pasa una—. Vender por el marketplace descuadraba los dos.
+*/
+
+/** Crea en la tienda A un producto con dos variantes y lo publica en el catalogo central. */
+function productoConVariantes(object $test): array
+{
+    tenancy()->initialize($test->tenantA);
+
+    $producto = Product::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Camiseta Tecnica',
+        'slug' => 'camiseta-tecnica-'.Str::random(4),
+        'sku' => 'CAM-TEC',
+        'price' => 20.00,
+        // Deliberadamente distinto de la suma de las variantes: es el numero que nadie
+        // mantiene, y el que se descontaba antes de N36.
+        'quantity' => 99,
+        'is_visible' => true,
+    ]);
+
+    $tallaS = ProductVariant::create([
+        'id' => (string) Str::uuid(),
+        'product_id' => $producto->id,
+        'sku' => 'CAM-TEC-S',
+        'price' => 20.00,
+        'quantity' => 5,
+        'attributes' => ['Talla' => 'S'],
+    ]);
+
+    $tallaM = ProductVariant::create([
+        'id' => (string) Str::uuid(),
+        'product_id' => $producto->id,
+        'sku' => 'CAM-TEC-M',
+        'price' => 25.00,
+        'quantity' => 3,
+        'attributes' => ['Talla' => 'M'],
+    ]);
+
+    tenancy()->end();
+
+    CentralProduct::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $test->tenantA->id,
+        'tenant_product_id' => $producto->id,
+        'name' => $producto->name,
+        'slug' => $producto->slug,
+        'sku' => $producto->sku,
+        'price' => 20.00,
+        'quantity' => 99,
+        'is_visible' => true,
+        'variants' => [
+            ['id' => $tallaS->id, 'sku' => 'CAM-TEC-S', 'price' => 20.00, 'quantity' => 5, 'attributes' => ['Talla' => 'S']],
+            ['id' => $tallaM->id, 'sku' => 'CAM-TEC-M', 'price' => 25.00, 'quantity' => 3, 'attributes' => ['Talla' => 'M']],
+        ],
+    ]);
+
+    return ['producto' => $producto, 'S' => $tallaS, 'M' => $tallaM];
+}
+
+test('comprar una variante descuenta SU stock y no el del producto padre (N36)', function () {
+    $v = productoConVariantes($this);
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Variante', 'email' => 'variante@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $v['producto']->id, 'variant_id' => $v['M']->id, 'quantity' => 2],
+        ],
+    ]);
+
+    $response->assertStatus(201);
+
+    tenancy()->initialize($this->tenantA);
+    $padre = Product::find($v['producto']->id);
+    $tallaS = ProductVariant::find($v['S']->id);
+    $tallaM = ProductVariant::find($v['M']->id);
+    tenancy()->end();
+
+    // La talla comprada baja...
+    expect((int) $tallaM->quantity)->toBe(1);
+    // ...y ni la otra talla ni el padre se tocan. Antes de N36 bajaba el padre.
+    expect((int) $tallaS->quantity)->toBe(5);
+    expect((int) $padre->quantity)->toBe(99);
+});
+
+test('el precio cobrado es el de la variante, no el del padre (N36)', function () {
+    $v = productoConVariantes($this);
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Precio', 'email' => 'precio@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $v['producto']->id, 'variant_id' => $v['M']->id, 'quantity' => 2],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $item = CentralOrderItem::where('central_order_id', $response->json('data.order_id'))->first();
+
+    // La M cuesta 25, el padre 20. Cobrar el del padre regalaba 5 por unidad.
+    expect((float) $item->price)->toBe(25.00)
+        ->and((string) $item->variant_id)->toBe((string) $v['M']->id)
+        ->and($item->sku)->toBe('CAM-TEC-M');
+});
+
+test('la variante llega al pedido de la tienda, que es lo que el comerciante prepara (N36)', function () {
+    $v = productoConVariantes($this);
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Envio', 'email' => 'envio@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $v['producto']->id, 'variant_id' => $v['S']->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    tenancy()->initialize($this->tenantA);
+    $linea = DB::table('order_items')->first();
+    tenancy()->end();
+
+    expect((string) $linea->product_variant_id)->toBe((string) $v['S']->id);
+});
+
+test('no se puede comprar un producto con variantes sin elegir una (N36)', function () {
+    $v = productoConVariantes($this);
+
+    // Antes esto vendia el padre en silencio: el comerciante recibia el pedido sin saber
+    // que talla enviar, y el stock salia del numero equivocado.
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Sin Opcion', 'email' => 'sinopcion@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $v['producto']->id, 'quantity' => 1],
+        ],
+    ]);
+
+    $response->assertStatus(422);
+    expect($response->json('message'))->toContain('elegir una opcion');
+});
+
+test('el checkout rechaza el pedido si la variante no tiene existencias (N36)', function () {
+    $v = productoConVariantes($this);
+
+    // La M tiene 3. El padre tiene 99, asi que sin N36 esto pasaba y vendia aire.
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Sin Stock', 'email' => 'sinstock@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $v['producto']->id, 'variant_id' => $v['M']->id, 'quantity' => 10],
+        ],
+    ]);
+
+    expect($response->status())->toBeGreaterThanOrEqual(400);
+
+    tenancy()->initialize($this->tenantA);
+    expect((int) ProductVariant::find($v['M']->id)->quantity)->toBe(3);
+    tenancy()->end();
 });

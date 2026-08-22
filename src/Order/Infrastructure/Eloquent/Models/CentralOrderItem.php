@@ -30,6 +30,7 @@ class CentralOrderItem extends Model
         'central_order_id',
         'tenant_id',
         'product_id',
+        'variant_id',
         'product_name',
         'sku',
         'price',

@@ -134,6 +134,9 @@ final class CreateUnifiedCentralOrderUseCase
                     'central_order_id' => $order->id,
                     'tenant_id' => $it['tenant_id'],
                     'product_id' => $it['product_id'],
+                    // Hallazgo N36: sin esto el comerciante recibia el pedido sin saber
+                    // que variante enviar, y el stock se descontaba del padre.
+                    'variant_id' => $it['variant_id'] ?? null,
                     'product_name' => $it['name'],
                     'sku' => $it['sku'],
                     'price' => $it['price'],

@@ -152,6 +152,9 @@ final class DispatchCentralOrderToTenantsUseCase
                             sku: $item->sku ?? 'SKU-'.$item->product_id,
                             price: (float) $item->price,
                             quantity: (int) $item->quantity,
+                            // Hallazgo N36: la variante viaja hasta el pedido de la tienda,
+                            // que es lo que el comerciante mira para preparar el envio.
+                            productVariantId: $item->variant_id,
                             attributes: $item->attributes
                         );
 
@@ -163,13 +166,15 @@ final class DispatchCentralOrderToTenantsUseCase
                         //
                         // Corre dentro de la transaccion del despacho y con la tenancy ya
                         // inicializada, que es lo que hace efectivo el `lockForUpdate`.
-                        // La variante va en null porque `central_order_items` no la
-                        // guarda: el marketplace central todavia no vende por variante.
-                        // Cuando lo haga, hay que anadir la columna y pasarla aqui, o se
-                        // descontara del producto padre en vez de la variante.
+                        //
+                        // Hallazgo N36: la variante ya viaja. Antes iba `null` siempre, y
+                        // eso descontaba del producto padre, cuyo `quantity` no lo mantiene
+                        // nadie en un producto con variantes —`StockReserver` solo toca la
+                        // variante cuando se le pasa una—, asi que vender por el
+                        // marketplace descuadraba padre y variantes.
                         $this->stockReserver->reserve(
                             (string) $item->product_id,
-                            null,
+                            $item->variant_id !== null ? (string) $item->variant_id : null,
                             (int) $item->quantity,
                             (string) $item->product_name
                         );

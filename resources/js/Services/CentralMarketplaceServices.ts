@@ -13,6 +13,8 @@ const axiosCentral = axios.create({
 export interface CentralCheckoutItemPayload {
     tenant_id: string;
     product_id: string;
+    /** Hallazgo N36: sin esto el comerciante no sabe que variante enviar. */
+    variant_id?: string | null;
     product_name: string;
     sku?: string;
     price: number;
@@ -181,6 +183,8 @@ export interface CentralProductDetailResponse {
 export interface CentralRevalidatedCartLine {
     tenant_id: string;
     product_id: string;
+    /** Hallazgo N36: identifica la linea cuando el mismo producto va con dos opciones. */
+    variant_id?: string | null;
     central_product_id?: string;
     available: boolean;
     reason: string | null;
@@ -297,7 +301,7 @@ const CentralMarketplaceServices = {
      * central, que seguia con precios y stock congelados en `localStorage`.
      */
     revalidateCart: async (
-        items: Array<{ tenant_id: string; product_id: string; quantity: number; price?: number }>,
+        items: Array<{ tenant_id: string; product_id: string; variant_id?: string | null; quantity: number; price?: number }>,
     ): Promise<Data<CentralRevalidateCartResponse>> => {
         try {
             const response = await axiosCentral.post<Data<CentralRevalidateCartResponse>>('cart/revalidate', { items });
@@ -319,7 +323,7 @@ const CentralMarketplaceServices = {
      * Devuelve lo mismo que calculara el servidor al crear el pedido.
      */
     quote: async (payload: {
-        items: Array<{ tenant_id: string; product_id: string; quantity: number }>;
+        items: Array<{ tenant_id: string; product_id: string; variant_id?: string | null; quantity: number }>;
         shipping_address?: Record<string, unknown>;
         coupons?: Record<string, string>;
     }): Promise<Data<CentralOrderQuote>> => {

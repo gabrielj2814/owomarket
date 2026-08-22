@@ -44,6 +44,10 @@ final class CentralCartRevalidator
                 $lines[] = [
                     'tenant_id' => (string) ($item['tenant_id'] ?? ''),
                     'product_id' => (string) ($item['product_id'] ?? ''),
+                    // Hallazgo N36: la variante identifica la linea. Sin ella, el carrito
+                    // no puede casar la respuesta con la fila correcta cuando el mismo
+                    // producto esta dos veces con opciones distintas.
+                    'variant_id' => isset($item['variant_id']) && $item['variant_id'] !== '' ? (string) $item['variant_id'] : null,
                     'available' => false,
                     'reason' => $e->getMessage(),
                 ];
@@ -66,6 +70,7 @@ final class CentralCartRevalidator
             $lines[] = [
                 'tenant_id' => $resolved['tenant_id'],
                 'product_id' => $resolved['product_id'],
+                'variant_id' => $resolved['variant_id'],
                 'central_product_id' => $resolved['central_product_id'],
                 'available' => ! $outOfStock,
                 'name' => $resolved['name'],

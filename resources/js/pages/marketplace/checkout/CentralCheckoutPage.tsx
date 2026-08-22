@@ -1,25 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
 import { useCentralCart } from '@/contexts/CentralCartContext';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import CentralMarketplaceServices, {
-    CentralOrderQuote,
-    CreateCentralOrderPayload,
-} from '@/Services/CentralMarketplaceServices';
+import CentralMarketplaceServices, { CentralOrderQuote, CreateCentralOrderPayload } from '@/Services/CentralMarketplaceServices';
+import { Head, Link } from '@inertiajs/react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-    HiOutlineShoppingBag,
-    HiOutlineBuildingStorefront,
-    HiOutlineShieldCheck,
-    HiOutlineDevicePhoneMobile,
-    HiOutlineCurrencyDollar,
-    HiOutlineLockClosed,
     HiOutlineArrowPath,
+    HiOutlineBuildingStorefront,
     HiOutlineCheckCircle,
+    HiOutlineCurrencyDollar,
+    HiOutlineDevicePhoneMobile,
+    HiOutlineLockClosed,
+    HiOutlineShieldCheck,
+    HiOutlineShoppingBag,
 } from 'react-icons/hi2';
 
-import { getSharedActiveRate } from '@/Services/ExchangeRateServices';
 import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
+import { getSharedActiveRate } from '@/Services/ExchangeRateServices';
 
 export interface CentralPaymentMethod {
     id: 'pago_movil' | 'binance_pay';
@@ -81,7 +78,6 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
     const storeGroups = getItemsByStore();
     const subtotal = getSubtotal();
 
-
     const totalCount = getItemCount();
 
     // Customer Form
@@ -110,14 +106,17 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
         if (items.length === 0) return;
 
         void CentralMarketplaceServices.quote({
-            items: items.map(i => ({
+            items: items.map((i) => ({
                 tenant_id: i.tenant_id,
                 product_id: i.product_id,
+                // Hallazgo N36: el presupuesto tiene que salir del precio de la variante
+                // elegida, no del padre.
+                variant_id: i.variant_id ?? null,
                 quantity: i.quantity,
             })),
             shipping_address: { city, state },
             coupons,
-        }).then(res => {
+        }).then((res) => {
             if (res.code === 200 && res.data) setQuote(res.data);
         });
         // Se recalcula si cambia el carrito o el destino: el envío depende de ambos.
@@ -152,9 +151,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
      * pedido existente en lugar de crear otro con sus comisiones duplicadas.
      */
     const idempotencyKeyRef = useRef<string>(
-        typeof crypto !== 'undefined' && 'randomUUID' in crypto
-            ? crypto.randomUUID()
-            : `ck-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
+        typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `ck-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
     );
 
     const totalBs = bcvRate !== null ? (totalAPagar * bcvRate).toFixed(2) : null;
@@ -224,9 +221,10 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
             // Hallazgo N28: los cupones son de tienda, uno por tienda como maximo. El
             // servidor los revalida y los consume; esto solo dice cual se intento aplicar.
             coupons: coupons,
-            items: items.map(i => ({
+            items: items.map((i) => ({
                 tenant_id: i.tenant_id,
                 product_id: i.product_id,
+                variant_id: i.variant_id ?? null,
                 product_name: i.product_name,
                 sku: i.sku || undefined,
                 // El servidor ignora este precio y resuelve el real contra el
@@ -249,7 +247,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
         } else if (res.status === 'success') {
             clearCart();
             setErrorMsg(
-                'Tu pedido se registro correctamente, pero no pudimos abrir la pagina de confirmacion. NO vuelvas a pagar: revisa tus pedidos en tu cuenta.'
+                'Tu pedido se registro correctamente, pero no pudimos abrir la pagina de confirmacion. NO vuelvas a pagar: revisa tus pedidos en tu cuenta.',
             );
             setSubmitting(false);
         } else {
@@ -260,16 +258,13 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
     if (items.length === 0) {
         return (
-            <div className="text-center py-24 space-y-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 text-gray-400 rounded-full flex items-center justify-center mx-auto">
-                    <HiOutlineShoppingBag className="w-8 h-8" />
+            <div className="space-y-4 py-24 text-center">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-gray-400 dark:bg-gray-800">
+                    <HiOutlineShoppingBag className="h-8 w-8" />
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white">Tu carrito está vacío</h2>
                 <p className="text-xs text-gray-500">Agrega productos antes de realizar el checkout.</p>
-                <Link
-                    href="/marketplace"
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs"
-                >
+                <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-2.5 text-xs font-bold text-white">
                     Explorar Catálogo
                 </Link>
             </div>
@@ -282,199 +277,179 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
             <div className="space-y-8">
                 {/* Header */}
-                <div className="border-b border-gray-200 dark:border-gray-800 pb-4">
-                    <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white flex items-center gap-2">
-                        <HiOutlineLockClosed className="w-7 h-7 text-blue-600" />
+                <div className="border-b border-gray-200 pb-4 dark:border-gray-800">
+                    <h1 className="flex items-center gap-2 text-2xl font-black text-gray-900 sm:text-3xl dark:text-white">
+                        <HiOutlineLockClosed className="h-7 w-7 text-blue-600" />
                         Checkout Unificado Multi-Tienda
                     </h1>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="mt-1 text-xs text-gray-500 sm:text-sm dark:text-gray-400">
                         Completa tus datos una sola vez. Nosotros nos encargamos de dividir y despachar cada paquete con su respectiva tienda.
                     </p>
                 </div>
 
                 {errorMsg && (
-                    <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs font-semibold">
+                    <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
                         {errorMsg}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <form onSubmit={handleSubmitOrder} className="grid grid-cols-1 gap-8 lg:grid-cols-12">
                     {/* Left Forms Column */}
-                    <div className="lg:col-span-7 space-y-6">
+                    <div className="space-y-6 lg:col-span-7">
                         {/* 1. Customer Information */}
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-4 shadow-sm">
-                            <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
+                        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                            <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
+                                <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
                                         1
                                     </span>
                                     Información del Comprador
                                 </h3>
 
                                 {!isAuthenticated && (
-                                    <button
-                                        type="button"
-                                        onClick={() => openAuthModal()}
-                                        className="text-xs text-blue-600 font-bold hover:underline"
-                                    >
+                                    <button type="button" onClick={() => openAuthModal()} className="text-xs font-bold text-blue-600 hover:underline">
                                         ¿Tienes cuenta OwO Pass? Inicia sesión
                                     </button>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Nombre y Apellido *
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Nombre y Apellido *</label>
                                     <input
                                         type="text"
                                         required
                                         value={name}
-                                        onChange={e => setName(e.target.value)}
+                                        onChange={(e) => setName(e.target.value)}
                                         placeholder="Ej: Gabriel Martínez"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Correo Electrónico *
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Correo Electrónico *</label>
                                     <input
                                         type="email"
                                         required
                                         value={email}
-                                        onChange={e => setEmail(e.target.value)}
+                                        onChange={(e) => setEmail(e.target.value)}
                                         placeholder="gabriel@ejemplo.com"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Teléfono Celular
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Teléfono Celular</label>
                                     <input
                                         type="tel"
                                         value={phone}
-                                        onChange={e => setPhone(e.target.value)}
+                                        onChange={(e) => setPhone(e.target.value)}
                                         placeholder="0412-1234567"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Cédula / DNI
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Cédula / DNI</label>
                                     <input
                                         type="text"
                                         value={documentId}
-                                        onChange={e => setDocumentId(e.target.value)}
+                                        onChange={(e) => setDocumentId(e.target.value)}
                                         placeholder="V-12345678"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* 2. Shipping Address */}
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-4 shadow-sm">
-                            <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
+                        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                            <div className="border-b border-gray-100 pb-3 dark:border-gray-800">
+                                <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
                                         2
                                     </span>
                                     Dirección de Entrega
                                 </h3>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="sm:col-span-2 space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Dirección Exacta *
-                                    </label>
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                <div className="space-y-1 sm:col-span-2">
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Dirección Exacta *</label>
                                     <input
                                         type="text"
                                         required
                                         value={address}
-                                        onChange={e => setAddress(e.target.value)}
+                                        onChange={(e) => setAddress(e.target.value)}
                                         placeholder="Av. Principal, Edificio, Apartamento..."
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Ciudad *
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Ciudad *</label>
                                     <input
                                         type="text"
                                         required
                                         value={city}
-                                        onChange={e => setCity(e.target.value)}
+                                        onChange={(e) => setCity(e.target.value)}
                                         placeholder="Caracas"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Estado / Región
-                                    </label>
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Estado / Región</label>
                                     <input
                                         type="text"
                                         value={state}
-                                        onChange={e => setState(e.target.value)}
+                                        onChange={(e) => setState(e.target.value)}
                                         placeholder="Miranda"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
 
-                                <div className="sm:col-span-2 space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">
-                                        Notas de entrega (Opcional)
-                                    </label>
+                                <div className="space-y-1 sm:col-span-2">
+                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Notas de entrega (Opcional)</label>
                                     <textarea
                                         value={notes}
-                                        onChange={e => setNotes(e.target.value)}
+                                        onChange={(e) => setNotes(e.target.value)}
                                         rows={2}
                                         placeholder="Punto de referencia o instrucciones especiales..."
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
+                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                                     />
                                 </div>
                             </div>
                         </div>
 
                         {/* 3. Payment Gateway Selection */}
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-5 shadow-sm">
-                            <div className="border-b border-gray-100 dark:border-gray-800 pb-3">
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                    <span className="w-5 h-5 rounded-full bg-blue-600 text-white text-[10px] font-black flex items-center justify-center">
+                        <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                            <div className="border-b border-gray-100 pb-3 dark:border-gray-800">
+                                <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
                                         3
                                     </span>
                                     Método de Pago Central
                                 </h3>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 {/* Pago Móvil Option */}
                                 <button
                                     type="button"
                                     onClick={() => setPaymentMethod('pago_movil')}
-                                    className={`p-4 rounded-2xl border text-left transition flex items-start gap-3 ${
+                                    className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
                                         paymentMethod === 'pago_movil'
-                                            ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-900/30 ring-2 ring-blue-500/20'
-                                            : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            ? 'border-blue-600 bg-blue-50/50 ring-2 ring-blue-500/20 dark:bg-blue-900/30'
+                                            : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
                                     }`}
                                 >
-                                    <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
-                                        <HiOutlineDevicePhoneMobile className="w-6 h-6" />
+                                    <div className="rounded-xl bg-blue-100 p-2.5 text-blue-600 dark:bg-blue-900 dark:text-blue-300">
+                                        <HiOutlineDevicePhoneMobile className="h-6 w-6" />
                                     </div>
                                     <div>
                                         <h4 className="text-xs font-bold text-gray-900 dark:text-white">Pago Móvil</h4>
-                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+                                        <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">
                                             Transferencia instantánea en Bs. con tasa BCV.
                                         </p>
                                     </div>
@@ -484,27 +459,25 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                 <button
                                     type="button"
                                     onClick={() => setPaymentMethod('binance_pay')}
-                                    className={`p-4 rounded-2xl border text-left transition flex items-start gap-3 ${
+                                    className={`flex items-start gap-3 rounded-2xl border p-4 text-left transition ${
                                         paymentMethod === 'binance_pay'
-                                            ? 'border-yellow-500 bg-yellow-50/50 dark:bg-yellow-900/30 ring-2 ring-yellow-500/20'
-                                            : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
+                                            ? 'border-yellow-500 bg-yellow-50/50 ring-2 ring-yellow-500/20 dark:bg-yellow-900/30'
+                                            : 'border-gray-200 hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800'
                                     }`}
                                 >
-                                    <div className="p-2.5 rounded-xl bg-yellow-100 dark:bg-yellow-900 text-yellow-600 dark:text-yellow-300">
-                                        <HiOutlineCurrencyDollar className="w-6 h-6" />
+                                    <div className="rounded-xl bg-yellow-100 p-2.5 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300">
+                                        <HiOutlineCurrencyDollar className="h-6 w-6" />
                                     </div>
                                     <div>
                                         <h4 className="text-xs font-bold text-gray-900 dark:text-white">Binance Pay</h4>
-                                        <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
-                                            Pagos instantáneos con USDT y QR.
-                                        </p>
+                                        <p className="mt-0.5 text-[10px] text-gray-500 dark:text-gray-400">Pagos instantáneos con USDT y QR.</p>
                                     </div>
                                 </button>
                             </div>
 
                             {/* Gateway Specific Form Details */}
                             {paymentMethod === 'pago_movil' ? (
-                                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-4">
+                                <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60">
                                     <div className="space-y-1 text-xs">
                                         <span className="font-bold text-blue-600 dark:text-blue-400">Datos Oficiales para Pago Móvil:</span>
                                         {/* La Fase 0.5 (hallazgo G1) saco los datos de cobro de
@@ -514,71 +487,76 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                             no era de nadie. Ahora salen de `central_settings`, y
                                             si no estan configurados no se muestra el panel. */}
                                         {pagoMovil ? (
-                                            <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 font-mono text-[11px]">
-                                                <div><strong>Banco:</strong> {pagoMovil.bank_name}</div>
-                                                <div><strong>C.I./RIF:</strong> {pagoMovil.document_id}</div>
-                                                <div><strong>Teléfono:</strong> {pagoMovil.phone}</div>
-                                                <div><strong>Monto:</strong> {totalBs !== null ? `Bs. ${totalBs}` : 'calculando…'}</div>
+                                            <div className="grid grid-cols-2 gap-2 rounded-lg border border-gray-200 bg-white p-3 font-mono text-[11px] dark:border-gray-700 dark:bg-gray-900">
+                                                <div>
+                                                    <strong>Banco:</strong> {pagoMovil.bank_name}
+                                                </div>
+                                                <div>
+                                                    <strong>C.I./RIF:</strong> {pagoMovil.document_id}
+                                                </div>
+                                                <div>
+                                                    <strong>Teléfono:</strong> {pagoMovil.phone}
+                                                </div>
+                                                <div>
+                                                    <strong>Monto:</strong> {totalBs !== null ? `Bs. ${totalBs}` : 'calculando…'}
+                                                </div>
                                             </div>
                                         ) : (
-                                            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300">
-                                                Este método de pago no está disponible ahora mismo. Elige otro o vuelve a
-                                                intentarlo más tarde.
+                                            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[11px] text-amber-800 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300">
+                                                Este método de pago no está disponible ahora mismo. Elige otro o vuelve a intentarlo más tarde.
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
-                                                Banco Emisor
-                                            </label>
+                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Banco Emisor</label>
                                             <input
                                                 type="text"
                                                 value={bankOrigin}
-                                                onChange={e => setBankOrigin(e.target.value)}
+                                                onChange={(e) => setBankOrigin(e.target.value)}
                                                 placeholder="Mercantil, Banesco..."
-                                                className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
-                                                Teléfono Emisor
-                                            </label>
+                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Teléfono Emisor</label>
                                             <input
                                                 type="text"
                                                 value={phoneOrigin}
-                                                onChange={e => setPhoneOrigin(e.target.value)}
+                                                onChange={(e) => setPhoneOrigin(e.target.value)}
                                                 placeholder="0414-0000000"
-                                                className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
-                                                Nro. Referencia *
-                                            </label>
+                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Nro. Referencia *</label>
                                             <input
                                                 type="text"
                                                 required
                                                 value={referenceNumber}
-                                                onChange={e => setReferenceNumber(e.target.value)}
+                                                onChange={(e) => setReferenceNumber(e.target.value)}
                                                 placeholder="Últimos 6 u 8 dígitos"
-                                                className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
                                             />
                                         </div>
                                     </div>
                                 </div>
                             ) : (
-                                <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-4">
+                                <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/60">
                                     <div className="space-y-1 text-xs">
                                         <span className="font-bold text-yellow-600 dark:text-yellow-400">Datos Oficiales Binance Pay:</span>
-                                        <div className="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 font-mono text-[11px] space-y-1">
-                                            <div><strong>Binance Pay ID:</strong> 88992211 (OwOMarket Central)</div>
-                                            <div><strong>Monto en USDT:</strong> ${totalAPagar.toFixed(2)} USDT</div>
+                                        <div className="space-y-1 rounded-lg border border-gray-200 bg-white p-3 font-mono text-[11px] dark:border-gray-700 dark:bg-gray-900">
+                                            <div>
+                                                <strong>Binance Pay ID:</strong> 88992211 (OwOMarket Central)
+                                            </div>
+                                            <div>
+                                                <strong>Monto en USDT:</strong> ${totalAPagar.toFixed(2)} USDT
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <div className="space-y-1">
                                             <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
                                                 Tu Binance ID / Nickname
@@ -586,22 +564,20 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                             <input
                                                 type="text"
                                                 value={binanceId}
-                                                onChange={e => setBinanceId(e.target.value)}
+                                                onChange={(e) => setBinanceId(e.target.value)}
                                                 placeholder="Ej: 123456789"
-                                                className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
                                             />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
-                                                Order ID / Tx Hash *
-                                            </label>
+                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Order ID / Tx Hash *</label>
                                             <input
                                                 type="text"
                                                 required
                                                 value={transactionHash}
-                                                onChange={e => setTransactionHash(e.target.value)}
+                                                onChange={(e) => setTransactionHash(e.target.value)}
                                                 placeholder="Código de transacción Binance"
-                                                className="w-full px-3 py-2 text-xs bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
                                             />
                                         </div>
                                     </div>
@@ -611,35 +587,33 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                     </div>
 
                     {/* Right Summary Column */}
-                    <div className="lg:col-span-5 space-y-6">
-                        <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-6 shadow-sm sticky top-24">
-                            <h3 className="text-base font-black text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-3">
+                    <div className="space-y-6 lg:col-span-5">
+                        <div className="sticky top-24 space-y-6 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                            <h3 className="border-b border-gray-100 pb-3 text-base font-black text-gray-900 dark:border-gray-800 dark:text-white">
                                 Desglose de Paquetes ({storeGroups.length} {storeGroups.length === 1 ? 'Tienda' : 'Tiendas'})
                             </h3>
 
                             {/* Store items list */}
-                            <div className="space-y-4 max-h-80 overflow-y-auto pr-1">
-                                {storeGroups.map(group => (
+                            <div className="max-h-80 space-y-4 overflow-y-auto pr-1">
+                                {storeGroups.map((group) => (
                                     <div
                                         key={group.tenant_id}
-                                        className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 space-y-2"
+                                        className="space-y-2 rounded-xl border border-gray-100 bg-gray-50 p-3 dark:border-gray-800 dark:bg-gray-800/50"
                                     >
-                                        <div className="flex items-center justify-between text-xs font-bold text-gray-900 dark:text-white border-b border-gray-200/50 dark:border-gray-700/50 pb-1.5">
+                                        <div className="flex items-center justify-between border-b border-gray-200/50 pb-1.5 text-xs font-bold text-gray-900 dark:border-gray-700/50 dark:text-white">
                                             <span className="flex items-center gap-1.5">
-                                                <HiOutlineBuildingStorefront className="w-3.5 h-3.5 text-purple-600" />
+                                                <HiOutlineBuildingStorefront className="h-3.5 w-3.5 text-purple-600" />
                                                 {group.tenant_name}
                                             </span>
                                             <span>${group.subtotal.toFixed(2)}</span>
                                         </div>
                                         <div className="space-y-1.5 text-[11px] text-gray-600 dark:text-gray-300">
-                                            {group.items.map(item => (
+                                            {group.items.map((item) => (
                                                 <div key={item.id} className="flex justify-between">
-                                                    <span className="truncate max-w-[200px]">
+                                                    <span className="max-w-[200px] truncate">
                                                         {item.quantity}x {item.product_name}
                                                     </span>
-                                                    <span className="font-semibold">
-                                                        ${(item.price * item.quantity).toFixed(2)}
-                                                    </span>
+                                                    <span className="font-semibold">${(item.price * item.quantity).toFixed(2)}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -648,7 +622,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                             </div>
 
                             {/* Totals */}
-                            <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-800 text-xs">
+                            <div className="space-y-3 border-t border-gray-200 pt-4 text-xs dark:border-gray-800">
                                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                     <span>Subtotal ({totalCount} items):</span>
                                     <span className="font-bold text-gray-900 dark:text-white">${subtotal.toFixed(2)} USD</span>
@@ -656,18 +630,14 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                 {quote && quote.shipping > 0 && (
                                     <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                         <span>Envío:</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">
-                                            ${quote.shipping.toFixed(2)} USD
-                                        </span>
+                                        <span className="font-bold text-gray-900 dark:text-white">${quote.shipping.toFixed(2)} USD</span>
                                     </div>
                                 )}
 
                                 {quote && quote.tax > 0 && (
                                     <div className="flex justify-between text-gray-600 dark:text-gray-400">
                                         <span>Impuestos:</span>
-                                        <span className="font-bold text-gray-900 dark:text-white">
-                                            ${quote.tax.toFixed(2)} USD
-                                        </span>
+                                        <span className="font-bold text-gray-900 dark:text-white">${quote.tax.toFixed(2)} USD</span>
                                     </div>
                                 )}
 
@@ -678,8 +648,8 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                     </div>
                                 )}
 
-                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                                    <span className="text-xs font-bold text-gray-900 dark:text-white block uppercase tracking-wider mb-1">
+                                <div className="border-t border-gray-100 pt-2 dark:border-gray-800">
+                                    <span className="mb-1 block text-xs font-bold tracking-wider text-gray-900 uppercase dark:text-white">
                                         Total a Pagar:
                                     </span>
                                     <CurrencyPriceDisplay
@@ -696,23 +666,23 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                             <button
                                 type="submit"
                                 disabled={submitting || bcvRate === null}
-                                className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-blue-500/20 disabled:opacity-50 transition flex items-center justify-center gap-2"
+                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-sm font-black text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
                             >
                                 {submitting ? (
                                     <>
-                                        <HiOutlineArrowPath className="w-5 h-5 animate-spin" />
+                                        <HiOutlineArrowPath className="h-5 w-5 animate-spin" />
                                         <span>Procesando Orden...</span>
                                     </>
                                 ) : (
                                     <>
-                                        <HiOutlineCheckCircle className="w-5 h-5" />
+                                        <HiOutlineCheckCircle className="h-5 w-5" />
                                         <span>Confirmar y Pagar Orden</span>
                                     </>
                                 )}
                             </button>
 
-                            <div className="flex items-center justify-center gap-2 text-[11px] text-gray-400 text-center">
-                                <HiOutlineShieldCheck className="w-4 h-4 text-green-500 inline" />
+                            <div className="flex items-center justify-center gap-2 text-center text-[11px] text-gray-400">
+                                <HiOutlineShieldCheck className="inline h-4 w-4 text-green-500" />
                                 <span>Tus fondos están protegidos por el protocolo OwOMarket</span>
                             </div>
                         </div>

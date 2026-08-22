@@ -69,6 +69,8 @@ final class CentralItemPriceResolver
             );
         }
 
+        $variante = $this->resolverVariante($product, $item);
+
         return [
             'tenant_id' => (string) $product->tenant_id,
             // Se conserva el identificador del inquilino, que es el que
@@ -78,14 +80,91 @@ final class CentralItemPriceResolver
             // El id central se devuelve aparte para que la revalidacion del carrito pueda
             // enlazar cada linea con su ficha (hallazgo N31).
             'central_product_id' => (string) $product->id,
+            // Hallazgo N36: el id de la variante es el de la tienda, no uno central: las
+            // variantes viven en la base del inquilino y es alli donde `StockReserver`
+            // tiene que descontar.
+            'variant_id' => $variante !== null ? (string) $variante['id'] : null,
             'name' => (string) $product->name,
-            'sku' => $product->sku !== null ? (string) $product->sku : null,
-            'price' => (float) $product->price,
+            // Precio, SKU y stock salen de la variante cuando la hay. El del padre no
+            // sirve: su `quantity` no lo mantiene nadie en un producto con variantes.
+            'sku' => $variante !== null
+                ? ($variante['sku'] !== null ? (string) $variante['sku'] : null)
+                : ($product->sku !== null ? (string) $product->sku : null),
+            'price' => (float) ($variante['price'] ?? $product->price),
             'quantity' => $quantity,
-            'available_stock' => (int) ($product->quantity ?? 0),
-            'attributes' => isset($item['attributes']) && is_array($item['attributes'])
-                ? $item['attributes']
-                : null,
+            'available_stock' => $variante !== null
+                ? (int) ($variante['quantity'] ?? 0)
+                : (int) ($product->quantity ?? 0),
+            'attributes' => $variante !== null && $variante['attributes'] !== []
+                ? $variante['attributes']
+                : (isset($item['attributes']) && is_array($item['attributes']) ? $item['attributes'] : null),
         ];
+    }
+
+    /**
+     * Resuelve la variante de una linea contra el catalogo central (hallazgo N36).
+     *
+     * `central_products.variants` ya traia id, sku, precio, stock y atributos desde la
+     * Fase 2.2; lo que faltaba era usarlos. Se resuelve aqui y no en el controlador para
+     * que la revalidacion del carrito (N31) lo herede sin tocar nada: delega en este
+     * mismo metodo.
+     *
+     * **Un producto con variantes exige elegir una.** Antes, no elegir vendia el padre en
+     * silencio: el comerciante recibia un pedido sin saber que talla enviar, y el stock se
+     * descontaba de un numero que nadie mantiene. Rechazarlo es preferible a aceptar un
+     * pedido que no se puede servir; los carritos viejos guardados en el navegador se
+     * marcan como no disponibles con este motivo, que es justo para lo que existe la
+     * revalidacion.
+     *
+     * @param  array<string, mixed>  $item
+     * @return array{id: string, sku: string|null, price: float, quantity: int, attributes: array<string, mixed>}|null
+     *
+     * @throws Exception 422
+     */
+    private function resolverVariante(CentralProduct $product, array $item): ?array
+    {
+        $variantes = is_array($product->variants) ? $product->variants : [];
+        $variantId = isset($item['variant_id']) && $item['variant_id'] !== ''
+            ? (string) $item['variant_id']
+            : null;
+
+        if ($variantes === []) {
+            if ($variantId !== null) {
+                throw new Exception(
+                    sprintf('El producto «%s» ya no se vende por variantes.', (string) $product->name),
+                    422
+                );
+            }
+
+            return null;
+        }
+
+        if ($variantId === null) {
+            throw new Exception(
+                sprintf('Tienes que elegir una opcion de «%s» antes de comprarlo.', (string) $product->name),
+                422
+            );
+        }
+
+        foreach ($variantes as $variante) {
+            if ((string) ($variante['id'] ?? '') !== $variantId) {
+                continue;
+            }
+
+            return [
+                'id' => (string) $variante['id'],
+                'sku' => isset($variante['sku']) && $variante['sku'] !== null ? (string) $variante['sku'] : null,
+                'price' => (float) ($variante['price'] ?? $product->price),
+                'quantity' => (int) ($variante['quantity'] ?? 0),
+                'attributes' => isset($variante['attributes']) && is_array($variante['attributes'])
+                    ? $variante['attributes']
+                    : [],
+            ];
+        }
+
+        throw new Exception(
+            sprintf('La opcion elegida de «%s» ya no esta disponible.', (string) $product->name),
+            422
+        );
     }
 }

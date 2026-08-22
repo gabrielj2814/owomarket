@@ -8,6 +8,13 @@ export interface CentralCartItem {
     tenant_name: string;
     tenant_domain?: string | null;
     product_id: string;
+    /**
+     * Variante elegida (hallazgo N36). El marketplace central no la guardaba, asi que el
+     * comprador no podia elegir talla ni color y el comerciante recibia un pedido sin
+     * saber que enviar. Es el id de la variante en la base de la TIENDA, que es donde
+     * `StockReserver` tiene que descontar.
+     */
+    variant_id?: string | null;
     product_name: string;
     slug: string;
     price: number;
@@ -71,6 +78,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
             items.map((i) => ({
                 tenant_id: i.tenant_id,
                 product_id: i.product_id,
+                variant_id: i.variant_id ?? null,
                 quantity: i.quantity,
                 price: i.price,
             })),
@@ -79,11 +87,13 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (res.code !== 200 || !res.data) return;
 
         const avisos: string[] = [];
-        const porClave = new Map<string, CentralRevalidatedCartLine>(res.data.lines.map((l) => [`${l.tenant_id}_${l.product_id}`, l] as const));
+        const porClave = new Map<string, CentralRevalidatedCartLine>(
+            res.data.lines.map((l) => [`${l.tenant_id}_${l.product_id}_${l.variant_id ?? 'base'}`, l] as const),
+        );
 
         setItems((prev) =>
             prev.flatMap((item) => {
-                const line = porClave.get(`${item.tenant_id}_${item.product_id}`);
+                const line = porClave.get(`${item.tenant_id}_${item.product_id}_${item.variant_id ?? 'base'}`);
                 if (!line) return [item];
 
                 if (!line.available) {
@@ -131,6 +141,9 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 (i) =>
                     i.tenant_id === item.tenant_id &&
                     i.product_id === item.product_id &&
+                    // Hallazgo N36: dos variantes del mismo producto son dos lineas. Sin
+                    // esto, anadir la talla M sobre la S sumaba cantidad a la S.
+                    (i.variant_id ?? null) === (item.variant_id ?? null) &&
                     JSON.stringify(i.attributes || {}) === JSON.stringify(item.attributes || {}),
             );
 
@@ -147,7 +160,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
             const newItem: CentralCartItem = {
                 ...item,
-                id: `${item.tenant_id}_${item.product_id}_${Date.now()}`,
+                id: `${item.tenant_id}_${item.product_id}_${item.variant_id ?? 'base'}_${Date.now()}`,
             };
             return [...prevItems, newItem];
         });
