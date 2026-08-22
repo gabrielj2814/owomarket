@@ -4,15 +4,17 @@
 >
 > **Hallazgos numerados originales: 50 de 50 cerrados (100%).**
 > **Hallazgos nuevos (N1-N40): 39 cerrados · 1 abierto.**
-> **Menores sin numerar de los bloques D y F: 8 abiertos.**
+> **Menores sin numerar de los bloques D y F: 4 cerrados · 4 abiertos.**
 >
-> **Quedan 9 tareas abiertas en total, y están todas en la tabla de aquí abajo.**
+> **Quedan 5 tareas abiertas en total, y están todas en la tabla de aquí abajo.**
 >
-> Corrección del 22/08 (noche): hasta ahora esta cabecera decía que «todo el trabajo que
-> sigue vivo son los hallazgos nuevos». No era cierto. Los ocho **menores** de los bloques
-> D y F nunca estuvieron en la tabla de hallazgos nuevos —viven como viñetas dentro de sus
-> bloques— así que no se contaban en ningún resumen y era fácil darlos por cerrados.
-> Verificados uno a uno contra el código el 22/08: los ocho siguen abiertos.
+> Corrección del 22/08: esta cabecera decía que «todo el trabajo que sigue vivo son los
+> hallazgos nuevos». No era cierto. Los ocho **menores** de los bloques D y F nunca
+> estuvieron en la tabla de hallazgos nuevos —viven como viñetas dentro de sus bloques—
+> así que no se contaban en ningún resumen y era fácil darlos por cerrados.
+>
+> Los cuatro de dinero se cerraron esa misma noche. Los cuatro de infraestructura siguen
+> abiertos, verificados contra el código.
 >
 > Fases 0 a 6 completas.
 > **Estado revisado hallazgo por hallazgo contra el código**, incluidas las secciones de
@@ -172,32 +174,33 @@
 
 ## 🚧 Tareas abiertas
 
-> **Ésta es la lista completa.** Reúne lo que queda de la tabla de hallazgos nuevos con
-> los «menores» de los bloques D y F, que viven como viñetas dentro de sus bloques y por
-> eso no salían en ningún resumen.
+> **Ésta es la lista completa.**
 >
-> Verificadas una a una contra el código el 22/08/2026 — no contra las notas de cada fase.
+> **Los cuatro «menores de dinero» se cerraron el 22/08** (ver el commit `fix(auditoria):
+> los cuatro bugs que daban números equivocados sin fallar`). Quedan cinco: las cuatro de
+> infraestructura, que no entraban en aquella tanda, y la del despliegue.
+>
+> Del bug de zona horaria conviene retener la decisión: **`app.timezone` se queda en UTC**.
+> Se añadió `app.business_timezone` para lo único que lo necesitaba —decidir el día de
+> calendario de cupones y tasas—, porque mover la zona de la aplicación habría cambiado el
+> significado de todas las fechas ya guardadas.
 
 | # | Qué | Dónde | Por qué importa | Esfuerzo |
 | :--- | :--- | :--- | :--- | :--- |
-| **1** | **`PlatformCommission.order_id` guarda el id del pedido del *inquilino*, pero la relación Eloquent lo declara contra `central_orders`** | `PlatformCommission.php:61` | `$centralOrder->commissions` devuelve **siempre** una colección vacía. Cualquier pantalla o informe que quiera enseñar las comisiones de un pedido central verá cero sin dar error, que es la peor forma de equivocarse | Bajo |
-| **2** | **El valor medio de pedido divide ventas netas entre pedidos totales** | `EloquentOrderRepository.php:180` | El numerador excluye cancelados y reembolsados, el denominador no. Con un 50 % de cancelaciones el KPI sale a la mitad, y es un número que se mira para tomar decisiones | Bajo |
-| **3** | **Los importes de valor 0 se leen como `null` en la factura** | `EloquentInvoiceRepository.php:246` | `$model->commission_amount ? ... : null` — `0.00` es *falsy*. Una venta exenta pierde la diferencia entre «sin comisión» y «comisión cero». Afecta a cinco campos, no sólo a la comisión | Bajo |
-| **4** | **Las fechas de cupones y tasas se evalúan en UTC** | `config/app.php:68`, `Coupon.php:198` | Un cupón con `valid_to = 2026-08-21` deja de funcionar a las **20:00 hora de Caracas**, cuatro horas antes de lo prometido al cliente | Bajo |
-| **5** | **`forceRootUrl` nunca se aplica** | `AppServiceProvider.php:31` | Se apoya en `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. Las URLs absolutas en dominios de tienda —correos, redirecciones— salen con el `APP_URL` central. Hay que moverlo a un listener de `TenancyBootstrapped` | Medio |
-| **6** | **Colisiones de nombres de ruta** | `routes/web.php:19` y `:26` | `SupportTicket/web.php` se registra dos veces (raíz y bajo `/tenant`). Laravel no avisa: gana el último, así que `route('central.customer.support')` devuelve `/tenant/account/support` | Bajo |
-| **7** | **`type` e `is_active` en el `$fillable` de `User`** | `src/User/.../User.php:43` | Con un endpoint público de alta de cuenta, cualquier `User::create($request->all())` permite enviar `type=super_admin`. Hoy no hay ningún camino que lo haga, pero el día que alguien escriba ese `create()` no habrá nada que lo pare | Bajo |
-| **8** | **Dos «conexiones centrales» contradictorias** | `config/tenancy.php:47`, `Tenant.php:18`, `CentralCustomer.php:26` | `central_connection` toma `env('DB_CONNECTION')` —el *driver*, no la conexión `central`—, mientras `Tenant` la fija a mano y `CentralCustomer` lee el config. Si las dos apuntan a bases distintas, unos modelos leen de una y otros de otra | Medio |
-| **9** | **N40 — no hay `queue:work` en el despliegue** | `docker-compose.yml`, `k8s/` | Desde N17 y N25 la aplicación **necesita** un worker: sin él, un pedido cobrado no llega nunca a su tienda y el catálogo central no se sincroniza. Hay un apaño sobre el scheduler (`queue:work --stop-when-empty` cada minuto) que aguanta, con latencia de hasta un minuto | Corresponde al despliegue |
+| **1** | **`forceRootUrl` nunca se aplica** | `AppServiceProvider.php:31` | Se apoya en `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. Las URLs absolutas en dominios de tienda —correos, redirecciones— salen con el `APP_URL` central. Hay que moverlo a un listener de `TenancyBootstrapped` | Medio |
+| **2** | **Colisiones de nombres de ruta** | `routes/web.php:19` y `:26` | `SupportTicket/web.php` se registra dos veces (raíz y bajo `/tenant`). Laravel no avisa: gana el último, así que `route('central.customer.support')` devuelve `/tenant/account/support` | Bajo |
+| **3** | **`type` e `is_active` en el `$fillable` de `User`** | `src/User/.../User.php:43` | Con un endpoint público de alta de cuenta, cualquier `User::create($request->all())` permite enviar `type=super_admin`. Hoy no hay ningún camino que lo haga, pero el día que alguien escriba ese `create()` no habrá nada que lo pare | Bajo |
+| **4** | **Dos «conexiones centrales» contradictorias** | `config/tenancy.php:47`, `Tenant.php:18`, `CentralCustomer.php:26` | `central_connection` toma `env('DB_CONNECTION')` —el *driver*, no la conexión `central`—, mientras `Tenant` la fija a mano y `CentralCustomer` lee el config. Si las dos apuntan a bases distintas, unos modelos leen de una y otros de otra | Medio |
+| **5** | **N40 — no hay `queue:work` en el despliegue** | `docker-compose.yml`, `k8s/` | Desde N17 y N25 la aplicación **necesita** un worker: sin él, un pedido cobrado no llega nunca a su tienda y el catálogo central no se sincroniza. Hay un apaño sobre el scheduler (`queue:work --stop-when-empty` cada minuto) que aguanta, con latencia de hasta un minuto | Corresponde al despliegue |
 
 ### Cómo leer esta tabla
 
-Los ocho primeros son **menores de verdad**: ninguno rompe una compra ni expone datos, y
-por eso sobrevivieron a seis fases. Pero cuatro de ellos (1, 2, 3 y 4) dan **números
-equivocados sin fallar**, que es la clase de error que nadie encuentra mirando la pantalla.
+Las cuatro primeras son las «Menores de infraestructura» del bloque F. Ninguna rompe una
+compra hoy, y por eso sobrevivieron a seis fases, pero la 3 es la que más vigilaría: no es
+un fallo, es una puerta abierta esperando a que alguien escriba el `create()` equivocado.
 
-El 9 es el único que bloquea: no es un bug del código sino una pieza que falta en el
-despliegue, y hasta que exista, la red de seguridad del scheduler es lo que sostiene el
+La 5 es la única que bloquea algo: no es un bug del código sino una pieza que
+falta, y hasta que exista, la red de seguridad del scheduler es lo que sostiene el
 despacho de pedidos.
 
 ### Lo que queda por auditar
@@ -718,15 +721,17 @@ Cada filtro geográfico solo se aplica si el parámetro no es null, y el caso de
 > Estos cinco no llevaban marca de estado. Revisados contra el código el 21/08 y de nuevo
 > el 22/08.
 >
-> ⚠️ **Los cuatro que siguen abiertos son las tareas 1 a 4 de «Tareas abiertas»**, al
-> principio del documento. Vivían sólo aquí, como viñetas, así que no aparecían en ningún
-> resumen y era fácil darlos por cerrados.
+> ✅ **Los cuatro que quedaban abiertos se cerraron el 22/08.** Ver el commit
+> `fix(auditoria): los cuatro bugs que daban números equivocados sin fallar`.
+>
+> Vivían sólo aquí, como viñetas, así que no aparecían en ningún resumen y era fácil
+> darlos por cerrados sin haberlos tocado.
 
 - ✅ **CERRADO (Fase 1.1)** — **`commission_amount` por ítem no cuadra con la comisión registrada** (`DispatchCentralOrderToTenantsUseCase.php:172-176`): la comisión oficial se redondeaba una vez sobre el total y luego se recalculaba ítem a ítem. Tres ítems de $3,33 al 8% daban $0,81 por ítems vs $0,80 en la `PlatformCommission`. Lo cerró `spreadCommissionAcrossItems()`, que reparte el importe exacto de la comisión con el mismo prorrateador del envío y el descuento.
-- ⬜ **ABIERTO** — **`PlatformCommission.order_id` guarda el ID del pedido del *tenant*, pero las relaciones Eloquent lo declaran contra `central_orders`** (`PlatformCommission.php:61-64`): `$centralOrder->commissions` devuelve **siempre** una colección vacía.
-- ⬜ **ABIERTO** — **El valor medio de pedido divide ventas netas entre pedidos totales** (`EloquentOrderRepository.php:174-183`): con 50% de cancelaciones, el KPI queda a la mitad.
-- ⬜ **ABIERTO** — **Importes de valor 0 se convierten en `null` al leer la factura** (`EloquentInvoiceRepository.php:241-247`): `$model->commission_amount ? (float) ... : null` — `0.00` es falsy, así que una venta exenta pierde la diferencia entre "sin comisión" y "comisión cero".
-- ⬜ **ABIERTO** — **Fechas de cupones y tasas evaluadas en UTC** (`config/app.php:68` es `'UTC'`, `Coupon.php:198-201` usa `date('Y-m-d')`): un cupón con `valid_to = 2026-08-21` deja de funcionar a las **20:00 hora de Caracas**, cuatro horas antes de lo prometido.
+- ✅ **CERRADO (22/08)** — columna `central_order_id` con las relaciones apuntando a ella; `order_id` se conserva señalando al pedido de la tienda. El dato ya estaba en `metadata`, así que la migración lo rellena en vez de inventarlo. — **`PlatformCommission.order_id` guarda el ID del pedido del *tenant*, pero las relaciones Eloquent lo declaran contra `central_orders`** (`PlatformCommission.php:61-64`): `$centralOrder->commissions` devuelve **siempre** una colección vacía.
+- ✅ **CERRADO (22/08)** — el denominador excluye cancelados y reembolsados, igual que el numerador. — **El valor medio de pedido divide ventas netas entre pedidos totales** (`EloquentOrderRepository.php:174-183`): con 50% de cancelaciones, el KPI queda a la mitad.
+- ✅ **CERRADO (22/08)** — se compara contra `null` en los seis campos, no por *falsy*. — **Importes de valor 0 se convierten en `null` al leer la factura** (`EloquentInvoiceRepository.php:241-247`): `$model->commission_amount ? (float) ... : null` — `0.00` es falsy, así que una venta exenta pierde la diferencia entre "sin comisión" y "comisión cero".
+- ✅ **CERRADO (22/08)** — nuevo `app.business_timezone`. **`app.timezone` se queda en UTC a propósito**: moverlo habría cambiado el significado de todas las fechas ya guardadas y roto el orden por `created_at`. Se arregló también `RateDate::today()`, que tenía el mismo fallo. — **Fechas de cupones y tasas evaluadas en UTC** (`config/app.php:68` es `'UTC'`, `Coupon.php:198-201` usa `date('Y-m-d')`): un cupón con `valid_to = 2026-08-21` deja de funcionar a las **20:00 hora de Caracas**, cuatro horas antes de lo prometido.
 
 ---
 
@@ -903,7 +908,7 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 
 > Los cuatro siguen abiertos. Revisados contra el código el 21/08 y de nuevo el 22/08.
 >
-> ⚠️ **Son las tareas 5 a 8 de «Tareas abiertas»**, al principio del documento.
+> ⚠️ **Son las tareas 1 a 4 de «Tareas abiertas»**, al principio del documento.
 
 - ⬜ **ABIERTO** — **`AppServiceProvider::boot():31-37`** intenta usar `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. El `forceRootUrl` nunca se aplica: todas las URLs absolutas en dominios de tenant (correos, redirecciones) usan el `APP_URL` central. Mover a un listener de `TenancyBootstrapped`.
 - ⬜ **ABIERTO** — **Colisiones de nombres de ruta** por el doble registro de `SupportTicket/.../web.php` (`routes/web.php:19` y `:26`) y de Admin (A1). Laravel no avisa: gana el último. `route('central.customer.support')` devuelve `/tenant/account/support`.
