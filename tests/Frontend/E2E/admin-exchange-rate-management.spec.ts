@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('Exchange Rate & Multi-Currency Storefront Flow', () => {
     test('renders active exchange rate and dual currency pricing in marketplace', async ({ page }) => {

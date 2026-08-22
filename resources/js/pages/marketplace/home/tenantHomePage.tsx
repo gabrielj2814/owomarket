@@ -6,7 +6,7 @@ import React from 'react';
 
 
 interface tenantHomePageProps {
-    domain?: String;
+    domain?: string;
 }
 
 

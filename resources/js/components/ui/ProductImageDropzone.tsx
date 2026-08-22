@@ -111,7 +111,7 @@ export const ProductImageDropzone: FC<ProductImageDropzoneProps> = ({
             }
         }
 
-        let updated = images.filter((_, i) => i !== index);
+        const updated = images.filter((_, i) => i !== index);
         // If we deleted the default image, set the first one as default
         if (targetImg?.is_default && updated.length > 0) {
             updated[0] = { ...updated[0], is_default: true };

@@ -111,7 +111,7 @@ const LoginCustomerPage = () => {
 
         setStatusLoader(true);
 
-        let respuestaServidor= await AuthServices.login(statuFormLogin)
+        const respuestaServidor= await AuthServices.login(statuFormLogin)
 
         // console.log(respuestaServidor);
 

@@ -31,3 +31,9 @@ database/tenant_*
 *.sqlite-journal
 /storage/tenant*
 
+
+# Artefactos de Playwright (capturas y trazas de los tests fallidos)
+/test-results
+/playwright-report
+/blob-report
+/.playwright

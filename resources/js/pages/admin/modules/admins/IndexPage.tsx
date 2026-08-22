@@ -110,7 +110,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
             return
         }
 
-        let fecha=dateUtils.procesarFechaCompleto(date)
+        const fecha=dateUtils.procesarFechaCompleto(date)
         console.log("fecha desde local => ",fecha)
         setFiltroDesdeUTC(fecha.paraBD)
         setFiltroDesde(date)
@@ -120,7 +120,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         if(date==null){
             return
         }
-        let fecha=dateUtils.procesarFechaCompleto(date)
+        const fecha=dateUtils.procesarFechaCompleto(date)
         setFiltroHastaUTC(fecha.paraBD)
         setFiltroHasta(date)
     }
@@ -138,10 +138,10 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         if(respuestaApi.data.code!=200){
             return
         }
-        let data= (respuestaApi.data.data!=null)? respuestaApi.data.data: []
-        let last= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.last_page: 0
-        let pre= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.per_page: 0
-        let total= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.total: 0
+        const data= (respuestaApi.data.data!=null)? respuestaApi.data.data: []
+        const last= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.last_page: 0
+        const pre= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.per_page: 0
+        const total= (respuestaApi.data.pagination!=null)? respuestaApi.data.pagination.total: 0
         setAdmins(data)
         setLastPage(last)
         setPrePage(pre)
@@ -201,7 +201,7 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         }
         setStateLodaer(true)
 
-        let respuestaApi = await AdminServices.delete(uuidAdminDelete)
+        const respuestaApi = await AdminServices.delete(uuidAdminDelete)
         console.log("respuesta api => ",respuestaApi)
         if(respuestaApi.status!=200){
             createToast("failure", `Error: ${respuestaApi.status}`, respuestaApi.response?.data.message , <LuTriangleAlert/>)

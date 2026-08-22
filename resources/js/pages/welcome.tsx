@@ -5,7 +5,7 @@ import React from 'react';
 
 
 interface props {
-    domain?: String;
+    domain?: string;
 }
 
 

@@ -29,7 +29,7 @@ const TenantServices = {
                 prePage,
             }
 
-            let respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`backoffice/filter?page=${page}`,body)
+            const respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`backoffice/filter?page=${page}`,body)
 
             return respuesta
         }
@@ -41,7 +41,7 @@ const TenantServices = {
     consultTenantByUuid: async (uuid: string): Promise<ApiResponse<Tenant>> => {
         try{
 
-            let respuesta:ApiResponse<Tenant> = await axiosTenant.get(`backoffice/${uuid}`)
+            const respuesta:ApiResponse<Tenant> = await axiosTenant.get(`backoffice/${uuid}`)
 
             return respuesta
         }
@@ -53,7 +53,7 @@ const TenantServices = {
     suspended: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/suspended`)
+            const respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/suspended`)
 
             return respuesta
         }
@@ -65,7 +65,7 @@ const TenantServices = {
     active: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/active`)
+            const respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/active`)
 
             return respuesta
         }
@@ -77,7 +77,7 @@ const TenantServices = {
     inactive: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/inactive`)
+            const respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/inactive`)
 
             return respuesta
         }
@@ -89,7 +89,7 @@ const TenantServices = {
     rejected: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/rejected`)
+            const respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/rejected`)
 
             return respuesta
         }
@@ -101,7 +101,7 @@ const TenantServices = {
     approved: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
 
-            let respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/approved`)
+            const respuesta:ApiResponse<void> = await axiosTenant.patch(`backoffice/${uuid}/approved`)
 
             return respuesta
         }
@@ -124,7 +124,7 @@ const TenantServices = {
             }
 
 
-            let respuesta:ApiResponse<void> = await axiosTenant.post(`create/account`, body)
+            const respuesta:ApiResponse<void> = await axiosTenant.post(`create/account`, body)
 
             return respuesta
 
@@ -140,7 +140,7 @@ const TenantServices = {
                 prePage
             }
 
-            let respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`owner/filter/tenants?page=${page}`, body)
+            const respuesta:ApiResponse<Tenant[]> = await axiosTenant.post(`owner/filter/tenants?page=${page}`, body)
 
             return respuesta
 
@@ -157,7 +157,7 @@ const TenantServices = {
                 store_name: storeName
             }
 
-            let respuesta:ApiResponse<ResponseOKSendRequestCreateTenant> = await axiosTenant.post(`owner/tenant`, body)
+            const respuesta:ApiResponse<ResponseOKSendRequestCreateTenant> = await axiosTenant.post(`owner/tenant`, body)
 
             return respuesta
         } catch (error) {

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('Central Marketplace Navigation and Landing Flow', () => {
     test('renders central homepage with search, categories, and layout navigation', async ({ page }) => {

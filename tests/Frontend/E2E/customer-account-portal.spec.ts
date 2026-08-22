@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('Customer Account Portal and Password Recovery Flow', () => {
     test('renders login prompt when accessing /account/dashboard unauthenticated', async ({ page }) => {

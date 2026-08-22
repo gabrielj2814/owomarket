@@ -34,7 +34,7 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`backoffice/${uuid}/admin`,body)
+            const respuesta:ApiResponse<ModuleAdminFormReponseCreate, ErrorResponse> = await axiosAdmin.post(`backoffice/${uuid}/admin`,body)
 
             return respuesta
         }
@@ -53,7 +53,7 @@ const AdminServices = {
                 phone:  datos.phone,
             }
 
-            let respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`backoffice/${uuid}/admin/${datos.id}`,body)
+            const respuesta:ApiResponse<ModuleAdminFormReponseUpdate, ErrorResponse> = await axiosAdmin.put(`backoffice/${uuid}/admin/${datos.id}`,body)
 
             return respuesta
         }
@@ -65,7 +65,7 @@ const AdminServices = {
     consultByUuid: async (user_uuid: string): Promise<ApiResponse<Admin>> => {
          try{
 
-            let respuesta:ApiResponse<Admin> = await axiosAdmin.get(`backoffice/${user_uuid}`)
+            const respuesta:ApiResponse<Admin> = await axiosAdmin.get(`backoffice/${user_uuid}`)
 
             return respuesta
         }
@@ -83,7 +83,7 @@ const AdminServices = {
                 status,
                 prePage,
             }
-            let respuesta:ApiResponse<Admin[]> = await axiosAdmin.post(`backoffice/filter?page=${page}`,body)
+            const respuesta:ApiResponse<Admin[]> = await axiosAdmin.post(`backoffice/filter?page=${page}`,body)
 
             return respuesta
         }
@@ -94,7 +94,7 @@ const AdminServices = {
 
     delete: async (uuid: string): Promise<ApiResponse<void>> => {
         try{
-            let respuesta:ApiResponse<void> = await axiosAdmin.delete(`backoffice/${uuid}`)
+            const respuesta:ApiResponse<void> = await axiosAdmin.delete(`backoffice/${uuid}`)
 
             return respuesta
         }
@@ -109,7 +109,7 @@ const AdminServices = {
                 id,
                 statu
             }
-            let respuesta:ApiResponse<void> = await axiosAdmin.put(`backoffice/${id}/change-statu`,body)
+            const respuesta:ApiResponse<void> = await axiosAdmin.put(`backoffice/${id}/change-statu`,body)
 
             return respuesta
         }
@@ -120,7 +120,7 @@ const AdminServices = {
 
     updateProfile: async (user_uuid: string, datos: FormUpdateProfile): Promise<ApiResponse<ResponseProfileUpdate, ErrorResponse>> => {
         try {
-            let respuesta: ApiResponse<ResponseProfileUpdate, ErrorResponse> = await axiosAdmin.put(`backoffice/${user_uuid}/profile`, datos);
+            const respuesta: ApiResponse<ResponseProfileUpdate, ErrorResponse> = await axiosAdmin.put(`backoffice/${user_uuid}/profile`, datos);
             return respuesta;
         } catch (error) {
             return error as ApiResponse<ResponseProfileUpdate, ErrorResponse>;
@@ -132,7 +132,7 @@ const AdminServices = {
             const formData = new FormData();
             formData.append('avatar', file);
 
-            let respuesta: ApiResponse<ResponseAvatarUpload, ErrorResponse> = await axiosAdmin.post(
+            const respuesta: ApiResponse<ResponseAvatarUpload, ErrorResponse> = await axiosAdmin.post(
                 `backoffice/${user_uuid}/profile/avatar`,
                 formData,
                 {
@@ -149,7 +149,7 @@ const AdminServices = {
 
     sendSecurityPin: async (user_uuid: string): Promise<ApiResponse<void, ErrorResponse>> => {
         try {
-            let respuesta: ApiResponse<void, ErrorResponse> = await axiosAdmin.post(`backoffice/${user_uuid}/profile/send-pin`);
+            const respuesta: ApiResponse<void, ErrorResponse> = await axiosAdmin.post(`backoffice/${user_uuid}/profile/send-pin`);
             return respuesta;
         } catch (error) {
             return error as ApiResponse<void, ErrorResponse>;
@@ -158,7 +158,7 @@ const AdminServices = {
 
     changePasswordWithPin: async (user_uuid: string, datos: FormChangePasswordWithPin): Promise<ApiResponse<void, ErrorResponse>> => {
         try {
-            let respuesta: ApiResponse<void, ErrorResponse> = await axiosAdmin.put(`backoffice/${user_uuid}/profile/change-password`, datos);
+            const respuesta: ApiResponse<void, ErrorResponse> = await axiosAdmin.put(`backoffice/${user_uuid}/profile/change-password`, datos);
             return respuesta;
         } catch (error) {
             return error as ApiResponse<void, ErrorResponse>;
