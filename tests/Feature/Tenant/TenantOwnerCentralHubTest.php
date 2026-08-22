@@ -223,3 +223,149 @@ test('Tenant Owner central web views render with 200 status', function () {
     $this->actingAs($user)->get("/tenant/owner/backoffice/{$user->id}/catalog")->assertStatus(200);
     $this->actingAs($user)->get("/tenant/owner/backoffice/{$user->id}/billing")->assertStatus(200);
 });
+
+/*
+|--------------------------------------------------------------------------
+| AUDITORIA 22/08 — el uuid de la URL decide de quien son los datos
+|--------------------------------------------------------------------------
+|
+| `/tenant/owner/backoffice/{user_uuid}/wallet` y sus hermanas llevan solo `auth`. El
+| controlador toma el `{user_uuid}` de la URL y se lo pasa al caso de uso sin compararlo
+| nunca con la sesion, asi que cualquiera con sesion central puede leer los datos de
+| cualquier otro propietario cambiando un uuid en la barra de direcciones.
+|
+| Estos tests se escriben ROJOS a proposito: documentan el agujero antes de taparlo.
+*/
+
+/** Crea un propietario con su tienda. */
+function propietarioConTienda(string $slug, string $nombre): array
+{
+    $user = User::create([
+        'id' => (string) Str::uuid(),
+        'name' => $nombre,
+        'email' => strtolower($slug).'_'.bin2hex(random_bytes(3)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => 'tenant_owner',
+    ]);
+
+    $tenant = Tenant::create([
+        'id' => $slug,
+        'name' => $nombre,
+        'slug' => $slug,
+        'status' => 'active',
+        'request' => 'approved',
+    ]);
+
+    Domain::create([
+        'id' => (string) Str::uuid(),
+        'domain' => $slug.'.owomarket.local',
+        'tenant_id' => $slug,
+    ]);
+
+    $tenant->users()->attach($user->id, [
+        'id' => (string) Str::uuid(),
+        'role' => 'owner',
+    ]);
+
+    return ['user' => $user, 'tenant' => $tenant];
+}
+
+test('un propietario no puede leer la billetera de otro', function () {
+    $ana = propietarioConTienda('tienda-ana', 'Ana');
+    $beto = propietarioConTienda('tienda-beto', 'Beto');
+
+    // La billetera de Beto tiene dinero: ventas, comisiones y una liquidacion pagada con
+    // su referencia de pago.
+    PlatformCommission::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $beto['tenant']->id,
+        'order_id' => (string) Str::uuid(),
+        'order_number' => 'ORD-BETO-1',
+        'order_total' => 1000.00,
+        'commission_rate' => 10.0,
+        'commission_amount' => 100.00,
+        'net_amount' => 900.00,
+        'currency' => 'USD',
+        'status' => 'pending',
+    ]);
+
+    // Ana inicia sesion y pide la billetera de Beto cambiando el uuid de la URL.
+    $respuesta = $this->actingAs($ana['user'])
+        ->get('/tenant/owner/backoffice/'.$beto['user']->id.'/wallet');
+
+    // Lo correcto es no dejarle ver nada de Beto.
+    // Comprobado el 22/08: hoy devuelve 200 y el payload trae las ventas brutas, las
+    // comisiones y el saldo disponible de Beto.
+    expect($respuesta->status())->toBeIn([403, 404]);
+});
+
+test('un propietario no puede leer la facturacion de otro', function () {
+    $ana = propietarioConTienda('tienda-ana-fact', 'Ana');
+    $beto = propietarioConTienda('tienda-beto-fact', 'Beto');
+
+    $respuesta = $this->actingAs($ana['user'])
+        ->get('/tenant/owner/backoffice/'.$beto['user']->id.'/billing');
+
+    expect($respuesta->status())->toBeIn([403, 404]);
+});
+
+test('un propietario no puede leer el panel de otro', function () {
+    $ana = propietarioConTienda('tienda-ana-dash', 'Ana');
+    $beto = propietarioConTienda('tienda-beto-dash', 'Beto');
+
+    $respuesta = $this->actingAs($ana['user'])
+        ->get('/tenant/owner/backoffice/'.$beto['user']->id.'/dashboard');
+
+    expect($respuesta->status())->toBeIn([403, 404]);
+});
+
+/*
+|--------------------------------------------------------------------------
+| AUDITORIA 22/08 — P0: emitir un token SSO para CUALQUIER tienda
+|--------------------------------------------------------------------------
+|
+| `POST /tenant/admin/api/tenants/{id}/sso-token` lleva solo `auth`. Su gemela protegida,
+| `POST /admin/api/tenants/{id}/sso-token`, exige `super_admin` — lo que demuestra que la
+| intencion era protegerla. El duplicado la esquiva.
+|
+| El token se consume con `Auth::login($user, true)`, o sea que concede sesion real en el
+| backoffice de esa tienda.
+*/
+
+test('un propietario no puede emitir un token SSO para la tienda de otro', function () {
+    $ana = propietarioConTienda('tienda-ana-sso', 'Ana');
+    $beto = propietarioConTienda('tienda-beto-sso', 'Beto');
+
+    // Ana tiene sesion central legitima — es su cuenta — y pide entrar a la tienda de Beto.
+    $respuesta = $this->actingAs($ana['user'])
+        ->postJson('/tenant/admin/api/tenants/'.$beto['tenant']->id.'/sso-token');
+
+    // Comprobado el 22/08: hoy devuelve 200 con `sso_url` listo para abrir, y consumirlo
+    // hace `Auth::login()` como el usuario de la tienda de Beto.
+    expect($respuesta->status())->toBeIn([403, 404]);
+});
+
+test('la ruta protegida de SSO si exige super_admin', function () {
+    // El contraste: la misma accion bajo /admin si esta cerrada. Confirma que el problema
+    // es el duplicado, no que falte la intencion de protegerla.
+    $ana = propietarioConTienda('tienda-ana-sso2', 'Ana');
+    $beto = propietarioConTienda('tienda-beto-sso2', 'Beto');
+
+    $respuesta = $this->actingAs($ana['user'])
+        ->postJson('/admin/api/tenants/'.$beto['tenant']->id.'/sso-token');
+
+    expect($respuesta->status())->toBeIn([401, 403]);
+});
+
+test('un propietario no puede suspender la tienda de otro', function () {
+    $ana = propietarioConTienda('tienda-ana-susp', 'Ana');
+    $beto = propietarioConTienda('tienda-beto-susp', 'Beto');
+
+    $respuesta = $this->actingAs($ana['user'])
+        ->patchJson('/tenant/backoffice/'.$beto['tenant']->id.'/suspended');
+
+    expect($respuesta->status())->toBeIn([403, 404]);
+
+    // Y sobre todo: que la tienda de Beto siga en pie.
+    expect(Tenant::find($beto['tenant']->id)->status)->toBe('active');
+});

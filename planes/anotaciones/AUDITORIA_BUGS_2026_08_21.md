@@ -204,6 +204,13 @@ sintaxis y nada más; la primera aplicación puede necesitar ajustes.
 
 ### Lo que queda por auditar
 
+> ⚠️ **La primera pasada sobre `admin/**` y `tenant/**` está hecha (22/08) y encontró
+> cuatro hallazgos, uno de ellos crítico: cualquiera con sesión central puede entrar como
+> dueño de cualquier tienda. Están en
+> [AUDITORIA_PANELES_2026_08_22.md](AUDITORIA_PANELES_2026_08_22.md).**
+>
+> Esa pasada miró sólo la autorización. Lo de abajo sigue sin revisar.
+
 No son tareas abiertas —son zonas que **nunca se revisaron**, así que no se sabe qué hay:
 
 - `resources/js/pages/admin/**` — seguridad, roles y staff, registro de auditoría, planes
