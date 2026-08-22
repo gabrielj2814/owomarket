@@ -13,9 +13,18 @@ class Tenant extends BaseTenant implements TenantWithDatabase
 {
     use HasDatabase, HasDomains, SoftDeletes;
 
+    /**
+     * Tarea 4 de la auditoria: esto fijaba `'central'` a mano mientras los otros 22 modelos
+     * centrales leian `tenancy.database.central_connection`. Eran dos fuentes de verdad
+     * para la misma pregunta. Ahora usa la misma que el resto.
+     */
     public function getConnectionName()
     {
-        return app()->environment('testing') ? config('database.default') : 'central';
+        if (app()->environment('testing')) {
+            return config('database.default');
+        }
+
+        return config('tenancy.database.central_connection') ?: 'central';
     }
 
     public $primaryKey = 'id';

@@ -56,7 +56,7 @@ function useCaseConTasaCongelada(int $daysStale, ?StaleRateAlerter $alerter): Sy
 
 function crearSuperAdmin(string $email): User
 {
-    return User::create([
+    return User::forceCreate([
         'id' => (string) Str::uuid(),
         'name' => 'Super Admin',
         'email' => $email,

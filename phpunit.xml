@@ -27,6 +27,13 @@
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
+        <!--
+            Tarea 4 de la auditoria: `tenancy.database.central_connection` ya nombra una
+            conexion («central», que es MySQL) en vez de tomar el driver de DB_CONNECTION.
+            En tests hay que apuntarlo a la misma base en memoria, porque el modelo Domain
+            de stancl lo consulta para saber donde viven los dominios.
+        -->
+        <env name="TENANCY_CENTRAL_CONNECTION" value="sqlite"/>
         <env name="DB_DATABASE" value=":memory:"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

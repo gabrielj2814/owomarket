@@ -46,7 +46,10 @@ test('Tenant Owner can create support ticket with multiple photos and videos', f
     $image = UploadedFile::fake()->image('error_screenshot.png', 800, 600);
     $video = UploadedFile::fake()->create('error_demo.mp4', 2048, 'video/mp4');
 
-    $response = $this->actingAs($user)->post('/tenant/api/support/tickets', [
+    // Tarea 2 de la auditoria: esto apuntaba a `/tenant/api/support/tickets`, que existia
+    // solo porque el archivo de rutas se montaba dos veces. El frontend siempre llamo a
+    // `/api/support/*` (ver CustomerSupportServices), asi que el duplicado se retiro.
+    $response = $this->actingAs($user)->post('/api/support/tickets', [
         'user_id' => $user->id,
         'requester_type' => 'tenant_owner',
         'subject' => 'Error al procesar pago móvil en checkout',

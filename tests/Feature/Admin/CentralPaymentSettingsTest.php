@@ -19,7 +19,7 @@ beforeEach(function () {
     // prueba aqui es el controlador y los permisos, no el bundle.
     $this->withoutVite();
 
-    $this->admin = User::create([
+    $this->admin = User::forceCreate([
         'id' => (string) Str::uuid(),
         'name' => 'Super Admin',
         'email' => 'admin_'.bin2hex(random_bytes(4)).'@owomarket.com',
@@ -30,7 +30,7 @@ beforeEach(function () {
 });
 
 test('un usuario que no es super admin no puede ver la pantalla', function () {
-    $owner = User::create([
+    $owner = User::forceCreate([
         'id' => (string) Str::uuid(),
         'name' => 'Dueño de Tienda',
         'email' => 'owner_'.bin2hex(random_bytes(4)).'@owomarket.com',

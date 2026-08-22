@@ -44,7 +44,18 @@ return [
      * Database tenancy config. Used by DatabaseTenancyBootstrapper.
      */
     'database' => [
-        'central_connection' => env('DB_CONNECTION', 'central'),
+        /*
+         | Tarea 4 de la auditoria: esto era `env('DB_CONNECTION', 'central')`, que toma el
+         | nombre del DRIVER (`mysql`), no el de la conexion `central` definida en
+         | config/database.php. El resultado eran dos «conexiones centrales» distintas
+         | conviviendo: 22 modelos leian este config y resolvian a `mysql`, mientras
+         | `Tenant` fijaba `'central'` a mano.
+         |
+         | Hoy apuntan a la misma base solo porque `DB_DATABASE` y `CENTRAL_DB_DATABASE`
+         | coinciden. En cuanto difieran —y en `.env.example` diferian— la mitad de los
+         | modelos leeria de una base y la otra mitad de otra.
+         */
+        'central_connection' => env('TENANCY_CENTRAL_CONNECTION', 'central'),
 
         /**
          * Connection used as a "template" for the dynamically created tenant database connection.

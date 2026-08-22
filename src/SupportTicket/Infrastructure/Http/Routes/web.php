@@ -12,9 +12,20 @@ use Src\SupportTicket\Infrastructure\Http\Controller\ViewCustomerSupportGETContr
 use Src\SupportTicket\Infrastructure\Http\Controller\ViewTenantOwnerSupportGETController;
 
 // Vistas Web
-Route::get('/owner/backoffice/{user_uuid}/support', ViewTenantOwnerSupportGETController::class)
-    ->name('central.backoffice.web.tenant.owner.support')
-    ->middleware('auth');
+//
+// Tarea 2 de la auditoria: este archivo se montaba DOS veces desde routes/web.php, en la
+// raiz y bajo /tenant, para que cada vista quedara en su sitio. El efecto colateral era
+// que TODAS sus rutas se registraban dos veces y los nombres colisionaban: Laravel no
+// avisa, gana el ultimo, asi que `route('central.customer.support')` devolvia
+// `/tenant/account/support`.
+//
+// Ahora se monta una sola vez, en la raiz, y la vista del propietario lleva su prefijo
+// aqui dentro — que ademas es donde se lee junto a la ruta que lo necesita.
+Route::prefix('tenant')->group(function () {
+    Route::get('/owner/backoffice/{user_uuid}/support', ViewTenantOwnerSupportGETController::class)
+        ->name('central.backoffice.web.tenant.owner.support')
+        ->middleware('auth');
+});
 
 Route::get('/account/support', ViewCustomerSupportGETController::class)
     ->name('central.customer.support');
@@ -24,10 +35,8 @@ Route::get('/account/support', ViewCustomerSupportGETController::class)
 | Endpoints API — Mesa de soporte central (público-autenticado)
 |--------------------------------------------------------------------------
 |
-| Este archivo se monta DOS veces desde routes/web.php: sin prefijo (para
-| clientes, vía /account/support) y bajo /tenant (para el propietario de
-| tienda, vía /tenant/owner/backoffice/{uuid}/support). Ambos comparten los
-| mismos controladores.
+| Estos endpoints los consume el frontend en `/api/support/*` desde las dos vistas, la
+| del cliente y la del propietario (ver CustomerSupportServices).
 |
 | Hasta la Fase 0.3-C este grupo no tenía NINGÚN middleware, y los
 | controladores tomaban 'user_id'/'sender_type' del cuerpo de la petición

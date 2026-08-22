@@ -33,7 +33,7 @@ test('crea el superadministrador pidiendo los datos por consola', function () {
 test('se niega a sobrescribir un usuario existente', function () {
     $email = 'existente_'.bin2hex(random_bytes(4)).'@owomarket.com';
 
-    User::create([
+    User::forceCreate([
         'id' => (string) Str::uuid(),
         'name' => 'Ya Existe',
         'email' => $email,

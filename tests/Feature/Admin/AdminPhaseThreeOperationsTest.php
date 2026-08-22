@@ -36,7 +36,7 @@ class AdminPhaseThreeOperationsTest extends TestCase
             )),
         ]);
 
-        $this->superAdmin = User::create([
+        $this->superAdmin = User::forceCreate([
             'id' => (string) Str::uuid(),
             'name' => 'Super Admin OwOMarket',
             'email' => 'admin.phase3@owomarket.local',

@@ -77,14 +77,18 @@ final class CreateSuperAdminCommand extends Command
             return self::FAILURE;
         }
 
-        User::create([
+        // `type` se asigna aparte porque ya no es asignable en masa (tarea 3 de la
+        // auditoria). Aqui es donde se decide que alguien es superadministrador, y conviene
+        // que se vea.
+        $user = new User([
             'id' => (string) Str::uuid(),
             'name' => $name,
             'email' => $email,
-            'type' => 'super_admin',
             'is_active' => true,
             'password' => $password->getHash(),
         ]);
+        $user->type = 'super_admin';
+        $user->save();
 
         $this->info("✅ Superadministrador «{$name}» creado con el correo {$email}.");
 

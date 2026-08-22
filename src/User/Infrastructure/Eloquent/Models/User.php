@@ -40,12 +40,25 @@ class User extends Authenticatable
      *
      * @var list<string>
      */
+    /**
+     * `type` NO esta aqui a proposito (hallazgo Auditoria, tarea 3).
+     *
+     * Es el campo que concede privilegio: un `User::create($request->all())` en cualquier
+     * endpoint publico permitiria enviar `type=super_admin`. Hoy ningun camino lo hace
+     * —el alta publica fija `UserType::TENANT_OWNER` a mano— pero dejarlo asignable en
+     * masa es dejar la puerta abierta al dia que alguien escriba ese `create()`.
+     *
+     * Quien tenga que fijarlo lo hace explicitamente, que ademas se lee mejor: se ve quien
+     * decide el rol y donde.
+     *
+     * `is_active` si se queda: activarse la propia cuenta no escala privilegios, y quitarlo
+     * solo daria trabajo sin cerrar nada.
+     */
     protected $fillable = [
         'id',
         'name',
         'email',
         'password',
-        'type',
         'is_active',
     ];
 

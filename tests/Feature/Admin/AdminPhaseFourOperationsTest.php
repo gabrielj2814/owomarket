@@ -36,7 +36,7 @@ class AdminPhaseFourOperationsTest extends TestCase
             )),
         ]);
 
-        $this->superAdmin = User::create([
+        $this->superAdmin = User::forceCreate([
             'id' => (string) Str::uuid(),
             'name' => 'Super Admin OwOMarket',
             'email' => 'superadmin.p4@owomarket.local',
@@ -45,7 +45,7 @@ class AdminPhaseFourOperationsTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->staffUser = User::create([
+        $this->staffUser = User::forceCreate([
             'id' => (string) Str::uuid(),
             'name' => 'Carlos Soporte',
             'email' => 'carlos.soporte@owomarket.local',
