@@ -1,6 +1,4 @@
 import { isCentralDomain as guessCentralDomainFromHostname } from '@/Services/CustomerAuthServices';
-import { SharedData } from '@/types';
-import { usePage } from '@inertiajs/react';
 
 /**
  * Dice si estamos en el dominio central o en el de una tienda (hallazgo G7).
@@ -14,18 +12,38 @@ import { usePage } from '@inertiajs/react';
  * Con eso, una tienda con dominio propio tomaba la rama central al iniciar sesión: no
  * generaba ni consumía el token SSO, así que no se creaba sesión de cliente en la tienda.
  * El usuario veía «Conectado con OwO Pass» en el checkout, pero el pedido se enviaba como
- * invitado. Y con `www.` delante el comportamiento se invertía para el mismo sitio.
+ * invitado. Ahora lo decide el servidor, que es quien inicializa la tenancy por dominio.
  *
- * Ahora lo decide el servidor, que es quien inicializa la tenancy por dominio y por tanto
- * el único que lo sabe de verdad. La heurística queda sólo como respaldo para el caso en
- * que la prop no llegue (una página servida fuera de Inertia).
+ * **Por qué se lee del DOM y no con `usePage()`:** `CustomerAuthProvider` y
+ * `CentralCartProvider` envuelven a `<App>` en `app.tsx`, es decir, viven **fuera** del
+ * componente de Inertia. Llamar ahí a `usePage()` revienta con «usePage must be used
+ * within the Inertia component». El atributo `data-page` del elemento raíz lleva las
+ * mismas props compartidas y está disponible sin contexto.
+ *
+ * Leer sólo la carga inicial es correcto aquí: `is_central` depende del dominio, y una
+ * navegación de Inertia nunca cambia de dominio.
  */
-export function useIsCentralDomain(): boolean {
-    const { props } = usePage<SharedData>();
+function readIsCentralFromInitialPage(): boolean | null {
+    if (typeof document === 'undefined') return null;
 
-    if (typeof props.is_central === 'boolean') {
-        return props.is_central;
+    // Se busca por `[data-page]` y no por `#app`: el id de la raíz depende de la vista
+    // de Inertia y podría cambiar; el atributo no.
+    const raw = document.querySelector<HTMLElement>('[data-page]')?.dataset.page;
+    if (!raw) return null;
+
+    try {
+        const value = JSON.parse(raw)?.props?.is_central;
+
+        return typeof value === 'boolean' ? value : null;
+    } catch {
+        return null;
     }
+}
 
-    return guessCentralDomainFromHostname();
+export function useIsCentralDomain(): boolean {
+    const fromServer = readIsCentralFromInitialPage();
+
+    // La heurística del hostname queda sólo como respaldo, para una página servida fuera
+    // de Inertia. Ya no decide nada en el flujo real.
+    return fromServer ?? guessCentralDomainFromHostname();
 }
