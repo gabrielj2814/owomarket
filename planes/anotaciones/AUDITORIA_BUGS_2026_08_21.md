@@ -2,11 +2,12 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 22/08/2026
 >
-> **Hallazgos numerados originales: 50 de 50 cerrados (100%).**
-> **Hallazgos nuevos (N1-N40): 39 cerrados · 1 abierto.**
-> **Menores sin numerar de los bloques D y F: 4 cerrados · 4 abiertos.**
+> **Hallazgos numerados originales: 50 de 50 cerrados.**
+> **Hallazgos nuevos (N1-N40): 40 de 40 cerrados.**
+> **Menores sin numerar de los bloques D y F: 8 de 8 cerrados.**
 >
-> **Quedan 5 tareas abiertas en total, y están todas en la tabla de aquí abajo.**
+> **No queda ninguna tarea abierta.** Lo que sigue pendiente no son bugs conocidos, son
+> zonas del código que nunca se auditaron: ver «Lo que queda por auditar».
 >
 > Corrección del 22/08: esta cabecera decía que «todo el trabajo que sigue vivo son los
 > hallazgos nuevos». No era cierto. Los ocho **menores** de los bloques D y F nunca
@@ -26,9 +27,9 @@
 >
 > ### Cómo continuar en otra sesión
 >
-> 1. **El trabajo pendiente está en la tabla «Tareas abiertas» de aquí abajo.** Es la
->    única lista completa: reúne el hallazgo nuevo que queda con los ocho menores de los
->    bloques D y F, que no aparecen en ninguna otra tabla.
+> 1. **No queda trabajo pendiente de esta auditoría.** Lo siguiente es auditar lo que
+>    nunca se miró: `resources/js/pages/admin/**`, `resources/js/pages/tenant/**` y la
+>    suite de Pest. Está detallado en «Lo que queda por auditar».
 > 2. **Los planes existen para las fases 0 a 4**, en `planes/implementados/PLAN_FASE*.md`,
 >    con su checklist marcado. **Las fases 5 y 6 no tienen plan**: fueron tandas de
 >    arreglos sueltos y lo que hicieron está en los mensajes de commit, que son detallados
@@ -172,36 +173,34 @@
 >
 > ---
 
-## 🚧 Tareas abiertas
+## ✅ Tareas abiertas — ninguna
 
-> **Ésta es la lista completa.**
+> **Las cincuenta y ocho cerradas.** Los 50 hallazgos numerados originales, los 40 nuevos
+> (N1–N40) y los 8 «menores» sin numerar de los bloques D y F.
 >
-> **Los cuatro «menores de dinero» se cerraron el 22/08** (ver el commit `fix(auditoria):
-> los cuatro bugs que daban números equivocados sin fallar`). Quedan cinco: las cuatro de
-> infraestructura, que no entraban en aquella tanda, y la del despliegue.
->
-> Del bug de zona horaria conviene retener la decisión: **`app.timezone` se queda en UTC**.
-> Se añadió `app.business_timezone` para lo único que lo necesitaba —decidir el día de
-> calendario de cupones y tasas—, porque mover la zona de la aplicación habría cambiado el
-> significado de todas las fechas ya guardadas.
+> Cerradas el 22/08/2026, verificadas contra el código y no contra las notas de fase.
 
-| # | Qué | Dónde | Por qué importa | Esfuerzo |
-| :--- | :--- | :--- | :--- | :--- |
-| **1** | **`forceRootUrl` nunca se aplica** | `AppServiceProvider.php:31` | Se apoya en `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. Las URLs absolutas en dominios de tienda —correos, redirecciones— salen con el `APP_URL` central. Hay que moverlo a un listener de `TenancyBootstrapped` | Medio |
-| **2** | **Colisiones de nombres de ruta** | `routes/web.php:19` y `:26` | `SupportTicket/web.php` se registra dos veces (raíz y bajo `/tenant`). Laravel no avisa: gana el último, así que `route('central.customer.support')` devuelve `/tenant/account/support` | Bajo |
-| **3** | **`type` e `is_active` en el `$fillable` de `User`** | `src/User/.../User.php:43` | Con un endpoint público de alta de cuenta, cualquier `User::create($request->all())` permite enviar `type=super_admin`. Hoy no hay ningún camino que lo haga, pero el día que alguien escriba ese `create()` no habrá nada que lo pare | Bajo |
-| **4** | **Dos «conexiones centrales» contradictorias** | `config/tenancy.php:47`, `Tenant.php:18`, `CentralCustomer.php:26` | `central_connection` toma `env('DB_CONNECTION')` —el *driver*, no la conexión `central`—, mientras `Tenant` la fija a mano y `CentralCustomer` lee el config. Si las dos apuntan a bases distintas, unos modelos leen de una y otros de otra | Medio |
-| **5** | **N40 — no hay `queue:work` en el despliegue** | `docker-compose.yml`, `k8s/` | Desde N17 y N25 la aplicación **necesita** un worker: sin él, un pedido cobrado no llega nunca a su tienda y el catálogo central no se sincroniza. Hay un apaño sobre el scheduler (`queue:work --stop-when-empty` cada minuto) que aguanta, con latencia de hasta un minuto | Corresponde al despliegue |
+Lo último que se cerró, por si alguien busca el porqué de algo:
 
-### Cómo leer esta tabla
+| Qué era | Cómo se resolvió |
+| :--- | :--- |
+| `forceRootUrl` nunca se aplicaba | Pasó de un `if` en `boot()` —que nunca se cumple, la tenancy arranca después— a escuchar `TenancyBootstrapped`, con su `TenancyEnded` para volver al dominio central. Importa con la cola en marcha: un worker que atiende la tienda A y luego trabajo central no puede seguir enlazando a A |
+| Colisiones de nombres de ruta | `SupportTicket/web.php` se montaba dos veces; ahora una sola vez, con el prefijo `/tenant` dentro del archivo, junto a la ruta que lo necesita |
+| `type` asignable en masa | Fuera del `$fillable` de `User`. El agujero era teórico —el alta pública fija el rol a mano— pero cerrarlo cuesta un campo |
+| Dos «conexiones centrales» | `central_connection` tomaba el nombre del *driver*, no el de la conexión. Ahora hay una sola fuente de verdad; en `phpunit.xml` se mapea a sqlite porque el `Domain` de stancl la consulta |
+| **N40** — sin worker de colas | Horizon sobre Redis: servicio `horizon` en docker-compose y Deployment `owomarket-horizon` en k8s, con su `redis-service`, que el ConfigMap ya nombraba sin que existiera. El panel queda atado al rol `super_admin`. Se retira el apaño del scheduler |
 
-Las cuatro primeras son las «Menores de infraestructura» del bloque F. Ninguna rompe una
-compra hoy, y por eso sobrevivieron a seis fases, pero la 3 es la que más vigilaría: no es
-un fallo, es una puerta abierta esperando a que alguien escriba el `create()` equivocado.
+### Dos cosas que conviene saber
 
-La 5 es la única que bloquea algo: no es un bug del código sino una pieza que
-falta, y hasta que exista, la red de seguridad del scheduler es lo que sostiene el
-despacho de pedidos.
+**Horizon no corre en Windows** — exige `ext-pcntl` y `ext-posix`. El worker vive en el
+contenedor; fuera de Docker la cola sigue en `database` y se levanta a mano con
+`queue:work`. Las extensiones se declaran satisfechas en `config.platform` de
+`composer.json` para que `composer install` funcione en una máquina Windows.
+
+**El manifiesto de k8s no está probado contra un clúster real.** Pasa validación de
+sintaxis y nada más; la primera aplicación puede necesitar ajustes.
+
+---
 
 ### Lo que queda por auditar
 
@@ -906,14 +905,16 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 
 ### Menores de infraestructura
 
-> Los cuatro siguen abiertos. Revisados contra el código el 21/08 y de nuevo el 22/08.
+> ✅ **Los cuatro se cerraron el 22/08.** Ver el commit `fix(auditoria): las cuatro tareas
+> menores de infraestructura`.
 >
-> ⚠️ **Son las tareas 1 a 4 de «Tareas abiertas»**, al principio del documento.
+> Como los de dinero, vivían sólo aquí como viñetas y no aparecían en ningún resumen, así
+> que era fácil darlos por cerrados sin haberlos tocado.
 
-- ⬜ **ABIERTO** — **`AppServiceProvider::boot():31-37`** intenta usar `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. El `forceRootUrl` nunca se aplica: todas las URLs absolutas en dominios de tenant (correos, redirecciones) usan el `APP_URL` central. Mover a un listener de `TenancyBootstrapped`.
-- ⬜ **ABIERTO** — **Colisiones de nombres de ruta** por el doble registro de `SupportTicket/.../web.php` (`routes/web.php:19` y `:26`) y de Admin (A1). Laravel no avisa: gana el último. `route('central.customer.support')` devuelve `/tenant/account/support`.
-- ⬜ **ABIERTO** — **`type`, `is_active` e `id` en `$fillable` de `User`** (`src/User/.../User.php:43-50`), con un endpoint público de alta de cuenta en `src/Tenant/.../web.php:44`. Cualquier `User::create($request->all())` permite enviar `type=super_admin`.
-- ⬜ **ABIERTO** — **Dos "conexiones centrales" contradictorias**: `config/tenancy.php:44` define `'central_connection' => env('DB_CONNECTION', 'central')` (toma el *driver*, no la conexión `central`), mientras `Tenant.php:105` hardcodea `'central'` y `CentralCustomer.php:179` lee el config. Con `.env.example` apuntando a bases distintas (`laravel` vs `db`), unos modelos leen de una BD y otros de otra.
+- ✅ **CERRADO (22/08)** — se escucha `TenancyBootstrapped`, con su `TenancyEnded` para volver al dominio central. Sin lo segundo, un worker que atiende la tienda A y luego trabajo central seguiria enlazando a A. — **`AppServiceProvider::boot():31-37`** intenta usar `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. El `forceRootUrl` nunca se aplica: todas las URLs absolutas en dominios de tenant (correos, redirecciones) usan el `APP_URL` central. Mover a un listener de `TenancyBootstrapped`.
+- ✅ **CERRADO (22/08)** — el archivo se monta una sola vez y el prefijo `/tenant` vive dentro, junto a la ruta que lo necesita. Un test comprueba que cada URI de soporte aparece una vez. — **Colisiones de nombres de ruta** por el doble registro de `SupportTicket/.../web.php` (`routes/web.php:19` y `:26`) y de Admin (A1). Laravel no avisa: gana el último. `route('central.customer.support')` devuelve `/tenant/account/support`.
+- ✅ **CERRADO (22/08)** — `type` fuera del `$fillable`. `is_active` se queda: activarse la propia cuenta no escala privilegios. El agujero era teorico, pero cerrarlo cuesta un campo. — **`type`, `is_active` e `id` en `$fillable` de `User`** (`src/User/.../User.php:43-50`), con un endpoint público de alta de cuenta en `src/Tenant/.../web.php:44`. Cualquier `User::create($request->all())` permite enviar `type=super_admin`.
+- ✅ **CERRADO (22/08)** — `central_connection` nombra una conexion y no el driver, y `Tenant` usa la misma expresion que los otros 22 modelos. En `phpunit.xml` se mapea a sqlite: el `Domain` de stancl la consulta. — **Dos "conexiones centrales" contradictorias**: `config/tenancy.php:44` define `'central_connection' => env('DB_CONNECTION', 'central')` (toma el *driver*, no la conexión `central`), mientras `Tenant.php:105` hardcodea `'central'` y `CentralCustomer.php:179` lee el config. Con `.env.example` apuntando a bases distintas (`laravel` vs `db`), unos modelos leen de una BD y otros de otra.
 
 ---
 
@@ -1250,7 +1251,7 @@ documento.
 | N37 | **La API tenía SEIS sobres de paginación distintos** en el cable, más un séptimo muerto en `Shared\Collection\Pagination`, y cada página del backoffice estaba escrita contra el suyo. La deuda de tipos de N29 lo tapaba | Fase N29 (22/08) | ✅ Cerrado (22/08) — unificados en `{ data: [...], pagination: {...} }` vía `ApiResponse::paginated()`, que recibe los contadores como parámetros para que el formato no se pueda torcer sin cambiar la firma. Los controladores de Inertia quedan fuera: sus props son otro contrato |
 | N38 | **El listado de clientes del backoffice salía siempre vacío.** `$this->has('is_active')` es cierto aunque la clave valga null y `boolean(null)` da false, así que el criterio salía como `is_active = false`. El frontend manda siempre `is_active: null` para decir «sin filtro». El mismo fallo en `UpdateCustomerFormRequest` desactivaba al cliente al actualizarlo | Fase N29 (22/08) | ✅ Cerrado (22/08) |
 | N39 | **Esta API lista con POST** (los doce `/{modulo}/filter`), así que un control de rol que distinga lectura de escritura por el verbo HTTP deja al `staff` sin ver ningún listado. Detectado al comprobar N19 en un navegador | Fase N19 (22/08) | ✅ Cerrado (22/08) — `filter` y `calculate` exceptuados por nombre |
-| N40 | **No hay ningún `queue:work` en docker-compose ni en k8s.** Desde N17/N25 la aplicación lo necesita: sin worker, un pedido cobrado no llega a su tienda. Hay un apaño sobre el scheduler (`queue:work --stop-when-empty` cada minuto) que sirve mientras tanto | Fase N17 (22/08) | ⬜ Abierto — para el despliegue |
+| N40 | **No hay ningún `queue:work` en docker-compose ni en k8s.** Desde N17/N25 la aplicación lo necesita: sin worker, un pedido cobrado no llega a su tienda. Hay un apaño sobre el scheduler (`queue:work --stop-when-empty` cada minuto) que sirve mientras tanto | Fase N17 (22/08) | ✅ Cerrado (22/08) — Horizon sobre Redis: servicio en docker-compose y Deployment en k8s con su `redis-service`, que el ConfigMap ya nombraba sin que existiera. Panel atado al rol `super_admin`. Se retiro el apano del scheduler |
 | N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ✅ Cerrado (Fase 5.1) — el checkout revalida al entrar, no sólo al abrir el carrito |
 | N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ✅ Cerrado (Fase 6.1) — `POST /api/central/marketplace/cart/revalidate`, mismo contrato que el de tienda |
 
