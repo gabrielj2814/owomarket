@@ -41,7 +41,25 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+/**
+ * Crea un usuario de tienda y lo autentica para el resto del test.
+ *
+ * Desde la Fase 0.3-E (hallazgo A5) `/api-tenant/*` exige sesion, asi que **33 archivos**
+ * repetian el mismo bloque de ocho lineas en su `beforeEach`. Esto es ese bloque.
+ *
+ * Debe llamarse con la tenancy ya inicializada: el usuario vive en la base del inquilino.
+ */
+function actingAsTenantOwner(string $type = 'tenant_owner'): Src\Tenant\Infrastructure\Eloquent\Models\User
 {
-    // ..
+    $user = Src\Tenant\Infrastructure\Eloquent\Models\User::create([
+        'id' => (string) Illuminate\Support\Str::uuid(),
+        'name' => 'Store Staff',
+        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
+        'password' => bcrypt('Password123!'),
+        'type' => $type,
+    ]);
+
+    test()->actingAs($user);
+
+    return $user;
 }

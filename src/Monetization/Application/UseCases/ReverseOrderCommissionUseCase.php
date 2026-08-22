@@ -30,9 +30,9 @@ use Throwable;
  *   - `refunded` → pedido reembolsado: la venta ocurrió y se deshizo.
  */
 /*
- * No se marca `final`: los tests unitarios de CancelOrderUseCase y
- * RefundOrderUseCase la sustituyen por un doble de Mockery para no depender
- * de la base de datos central.
+ * Sin `final`: los tests la sustituyen por un doble de Mockery. Es la regla del
+ * proyecto para los colaboradores que se doblan en tests (ver `reglas.md`), no una
+ * excepcion.
  */
 class ReverseOrderCommissionUseCase
 {

@@ -22,9 +22,9 @@ use Src\Order\Infrastructure\Eloquent\Models\Order;
  * reseña y contiene el producto reseñado.
  */
 /*
- * No se marca `final` a propósito, a diferencia del resto de servicios del
- * proyecto: los tests unitarios de CreateProductReviewUseCase la sustituyen
- * por un doble de Mockery para no depender de la base de datos.
+ * Sin `final`: los tests la sustituyen por un doble de Mockery. Es la regla del
+ * proyecto para los colaboradores que se doblan en tests (ver `reglas.md`), no una
+ * excepcion.
  */
 class VerifiedPurchaseChecker
 {

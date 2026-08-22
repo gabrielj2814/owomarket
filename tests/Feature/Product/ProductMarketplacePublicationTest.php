@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Product\Infrastructure\Eloquent\Models\Product as EloquentProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -67,17 +67,8 @@ beforeEach(function () {
 
     tenancy()->initialize($this->tenant);
 
-    // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5). Las rutas
-    // de backoffice exigen ahora sesión de usuario de la tienda; se autentica
-    // aquí para todo el archivo.
-    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
-        'id' => (string) \Illuminate\Support\Str::uuid(),
-        'name' => 'Store Staff',
-        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
-        'password' => bcrypt('Password123!'),
-        'type' => 'tenant_owner',
-    ]);
-    $this->actingAs($this->tenantUser);
+    // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5).
+    $this->tenantUser = actingAsTenantOwner();
 });
 
 afterEach(function () {

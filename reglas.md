@@ -44,7 +44,12 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 4. **Inyección de Dependencias**:
    * Todos los contratos/interfaces de repositorios y servicios deben ser vinculados a su implementación concreta en su respectivo `ServiceProvider` (ej. `AdminServiceProvider.php`, `AppServiceProvider.php`).
 
-5. **Uso Obligatorio del Helper `ApiResponse` en Respuestas JSON**:
+5. **`final` sí, salvo en lo que los tests doblan**:
+   * Los servicios y casos de uso se marcan `final` por defecto.
+   * **Excepción declarada:** un colaborador que los tests sustituyen por un doble de Mockery no lleva `final`, porque Mockery necesita heredar de él. No es una violación de la convención: es parte de ella. Basta un comentario de una línea sobre la clase.
+   * No se crea una interfaz con una sola implementación sólo para poder doblarla.
+
+6. **Uso Obligatorio del Helper `ApiResponse` en Respuestas JSON**:
    * Todos los controladores HTTP que devuelvan respuestas JSON deben utilizar obligatoriamente la clase `Src\Shared\Helper\ApiResponse` (`ApiResponse::success()`, `ApiResponse::error()`, `ApiResponse::Pagination()`) para garantizar una estructura estándar de respuesta `{ status, code, message, data, meta, errors }` compatible con el frontend TypeScript.
 
 ---
