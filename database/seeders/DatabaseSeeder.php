@@ -31,6 +31,7 @@ class DatabaseSeeder extends Seeder
             TenantDefaultUsersSeeder::class,
             TenantDemoDataSeeder::class,
             CentralCustomerDemoSeeder::class,
+            CentralPaymentDemoSeeder::class,
         ]);
     }
 }

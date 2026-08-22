@@ -29,7 +29,7 @@ export const CustomerAccountLayout: React.FC<CustomerAccountLayoutProps> = ({
     description = 'Gestiona tus compras, envíos, facturas y configuración personal.',
 }) => {
     const { url } = usePage();
-    const { customer, isAuthenticated, logout, openAuthModal } = useCustomerAuth();
+    const { customer, isAuthenticated, loading, logout, openAuthModal } = useCustomerAuth();
 
     const navigationItems = [
         {
@@ -93,6 +93,18 @@ export const CustomerAccountLayout: React.FC<CustomerAccountLayoutProps> = ({
             active: url.startsWith('/account/profile'),
         },
     ];
+
+    // Hallazgo G15: esto ignoraba `loading`, asi que mientras se resolvia la sesion se
+    // mostraba «Inicia sesion» a alguien que SI la tenia, en cada carga de pagina.
+    if (loading) {
+        return (
+            <CentralLayout>
+                <div className="max-w-4xl mx-auto px-4 py-16 text-center text-sm text-gray-500">
+                    Cargando tu cuenta…
+                </div>
+            </CentralLayout>
+        );
+    }
 
     if (!isAuthenticated) {
         return (

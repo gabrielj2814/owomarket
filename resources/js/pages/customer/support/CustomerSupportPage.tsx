@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
 import {
@@ -12,7 +12,7 @@ import {
     HiOutlineArrowPath,
     HiOutlinePaperAirplane,
 } from 'react-icons/hi2';
-import axios from 'axios';
+import CustomerSupportServices from '@/Services/CustomerSupportServices';
 
 interface AttachmentItem {
     url: string;
@@ -116,15 +116,33 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
         }
     };
 
+    /**
+     * Hallazgo G14: los `URL.createObjectURL` de las vistas previas no se revocaban nunca,
+     * asi que cada fichero adjuntado dejaba su blob retenido en memoria mientras durara la
+     * pagina. Se libera al quitar el fichero y al desmontar.
+     */
     const removeFile = (index: number, isReply: boolean = false) => {
         if (isReply) {
+            setReplyFilePreviews(prev => {
+                URL.revokeObjectURL(prev[index]?.url ?? '');
+                return prev.filter((_, i) => i !== index);
+            });
             setReplyFiles(prev => prev.filter((_, i) => i !== index));
-            setReplyFilePreviews(prev => prev.filter((_, i) => i !== index));
         } else {
+            setFilePreviews(prev => {
+                URL.revokeObjectURL(prev[index]?.url ?? '');
+                return prev.filter((_, i) => i !== index);
+            });
             setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-            setFilePreviews(prev => prev.filter((_, i) => i !== index));
         }
     };
+
+    useEffect(() => {
+        return () => {
+            filePreviews.forEach(p => URL.revokeObjectURL(p.url));
+            replyFilePreviews.forEach(p => URL.revokeObjectURL(p.url));
+        };
+    }, [filePreviews, replyFilePreviews]);
 
     const handleCreateTicket = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -144,12 +162,10 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
         });
 
         try {
-            const response = await axios.post('/api/support/tickets', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const response = await CustomerSupportServices.createTicket(formData);
 
-            if (response.data?.status === 'success') {
-                const newTicket = response.data.data;
+            if (response.status === 'success' && response.data) {
+                const newTicket = response.data;
                 setTickets(prev => [newTicket, ...prev]);
                 setCounts(prev => ({ ...prev, total: prev.total + 1, open: prev.open + 1 }));
                 setIsCreateModalOpen(false);
@@ -158,9 +174,13 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
                 setSelectedFiles([]);
                 setFilePreviews([]);
                 setFeedback({ type: 'success', text: `¡Reporte ${newTicket.ticket_number} enviado exitosamente! Te responderemos pronto.` });
+            } else {
+                // Hallazgo G14: antes no se manejaba el caso `status !== 'success'`. El
+                // usuario no veia nada y reenviaba, generando tickets duplicados.
+                setFeedback({ type: 'error', text: response.message || 'Error al enviar el reporte.' });
             }
-        } catch (err: any) {
-            setFeedback({ type: 'error', text: err?.response?.data?.message || 'Error al enviar el reporte.' });
+        } catch {
+            setFeedback({ type: 'error', text: 'Error de conexion al enviar el reporte.' });
         } finally {
             setLoading(false);
         }
@@ -181,12 +201,10 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
         });
 
         try {
-            const response = await axios.post(`/api/support/tickets/${selectedTicket.id}/messages`, formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
+            const response = await CustomerSupportServices.addMessage(selectedTicket.id, formData);
 
-            if (response.data?.status === 'success') {
-                const newMsg = response.data.data;
+            if (response.status === 'success' && response.data) {
+                const newMsg = response.data;
                 setSelectedTicket(prev => prev ? {
                     ...prev,
                     status: 'in_progress',
@@ -196,9 +214,11 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
                 setReplyText('');
                 setReplyFiles([]);
                 setReplyFilePreviews([]);
+            } else {
+                setFeedback({ type: 'error', text: response.message || 'No se pudo enviar el mensaje.' });
             }
-        } catch (err: any) {
-            alert(err?.response?.data?.message || 'Error al enviar mensaje.');
+        } catch {
+            setFeedback({ type: 'error', text: 'Error de conexion al enviar el mensaje.' });
         } finally {
             setLoading(false);
         }
@@ -206,11 +226,13 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
 
     const openTicketDetails = async (ticket: SupportTicket) => {
         try {
-            const res = await axios.get(`/api/support/tickets/${ticket.id}?user_id=${user_id}`);
-            if (res.data?.status === 'success') {
-                setSelectedTicket(res.data.data);
+            const res = await CustomerSupportServices.getTicket(ticket.id);
+            if (res.status === 'success' && res.data) {
+                setSelectedTicket(res.data);
+            } else {
+                setSelectedTicket(ticket);
             }
-        } catch (error) {
+        } catch {
             setSelectedTicket(ticket);
         }
     };

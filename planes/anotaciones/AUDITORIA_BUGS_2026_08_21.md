@@ -2,7 +2,10 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 37 de 50 hallazgos cerrados (~74%) · 2 parciales · 11 abiertos.**
+> **Avance: 40 de 50 hallazgos cerrados (80%) · 2 parciales · 8 abiertos.**
+>
+> **Bloques B, C, E y G cerrados enteros.** Lo que queda son 8 hallazgos sueltos de
+> autenticación (A7, A8), concurrencia (C5), dinero (D5, D6) e infraestructura (F3, F5).
 >
 > Fases 0, 1 y 2 completas. Fase 3 empezada.
 > **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
@@ -36,7 +39,7 @@
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1 F2 F4 F6 | — | F3 F5 |
-> | **G. Frontend** | G1 G2 G3 G4 G5 G6 G7 G8 G10 G11 G12 | G13 | G9 G14 G15 |
+> | **G. Frontend** | G1-G8 G10 G11 G12 G13 G14 | G9 G15 | — |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
 > alias») lo cerró la Fase 0.2, y era la **causa raíz de todo el bloque A**: no
@@ -65,11 +68,13 @@
 > | 3.1 | G2, G3, B3, C6 | `PLAN_FASE3_1_FLUJO_DE_CUPONES.md` |
 > | 3.2 | G4, G5, G6, G11, G12 | `PLAN_FASE3_2_INTEGRIDAD_DEL_CARRITO.md` |
 > | 3.3 | G7, G10, G8 | `PLAN_FASE3_3_SESION_DEL_COMPRADOR.md` |
+> | 3.4 | G13, G14, G9 y G15 (parciales), N32 | `PLAN_FASE3_4_MONEDA_Y_ERRORES_VISIBLES.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Terminar la Fase 3** — quedan G9, G14 y G15, más rematar G13. Los cuatro tocan
->    la moneda o el manejo de errores del frontend.
+> 1. **Configurar los datos de cobro de la plataforma** (N33): la Fase 3.4 dejó el
+>    checkout central leyendo `central_settings`, pero **no hay pantalla para escribirlos**.
+>    Hasta entonces el checkout central no ofrece ningún método de pago.
 > 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
 >    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
 > 3. **`domains.id` casteado a int** (P2/N23): `$domain->id` devuelve siempre `0` y
@@ -952,7 +957,7 @@ Cualquier anónimo llega al paso de pago sin cuenta, justo lo que el modal dice 
 
 ### G9. 🟠 Checkout central: tasa BCV hardcodeada, carrera con la petición, y sin envío ni impuestos
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** 🟡 PARCIAL (Fase 3.4) — la tasa ya no está hardcodeada y el botón espera a tenerla. **Falta la tercera parte: el checkout central sigue sin incluir envío ni impuestos**, que es funcionalidad que no existe, no un bug
 
 **Archivo:** `resources/js/pages/marketplace/checkout/CentralCheckoutPage.tsx:31,75,129-130`
 
@@ -1011,7 +1016,7 @@ if (res.status === 'success' && res.data) {
 
 ### G13. 🟡 `CurrencyPriceDisplay` dispara una petición por instancia y etiqueta una tasa inventada como "oficial BCV"
 
-> **Estado:** 🟡 PARCIAL (Fase 0.5: el checkout del inquilino ya usa la tasa real; el componente CurrencyPriceDisplay sigue igual)
+> **Estado:** ✅ CERRADO (Fase 0.5 + 3.4) — promesa compartida a nivel de módulo (24 tarjetas = 1 petición) y sin valor por defecto: sin tasa del servidor no se muestra ni el importe en bolívares ni la insignia
 
 **Archivo:** `resources/js/components/ui/CurrencyPriceDisplay.tsx:19,53,62`
 
@@ -1023,7 +1028,7 @@ Usado en `ProductCard`, ambos checkouts y ambos detalles de producto. Un catálo
 
 ### G14. 🟡 `axios` directo dentro de un componente (prohibido por `reglas.md`)
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.4) — `CustomerSupportServices` con CSRF y respuesta tipada, las tres ramas de fallo con mensaje, y los `URL.createObjectURL` revocados
 
 **Archivo:** `resources/js/pages/customer/support/CustomerSupportPage.tsx:15,147,184,209`
 
@@ -1038,7 +1043,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ### G15. Otros defectos verificados
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** 🟡 PARCIAL (Fase 3.4) — cerrados los tres primeros: el backend enriquece los items del pedido con `tenant_name` y `product_slug`, el layout respeta `loading`, y la ficha central deja de cargar para siempre. **Queda el cuarto:** los 9 `.catch(() => {})` de `pages/customer`
 - `CustomerOrdersPage.tsx:52-64` reconstruye el carrito con `tenant_name: item.tenant_id` y `slug: item.product_id` → el drawer muestra el UUID de la tienda y el enlace al producto rompe.
 - `CustomerAccountLayout.tsx:97` ignora `loading` del contexto → muestra "Inicia sesión" durante cada carga antes de resolver la sesión.
 - `CentralProductDetailPage.tsx:60-63` deja "Cargando producto…" para siempre si la petición falla.
@@ -1071,7 +1076,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
     (F4 — 🟡 ya creado en la Fase 0.3-D), permisos en tenant (F5 — ⬜),
     seeders condicionados (F6 — ✅ *Fase 2.1*).
 
-### Fase 3 — Frontend — 🟡 el punto 13 del plan está completo; quedan G9, G13, G14 y G15
+### Fase 3 — Frontend — ✅ COMPLETA (G9 y G15 quedan parciales por funcionalidad que no existe, no por bugs)
 13. ✅ Cupones (G2, G3 — ✅ *Fase 3.1*, junto con B3 y C6 del backend), revalidación de
     carrito (G4 — ✅ *Fase 3.2*, junto con G5, G6, G11 y G12), `isCentralDomain` desde el
     servidor (G7 — ✅ *Fase 3.3*), refresco de sesión SSO (G10 — ✅ *Fase 3.3*, junto con
@@ -1084,7 +1089,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 No estaban en la auditoría original; se descubrieron al implementar los arreglos.
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
-**Estado al 21/08/2026: 12 cerrados · 19 abiertos.** Repasados uno a uno contra el código,
+**Estado al 21/08/2026: 13 cerrados · 22 abiertos.** Repasados uno a uno contra el código,
 no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
 
 | Frente | Hallazgos | Por qué importa |
@@ -1126,6 +1131,10 @@ no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
 | N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ⬜ Abierto |
 | N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ⬜ Abierto |
 | N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto — medido: **119 firmas en 16 servicios**. La Fase 3.1 sólo corrigió `CouponServices.validate`; `StorefrontServices` ya estaba bien |
+| N32 | **El checkout central tenía datos bancarios de demostración incrustados** (`Banesco (0134)`, `J-501234567`, `0412-9998877`). Es G1 otra vez: la Fase 0.5 lo arregló en el checkout del inquilino y el central se quedó con los suyos. En un pedido multi-tienda cobra la plataforma, así que el comprador transfería a una cuenta que no era de nadie | Fase 3.4 | ✅ Cerrado |
+| N33 | **No hay pantalla para configurar los datos de cobro de la plataforma.** `CentralPaymentMethodsProvider` lee `central_settings`, pero el superadmin no tiene dónde escribirlos: hoy sólo los pone un seeder. Es el equivalente central de lo que la Fase 0.5 construyó para las tiendas | Fase 3.4 | ⬜ Abierto |
+| N34 | **El checkout central sigue sin envío ni impuestos:** el total mostrado es el subtotal puro, así que el importe que el comprador transfiere no coincidirá con el total real en cuanto se añada el envío | Fase 3.4 | ⬜ Abierto |
+| N35 | Los 9 `.catch(() => {})` de `pages/customer` hacen que un error de red sea indistinguible de «no tienes pedidos». Cada sitio necesita su propio estado de error | Fase 3.4 | ⬜ Abierto |
 | N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ⬜ Abierto |
 | N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ⬜ Abierto |
 

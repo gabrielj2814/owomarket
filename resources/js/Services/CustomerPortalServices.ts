@@ -25,7 +25,11 @@ export interface CustomerAddressData {
 export interface CustomerOrderItemData {
     id: string;
     tenant_id: string;
+    /** Nombre real de la tienda; antes el frontend mostraba el UUID (hallazgo G15). */
+    tenant_name?: string | null;
     product_id: string;
+    /** Slug del producto en el catálogo central, para que el enlace lleve a algún sitio. */
+    product_slug?: string | null;
     product_name: string;
     sku?: string | null;
     price: number;

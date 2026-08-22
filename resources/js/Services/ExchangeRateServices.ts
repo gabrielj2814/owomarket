@@ -30,6 +30,36 @@ export const getActiveExchangeRate = async (): Promise<ExchangeRateActiveRespons
 };
 
 /**
+ * Tasa activa compartida por toda la pagina (hallazgo G13).
+ *
+ * `CurrencyPriceDisplay` se usa en `ProductCard`, en los dos checkouts y en las dos fichas
+ * de producto, y cada instancia disparaba su propio GET: un catalogo de 24 tarjetas
+ * lanzaba **24 peticiones simultaneas** a `/api/exchange-rate/current`, sin cache ni
+ * deduplicacion.
+ *
+ * La promesa se memoiza a nivel de modulo, asi que las N instancias que monten a la vez
+ * comparten una sola peticion. Devuelve `null` si no hay tasa: desde la Fase 1.4 el
+ * endpoint responde 404 cuando no existe ninguna activa, y **inventarse una es justo lo
+ * que causaba el problema**.
+ */
+let tasaCompartida: Promise<number | null> | null = null;
+
+export const getSharedActiveRate = (): Promise<number | null> => {
+    if (!tasaCompartida) {
+        tasaCompartida = getActiveExchangeRate()
+            .then((res) => (res?.data?.rate && res.data.rate > 0 ? res.data.rate : null))
+            .catch(() => null);
+    }
+
+    return tasaCompartida;
+};
+
+/** Sólo para los tests: olvida la tasa memoizada. */
+export const resetSharedActiveRate = (): void => {
+    tasaCompartida = null;
+};
+
+/**
  * Convierte un monto entre USD y VES en base a la tasa activa.
  */
 export const convertCurrency = async (

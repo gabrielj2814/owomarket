@@ -52,12 +52,16 @@ export const CustomerOrdersPage: React.FC = () => {
     const handleReorder = (order: CustomerOrderData) => {
         if (!order.items || order.items.length === 0) return;
         order.items.forEach(item => {
+            // Hallazgo G15: aqui se pasaba `tenant_name: item.tenant_id` y
+            // `slug: item.product_id`, asi que el cajon del carrito mostraba el UUID de la
+            // tienda como si fuera su nombre y el enlace al producto no llevaba a ninguna
+            // parte. El backend ya envia los dos campos de verdad.
             addItem({
                 tenant_id: item.tenant_id,
-                tenant_name: item.tenant_id,
+                tenant_name: item.tenant_name || 'Tienda',
                 product_id: item.product_id,
                 product_name: item.product_name,
-                slug: item.product_id,
+                slug: item.product_slug || item.product_id,
                 price: item.price,
                 quantity: item.quantity,
             });

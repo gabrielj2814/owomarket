@@ -52,15 +52,31 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                         setSelectedImage(res.data.product.images[0].image_path);
                     }
                 }
-                setLoading(false);
-            });
+            })
+                // `finally` y no dentro del `then`: si la promesa se rechazara, la pagina
+                // se quedaria cargando para siempre, que es justo el hallazgo G15.
+                .finally(() => setLoading(false));
         } else if (product_initial.images && product_initial.images.length > 0) {
             setSelectedImage(product_initial.images[0].image_path);
         }
     }, [slug, product_initial]);
 
-    if (loading || !product) {
-        return <div className="py-20 text-center text-gray-500">Cargando producto...</div>;
+    // Hallazgo G15: esto se quedaba en «Cargando producto...» PARA SIEMPRE si la peticion
+    // fallaba, porque `loading` solo se apagaba en la rama de exito.
+    if (loading) {
+        return <div className="py-20 text-center text-gray-500">Cargando producto…</div>;
+    }
+
+    if (!product) {
+        return (
+            <div className="py-20 text-center space-y-3">
+                <p className="text-gray-900 dark:text-white font-bold">No pudimos cargar este producto.</p>
+                <p className="text-xs text-gray-500">Puede que ya no esté disponible en el marketplace.</p>
+                <a href="/catalog" className="inline-block text-xs font-bold text-blue-600 hover:underline">
+                    Volver al catálogo
+                </a>
+            </div>
+        );
     }
 
     const mainImage =

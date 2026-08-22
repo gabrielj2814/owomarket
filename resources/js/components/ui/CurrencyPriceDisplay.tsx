@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getActiveExchangeRate } from '@/Services/ExchangeRateServices';
+import { getSharedActiveRate } from '@/Services/ExchangeRateServices';
 
 export interface CurrencyPriceDisplayProps {
     priceUsd: number;
@@ -15,8 +15,15 @@ export interface CurrencyPriceDisplayProps {
     layout?: 'vertical' | 'horizontal' | 'compact';
 }
 
-// Tasa de reserva local en caso de que la API demore en responder
-const DEFAULT_FALLBACK_RATE = 775.3356;
+/**
+ * Hallazgo G13: aqui habia un `DEFAULT_FALLBACK_RATE = 775.3356` que se mostraba bajo el
+ * rotulo **«Tasa oficial BCV»** mientras la peticion viajaba y tambien si fallaba, porque
+ * el `.catch` era silencioso. Era una tasa inventada presentada como oficial.
+ *
+ * Ya no hay valor por defecto: hasta que el servidor responde no se muestra ni el importe
+ * en bolivares ni la insignia. Es el mismo criterio de la Fase 1.4 con `/convert`:
+ * preferible no mostrar nada que mostrar un numero que no es.
+ */
 
 export const formatUsd = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -50,7 +57,7 @@ export const CurrencyPriceDisplay: React.FC<CurrencyPriceDisplayProps> = ({
     cryptoClassName = '',
     layout = 'vertical',
 }) => {
-    const [rate, setRate] = useState<number>(initialRate ?? DEFAULT_FALLBACK_RATE);
+    const [rate, setRate] = useState<number | null>(initialRate && initialRate > 0 ? initialRate : null);
 
     useEffect(() => {
         if (initialRate && initialRate > 0) {
@@ -59,23 +66,22 @@ export const CurrencyPriceDisplay: React.FC<CurrencyPriceDisplayProps> = ({
         }
 
         let isMounted = true;
-        getActiveExchangeRate()
-            .then((res) => {
-                if (isMounted && res?.data?.rate && res.data.rate > 0) {
-                    setRate(res.data.rate);
-                }
-            })
-            .catch(() => {
-                // Silencioso, mantiene el valor por defecto
-            });
+
+        // Promesa compartida: 24 tarjetas de catalogo = 1 peticion, no 24.
+        void getSharedActiveRate().then((tasa) => {
+            if (isMounted && tasa !== null) {
+                setRate(tasa);
+            }
+        });
 
         return () => {
             isMounted = false;
         };
     }, [initialRate]);
 
-    const priceVes = priceUsd * rate;
-    const comparePriceVes = comparePriceUsd ? comparePriceUsd * rate : undefined;
+    const tieneTasaReal = rate !== null && rate > 0;
+    const priceVes = tieneTasaReal ? priceUsd * rate : 0;
+    const comparePriceVes = tieneTasaReal && comparePriceUsd ? comparePriceUsd * rate : undefined;
 
     // Tamaños tipográficos
     const sizeClasses = {
@@ -138,7 +144,7 @@ export const CurrencyPriceDisplay: React.FC<CurrencyPriceDisplayProps> = ({
             </div>
 
             {/* Equivalente en Bolívares (VES) calculado con Tasa BCV */}
-            {showVes && (
+            {showVes && tieneTasaReal && (
                 <div className={`flex items-center gap-1.5 flex-wrap ${vesClassName}`} data-testid="price-ves-container">
                     <span className={sizeClasses.ves} data-testid="price-ves">
                         {formatVes(priceVes)}
@@ -153,10 +159,10 @@ export const CurrencyPriceDisplay: React.FC<CurrencyPriceDisplayProps> = ({
                     {showBcvLabel && (
                         <span
                             className={`inline-flex items-center rounded-full font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 ${sizeClasses.badge}`}
-                            title={`Tasa oficial BCV: Bs. ${rate.toFixed(4)}`}
+                            title={`Tasa oficial BCV: Bs. ${rate!.toFixed(4)}`}
                             data-testid="bcv-badge"
                         >
-                            BCV: Bs. {rate > 1000 ? rate.toLocaleString('es-VE', { maximumFractionDigits: 2 }) : rate.toFixed(2)}
+                            BCV: Bs. {rate! > 1000 ? rate!.toLocaleString('es-VE', { maximumFractionDigits: 2 }) : rate!.toFixed(2)}
                         </span>
                     )}
                 </div>

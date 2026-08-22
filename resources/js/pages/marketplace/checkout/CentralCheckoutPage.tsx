@@ -17,27 +17,64 @@ import {
     HiOutlineCheckCircle,
 } from 'react-icons/hi2';
 
-import { getActiveExchangeRate } from '@/Services/ExchangeRateServices';
+import { getSharedActiveRate } from '@/Services/ExchangeRateServices';
 import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
+
+export interface CentralPaymentMethod {
+    id: 'pago_movil' | 'binance_pay';
+    name: string;
+    bank_name?: string;
+    document_id?: string;
+    phone?: string;
+    holder_name?: string | null;
+    exchange_rate_ves?: number;
+    binance_pay_id?: string;
+    crypto_currency?: string;
+}
 
 interface CentralCheckoutPageProps {
     domain?: string;
+    /**
+     * Datos de cobro de la plataforma. Vienen del servidor desde `central_settings`; un
+     * metodo que no este completamente configurado sencillamente no llega aqui.
+     */
+    payment_methods?: CentralPaymentMethod[];
 }
 
-const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain }) => {
+const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain, payment_methods = [] }) => {
+    const pagoMovil = payment_methods.find((m) => m.id === 'pago_movil');
     const { items, getItemsByStore, getSubtotal, getItemCount, clearCart } = useCentralCart();
     const { customer, isAuthenticated, openAuthModal } = useCustomerAuth();
 
-    const [bcvRate, setBcvRate] = useState<number>(775.3356);
+    /**
+     * Hallazgo G9: esto era `useState<number>(775.3356)` con un `.catch(() => {})`
+     * silencioso, y **nada bloqueaba el envio mientras la tasa no habia cargado**. El
+     * comprador podia confirmar un pago en bolivares calculado con una tasa inventada, y
+     * transferir un importe que no se correspondia con nada.
+     *
+     * Ahora arranca en `null` —no hay tasa hasta que el servidor la da— y el boton de
+     * confirmar espera. La peticion es la compartida de `getSharedActiveRate` (G13), asi
+     * que esta pagina no anade una propia.
+     */
+    const [bcvRate, setBcvRate] = useState<number | null>(null);
+    const [rateFailed, setRateFailed] = useState(false);
 
     useEffect(() => {
-        getActiveExchangeRate()
-            .then((res) => {
-                if (res?.data?.rate && res.data.rate > 0) {
-                    setBcvRate(res.data.rate);
-                }
-            })
-            .catch(() => {});
+        let isMounted = true;
+
+        void getSharedActiveRate().then((tasa) => {
+            if (!isMounted) return;
+
+            if (tasa !== null) {
+                setBcvRate(tasa);
+            } else {
+                setRateFailed(true);
+            }
+        });
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const storeGroups = getItemsByStore();
@@ -86,7 +123,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
             : `ck-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
     );
 
-    const totalBs = (subtotal * bcvRate).toFixed(2);
+    const totalBs = bcvRate !== null ? (subtotal * bcvRate).toFixed(2) : null;
 
     const handleSubmitOrder = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -433,12 +470,25 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                 <div className="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 space-y-4">
                                     <div className="space-y-1 text-xs">
                                         <span className="font-bold text-blue-600 dark:text-blue-400">Datos Oficiales para Pago Móvil:</span>
-                                        <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 font-mono text-[11px]">
-                                            <div><strong>Banco:</strong> Banesco (0134)</div>
-                                            <div><strong>C.I.:</strong> J-501234567</div>
-                                            <div><strong>Teléfono:</strong> 0412-9998877</div>
-                                            <div><strong>Monto:</strong> Bs. {totalBs}</div>
-                                        </div>
+                                        {/* La Fase 0.5 (hallazgo G1) saco los datos de cobro de
+                                            demostracion del checkout del inquilino, pero este se
+                                            quedo con Banesco / J-501234567 / 0412-9998877
+                                            incrustados: el comprador transferia a una cuenta que
+                                            no era de nadie. Ahora salen de `central_settings`, y
+                                            si no estan configurados no se muestra el panel. */}
+                                        {pagoMovil ? (
+                                            <div className="grid grid-cols-2 gap-2 p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 font-mono text-[11px]">
+                                                <div><strong>Banco:</strong> {pagoMovil.bank_name}</div>
+                                                <div><strong>C.I./RIF:</strong> {pagoMovil.document_id}</div>
+                                                <div><strong>Teléfono:</strong> {pagoMovil.phone}</div>
+                                                <div><strong>Monto:</strong> {totalBs !== null ? `Bs. ${totalBs}` : 'calculando…'}</div>
+                                            </div>
+                                        ) : (
+                                            <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300">
+                                                Este método de pago no está disponible ahora mismo. Elige otro o vuelve a
+                                                intentarlo más tarde.
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -572,7 +622,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                     </span>
                                     <CurrencyPriceDisplay
                                         priceUsd={subtotal}
-                                        exchangeRate={bcvRate}
+                                        exchangeRate={bcvRate ?? undefined}
                                         size="lg"
                                         showVes={true}
                                         showUsdt={true}
@@ -583,7 +633,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
                             <button
                                 type="submit"
-                                disabled={submitting}
+                                disabled={submitting || bcvRate === null}
                                 className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-black text-sm shadow-lg shadow-blue-500/20 disabled:opacity-50 transition flex items-center justify-center gap-2"
                             >
                                 {submitting ? (
