@@ -2,7 +2,11 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 28 de 50 hallazgos cerrados (~56%). Fases 0, 1 y 2 completas, Fase 3 empezada.**
+> **Avance: 29 de 50 hallazgos cerrados (~58%) · 4 parciales · 17 abiertos.**
+>
+> Fases 0, 1 y 2 completas. Fase 3 empezada.
+> **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
+> secciones de «menores», que hasta ahora no llevaban marca.
 >
 > **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
 > Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
@@ -31,7 +35,7 @@
 > | **C. Concurrencia** | C1 C2 C3 C4 C6 | — | C5 |
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
-> | **F. Infraestructura** | F1 F2 F6 | F4 | F3 F5 |
+> | **F. Infraestructura** | F1 F2 F4 F6 | — | F3 F5 |
 > | **G. Frontend** | G1 G2 G3 | G8 G13 | los otros 10 |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
@@ -48,7 +52,7 @@
 > | 0.3-A | A4, A9 (parcial) | `PLAN_FASE0_3A_PROTEGER_BACKOFFICE_Y_MONETIZACION.md` |
 > | 0.3-B | A2 | `PLAN_FASE0_3B_PROTEGER_APIS_TENANT_OWNER.md` |
 > | 0.3-C | A6 | `PLAN_FASE0_3C_PROTEGER_MESA_DE_SOPORTE.md` |
-> | 0.3-D | A3, F4 (parcial) | `PLAN_FASE0_3D_PROTEGER_API_CLIENTES_CENTRALES.md` |
+> | 0.3-D | A3, F4 | `PLAN_FASE0_3D_PROTEGER_API_CLIENTES_CENTRALES.md` |
 > | 0.3-E | A5 | `PLAN_FASE0_3E_PROTEGER_API_TENANT.md` |
 > | 0.4 | B1, B2, C1 (parcial) | `PLAN_FASE0_4_PRECIOS_Y_RESENAS_SERVER_SIDE.md` |
 > | 0.5 | G1, G8 (parcial) | `PLAN_FASE0_5_DATOS_BANCARIOS_Y_BYPASS_CHECKOUT.md` |
@@ -77,31 +81,30 @@
 > | **P1** | **Comando `admin:create-super`** para crear el primer superadmin por consola | La Fase 2.1 vetó `RootUserSeeder` fuera de desarrollo, así que **una instalación nueva no tiene ningún camino para crear el superadmin inicial**. No rompe los despliegues existentes, que ya tienen el suyo. Debe pedir nombre, email y contraseña de forma interactiva, validarla con `PasswordValidator` y negarse a sobrescribir un usuario existente | ⬜ Abierto |
 > | **P2** | **`domains.id` es UUID pero el modelo lo declara `int`** | Ver N23: `$domain->id` devuelve **siempre `0`**, y con ~6% de los UUID revienta la petición entera | ⬜ Abierto |
 >
-> ### ⚠️ Deuda operativa pendiente de revisar antes de desplegar
+> ### ⚠️ Deuda operativa sobre datos (no sobre código)
 >
-> Cada plan tiene su sección «Riesgo», pero estas cuatro requieren acción sobre
-> datos existentes, no sobre código:
+> **Decisión del 21/08/2026: el proyecto está en desarrollo y la base se reinicia desde
+> cero** (`migrate:fresh --seed` en la central, más borrar y recrear las bases de tenant).
+> Eso resuelve de golpe casi toda la deuda que habían dejado las fases:
 >
-> - **Fase 0.5:** ninguna tienda tiene datos de cobro configurados (el grupo de
->   settings `payment` no existía), así que **se quedarán sin métodos de pago**
->   hasta que se carguen.
-> - **Fase 1.2:** las comisiones de pedidos cancelados *antes* del cambio siguen
->   vivas en `pending` y se cobrarán en la próxima liquidación.
-> - **Fase 1.3:** puede haber stock negativo heredado de los pedidos que se
->   aceptaban sin existencias.
-> - **Fase 1.1:** los pedidos ya despachados no tienen fila en
->   `central_order_dispatches`; relanzar el despacho de uno antiguo lo duplicaría.
-> - **Fase 1.4:** `/api/exchange-rate/convert` ahora devuelve 404 en lugar de convertir
->   con tasa 1.0, así que **tiene que haber una tasa activa en `exchange_rates` antes de
->   desplegar**. Comprobarlo con la consulta de la sección «Riesgo» de su plan.
-> - **Fase 2.1:** la migración correctiva de `sessions` hay que correrla en **las dos
->   rutas** (`migrate` y `tenants:migrate`); si se olvida la segunda, las tiendas
->   existentes siguen con el esquema que rompe el login.
-> - **Fase 2.2:** el catálogo central existente **sigue desincronizado y no se arregla
->   solo**: los productos sólo se re-sincronizan al volver a guardarse. Hay que forzar una
->   pasada por tienda tras desplegar, o los precios viejos seguirán cobrándose. Y el
->   índice único `(tenant_id, slug)` puede fallar si ya hay slugs repetidos dentro de una
->   tienda: comprobarlo antes con la consulta del plan.
+> | Fase | Deuda | Estado |
+> | :--- | :--- | :--- |
+> | 0.5 | Ninguna tienda tenía datos de cobro, así que el checkout no ofrecía ningún método de pago | ✅ Resuelto — `TenantDemoDataSeeder` siembra ahora el grupo `payment`, con un test que guarda contra la deriva entre sus claves y las que lee `StorefrontPaymentMethodsProvider` |
+> | 1.1 | Pedidos despachados sin fila en `central_order_dispatches`; relanzarlos los duplicaría | ✅ No aplica con la base reiniciada |
+> | 1.2 | Comisiones de pedidos cancelados antes del cambio, vivas en `pending` | ✅ No aplica con la base reiniciada |
+> | 1.3 | Stock negativo heredado de los pedidos aceptados sin existencias | ✅ No aplica con la base reiniciada |
+> | 2.1 | La migración correctiva de `sessions` había que correrla en las dos rutas | ✅ No aplica: las migraciones originales ya nacen corregidas |
+> | 2.2 | Catálogo central desincronizado; índice único `(tenant_id, slug)` chocando con datos viejos | ✅ No aplica con la base reiniciada |
+> | 3.1 | `used_count` inflado por el incremento fuera de transacción | ✅ No aplica con la base reiniciada |
+>
+> **Lo único que sigue siendo requisito, también en una base nueva:**
+>
+> - **Fase 1.4:** tiene que haber una **tasa activa** en `exchange_rates`, o
+>   `/api/exchange-rate/convert` devuelve 404. La siembra `ExchangeRateSeeder`, que desde
+>   la Fase 2.1 vive en `ProductionSeeder` — es decir, se carga también fuera de desarrollo.
+>
+> **Todo lo de arriba vuelve a aplicar el día que haya datos reales que preservar.** Cada
+> plan conserva su sección «Riesgo» con las consultas de comprobación.
 >
 > ### 🧠 Contexto útil que no está en el texto original
 >
@@ -615,11 +618,14 @@ Cada filtro geográfico solo se aplica si el parámetro no es null, y el caso de
 ---
 
 ### Menores de dinero
-- **`commission_amount` por ítem no cuadra con la comisión registrada** (`DispatchCentralOrderToTenantsUseCase.php:172-176`): la comisión oficial se redondea una vez sobre el total y luego se recalcula ítem a ítem. Tres ítems de $3,33 al 8% dan $0,81 por ítems vs $0,80 en la `PlatformCommission`.
-- **`PlatformCommission.order_id` guarda el ID del pedido del *tenant*, pero las relaciones Eloquent lo declaran contra `central_orders`** (`PlatformCommission.php:61-64`): `$centralOrder->commissions` devuelve **siempre** una colección vacía.
-- **El valor medio de pedido divide ventas netas entre pedidos totales** (`EloquentOrderRepository.php:174-183`): con 50% de cancelaciones, el KPI queda a la mitad.
-- **Importes de valor 0 se convierten en `null` al leer la factura** (`EloquentInvoiceRepository.php:241-247`): `$model->commission_amount ? (float) ... : null` — `0.00` es falsy, así que una venta exenta pierde la diferencia entre "sin comisión" y "comisión cero".
-- **Fechas de cupones y tasas evaluadas en UTC** (`config/app.php:68` es `'UTC'`, `Coupon.php:198-201` usa `date('Y-m-d')`): un cupón con `valid_to = 2026-08-21` deja de funcionar a las **20:00 hora de Caracas**, cuatro horas antes de lo prometido.
+
+> Estos cinco no llevaban marca de estado. Revisados contra el código el 21/08/2026.
+
+- ✅ **CERRADO (Fase 1.1)** — **`commission_amount` por ítem no cuadra con la comisión registrada** (`DispatchCentralOrderToTenantsUseCase.php:172-176`): la comisión oficial se redondeaba una vez sobre el total y luego se recalculaba ítem a ítem. Tres ítems de $3,33 al 8% daban $0,81 por ítems vs $0,80 en la `PlatformCommission`. Lo cerró `spreadCommissionAcrossItems()`, que reparte el importe exacto de la comisión con el mismo prorrateador del envío y el descuento.
+- ⬜ **ABIERTO** — **`PlatformCommission.order_id` guarda el ID del pedido del *tenant*, pero las relaciones Eloquent lo declaran contra `central_orders`** (`PlatformCommission.php:61-64`): `$centralOrder->commissions` devuelve **siempre** una colección vacía.
+- ⬜ **ABIERTO** — **El valor medio de pedido divide ventas netas entre pedidos totales** (`EloquentOrderRepository.php:174-183`): con 50% de cancelaciones, el KPI queda a la mitad.
+- ⬜ **ABIERTO** — **Importes de valor 0 se convierten en `null` al leer la factura** (`EloquentInvoiceRepository.php:241-247`): `$model->commission_amount ? (float) ... : null` — `0.00` es falsy, así que una venta exenta pierde la diferencia entre "sin comisión" y "comisión cero".
+- ⬜ **ABIERTO** — **Fechas de cupones y tasas evaluadas en UTC** (`config/app.php:68` es `'UTC'`, `Coupon.php:198-201` usa `date('Y-m-d')`): un cupón con `valid_to = 2026-08-21` deja de funcionar a las **20:00 hora de Caracas**, cuatro horas antes de lo prometido.
 
 ---
 
@@ -764,7 +770,7 @@ Comodín para todos los subdominios y un único nombre de cookie para toda la ap
 
 ### F4. 🟠 Guard `central_customer` usado en el código pero inexistente en `config/auth.php`
 
-> **Estado:** 🟡 PARCIAL (Fase 0.3-D: guard central_customer creado y en uso; revisar si queda algún otro guard inexistente)
+> **Estado:** ✅ CERRADO (Fase 0.3-D) — verificado el 21/08/2026: `central_customer` es el **único** guard con nombre que usa el código (`auth('...')`), y está definido en `config/auth.php:57`. No queda ningún otro guard inexistente.
 
 `config/auth.php:40-52` solo define `web` y `central`. Pero `ListSupportTicketsGETController.php:23` llama a `auth('central_customer')->id()`.
 
@@ -793,10 +799,13 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 **Arreglo:** `if (! app()->environment(['local','testing'])) { return; }` al inicio de `run()`, y separar un `ProductionSeeder` con solo los datos maestros.
 
 ### Menores de infraestructura
-- **`AppServiceProvider::boot():31-37`** intenta usar `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. El `forceRootUrl` nunca se aplica: todas las URLs absolutas en dominios de tenant (correos, redirecciones) usan el `APP_URL` central. Mover a un listener de `TenancyBootstrapped`.
-- **Colisiones de nombres de ruta** por el doble registro de `SupportTicket/.../web.php` (`routes/web.php:19` y `:26`) y de Admin (A1). Laravel no avisa: gana el último. `route('central.customer.support')` devuelve `/tenant/account/support`.
-- **`type`, `is_active` e `id` en `$fillable` de `User`** (`src/User/.../User.php:43-50`), con un endpoint público de alta de cuenta en `src/Tenant/.../web.php:44`. Cualquier `User::create($request->all())` permite enviar `type=super_admin`.
-- **Dos "conexiones centrales" contradictorias**: `config/tenancy.php:44` define `'central_connection' => env('DB_CONNECTION', 'central')` (toma el *driver*, no la conexión `central`), mientras `Tenant.php:105` hardcodea `'central'` y `CentralCustomer.php:179` lee el config. Con `.env.example` apuntando a bases distintas (`laravel` vs `db`), unos modelos leen de una BD y otros de otra.
+
+> Los cuatro siguen abiertos. Revisados contra el código el 21/08/2026.
+
+- ⬜ **ABIERTO** — **`AppServiceProvider::boot():31-37`** intenta usar `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. El `forceRootUrl` nunca se aplica: todas las URLs absolutas en dominios de tenant (correos, redirecciones) usan el `APP_URL` central. Mover a un listener de `TenancyBootstrapped`.
+- ⬜ **ABIERTO** — **Colisiones de nombres de ruta** por el doble registro de `SupportTicket/.../web.php` (`routes/web.php:19` y `:26`) y de Admin (A1). Laravel no avisa: gana el último. `route('central.customer.support')` devuelve `/tenant/account/support`.
+- ⬜ **ABIERTO** — **`type`, `is_active` e `id` en `$fillable` de `User`** (`src/User/.../User.php:43-50`), con un endpoint público de alta de cuenta en `src/Tenant/.../web.php:44`. Cualquier `User::create($request->all())` permite enviar `type=super_admin`.
+- ⬜ **ABIERTO** — **Dos "conexiones centrales" contradictorias**: `config/tenancy.php:44` define `'central_connection' => env('DB_CONNECTION', 'central')` (toma el *driver*, no la conexión `central`), mientras `Tenant.php:105` hardcodea `'central'` y `CentralCustomer.php:179` lee el config. Con `.env.example` apuntando a bases distintas (`laravel` vs `db`), unos modelos leen de una BD y otros de otra.
 
 ---
 
