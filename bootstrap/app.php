@@ -56,6 +56,32 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
 
+        /*
+        |----------------------------------------------------------------------
+        | CSRF: excepcion para la comunicacion interna entre servicios
+        |----------------------------------------------------------------------
+        |
+        | La Fase 0.3-E movio `/api-tenant/*` del grupo 'api' al 'web' para que
+        | hubiera sesion y 'auth' pudiera resolver identidad (hallazgo A5). Con
+        | ello entro tambien `VerifyCsrfToken`, y las rutas `interna/*` —que son
+        | llamadas servidor-a-servidor, sin navegador ni sesion— empezaron a
+        | responder 419.
+        |
+        | Consecuencia real: **el login del dominio de tienda dejo de funcionar**,
+        | porque `LoginWebTenantPOSTController` consulta al usuario por email a
+        | traves de `/api-tenant/user/interna/consulta-usuario-por-email`.
+        |
+        | Exceptuarlas es correcto: CSRF protege peticiones autenticadas por
+        | cookie de sesion, y estas se autentican con el secreto compartido que
+        | valida `InternalServiceMiddleware`. El equivalente central nunca fallo
+        | porque `routes/api.php` sigue en el grupo 'api', que no lleva CSRF.
+        |
+        | El patron es deliberadamente estrecho: solo el segmento `interna`.
+        */
+        $middleware->validateCsrfTokens(except: [
+            'api-tenant/*/interna/*',
+        ]);
+
         // Hallazgo F3: tiene que correr ANTES de `StartSession`, que es quien lee la
         // cookie. Por eso se antepone a toda la pila en vez de anadirse al grupo `web`.
         $middleware->prepend(ScopeSessionCookieToHost::class);
