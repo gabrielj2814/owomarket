@@ -54,7 +54,53 @@ export interface CreateStorefrontOrderResponse {
     redirect_url: string;
 }
 
+export interface RevalidatedCartLine {
+    product_id: string;
+    variant_id: string | null;
+    available: boolean;
+    reason: string | null;
+    name?: string;
+    sku?: string;
+    price?: number;
+    quantity?: number;
+    available_stock?: number | null;
+    price_changed?: boolean;
+    previous_price?: number | null;
+    quantity_reduced?: boolean;
+}
+
+export interface RevalidateCartResponse {
+    lines: RevalidatedCartLine[];
+    has_changes: boolean;
+}
+
 const StorefrontServices = {
+    /**
+     * Hallazgo G4: contrasta el carrito guardado en el navegador con lo que dice la base
+     * de la tienda. El precio y el stock se congelaban el dia en que el comprador anadio
+     * cada producto y no se revalidaban nunca.
+     */
+    revalidateCart: async (
+        items: Array<{ product_id: string; variant_id?: string | null; quantity: number; price?: number }>
+    ): Promise<Data<RevalidateCartResponse>> => {
+        try {
+            const response = await axiosStorefront.post<Data<RevalidateCartResponse>>(
+                '/cart/revalidate',
+                { items }
+            );
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'No se pudo comprobar el carrito',
+                    data: null as any,
+                }
+            );
+        }
+    },
+
     createOrder: async (
         payload: CreateStorefrontOrderPayload
     ): Promise<Data<CreateStorefrontOrderResponse>> => {

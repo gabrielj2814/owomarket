@@ -69,7 +69,20 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
             ? product.images[0].image_path
             : null);
 
+    /**
+     * Hallazgo G6: el tope del selector era `Math.min(product.quantity || 99, ...)`. Con
+     * `quantity: 0` el `||` convertia el tope en **99**, asi que el marketplace central
+     * dejaba anadir 99 unidades de un producto agotado. Ni el boton ni `handleAddToCart`
+     * comprobaban el stock. La ficha del storefront de tienda si lo hacia: era una
+     * regresion de la pagina nueva.
+     */
+    const availableStock = Number.isFinite(Number(product.quantity)) ? Number(product.quantity) : 0;
+    const isOutOfStock = availableStock <= 0;
+    const maxQuantity = Math.max(1, availableStock);
+
     const handleAddToCart = () => {
+        if (isOutOfStock) return;
+
         addItem({
             tenant_id: product.tenant_id,
             tenant_name: store?.name || product.tenant_name || 'Tienda Asociada',
@@ -86,6 +99,8 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
     };
 
     const handleBuyNow = () => {
+        if (isOutOfStock) return;
+
         handleAddToCart();
         window.location.href = '/checkout';
     };
@@ -209,9 +224,15 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                 />
                             </div>
                             <div className="text-right">
-                                <span className="text-xs text-green-600 dark:text-green-400 font-bold block">
-                                    ✓ Stock Disponible: {product.quantity}
-                                </span>
+                                {isOutOfStock ? (
+                                    <span className="text-xs text-red-600 dark:text-red-400 font-bold block">
+                                        Agotado
+                                    </span>
+                                ) : (
+                                    <span className="text-xs text-green-600 dark:text-green-400 font-bold block">
+                                        ✓ Stock Disponible: {availableStock}
+                                    </span>
+                                )}
                                 <span className="text-[11px] text-gray-400">Entrega en todo el país</span>
                             </div>
                         </div>
@@ -236,7 +257,8 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                     <button
                                         type="button"
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                        className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-l-xl"
+                                        disabled={quantity <= 1 || isOutOfStock}
+                                        className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-l-xl disabled:opacity-40 disabled:cursor-not-allowed"
                                     >
                                         -
                                     </button>
@@ -245,8 +267,9 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                     </span>
                                     <button
                                         type="button"
-                                        onClick={() => setQuantity(Math.min(product.quantity || 99, quantity + 1))}
-                                        className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-r-xl"
+                                        onClick={() => setQuantity(Math.min(maxQuantity, quantity + 1))}
+                                        disabled={quantity >= maxQuantity || isOutOfStock}
+                                        className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-r-xl disabled:opacity-40 disabled:cursor-not-allowed"
                                     >
                                         +
                                     </button>
@@ -257,7 +280,8 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                 <button
                                     type="button"
                                     onClick={handleAddToCart}
-                                    className="w-full py-3.5 px-6 rounded-2xl border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-bold flex items-center justify-center gap-2 transition"
+                                    disabled={isOutOfStock}
+                                    className="w-full py-3.5 px-6 rounded-2xl border-2 border-blue-600 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-sm font-bold flex items-center justify-center gap-2 transition disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     <HiOutlineShoppingBag className="w-5 h-5" />
                                     Añadir al Carrito
@@ -265,7 +289,8 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                 <button
                                     type="button"
                                     onClick={handleBuyNow}
-                                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-bold shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2"
+                                    disabled={isOutOfStock}
+                                    className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-bold shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
                                 >
                                     Comprar Ahora
                                 </button>

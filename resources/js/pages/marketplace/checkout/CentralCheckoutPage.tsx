@@ -166,9 +166,18 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
         const res = await CentralMarketplaceServices.createUnifiedOrder(payload);
 
-        if (res.status === 'success' && res.data) {
+        // Hallazgo G11: se navegaba a `res.data.redirect_url` sin comprobar que existiera,
+        // con el carrito ya vaciado. Si faltaba, el comprador acababa en `/undefined` sin
+        // carrito y sin numero de pedido.
+        if (res.status === 'success' && res.data?.redirect_url) {
             clearCart();
             window.location.href = res.data.redirect_url;
+        } else if (res.status === 'success') {
+            clearCart();
+            setErrorMsg(
+                'Tu pedido se registro correctamente, pero no pudimos abrir la pagina de confirmacion. NO vuelvas a pagar: revisa tus pedidos en tu cuenta.'
+            );
+            setSubmitting(false);
         } else {
             setErrorMsg(res.message || 'Error al procesar la orden unificada');
             setSubmitting(false);

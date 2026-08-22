@@ -1,5 +1,13 @@
 import { AppliedCoupon, CartItem } from '@/types/models/Cart';
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import {
+    isStoredCartItem,
+    isStoredCoupon,
+    readStoredArray,
+    readStoredObject,
+    versionedCartKey,
+} from '@/utils/cartStorage';
+import StorefrontServices, { RevalidatedCartLine } from '@/Services/StorefrontServices';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 interface CartContextType {
     items: CartItem[];
@@ -20,6 +28,11 @@ interface CartContextType {
     closeDrawer: () => void;
     toggleDrawer: () => void;
     formatPrice: (amount: number) => string;
+    /** Hallazgo G4: contrasta el carrito con el servidor y lo corrige. */
+    revalidate: () => Promise<void>;
+    /** Cambios detectados en la ultima revalidacion, para avisar al comprador. */
+    revalidationNotices: string[];
+    dismissRevalidationNotices: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -31,29 +44,23 @@ interface CartProviderProps {
 }
 
 export const CartProvider: React.FC<CartProviderProps> = ({ children, currency = 'USD', domain = 'default' }) => {
-    const storageKey = useMemo(() => `owomarket_cart_${domain.replace(/[^a-zA-Z0-9_-]/g, '_')}`, [domain]);
+    // Hallazgo G12: la clave va versionada para que un carrito de una forma anterior se
+    // descarte limpiamente en vez de intentar interpretarse.
+    const storageKey = useMemo(
+        () => versionedCartKey(`owomarket_cart_${domain.replace(/[^a-zA-Z0-9_-]/g, '_')}`),
+        [domain]
+    );
 
-    const [items, setItems] = useState<CartItem[]>(() => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const saved = localStorage.getItem(storageKey);
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
-    });
+    const [items, setItems] = useState<CartItem[]>(() =>
+        readStoredArray<CartItem>(storageKey, isStoredCartItem)
+    );
 
-    const [coupon, setCoupon] = useState<AppliedCoupon | null>(() => {
-        if (typeof window === 'undefined') return null;
-        try {
-            const savedCoupon = localStorage.getItem(`${storageKey}_coupon`);
-            return savedCoupon ? JSON.parse(savedCoupon) : null;
-        } catch {
-            return null;
-        }
-    });
+    const [coupon, setCoupon] = useState<AppliedCoupon | null>(() =>
+        readStoredObject<AppliedCoupon>(`${storageKey}_coupon`, isStoredCoupon)
+    );
 
     const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+    const [revalidationNotices, setRevalidationNotices] = useState<string[]>([]);
 
     // Persist items to localStorage
     useEffect(() => {
@@ -141,6 +148,73 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, currency =
         setCoupon(null);
     };
 
+    /**
+     * Hallazgo G4: el carrito vivia en `localStorage` con el precio y el stock congelados
+     * el dia en que se anadio cada producto, y nadie los revalidaba. El comprador llegaba
+     * al checkout con un total que no era el que se le iba a cobrar, porque desde la Fase
+     * 0.4 el servidor resuelve los precios por su cuenta e ignora los del navegador.
+     *
+     * Se corrige el carrito con lo que dice la tienda y se avisa de cada cambio: cambiar
+     * el precio por debajo sin decir nada seria tan malo como no corregirlo.
+     */
+    const revalidate = useCallback(async () => {
+        if (items.length === 0) return;
+
+        const res = await StorefrontServices.revalidateCart(
+            items.map((item) => ({
+                product_id: item.productId,
+                variant_id: item.variantId ?? null,
+                quantity: item.quantity,
+                price: item.price,
+            }))
+        );
+
+        if (res.code !== 200 || !res.data) return;
+
+        const avisos: string[] = [];
+        const porClave = new Map<string, RevalidatedCartLine>(
+            res.data.lines.map((line) => [`${line.product_id}_${line.variant_id ?? ''}`, line] as const)
+        );
+
+        setItems((prev) =>
+            prev.flatMap((item) => {
+                const line = porClave.get(`${item.productId}_${item.variantId ?? ''}`);
+                if (!line) return [item];
+
+                if (!line.available) {
+                    avisos.push(line.reason ?? `«${item.name}» ya no esta disponible y se ha quitado del carrito.`);
+                    return [];
+                }
+
+                if (line.price_changed && typeof line.price === 'number') {
+                    const subio = line.price > item.price;
+                    avisos.push(
+                        `El precio de «${item.name}» ${subio ? 'subio' : 'bajo'} de ${formatPrice(item.price)} a ${formatPrice(line.price)}.`
+                    );
+                }
+
+                if (line.quantity_reduced && typeof line.quantity === 'number') {
+                    avisos.push(
+                        `Solo quedan ${line.quantity} unidades de «${item.name}»; se ajusto la cantidad.`
+                    );
+                }
+
+                return [
+                    {
+                        ...item,
+                        price: typeof line.price === 'number' ? line.price : item.price,
+                        quantity: typeof line.quantity === 'number' ? line.quantity : item.quantity,
+                        maxStock: line.available_stock ?? item.maxStock,
+                    },
+                ];
+            })
+        );
+
+        setRevalidationNotices(avisos);
+    }, [items]);
+
+    const dismissRevalidationNotices = () => setRevalidationNotices([]);
+
     const openDrawer = () => setIsDrawerOpen(true);
     const closeDrawer = () => setIsDrawerOpen(false);
     const toggleDrawer = () => setIsDrawerOpen((prev) => !prev);
@@ -216,6 +290,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children, currency =
         closeDrawer,
         toggleDrawer,
         formatPrice,
+        revalidate,
+        revalidationNotices,
+        dismissRevalidationNotices,
     };
 
     return <CartContext.Provider value={contextValue}>{children}</CartContext.Provider>;

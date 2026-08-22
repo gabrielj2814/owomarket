@@ -1,3 +1,8 @@
+import {
+    isStoredCentralCartItem,
+    readStoredArray,
+    versionedCartKey,
+} from '@/utils/cartStorage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface CentralCartItem {
@@ -40,18 +45,13 @@ interface CentralCartContextType {
 
 const CentralCartContext = createContext<CentralCartContextType | undefined>(undefined);
 
-const STORAGE_KEY = 'owomarket_central_cart';
+// Hallazgo G12: clave versionada y lectura validada, igual que el carrito de tienda.
+const STORAGE_KEY = versionedCartKey('owomarket_central_cart');
 
 export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [items, setItems] = useState<CentralCartItem[]>(() => {
-        if (typeof window === 'undefined') return [];
-        try {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            return saved ? JSON.parse(saved) : [];
-        } catch {
-            return [];
-        }
-    });
+    const [items, setItems] = useState<CentralCartItem[]>(() =>
+        readStoredArray<CentralCartItem>(STORAGE_KEY, isStoredCentralCartItem)
+    );
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -73,9 +73,16 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
             );
 
             if (existingIndex > -1) {
-                const updated = [...prevItems];
-                updated[existingIndex].quantity += item.quantity;
-                return updated;
+                // Hallazgo G5: `updated[existingIndex].quantity += ...` mutaba el objeto
+                // del estado anterior, no una copia. Con React 19 en StrictMode el updater
+                // se invoca dos veces, asi que anadir 2 unidades dejaba 4 en el carrito. Y
+                // como la referencia del item no cambiaba, los hijos memoizados no se
+                // volvian a renderizar.
+                return prevItems.map((existing, index) =>
+                    index === existingIndex
+                        ? { ...existing, quantity: existing.quantity + item.quantity }
+                        : existing
+                );
             }
 
             const newItem: CentralCartItem = {

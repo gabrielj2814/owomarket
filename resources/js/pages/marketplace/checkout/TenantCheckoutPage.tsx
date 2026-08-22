@@ -224,9 +224,23 @@ function CheckoutPageContent({
         try {
             const res = await StorefrontServices.createOrder(payload);
 
-            if ((res.code === 201 || res.code === 200) && res.data?.redirect_url) {
+            const pedidoCreado = res.code === 201 || res.code === 200;
+
+            if (pedidoCreado && res.data?.redirect_url) {
                 clearCart();
                 window.location.href = res.data.redirect_url;
+            } else if (pedidoCreado) {
+                // Hallazgo G11: el pedido SI se creo, pero falta la URL de confirmacion.
+                // Antes se mostraba «Error al procesar la orden, intenta de nuevo» con la
+                // orden ya en la base: el cliente reintentaba y pagaba dos veces. Se vacia
+                // el carrito y se da el numero de pedido, sin invitar a repetir.
+                clearCart();
+                setErrorMessage(
+                    `Tu pedido ${res.data?.order_number ?? ''} se registro correctamente, pero no pudimos abrir la pagina de confirmacion. NO vuelvas a pagar: contacta con la tienda con ese numero.`.replace(
+                        /\s+/g,
+                        ' '
+                    )
+                );
             } else {
                 setErrorMessage(res.message || 'Error al procesar la orden. Por favor intenta de nuevo.');
             }

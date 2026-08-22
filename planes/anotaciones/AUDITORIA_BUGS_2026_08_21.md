@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 29 de 50 hallazgos cerrados (~58%) · 4 parciales · 17 abiertos.**
+> **Avance: 34 de 50 hallazgos cerrados (~68%) · 4 parciales · 12 abiertos.**
 >
 > Fases 0, 1 y 2 completas. Fase 3 empezada.
 > **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
@@ -36,7 +36,7 @@
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1 F2 F4 F6 | — | F3 F5 |
-> | **G. Frontend** | G1 G2 G3 | G8 G13 | los otros 10 |
+> | **G. Frontend** | G1 G2 G3 G4 G5 G6 G11 G12 | G8 G13 | G7 G9 G10 G14 G15 |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
 > alias») lo cerró la Fase 0.2, y era la **causa raíz de todo el bloque A**: no
@@ -63,11 +63,12 @@
 > | 2.1 | F1, F6 | `PLAN_FASE2_1_SESIONES_Y_SEEDERS_DE_PRODUCCION.md` |
 > | 2.2 | E1, E2, E3, E4 | `PLAN_FASE2_2_SINCRONIZACION_DEL_CATALOGO_CENTRAL.md` |
 > | 3.1 | G2, G3, B3, C6 | `PLAN_FASE3_1_FLUJO_DE_CUPONES.md` |
+> | 3.2 | G4, G5, G6, G11, G12 | `PLAN_FASE3_2_INTEGRIDAD_DEL_CARRITO.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Seguir con la Fase 3 (bloque G)** — quedan G4, G5, G6, G7, G9, G10, G11, G12,
->    G14 y G15, más rematar G8 y G13.
+> 1. **Terminar la Fase 3** — quedan G7, G9, G10, G14 y G15, más rematar G8 y G13.
+>    G7 y G10 van juntos: son la sesión SSO vista desde el dominio y desde el caché.
 > 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
 >    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
 > 3. **`domains.id` casteado a int** (P2/N23): `$domain->id` devuelve siempre `0` y
@@ -869,7 +870,7 @@ El backend devuelve `discount_amount`, se guarda en `AppliedCoupon.discountAmoun
 
 ### G4. 🟠 Precio y stock del carrito congelados en `localStorage` y enviados así al crear el pedido
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.2) — endpoint `POST /cart/revalidate` sobre el mismo resolver que usa el checkout, y el carrito se corrige avisando de cada cambio
 
 **Archivos:** `CartContext.tsx:40-48` → `TenantCheckoutPage.tsx:213-221`
 
@@ -886,7 +887,7 @@ No hay ninguna revalidación de precio ni de stock. Es el lado cliente de B1: ed
 
 ### G5. 🟠 `CentralCartContext.addItem` muta el estado previo
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.2) — `map` que devuelve un objeto nuevo en vez de mutar el del estado anterior
 
 **Archivo:** `resources/js/contexts/CentralCartContext.tsx:77`
 
@@ -901,7 +902,7 @@ updated[existingIndex].quantity += item.quantity;   // muta prevItems[i], no una
 
 ### G6. 🟠 En el marketplace central se pueden añadir productos agotados, hasta 99 unidades
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.2) — tope derivado del stock real, guardas en los botones y en las dos acciones de compra, y la etiqueta deja de decir «Stock Disponible: 0»
 
 **Archivo:** `resources/js/pages/marketplace/product/CentralProductDetailPage.tsx:252,259,266`
 
@@ -980,7 +981,7 @@ Si el tenant responde "no autenticado", `refreshSession` no hace nada: ni reinte
 
 ### G11. 🟡 Pedido creado y carrito vaciado con redirección no validada
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.2) — los dos checkouts distinguen «éxito sin URL» de «error», y en ese caso avisan de que **no se vuelva a pagar**
 
 **Archivos:** `CentralCheckoutPage.tsx:149-157`, `TenantCheckoutPage.tsx:227-232`
 
@@ -997,7 +998,7 @@ if (res.status === 'success' && res.data) {
 
 ### G12. 🟡 Lectura de `localStorage` sin validar
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.2) — `utils/cartStorage.ts` valida ítem a ítem después del parseo, y la clave va versionada
 
 **Archivos:** `CartContext.tsx:40-48`, `CentralCartContext.tsx:46-54`
 
@@ -1071,8 +1072,8 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ### Fase 3 — Frontend — 🟡 empezada
 13. 🟡 Cupones (G2, G3 — ✅ *Fase 3.1*, junto con B3 y C6 del backend), revalidación de
-    carrito (G4 — ⬜), `isCentralDomain` desde el servidor (G7 — ⬜), refresco de sesión
-    SSO (G10 — ⬜).
+    carrito (G4 — ✅ *Fase 3.2*, junto con G5, G6, G11 y G12), `isCentralDomain` desde el
+    servidor (G7 — ⬜), refresco de sesión SSO (G10 — ⬜).
 
 ---
 
@@ -1105,6 +1106,8 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ⬜ Abierto |
+| N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ⬜ Abierto |
+| N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ⬜ Abierto |
 | N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ⬜ Abierto |
 | N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ⬜ Abierto |
 | N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto |

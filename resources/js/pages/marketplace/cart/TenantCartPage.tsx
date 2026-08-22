@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import StorefrontLayout from '@/components/layouts/StorefrontLayout';
 import ProductCard from '@/components/ui/storefront/ProductCard';
 import { useCart } from '@/contexts/CartContext';
@@ -50,7 +50,20 @@ function CartPageContent({
         removeItem,
         clearCart,
         formatPrice,
+        revalidate,
+        revalidationNotices,
+        dismissRevalidationNotices,
     } = useCart();
+
+    // Hallazgo G4: el carrito llega del `localStorage` con el precio y el stock del dia en
+    // que se anadio cada producto. Se contrasta con la tienda al abrir la pagina, antes de
+    // que el comprador siga hacia el pago con un total que no es el que se le cobrara.
+    useEffect(() => {
+        void revalidate();
+        // Solo al montar: revalidar en cada cambio del carrito dispararia una peticion por
+        // cada clic en «+», y el ajuste de cantidad ya lo acota `maxStock`.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const [couponInput, setCouponInput] = useState<string>('');
     const [isApplyingCoupon, setIsApplyingCoupon] = useState<boolean>(false);
@@ -117,6 +130,19 @@ function CartPageContent({
                     <BreadcrumbItem href="/catalog">Catálogo</BreadcrumbItem>
                     <BreadcrumbItem>Carrito de Compras</BreadcrumbItem>
                 </Breadcrumb>
+
+                {revalidationNotices.length > 0 && (
+                    <Alert color="warning" onDismiss={dismissRevalidationNotices}>
+                        <div className="space-y-1">
+                            <p className="text-xs font-bold">Tu carrito ha cambiado desde la última vez:</p>
+                            <ul className="list-disc list-inside text-xs space-y-0.5">
+                                {revalidationNotices.map((aviso, i) => (
+                                    <li key={i}>{aviso}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </Alert>
+                )}
 
                 {/* Page Title & Counter */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b dark:border-gray-800 pb-4">
