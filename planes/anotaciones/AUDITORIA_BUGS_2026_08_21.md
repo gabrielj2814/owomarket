@@ -2,12 +2,17 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 22/08/2026
 >
-> **Hallazgos originales: 50 de 50 cerrados (100%).**
-> **Hallazgos nuevos (N1-N36): 29 cerrados · 1 parcial · 6 abiertos.**
+> **Hallazgos numerados originales: 50 de 50 cerrados (100%).**
+> **Hallazgos nuevos (N1-N40): 39 cerrados · 1 abierto.**
+> **Menores sin numerar de los bloques D y F: 8 abiertos.**
 >
-> **Los 50 hallazgos del documento original están cerrados.** Ninguno queda parcial ni
-> abierto. Todo el trabajo que sigue vivo son los hallazgos **nuevos**, los que fueron
-> apareciendo al implementar los arreglos; están al final del documento.
+> **Quedan 9 tareas abiertas en total, y están todas en la tabla de aquí abajo.**
+>
+> Corrección del 22/08 (noche): hasta ahora esta cabecera decía que «todo el trabajo que
+> sigue vivo son los hallazgos nuevos». No era cierto. Los ocho **menores** de los bloques
+> D y F nunca estuvieron en la tabla de hallazgos nuevos —viven como viñetas dentro de sus
+> bloques— así que no se contaban en ningún resumen y era fácil darlos por cerrados.
+> Verificados uno a uno contra el código el 22/08: los ocho siguen abiertos.
 >
 > Fases 0 a 6 completas.
 > **Estado revisado hallazgo por hallazgo contra el código**, incluidas las secciones de
@@ -19,9 +24,9 @@
 >
 > ### Cómo continuar en otra sesión
 >
-> 1. **El trabajo pendiente está en la tabla de «Hallazgos nuevos» del final**, no en los
->    bloques A-G: esos están todos cerrados. El resumen por frentes que precede a la tabla
->    dice qué queda y por qué importa.
+> 1. **El trabajo pendiente está en la tabla «Tareas abiertas» de aquí abajo.** Es la
+>    única lista completa: reúne el hallazgo nuevo que queda con los ocho menores de los
+>    bloques D y F, que no aparecen en ninguna otra tabla.
 > 2. **Los planes existen para las fases 0 a 4**, en `planes/implementados/PLAN_FASE*.md`,
 >    con su checklist marcado. **Las fases 5 y 6 no tienen plan**: fueron tandas de
 >    arreglos sueltos y lo que hicieron está en los mensajes de commit, que son detallados
@@ -164,6 +169,53 @@
 >   tests de concurrencia validan la lógica, no la ausencia de la carrera.
 >
 > ---
+
+## 🚧 Tareas abiertas
+
+> **Ésta es la lista completa.** Reúne lo que queda de la tabla de hallazgos nuevos con
+> los «menores» de los bloques D y F, que viven como viñetas dentro de sus bloques y por
+> eso no salían en ningún resumen.
+>
+> Verificadas una a una contra el código el 22/08/2026 — no contra las notas de cada fase.
+
+| # | Qué | Dónde | Por qué importa | Esfuerzo |
+| :--- | :--- | :--- | :--- | :--- |
+| **1** | **`PlatformCommission.order_id` guarda el id del pedido del *inquilino*, pero la relación Eloquent lo declara contra `central_orders`** | `PlatformCommission.php:61` | `$centralOrder->commissions` devuelve **siempre** una colección vacía. Cualquier pantalla o informe que quiera enseñar las comisiones de un pedido central verá cero sin dar error, que es la peor forma de equivocarse | Bajo |
+| **2** | **El valor medio de pedido divide ventas netas entre pedidos totales** | `EloquentOrderRepository.php:180` | El numerador excluye cancelados y reembolsados, el denominador no. Con un 50 % de cancelaciones el KPI sale a la mitad, y es un número que se mira para tomar decisiones | Bajo |
+| **3** | **Los importes de valor 0 se leen como `null` en la factura** | `EloquentInvoiceRepository.php:246` | `$model->commission_amount ? ... : null` — `0.00` es *falsy*. Una venta exenta pierde la diferencia entre «sin comisión» y «comisión cero». Afecta a cinco campos, no sólo a la comisión | Bajo |
+| **4** | **Las fechas de cupones y tasas se evalúan en UTC** | `config/app.php:68`, `Coupon.php:198` | Un cupón con `valid_to = 2026-08-21` deja de funcionar a las **20:00 hora de Caracas**, cuatro horas antes de lo prometido al cliente | Bajo |
+| **5** | **`forceRootUrl` nunca se aplica** | `AppServiceProvider.php:31` | Se apoya en `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. Las URLs absolutas en dominios de tienda —correos, redirecciones— salen con el `APP_URL` central. Hay que moverlo a un listener de `TenancyBootstrapped` | Medio |
+| **6** | **Colisiones de nombres de ruta** | `routes/web.php:19` y `:26` | `SupportTicket/web.php` se registra dos veces (raíz y bajo `/tenant`). Laravel no avisa: gana el último, así que `route('central.customer.support')` devuelve `/tenant/account/support` | Bajo |
+| **7** | **`type` e `is_active` en el `$fillable` de `User`** | `src/User/.../User.php:43` | Con un endpoint público de alta de cuenta, cualquier `User::create($request->all())` permite enviar `type=super_admin`. Hoy no hay ningún camino que lo haga, pero el día que alguien escriba ese `create()` no habrá nada que lo pare | Bajo |
+| **8** | **Dos «conexiones centrales» contradictorias** | `config/tenancy.php:47`, `Tenant.php:18`, `CentralCustomer.php:26` | `central_connection` toma `env('DB_CONNECTION')` —el *driver*, no la conexión `central`—, mientras `Tenant` la fija a mano y `CentralCustomer` lee el config. Si las dos apuntan a bases distintas, unos modelos leen de una y otros de otra | Medio |
+| **9** | **N40 — no hay `queue:work` en el despliegue** | `docker-compose.yml`, `k8s/` | Desde N17 y N25 la aplicación **necesita** un worker: sin él, un pedido cobrado no llega nunca a su tienda y el catálogo central no se sincroniza. Hay un apaño sobre el scheduler (`queue:work --stop-when-empty` cada minuto) que aguanta, con latencia de hasta un minuto | Corresponde al despliegue |
+
+### Cómo leer esta tabla
+
+Los ocho primeros son **menores de verdad**: ninguno rompe una compra ni expone datos, y
+por eso sobrevivieron a seis fases. Pero cuatro de ellos (1, 2, 3 y 4) dan **números
+equivocados sin fallar**, que es la clase de error que nadie encuentra mirando la pantalla.
+
+El 9 es el único que bloquea: no es un bug del código sino una pieza que falta en el
+despliegue, y hasta que exista, la red de seguridad del scheduler es lo que sostiene el
+despacho de pedidos.
+
+### Lo que queda por auditar
+
+No son tareas abiertas —son zonas que **nunca se revisaron**, así que no se sabe qué hay:
+
+- `resources/js/pages/admin/**` — seguridad, roles y staff, registro de auditoría, planes
+  de suscripción, banners, moderación de catálogo, categorías y marcas maestras, clientes,
+  pedidos globales, payouts, panel y tickets. Es el bloque que toca permisos y dinero.
+- `resources/js/pages/tenant/**` — panel del propietario, soporte, billetera, catálogo
+  central y facturación.
+- `tests/` — hecho para el frontend el 22/08: la suite E2E **no se ejecutaba en ningún
+  sitio** (sin `webServer` en la config, sin job en el CI, y el navegador de Playwright ni
+  instalado). Ahora arranca sola, falla ante cualquier excepción no capturada de la página
+  y cubre login de tienda y backoffice. **Queda hacer la misma pregunta a la suite de
+  Pest**: cuáles de estos bugs deberían haberse detectado ahí y no lo hicieron.
+
+---
 
 > **Fecha:** 21 de agosto de 2026
 > **Alcance:** `src/` (25 bounded contexts, ~1.083 archivos PHP), `routes/`, `app/`, `bootstrap/`, `config/`, `database/`, `resources/js/` (~218 archivos TSX/TS)
@@ -663,7 +715,12 @@ Cada filtro geográfico solo se aplica si el parámetro no es null, y el caso de
 
 ### Menores de dinero
 
-> Estos cinco no llevaban marca de estado. Revisados contra el código el 21/08/2026.
+> Estos cinco no llevaban marca de estado. Revisados contra el código el 21/08 y de nuevo
+> el 22/08.
+>
+> ⚠️ **Los cuatro que siguen abiertos son las tareas 1 a 4 de «Tareas abiertas»**, al
+> principio del documento. Vivían sólo aquí, como viñetas, así que no aparecían en ningún
+> resumen y era fácil darlos por cerrados.
 
 - ✅ **CERRADO (Fase 1.1)** — **`commission_amount` por ítem no cuadra con la comisión registrada** (`DispatchCentralOrderToTenantsUseCase.php:172-176`): la comisión oficial se redondeaba una vez sobre el total y luego se recalculaba ítem a ítem. Tres ítems de $3,33 al 8% daban $0,81 por ítems vs $0,80 en la `PlatformCommission`. Lo cerró `spreadCommissionAcrossItems()`, que reparte el importe exacto de la comisión con el mismo prorrateador del envío y el descuento.
 - ⬜ **ABIERTO** — **`PlatformCommission.order_id` guarda el ID del pedido del *tenant*, pero las relaciones Eloquent lo declaran contra `central_orders`** (`PlatformCommission.php:61-64`): `$centralOrder->commissions` devuelve **siempre** una colección vacía.
@@ -844,7 +901,9 @@ La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `dat
 
 ### Menores de infraestructura
 
-> Los cuatro siguen abiertos. Revisados contra el código el 21/08/2026.
+> Los cuatro siguen abiertos. Revisados contra el código el 21/08 y de nuevo el 22/08.
+>
+> ⚠️ **Son las tareas 5 a 8 de «Tareas abiertas»**, al principio del documento.
 
 - ⬜ **ABIERTO** — **`AppServiceProvider::boot():31-37`** intenta usar `tenancy()->initialized`, que en el arranque del framework es **siempre** `false`. El `forceRootUrl` nunca se aplica: todas las URLs absolutas en dominios de tenant (correos, redirecciones) usan el `APP_URL` central. Mover a un listener de `TenancyBootstrapped`.
 - ⬜ **ABIERTO** — **Colisiones de nombres de ruta** por el doble registro de `SupportTicket/.../web.php` (`routes/web.php:19` y `:26`) y de Admin (A1). Laravel no avisa: gana el último. `route('central.customer.support')` devuelve `/tenant/account/support`.
@@ -1139,12 +1198,13 @@ pendientes que se acumularon por el camino.
 No estaban en la auditoría original; se descubrieron al implementar los arreglos.
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
-**Estado al 22/08/2026 (noche): 38 cerrados · 1 abierto** (N40, el worker de colas, que corresponde al despliegue). Repasados uno a uno contra el código,
-no contra las notas de cada fase. **Lo que queda:**
+**Estado al 22/08/2026 (noche): 39 cerrados · 1 abierto (N40).** Repasados uno a uno contra
+el código, no contra las notas de cada fase.
 
-| # | Frente | Hallazgos | Qué falta |
-| :--- | :--- | :--- | :--- |
-| 1 | **Despliegue** | N40 | No hay `queue:work` en docker-compose ni k8s, y desde N17/N25 la aplicación lo necesita. Hay un apaño sobre el scheduler mientras tanto |
+De esta tabla sólo queda **N40**, el worker de colas del despliegue. Pero **no es la única
+tarea abierta del proyecto**: los ocho «menores» de los bloques D y F también siguen vivos
+y nunca estuvieron aquí. La lista completa está en **«Tareas abiertas»**, al principio del
+documento.
 
 | # | Hallazgo | Origen | Estado |
 | :--- | :--- | :--- | :--- |
@@ -1176,7 +1236,7 @@ no contra las notas de cada fase. **Lo que queda:**
 | N26 | El `metadata` de `central_products` se sobrescribía con el del producto de la tienda en cada sincronización, **borrando el historial de moderación y la comisión personalizada**. Pasaba desapercibido porque la sincronización casi nunca corría | Fase 2.2 | ✅ Cerrado |
 | N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ✅ Cerrado (Fase 5.2) — columna `coupon_code` indexada por `(coupon_code, customer_id)`, y el checkout pasa el cliente a la validación |
 | N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ✅ Cerrado (Fase 6.2) — **decisión: los cupones son de tienda.** Un código sólo descuenta las líneas de quien lo emitió, validado dentro de la tenancy y consumido en la transacción del despacho |
-| N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto — medido: **119 firmas en 16 servicios**. La Fase 3.1 sólo corrigió `CouponServices.validate`; `StorefrontServices` ya estaba bien | ✅ Cerrado (22/08) — **el hallazgo estaba mal descrito: no era mecánico.** La API tiene TRES sobres de paginación distintos, comprobados contra los endpoints reales, y la deuda de tipos los tapaba. Al tiparlos fieles aparecieron páginas rotas de verdad: el listado de clientes y el de pedidos no se llenaban nunca, y las acciones de dirección avisaban de error aunque funcionaran |
+| N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | Medido: **89 métodos en 12 servicios** (el «119 firmas» original contaba también los 4 que sí estaban bien). | ✅ Cerrado (22/08) — **el hallazgo estaba mal descrito: no era mecánico.** La API tiene TRES sobres de paginación distintos, comprobados contra los endpoints reales, y la deuda de tipos los tapaba. Al tiparlos fieles aparecieron páginas rotas de verdad: el listado de clientes y el de pedidos no se llenaban nunca, y las acciones de dirección avisaban de error aunque funcionaran |
 | N32 | **El checkout central tenía datos bancarios de demostración incrustados** (`Banesco (0134)`, `J-501234567`, `0412-9998877`). Es G1 otra vez: la Fase 0.5 lo arregló en el checkout del inquilino y el central se quedó con los suyos. En un pedido multi-tienda cobra la plataforma, así que el comprador transfería a una cuenta que no era de nadie | Fase 3.4 | ✅ Cerrado |
 | N33 | **No hay pantalla para configurar los datos de cobro de la plataforma.** `CentralPaymentMethodsProvider` lee `central_settings`, pero el superadmin no tiene dónde escribirlos: hoy sólo los pone un seeder. Es el equivalente central de lo que la Fase 0.5 construyó para las tiendas | Fase 3.4 | ✅ Cerrado (Fase 6.2) — pantalla bajo `super_admin`, que muestra los métodos que el comprador ve ahora mismo |
 | N34 | **El checkout central sigue sin envío ni impuestos:** el total mostrado es el subtotal puro, así que el importe que el comprador transfiere no coincidirá con el total real en cuanto se añada el envío | Fase 3.4 | ✅ Cerrado (Fase 6.2) — **decisión: cada tienda calcula lo suyo y el pedido central suma.** Endpoint `/checkout/quote` para que la pantalla no invente el total |
@@ -1264,6 +1324,6 @@ reconstruir sin adivinar.
 
 ## Pendiente de auditar
 
-- `resources/js/pages/admin/**` — las páginas más nuevas (seguridad, roles y staff, audit logs, planes de suscripción, banners CMS, moderación de catálogo, categorías y marcas maestras, clientes, pedidos globales, payouts, dashboard, tickets de soporte, tenant 360).
-- `resources/js/pages/tenant/**` — dashboard central del propietario, soporte, wallet, catálogo central, facturación.
-- `tests/` — ✅ hecho para el frontend el 22/08. La suite E2E **no se ejecutaba en ningún sitio**: `playwright.config.ts` no tenía `webServer`, el CI sólo corre Pest, y el navegador de Playwright ni estaba instalado. Ahora arranca sola, falla ante cualquier excepción no capturada de la página, y cubre login de tienda y backoffice. Queda por revisar la suite de Pest con la misma pregunta.
+> Movido al principio del documento, dentro de **«Tareas abiertas» → «Lo que queda por
+> auditar»**, para que esté junto al resto de lo que falta y no en dos sitios que se
+> contradicen con el tiempo.
