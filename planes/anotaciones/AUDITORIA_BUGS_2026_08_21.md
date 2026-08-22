@@ -1139,12 +1139,12 @@ pendientes que se acumularon por el camino.
 No estaban en la auditoría original; se descubrieron al implementar los arreglos.
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
-**Estado al 22/08/2026 (noche): 37 cerrados · 2 abiertos** (N36, límite conocido de variantes; N40, el worker de colas para el despliegue). Repasados uno a uno contra el código,
+**Estado al 22/08/2026 (noche): 38 cerrados · 1 abierto** (N40, el worker de colas, que corresponde al despliegue). Repasados uno a uno contra el código,
 no contra las notas de cada fase. **Lo que queda:**
 
 | # | Frente | Hallazgos | Qué falta |
 | :--- | :--- | :--- | :--- |
-| 1 | **Límite conocido** | N36 | El marketplace central no vende por variante; el día que lo haga hay que añadir la columna |
+| 1 | **Despliegue** | N40 | No hay `queue:work` en docker-compose ni k8s, y desde N17/N25 la aplicación lo necesita. Hay un apaño sobre el scheduler mientras tanto |
 
 | # | Hallazgo | Origen | Estado |
 | :--- | :--- | :--- | :--- |
@@ -1180,7 +1180,7 @@ no contra las notas de cada fase. **Lo que queda:**
 | N32 | **El checkout central tenía datos bancarios de demostración incrustados** (`Banesco (0134)`, `J-501234567`, `0412-9998877`). Es G1 otra vez: la Fase 0.5 lo arregló en el checkout del inquilino y el central se quedó con los suyos. En un pedido multi-tienda cobra la plataforma, así que el comprador transfería a una cuenta que no era de nadie | Fase 3.4 | ✅ Cerrado |
 | N33 | **No hay pantalla para configurar los datos de cobro de la plataforma.** `CentralPaymentMethodsProvider` lee `central_settings`, pero el superadmin no tiene dónde escribirlos: hoy sólo los pone un seeder. Es el equivalente central de lo que la Fase 0.5 construyó para las tiendas | Fase 3.4 | ✅ Cerrado (Fase 6.2) — pantalla bajo `super_admin`, que muestra los métodos que el comprador ve ahora mismo |
 | N34 | **El checkout central sigue sin envío ni impuestos:** el total mostrado es el subtotal puro, así que el importe que el comprador transfiere no coincidirá con el total real en cuanto se añada el envío | Fase 3.4 | ✅ Cerrado (Fase 6.2) — **decisión: cada tienda calcula lo suyo y el pedido central suma.** Endpoint `/checkout/quote` para que la pantalla no invente el total |
-| N36 | `central_order_items` **no guarda la variante**, así que el marketplace central no puede vender por variante y la reserva de stock de la Fase 6.1 descuenta del producto padre. Hoy no se vende por variante centralmente, pero el día que se haga hay que añadir la columna y pasarla al `StockReserver` | Fase 6.1 | ⬜ Abierto |
+| N36 | `central_order_items` **no guardaba la variante**, así que el marketplace central no podía vender por variante y la reserva de stock descontaba del producto padre | Fase 6.1 | ✅ Cerrado (22/08) — **no era sólo un límite: ya se podían publicar productos con variantes.** El comprador no podía elegir y el stock se descontaba de un número que nadie mantiene (comprobado en desarrollo: padre=45 con variantes 15/20/10). Casi todo estaba construido —el catálogo central ya sincronizaba las variantes y `StockReserver` ya las aceptaba—; faltaba la columna y usarlo. Un producto con variantes exige ahora elegir una |
 | N35 | Los 9 `.catch(() => {})` de `pages/customer` hacen que un error de red sea indistinguible de «no tienes pedidos». Cada sitio necesita su propio estado de error | Fase 3.4 | ✅ Cerrado (Fase 5.2) — `PortalLoadError`, aviso compartido con reintentar, en las nueve páginas |
 | N37 | **La API tenía SEIS sobres de paginación distintos** en el cable, más un séptimo muerto en `Shared\Collection\Pagination`, y cada página del backoffice estaba escrita contra el suyo. La deuda de tipos de N29 lo tapaba | Fase N29 (22/08) | ✅ Cerrado (22/08) — unificados en `{ data: [...], pagination: {...} }` vía `ApiResponse::paginated()`, que recibe los contadores como parámetros para que el formato no se pueda torcer sin cambiar la firma. Los controladores de Inertia quedan fuera: sus props son otro contrato |
 | N38 | **El listado de clientes del backoffice salía siempre vacío.** `$this->has('is_active')` es cierto aunque la clave valga null y `boolean(null)` da false, así que el criterio salía como `is_active = false`. El frontend manda siempre `is_active: null` para decir «sin filtro». El mismo fallo en `UpdateCustomerFormRequest` desactivaba al cliente al actualizarlo | Fase N29 (22/08) | ✅ Cerrado (22/08) |
