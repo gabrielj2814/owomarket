@@ -21,8 +21,12 @@ final class FilterInvoicesPOSTController extends Controller
         $criteria = $request->toCriteria();
         $result = $this->useCase->execute($criteria);
 
-        return ApiResponse::success(
-            data: $result->toArray(),
+        return ApiResponse::paginated(
+            data: $result->itemsToArray(),
+            total: $result->total,
+            currentPage: $result->currentPage,
+            perPage: $result->perPage,
+            lastPage: $result->lastPage,
             message: 'Facturas listadas exitosamente'
         );
     }

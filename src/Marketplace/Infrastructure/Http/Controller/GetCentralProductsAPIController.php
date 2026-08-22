@@ -94,13 +94,14 @@ final class GetCentralProductsAPIController
             ];
         });
 
-        return ApiResponse::success(
-            data: [
-                'products' => $products,
-                'total' => $paginator->total(),
-                'current_page' => $paginator->currentPage(),
-                'last_page' => $paginator->lastPage(),
-            ],
+        // Hallazgo N37: aqui la lista se llamaba `products` en vez de `data`, y los
+        // contadores viajaban mezclados con ella. Ahora usa el unico formato de la API.
+        return ApiResponse::paginated(
+            data: $products->all(),
+            total: $paginator->total(),
+            currentPage: $paginator->currentPage(),
+            perPage: $paginator->perPage(),
+            lastPage: $paginator->lastPage(),
             message: 'Productos del Marketplace Central consultados exitosamente'
         );
     }

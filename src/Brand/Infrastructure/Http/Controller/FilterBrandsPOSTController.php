@@ -35,18 +35,14 @@ final class FilterBrandsPOSTController
 
             $data = array_map(fn ($brand) => $brand->toArray(), $result->items);
 
-            $pagination = [
-                'total' => $result->total,
-                'current_page' => $result->currentPage,
-                'per_page' => $result->perPage,
-                'last_page' => $result->lastPage,
-            ];
-
-            return ApiResponse::Pagination(
+            return ApiResponse::paginated(
                 data: $data,
+                total: $result->total,
+                currentPage: $result->currentPage,
+                perPage: $result->perPage,
+                lastPage: $result->lastPage,
                 message: 'Marcas listadas exitosamente',
-                code: 200,
-                pagination: $pagination
+                code: 200
             );
         } catch (Exception $e) {
             return ApiResponse::error(

@@ -256,8 +256,8 @@ it('executes full product review moderation and rating lifecycle end-to-end', fu
         'has_response' => true,
     ]);
     $filterRes->assertStatus(200)
-        ->assertJsonCount(1, 'data.data')
-        ->assertJsonPath('data.data.0.id', $review2Id);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.id', $review2Id);
 
     // 9. Delete review 1
     $deleteRes = $this->deleteJson("http://{$this->domain}/api-tenant/review/{$review1Id}");

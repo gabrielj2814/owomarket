@@ -19,16 +19,14 @@ final class PaginatedInvoicesResult
         public readonly int $lastPage
     ) {}
 
-    public function toArray(): array
+    /**
+     * Sólo los elementos. Los contadores ya son propiedades públicas de este DTO, así que
+     * duplicarlos aquí dentro era lo que producía un sobre de paginación distinto por
+     * módulo (hallazgo N37). Quien responde es `ApiResponse::paginated()`, que es el único
+     * sitio donde vive el formato.
+     */
+    public function itemsToArray(): array
     {
-        return [
-            'data' => array_map(fn (Invoice $i) => $i->toArray(), $this->items),
-            'pagination' => [
-                'total' => $this->total,
-                'current_page' => $this->currentPage,
-                'per_page' => $this->perPage,
-                'last_page' => $this->lastPage,
-            ],
-        ];
+        return array_map(fn (Invoice $i) => $i->toArray(), $this->items);
     }
 }

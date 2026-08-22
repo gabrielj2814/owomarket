@@ -30,9 +30,12 @@ test.describe('Backoffice de la tienda', () => {
     | Esta es la pagina que estaba rota, no la de productos.
     |
     | `CustomerIndexPage` leia `res.data.data.data` sobre un servicio que ya devuelve el
-    | cuerpo. Como `/customer/filter` usa el sobre anidado, `res.data.data` existia —era el
-    | array— asi que la condicion pasaba, pero un nivel mas adentro no habia nada y la tabla
-    | se llenaba con `[]`. Las metricas ni eso.
+    | cuerpo. Con el sobre anidado que tenia entonces `/customer/filter`, `res.data.data`
+    | existia —era el array— asi que la condicion pasaba, pero un nivel mas adentro no
+    | habia nada y la tabla se llenaba con `[]`. Las metricas ni eso.
+    |
+    | N37 unifico despues los seis sobres en uno, asi que hoy `data` es directamente la
+    | lista; el test sigue valiendo porque comprueba lo que se ve en pantalla.
     |
     | La de productos ya era defensiva y funcionaba, por eso no sirve como regresion; se
     | conserva para cubrir el otro sobre de paginacion.
@@ -45,7 +48,8 @@ test.describe('Backoffice de la tienda', () => {
         await page.goto(`${tenantBaseURL}/customer/backoffice/${uuid}/module`);
 
         const cuerpo = await (await respuestaFiltro).json();
-        const clientes = cuerpo.data?.data ?? [];
+        // Desde N37 `data` es siempre la lista, en todos los listados de la API.
+        const clientes = cuerpo.data ?? [];
 
         expect(clientes.length, 'La tienda de pruebas no tiene clientes; siembra datos').toBeGreaterThan(0);
 

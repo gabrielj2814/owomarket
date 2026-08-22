@@ -65,10 +65,10 @@ export const resetSharedActiveRate = (): void => {
 export const convertCurrency = async (
     amount: number,
     from: 'USD' | 'VES' = 'USD',
-    to: 'USD' | 'VES' = 'VES'
+    to: 'USD' | 'VES' = 'VES',
 ): Promise<{ success: boolean; data: CurrencyConversionResult }> => {
     const response = await api.get<{ success: boolean; data: CurrencyConversionResult }>(
-        `/api/exchange-rate/convert?amount=${amount}&from=${from}&to=${to}`
+        `/api/exchange-rate/convert?amount=${amount}&from=${from}&to=${to}`,
     );
     return response.data;
 };
@@ -77,22 +77,15 @@ export const convertCurrency = async (
  * Dispara la sincronización inmediata de la cotización oficial del portal BCV.
  */
 export const syncBcvRate = async (): Promise<{ success: boolean; message: string; data: any }> => {
-    const response = await api.post<{ success: boolean; message: string; data: any }>(
-        '/admin/backoffice/exchange-rates/sync-bcv'
-    );
+    const response = await api.post<{ success: boolean; message: string; data: any }>('/admin/backoffice/exchange-rates/sync-bcv');
     return response.data;
 };
 
 /**
  * Registra una tasa de cambio manual de contingencia.
  */
-export const createManualRate = async (
-    payload: CreateManualRatePayload
-): Promise<{ success: boolean; message: string; data: any }> => {
-    const response = await api.post<{ success: boolean; message: string; data: any }>(
-        '/admin/backoffice/exchange-rates/manual',
-        payload
-    );
+export const createManualRate = async (payload: CreateManualRatePayload): Promise<{ success: boolean; message: string; data: any }> => {
+    const response = await api.post<{ success: boolean; message: string; data: any }>('/admin/backoffice/exchange-rates/manual', payload);
     return response.data;
 };
 
@@ -113,8 +106,6 @@ export const listRatesHistory = async (params: {
     if (params.date_from) query.append('date_from', params.date_from);
     if (params.date_to) query.append('date_to', params.date_to);
 
-    const response = await api.get<ExchangeRateHistoryResponse>(
-        `/admin/backoffice/exchange-rates/history?${query.toString()}`
-    );
+    const response = await api.get<ExchangeRateHistoryResponse>(`/admin/backoffice/exchange-rates/history?${query.toString()}`);
     return response.data;
 };

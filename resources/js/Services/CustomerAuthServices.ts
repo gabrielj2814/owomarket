@@ -114,7 +114,10 @@ export const CustomerAuthServices = {
     },
 
     // 3. Generar token SSO desde la Central
-    generateSsoToken: async (customerId: string, targetDomain?: string): Promise<Data<{ token: string; expires_at: string; target_domain?: string }>> => {
+    generateSsoToken: async (
+        customerId: string,
+        targetDomain?: string,
+    ): Promise<Data<{ token: string; expires_at: string; target_domain?: string }>> => {
         try {
             const res = await axiosCentral.post<Data<{ token: string; expires_at: string; target_domain?: string }>>('sso/generate-token', {
                 customer_id: customerId,

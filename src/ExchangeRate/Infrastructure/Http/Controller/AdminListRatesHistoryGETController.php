@@ -8,6 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\ExchangeRate\Application\UseCase\ListExchangeRatesHistoryUseCase;
 use Src\ExchangeRate\Domain\Entities\ExchangeRate;
+use Src\Shared\Helper\ApiResponse;
 
 final class AdminListRatesHistoryGETController
 {
@@ -46,15 +47,15 @@ final class AdminListRatesHistoryGETController
             ];
         }, $result['data']);
 
-        return response()->json([
-            'success' => true,
-            'data' => $mappedData,
-            'meta' => [
-                'total' => $result['total'],
-                'current_page' => $result['current_page'],
-                'per_page' => $result['per_page'],
-                'last_page' => $result['last_page'],
-            ],
-        ]);
+        // Hallazgo N37: esto ni siquiera usaba el sobre estandar —devolvia `success: true`
+        // en vez de `status` y `code`— asi que un consumidor generico no podia leerlo.
+        return ApiResponse::paginated(
+            data: $mappedData,
+            total: $result['total'],
+            currentPage: $result['current_page'],
+            perPage: $result['per_page'],
+            lastPage: $result['last_page'],
+            message: 'Historial de tasas consultado exitosamente'
+        );
     }
 }

@@ -259,7 +259,7 @@ it('POST /api-tenant/review/filter filters reviews with search and pagination', 
     ]);
 
     $filterRes->assertStatus(200)
-        ->assertJsonCount(1, 'data.data')
-        ->assertJsonPath('data.total', 1)
-        ->assertJsonPath('data.data.0.rating', 5);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('pagination.total', 1)
+        ->assertJsonPath('data.0.rating', 5);
 });

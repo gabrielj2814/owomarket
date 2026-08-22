@@ -141,14 +141,12 @@ const BillingIndexPage: FC<BillingIndexPageProps> = ({ user_id, title }) => {
                 sort_direction: 'desc',
             });
 
-            // `/billing/invoices/filter` usa el sobre anidado: `data` es un objeto con
-            // `data` y `pagination` dentro (hallazgo N29, sobre 2 de los tres que hay).
-            if (res.data && Array.isArray(res.data)) {
+            if (Array.isArray(res.data)) {
                 setInvoices(res.data);
-                if (res.data.pagination) {
-                    setCurrentPage(res.data.pagination.current_page);
-                    setTotalPages(res.data.pagination.last_page);
-                    setTotalItems(res.data.pagination.total);
+                if (res.pagination) {
+                    setCurrentPage(res.pagination.current_page);
+                    setTotalPages(res.pagination.last_page);
+                    setTotalItems(res.pagination.total);
                 }
             }
         } catch (error) {

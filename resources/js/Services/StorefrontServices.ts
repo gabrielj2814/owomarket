@@ -81,13 +81,10 @@ const StorefrontServices = {
      * cada producto y no se revalidaban nunca.
      */
     revalidateCart: async (
-        items: Array<{ product_id: string; variant_id?: string | null; quantity: number; price?: number }>
+        items: Array<{ product_id: string; variant_id?: string | null; quantity: number; price?: number }>,
     ): Promise<Data<RevalidateCartResponse>> => {
         try {
-            const response = await axiosStorefront.post<Data<RevalidateCartResponse>>(
-                '/cart/revalidate',
-                { items }
-            );
+            const response = await axiosStorefront.post<Data<RevalidateCartResponse>>('/cart/revalidate', { items });
             return response.data;
         } catch (error: any) {
             return (
@@ -101,14 +98,9 @@ const StorefrontServices = {
         }
     },
 
-    createOrder: async (
-        payload: CreateStorefrontOrderPayload
-    ): Promise<Data<CreateStorefrontOrderResponse>> => {
+    createOrder: async (payload: CreateStorefrontOrderPayload): Promise<Data<CreateStorefrontOrderResponse>> => {
         try {
-            const response = await axiosStorefront.post<Data<CreateStorefrontOrderResponse>>(
-                '/checkout/create-order',
-                payload
-            );
+            const response = await axiosStorefront.post<Data<CreateStorefrontOrderResponse>>('/checkout/create-order', payload);
             return response.data;
         } catch (error: any) {
             return (

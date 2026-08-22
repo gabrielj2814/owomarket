@@ -107,12 +107,13 @@ test('GET /admin/backoffice/exchange-rates/history returns paginated rate histor
 
     $response = $this->actingAs($this->admin)->getJson('/admin/backoffice/exchange-rates/history?page=1&per_page=10');
 
+    // Hallazgo N37: este endpoint devolvia `success: true` y la paginacion en `meta`, sin
+    // `status` ni `code`. Era el unico de la API que no usaba el sobre estandar, asi que un
+    // consumidor generico no podia leerlo.
     $response->assertStatus(200)
-        ->assertJson([
-            'success' => true,
-        ])
+        ->assertJsonPath('status', 'success')
         ->assertJsonStructure([
             'data',
-            'meta' => ['total', 'current_page', 'per_page', 'last_page'],
+            'pagination' => ['total', 'current_page', 'per_page', 'last_page'],
         ]);
 });

@@ -91,11 +91,11 @@ export default function ReviewIndexPage({ title, user_id, host, user_name }: Rev
             };
 
             const response = await ReviewServices.filtrar(params);
-            if (response.data && (response.code === 200 || response.status === 'success') && response.data) {
-                setReviews(response.data.data);
-                setCurrentPage(response.data.current_page);
-                setTotalPages(response.data.last_page);
-                setTotalItems(response.data.total);
+            if (response.data && (response.code === 200 || response.status === 'success')) {
+                setReviews(response.data);
+                setCurrentPage(response.pagination?.current_page ?? 1);
+                setTotalPages(response.pagination?.last_page ?? 1);
+                setTotalItems(response.pagination?.total ?? 0);
             }
         } catch (e) {
             showToast('error', 'Error al cargar el listado de reseñas.');

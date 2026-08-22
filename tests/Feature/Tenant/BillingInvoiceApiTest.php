@@ -130,8 +130,8 @@ it('POST /api-tenant/billing/invoices/filter returns paginated invoices', functi
 
     $filterResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.pagination.total', 1)
-        ->assertJsonPath('data.data.0.billing_customer_name', 'Ana Gomez');
+        ->assertJsonPath('pagination.total', 1)
+        ->assertJsonPath('data.0.billing_customer_name', 'Ana Gomez');
 });
 
 it('POST /api-tenant/billing/invoices/{id}/cancel cancels an invoice successfully', function () {

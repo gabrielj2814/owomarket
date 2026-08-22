@@ -9,60 +9,52 @@ const getCSRFToken = () => {
 };
 
 const AuthServices = {
-
-    login: async (dataFormLogin: { email: string; password: string; }): Promise<ApiResponse<ResponseLogin>> => {
-        try{
+    login: async (dataFormLogin: { email: string; password: string }): Promise<ApiResponse<ResponseLogin>> => {
+        try {
             const headers = {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': getCSRFToken(),
-            }
+            };
 
             const response: ApiResponse<ResponseLogin> = await axios.post('/auth/login', dataFormLogin, {
                 headers,
             });
 
-            return response
-        }
-        catch(error){
+            return response;
+        } catch (error) {
             return error as ApiResponse<ResponseLogin>;
         }
-
     },
 
     logout: async (uuid: string): Promise<ApiResponse<boolean>> => {
         const headers = {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': getCSRFToken(),
-        }
+        };
 
-        const body= {
+        const body = {
             uuid,
-        }
+        };
 
         const response: ApiResponse<boolean> = await axios.post('/auth/logout', body, {
             headers,
         });
 
-        return response
-
+        return response;
     },
 
     authUser: async (uuid: string): Promise<ApiResponse<AuthUser>> => {
         const headers = {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': getCSRFToken(),
-        }
+        };
 
         const response: ApiResponse<AuthUser> = await axios.get(`/auth/user/${uuid}`, {
             headers,
         });
 
-        return response
-
-
-    }
-
-
-}
+        return response;
+    },
+};
 
 export default AuthServices;

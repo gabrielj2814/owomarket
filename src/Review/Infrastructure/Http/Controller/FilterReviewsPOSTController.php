@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Src\Review\Application\UseCases\FilterReviewsUseCase;
 use Src\Review\Infrastructure\Http\Request\FilterReviewsFormRequest;
+use Src\Shared\Helper\ApiResponse;
 
 final class FilterReviewsPOSTController extends Controller
 {
@@ -21,12 +22,14 @@ final class FilterReviewsPOSTController extends Controller
             $criteria = $request->toDto();
             $result = $this->useCase->execute($criteria);
 
-            return response()->json([
-                'status' => 'success',
-                'code' => 200,
-                'message' => 'Reseñas consultadas con éxito.',
-                'data' => $result->toArray(),
-            ]);
+            return ApiResponse::paginated(
+                data: $result->itemsToArray(),
+                total: $result->total,
+                currentPage: $result->currentPage,
+                perPage: $result->perPage,
+                lastPage: $result->lastPage,
+                message: 'Reseñas consultadas con éxito.'
+            );
         } catch (\Throwable $e) {
             return response()->json([
                 'status' => 'error',

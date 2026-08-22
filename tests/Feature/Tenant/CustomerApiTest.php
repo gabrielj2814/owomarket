@@ -169,7 +169,7 @@ it('POST /api-tenant/customer/filter and GET /api-tenant/customer/metrics', func
         'search' => 'Carla',
     ]);
     $filterRes->assertStatus(200)
-        ->assertJsonCount(1, 'data.data');
+        ->assertJsonCount(1, 'data');
 
     // Métricas
     $metricsRes = $this->getJson("http://{$this->domain}/api-tenant/customer/metrics");

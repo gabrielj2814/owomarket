@@ -7,6 +7,7 @@ namespace Src\Shipment\Infrastructure\Http\Controller;
 use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Src\Shared\Helper\ApiResponse;
 use Src\Shipment\Application\UseCases\FilterShipmentsUseCase;
 use Src\Shipment\Infrastructure\Http\Request\FilterShipmentsFormRequest;
 
@@ -22,12 +23,14 @@ final class FilterShipmentsPOSTController extends Controller
             $criteria = $request->toDto();
             $result = $this->filterShipmentsUseCase->execute($criteria);
 
-            return response()->json([
-                'status' => 'success',
-                'code' => 200,
-                'message' => 'Envíos filtrados exitosamente.',
-                'data' => $result->toArray(),
-            ], 200);
+            return ApiResponse::paginated(
+                data: $result->itemsToArray(),
+                total: $result->total,
+                currentPage: $result->currentPage,
+                perPage: $result->perPage,
+                lastPage: $result->lastPage,
+                message: 'Envíos filtrados exitosamente.'
+            );
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',

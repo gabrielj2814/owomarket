@@ -141,7 +141,7 @@ it('executes full customer lifecycle end-to-end', function () {
         'is_active' => true,
     ]);
     $filterResponse->assertStatus(200)
-        ->assertJsonCount(1, 'data.data');
+        ->assertJsonCount(1, 'data');
 
     // 8. Actualizar datos de perfil del cliente
     $updateResponse = $this->putJson("http://{$this->domain}/api-tenant/customer/{$customerId}", [
@@ -174,7 +174,7 @@ it('executes full customer lifecycle end-to-end', function () {
         'search' => 'Valentina',
     ]);
     $filterAfterDelete->assertStatus(200)
-        ->assertJsonCount(0, 'data.data');
+        ->assertJsonCount(0, 'data');
 
     // 12. Verificar que las métricas reflejan 0 clientes activos
     $finalMetrics = $this->getJson("http://{$this->domain}/api-tenant/customer/metrics");

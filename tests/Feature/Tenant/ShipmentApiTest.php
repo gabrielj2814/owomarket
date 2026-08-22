@@ -201,7 +201,7 @@ it('POST /api-tenant/shipment/filter filters shipments with search and paginatio
 
     $filterRes->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        ->assertJsonCount(1, 'data.data')
-        ->assertJsonPath('data.total', 1)
-        ->assertJsonPath('data.data.0.carrier', 'Blue Express');
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('pagination.total', 1)
+        ->assertJsonPath('data.0.carrier', 'Blue Express');
 });

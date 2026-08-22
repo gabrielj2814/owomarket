@@ -126,25 +126,25 @@ test('GET /api/central/marketplace/products filters products by search, category
     $allResponse = $this->getJson('http://localhost/api/central/marketplace/products');
     $allResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        ->assertJsonCount(2, 'data.products');
+        ->assertJsonCount(2, 'data');
 
     // 2. Filter by search "Mouse"
     $searchResponse = $this->getJson('http://localhost/api/central/marketplace/products?search=Mouse');
     $searchResponse->assertStatus(200)
-        ->assertJsonCount(1, 'data.products')
-        ->assertJsonPath('data.products.0.name', 'Mouse Gamer Inalámbrico RGB');
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Mouse Gamer Inalámbrico RGB');
 
     // 3. Filter by Category "Moda y Ropa"
     $catResponse = $this->getJson('http://localhost/api/central/marketplace/products?category=Moda y Ropa');
     $catResponse->assertStatus(200)
-        ->assertJsonCount(1, 'data.products')
-        ->assertJsonPath('data.products.0.name', 'Camiseta Oversize Streetwear');
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.name', 'Camiseta Oversize Streetwear');
 
     // 4. Filter by Tenant ID
     $tenantResponse = $this->getJson("http://localhost/api/central/marketplace/products?tenant_id={$this->tenant2->id}");
     $tenantResponse->assertStatus(200)
-        ->assertJsonCount(1, 'data.products')
-        ->assertJsonPath('data.products.0.tenant_id', $this->tenant2->id);
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.tenant_id', $this->tenant2->id);
 });
 
 test('GET /api/central/marketplace/product/{slug} returns product detail with store info and related products', function () {

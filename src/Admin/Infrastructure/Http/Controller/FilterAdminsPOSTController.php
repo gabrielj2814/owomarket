@@ -62,10 +62,16 @@ class FilterAdminsPOSTController extends Controller
                 'updated_at' => $item->getUpdatedAt()?->value(),
             ];
         }
-        $arrayPagination = $pagination->toArray();
-        $arrayPagination['data'] = $dataPaginate;
 
-        return ApiResponse::Pagination(data: $arrayPagination['data'], message: 'ok', code: 200, pagination: $arrayPagination['meta']);
+        return ApiResponse::paginated(
+            data: $dataPaginate,
+            total: $pagination->getTotal(),
+            currentPage: $pagination->getCurrentPage(),
+            perPage: $pagination->getPerPage(),
+            lastPage: $pagination->getLastPage(),
+            message: 'ok',
+            code: 200
+        );
 
     }
 }

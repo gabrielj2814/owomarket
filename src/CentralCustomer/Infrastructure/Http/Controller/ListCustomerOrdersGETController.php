@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\ListCustomerOrdersUseCase;
 use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
+use Src\Shared\Helper\ApiResponse;
 
 final class ListCustomerOrdersGETController
 {
@@ -36,16 +37,16 @@ final class ListCustomerOrdersGETController
 
             $result = $this->listOrdersUseCase->execute($customerId, $email ? (string) $email : null, $filters);
 
-            return response()->json([
-                'code' => 200,
-                'status' => 'success',
-                'data' => $result['data'],
-                'meta' => [
-                    'total' => $result['total'],
-                    'current_page' => $result['current_page'],
-                    'last_page' => $result['last_page'],
-                ],
-            ]);
+            // Hallazgo N37: esto devolvia la paginacion en `meta` y sin `per_page`, una de
+            // las seis formas que convivian. Ahora usa el unico formato de la API.
+            return ApiResponse::paginated(
+                data: $result['data'],
+                total: $result['total'],
+                currentPage: $result['current_page'],
+                perPage: $result['per_page'] ?? count($result['data']),
+                lastPage: $result['last_page'],
+                message: 'Pedidos consultados exitosamente'
+            );
         } catch (Exception $e) {
             $code = is_numeric($e->getCode()) ? (int) $e->getCode() : 400;
             $status = $code >= 400 && $code < 600 ? $code : 400;

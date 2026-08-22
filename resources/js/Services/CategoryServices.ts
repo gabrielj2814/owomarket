@@ -21,7 +21,7 @@ const CategoryServices = {
         fechaDesdeUTC: string | null = null,
         fechaHastaUTC: string | null = null,
         prePage: number = 50,
-        page: number = 1
+        page: number = 1,
     ): Promise<ApiResponse<Category[]>> => {
         try {
             const body = {

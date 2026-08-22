@@ -19,14 +19,14 @@ final class PaginatedReviewResult
         public readonly int $lastPage
     ) {}
 
-    public function toArray(): array
+    /**
+     * Sólo los elementos. Los contadores ya son propiedades públicas de este DTO, así que
+     * duplicarlos aquí dentro era lo que producía un sobre de paginación distinto por
+     * módulo (hallazgo N37). Quien responde es `ApiResponse::paginated()`, que es el único
+     * sitio donde vive el formato.
+     */
+    public function itemsToArray(): array
     {
-        return [
-            'data' => array_map(fn (ProductReview $review) => $review->toArray(), $this->items),
-            'total' => $this->total,
-            'per_page' => $this->perPage,
-            'current_page' => $this->currentPage,
-            'last_page' => $this->lastPage,
-        ];
+        return array_map(fn (ProductReview $review) => $review->toArray(), $this->items);
     }
 }

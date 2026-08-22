@@ -14,16 +14,6 @@ const axiosCustomer = axios.create({
     },
 });
 
-export interface PaginatedCustomersData {
-    data: Customer[];
-    pagination: {
-        total: number;
-        current_page: number;
-        per_page: number;
-        last_page: number;
-    };
-}
-
 const CustomerServices = {
     filtrar: async (
         search: string | null = null,
@@ -34,7 +24,7 @@ const CustomerServices = {
         page: number = 1,
         sortBy: string = 'created_at',
         sortDirection: string = 'desc',
-    ): Promise<Data<PaginatedCustomersData>> => {
+    ): Promise<Data<Customer[]>> => {
         try {
             const body = {
                 search,
@@ -47,7 +37,7 @@ const CustomerServices = {
                 sort_direction: sortDirection,
             };
 
-            const response = await axiosCustomer.post<Data<PaginatedCustomersData>>('filter', body);
+            const response = await axiosCustomer.post<Data<Customer[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (

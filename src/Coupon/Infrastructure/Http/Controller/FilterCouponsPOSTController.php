@@ -37,18 +37,14 @@ final class FilterCouponsPOSTController
 
             $data = array_map(fn ($coupon) => $coupon->toArray(), $result->items);
 
-            $pagination = [
-                'total' => $result->total,
-                'current_page' => $result->currentPage,
-                'per_page' => $result->perPage,
-                'last_page' => $result->lastPage,
-            ];
-
-            return ApiResponse::Pagination(
+            return ApiResponse::paginated(
                 data: $data,
+                total: $result->total,
+                currentPage: $result->currentPage,
+                perPage: $result->perPage,
+                lastPage: $result->lastPage,
                 message: 'Cupones listados exitosamente',
-                code: 200,
-                pagination: $pagination
+                code: 200
             );
         } catch (Exception $e) {
             return ApiResponse::error(

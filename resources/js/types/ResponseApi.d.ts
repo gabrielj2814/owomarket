@@ -54,12 +54,8 @@ export interface Data<D, E = {}> {
     code: number;
     meta: Array<any>;
     errors?: E;
-    pagination?: {
-        total: number;
-        current_page: number;
-        per_page: number;
-        last_page: number;
-    };
+    /** Sólo en respuestas paginadas. Ver la nota sobre paginación al final del fichero. */
+    pagination?: PaginationMeta;
 }
 
 export interface Headers {
@@ -74,30 +70,23 @@ export interface Headers {
 
 /*
 |--------------------------------------------------------------------------
-| Sobres de paginación (hallazgo N29)
+| Paginación (hallazgos N29 y N37)
 |--------------------------------------------------------------------------
 |
-| La API no tiene uno, tiene TRES, y cada página del backoffice está escrita contra el
-| suyo. La deuda de tipos de N29 tapaba esto: mientras los servicios declaraban
-| `ApiResponse<T>` devolviendo otra cosa, TypeScript no podía notar que `order/filter` y
-| `product/filter` no se parecen en nada.
+| **Hay un solo formato**, y lo emite `ApiResponse::paginated()` en el backend:
 |
-| Verificado consultando los endpoints reales con una sesión autenticada, no leyendo el
-| código: son las tres formas que salen de verdad por el cable.
+|     { status, code, message, data: T[], pagination: PaginationMeta, meta }
 |
-|   1. `Data<T[]>`                   data = [], y `pagination` colgando de la raíz.
-|                                    ApiResponse::Pagination() del backend.
-|                                    product, brand, category, attribute, coupon,
-|                                    shipping/zones, tax/rates
+| Es decir: `data` es siempre el payload —igual que en las respuestas sin paginar— y los
+| contadores viajan aparte, en `pagination`, que `Data<T>` ya declara como opcional.
 |
-|   2. `Data<PaginatedPayload<T>>`   data = { data: [], pagination: {...} }
-|                                    billing, customer, order
+| Hasta N37 convivían SEIS formas distintas en el cable, y cada página del backoffice
+| estaba escrita contra la suya. La deuda de tipos de N29 lo tapaba: mientras los
+| servicios declaraban una cosa y devolvían otra, TypeScript no podía notar que dos
+| endpoints hermanos no se parecían en nada.
 |
-|   3. `Data<FlatPaginatedPayload<T>>`  data = { data: [], total, per_page, ... }
-|                                    review, shipment
-|
-| No se unifican aquí a propósito: unificar es cambiar respuestas HTTP en producción, y
-| es una decisión aparte. Lo que hacen estos tipos es dejar de mentir sobre lo que hay.
+| Si aparece un endpoint paginado que no encaja aquí, el sitio que hay que arreglar es el
+| controlador, no este fichero.
 */
 
 export interface PaginationMeta {
@@ -105,15 +94,4 @@ export interface PaginationMeta {
     current_page: number;
     per_page: number;
     last_page: number;
-}
-
-/** Sobre 2: la paginación viaja como objeto dentro de `data`. */
-export interface PaginatedPayload<T> {
-    data: T[];
-    pagination: PaginationMeta;
-}
-
-/** Sobre 3: los campos de paginación van sueltos junto a `data`. */
-export interface FlatPaginatedPayload<T> extends PaginationMeta {
-    data: T[];
 }

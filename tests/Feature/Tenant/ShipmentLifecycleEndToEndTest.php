@@ -175,7 +175,7 @@ it('executes full shipment lifecycle end-to-end with order synchronization and m
         'carrier' => 'Chilexpress',
     ]);
     $filterRes->assertStatus(200)
-        ->assertJsonCount(1, 'data.data');
+        ->assertJsonCount(1, 'data');
 
     // 8. Mark shipment as delivered -> Status changes to delivered
     $deliverRes = $this->postJson("http://{$this->domain}/api-tenant/shipment/{$shipmentId}/deliver");

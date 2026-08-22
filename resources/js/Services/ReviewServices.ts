@@ -14,16 +14,8 @@ const axiosReview = axios.create({
     },
 });
 
-export interface PaginatedReviewsData {
-    data: ProductReview[];
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-}
-
 const ReviewServices = {
-    filtrar: async (params: FilterReviewsParams = {}): Promise<Data<PaginatedReviewsData>> => {
+    filtrar: async (params: FilterReviewsParams = {}): Promise<Data<ProductReview[]>> => {
         try {
             const body = {
                 search: params.search ?? null,
@@ -39,7 +31,7 @@ const ReviewServices = {
                 sort_direction: params.sort_direction ?? 'desc',
             };
 
-            const response = await axiosReview.post<Data<PaginatedReviewsData>>('filter', body);
+            const response = await axiosReview.post<Data<ProductReview[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (

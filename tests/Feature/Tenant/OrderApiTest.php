@@ -185,7 +185,7 @@ it('POST /api-tenant/order/filter returns paginated orders', function () {
 
     $response->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        ->assertJsonCount(1, 'data.data');
+        ->assertJsonCount(1, 'data');
 });
 
 it('POST /api-tenant/order/{id}/status and /cancel update order lifecycle', function () {

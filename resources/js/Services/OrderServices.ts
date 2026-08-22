@@ -1,7 +1,7 @@
 import { ErrorsFormOrder } from '@/types/ErrorsFormOrder';
 import { FormOrder } from '@/types/FormOrder';
 import { Order, OrderMetrics, OrderStatusType, PaymentStatusType } from '@/types/models/Order';
-import { Data, PaginatedPayload } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -13,14 +13,6 @@ const axiosOrder = axios.create({
         'X-CSRF-TOKEN': getCSRFToken(),
     },
 });
-
-/**
- * Hallazgo N29: esto declaraba los campos de paginación sueltos junto a `data`, pero
- * `/api-tenant/order/filter` devuelve `{ data, pagination }` — comprobado contra el
- * endpoint real, no leyendo el código. Se mantiene el alias por compatibilidad con quien
- * lo importe, apuntando ya a la forma correcta.
- */
-export type PaginatedOrdersData = PaginatedPayload<Order>;
 
 export interface FilterOrdersParams {
     search?: string | null;
@@ -36,7 +28,7 @@ export interface FilterOrdersParams {
 }
 
 const OrderServices = {
-    filtrar: async (params: FilterOrdersParams = {}): Promise<Data<PaginatedOrdersData>> => {
+    filtrar: async (params: FilterOrdersParams = {}): Promise<Data<Order[]>> => {
         try {
             const body = {
                 search: params.search ?? null,
@@ -51,7 +43,7 @@ const OrderServices = {
                 sort_direction: params.sort_direction ?? 'desc',
             };
 
-            const response = await axiosOrder.post<Data<PaginatedOrdersData>>('filter', body);
+            const response = await axiosOrder.post<Data<Order[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (

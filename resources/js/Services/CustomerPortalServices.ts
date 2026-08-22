@@ -250,14 +250,7 @@ export const CustomerPortalServices = {
         return res.data;
     },
 
-    async submitReview(payload: {
-        customer_id: string;
-        order_id: string;
-        product_id: string;
-        rating: number;
-        title?: string;
-        comment: string;
-    }) {
+    async submitReview(payload: { customer_id: string; order_id: string; product_id: string; rating: number; title?: string; comment: string }) {
         const res = await axios.post(`/api/central/customer/reviews`, payload);
         return res.data;
     },

@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Src\Order\Application\UseCases\FilterOrdersUseCase;
 use Src\Order\Infrastructure\Http\Request\FilterOrdersFormRequest;
+use Src\Shared\Helper\ApiResponse;
 
 final class FilterOrdersPOSTController extends Controller
 {
@@ -20,11 +21,13 @@ final class FilterOrdersPOSTController extends Controller
         $criteria = $request->toDto();
         $result = $this->filterOrdersUseCase->execute($criteria);
 
-        return response()->json([
-            'status' => 'success',
-            'code' => 200,
-            'message' => 'Órdenes filtradas exitosamente.',
-            'data' => $result->toArray(),
-        ], 200);
+        return ApiResponse::paginated(
+            data: $result->itemsToArray(),
+            total: $result->total,
+            currentPage: $result->currentPage,
+            perPage: $result->perPage,
+            lastPage: $result->lastPage,
+            message: 'Órdenes filtradas exitosamente.'
+        );
     }
 }

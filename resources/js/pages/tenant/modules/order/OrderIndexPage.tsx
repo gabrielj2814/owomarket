@@ -176,9 +176,13 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
             // CUERPO, asi que `response.data` ya es el payload y `response.code` era
             // siempre undefined: la condicion nunca se cumplia y **la lista de pedidos no
             // se llenaba nunca**. Lo tapaba el tipo mentiroso del servicio.
+            //
+            // Desde N37 la paginacion viaja en la raiz, igual que en todos los listados.
             if (response.code === 200 && response.data) {
-                setOrders(response.data.data);
-                setPagination(response.data.pagination);
+                setOrders(response.data);
+                if (response.pagination) {
+                    setPagination(response.pagination);
+                }
             }
         } catch (e) {
             showToast('error', 'Error al cargar las órdenes.');
@@ -242,9 +246,9 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
             ]);
 
             if (custRes.code === 200 && custRes.data) {
-                setAvailableCustomers(custRes.data.data);
-                if (custRes.data.data.length > 0) {
-                    setFormOrder((prev) => ({ ...prev, customer_id: custRes.data!.data[0].id }));
+                setAvailableCustomers(custRes.data);
+                if (custRes.data.length > 0) {
+                    setFormOrder((prev) => ({ ...prev, customer_id: custRes.data![0].id }));
                 }
             }
 

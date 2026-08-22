@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\JsonResponse;
 use Src\Customer\Application\UseCases\FilterCustomersUseCase;
 use Src\Customer\Infrastructure\Http\Request\FilterCustomersFormRequest;
+use Src\Shared\Helper\ApiResponse;
 
 final class FilterCustomersPOSTController
 {
@@ -20,10 +21,14 @@ final class FilterCustomersPOSTController
         try {
             $result = $this->useCase->execute($request->toDto());
 
-            return response()->json([
-                'status' => 'success',
-                'data' => $result->toArray(),
-            ], 200);
+            return ApiResponse::paginated(
+                data: $result->itemsToArray(),
+                total: $result->total,
+                currentPage: $result->currentPage,
+                perPage: $result->perPage,
+                lastPage: $result->lastPage,
+                message: 'Clientes listados exitosamente'
+            );
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'error',

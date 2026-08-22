@@ -80,7 +80,7 @@ test('GET /api/central/customer/orders returns customer orders with items', func
             'code' => 200,
             'status' => 'success',
         ])
-        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('pagination.total', 1)
         ->assertJsonPath('data.0.order_number', 'ORD-2026-777666');
 });
 

@@ -202,7 +202,7 @@ it('executes full billing and payment lifecycle end-to-end', function () {
     ]);
     $filterResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        ->assertJsonCount(1, 'data.data');
+        ->assertJsonCount(1, 'data');
 
     // 11. Anular la Factura con motivo
     $cancelResponse = $this->postJson("http://{$this->domain}/api-tenant/billing/invoices/{$invoiceId}/cancel", [

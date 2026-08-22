@@ -134,9 +134,9 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({ user_id, title, host, u
         const res = await CustomerServices.filtrar(search || null, isActiveParam, acceptsMarketingParam, genderParam, perPage, currentPage);
 
         if (res.data) {
-            setCustomers(res.data.data || []);
-            setTotalPages(res.data.pagination?.last_page || 1);
-            setTotalItems(res.data.pagination?.total || 0);
+            setCustomers(res.data);
+            setTotalPages(res.pagination?.last_page || 1);
+            setTotalItems(res.pagination?.total || 0);
         }
         setLoading(false);
     };

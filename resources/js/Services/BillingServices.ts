@@ -5,7 +5,7 @@ import { FilterInvoicesParams, FormDirectInvoice } from '@/types/FormDirectInvoi
 import { BillingProfile } from '@/types/models/BillingProfile';
 import { Invoice, InvoiceMetrics } from '@/types/models/Invoice';
 import { PaymentGateway } from '@/types/models/PaymentGateway';
-import { Data, PaginatedPayload } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -50,9 +50,9 @@ class BillingServices {
     /**
      * Filtra y lista facturas paginadas.
      */
-    async filterInvoices(params: FilterInvoicesParams = {}): Promise<Data<PaginatedPayload<Invoice>>> {
+    async filterInvoices(params: FilterInvoicesParams = {}): Promise<Data<Invoice[]>> {
         try {
-            const response = await axiosBilling.post<Data<PaginatedPayload<Invoice>>>('invoices/filter', params);
+            const response = await axiosBilling.post<Data<Invoice[]>>('invoices/filter', params);
             return response.data;
         } catch (error: any) {
             return (

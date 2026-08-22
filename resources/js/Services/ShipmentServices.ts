@@ -14,16 +14,8 @@ const axiosShipment = axios.create({
     },
 });
 
-export interface PaginatedShipmentsData {
-    data: Shipment[];
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-}
-
 const ShipmentServices = {
-    filtrar: async (params: FilterShipmentsParams = {}): Promise<Data<PaginatedShipmentsData>> => {
+    filtrar: async (params: FilterShipmentsParams = {}): Promise<Data<Shipment[]>> => {
         try {
             const body = {
                 search: params.search ?? null,
@@ -38,7 +30,7 @@ const ShipmentServices = {
                 sort_direction: params.sort_direction ?? 'desc',
             };
 
-            const response = await axiosShipment.post<Data<PaginatedShipmentsData>>('filter', body);
+            const response = await axiosShipment.post<Data<Shipment[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
