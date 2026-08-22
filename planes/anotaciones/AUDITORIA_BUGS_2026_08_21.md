@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 34 de 50 hallazgos cerrados (~68%) · 4 parciales · 12 abiertos.**
+> **Avance: 37 de 50 hallazgos cerrados (~74%) · 2 parciales · 11 abiertos.**
 >
 > Fases 0, 1 y 2 completas. Fase 3 empezada.
 > **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
@@ -36,7 +36,7 @@
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1 F2 F4 F6 | — | F3 F5 |
-> | **G. Frontend** | G1 G2 G3 G4 G5 G6 G11 G12 | G8 G13 | G7 G9 G10 G14 G15 |
+> | **G. Frontend** | G1 G2 G3 G4 G5 G6 G7 G8 G10 G11 G12 | G13 | G9 G14 G15 |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
 > alias») lo cerró la Fase 0.2, y era la **causa raíz de todo el bloque A**: no
@@ -64,11 +64,12 @@
 > | 2.2 | E1, E2, E3, E4 | `PLAN_FASE2_2_SINCRONIZACION_DEL_CATALOGO_CENTRAL.md` |
 > | 3.1 | G2, G3, B3, C6 | `PLAN_FASE3_1_FLUJO_DE_CUPONES.md` |
 > | 3.2 | G4, G5, G6, G11, G12 | `PLAN_FASE3_2_INTEGRIDAD_DEL_CARRITO.md` |
+> | 3.3 | G7, G10, G8 | `PLAN_FASE3_3_SESION_DEL_COMPRADOR.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Terminar la Fase 3** — quedan G7, G9, G10, G14 y G15, más rematar G8 y G13.
->    G7 y G10 van juntos: son la sesión SSO vista desde el dominio y desde el caché.
+> 1. **Terminar la Fase 3** — quedan G9, G14 y G15, más rematar G13. Los cuatro tocan
+>    la moneda o el manejo de errores del frontend.
 > 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
 >    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
 > 3. **`domains.id` casteado a int** (P2/N23): `$domain->id` devuelve siempre `0` y
@@ -916,7 +917,7 @@ Con `quantity: 0`, el `||` convierte el tope en 99. Ni el botón ni `handleAddTo
 
 ### G7. 🟠 `isCentralDomain()` clasifica contando etiquetas del dominio
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.3) — la bandera `is_central` la decide el servidor, que es quien inicializa la tenancy por dominio; la heurística queda sólo como respaldo
 
 **Archivo:** `resources/js/Services/CustomerAuthServices.ts:67-79`
 
@@ -934,7 +935,7 @@ return false;                          // "www.mitienda.com" → "tenant"
 
 ### G8. 🟠 Botón "Continuar como Invitado (Modo Pruebas)" que anula la puerta de autenticación
 
-> **Estado:** 🟡 PARCIAL (Fase 0.5: botón de bypass eliminado; la recarga que pierde el formulario sigue)
+> **Estado:** ✅ CERRADO (Fase 0.5 + 3.3) — el bypass lo quitó la Fase 0.5; la Fase 3.3 sustituyó la recarga por el modal de autenticación que ya monta `StorefrontLayout`, así que el formulario ya no se pierde
 
 **Archivo:** `resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx:1009-1019`
 
@@ -969,7 +970,7 @@ Nada bloquea el submit mientras la tasa no ha cargado, y el `.catch` es silencio
 
 ### G10. 🟠 Al volver a la tienda, la sesión SSO no se restablece y el caché no se limpia
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 3.3) — se reintenta el SSO en silencio y, si tampoco vale, se limpian estado y caché en vez de dejar al usuario creyendo que sigue dentro
 
 **Archivo:** `resources/js/contexts/CustomerAuthContext.tsx:77-82`
 
@@ -1047,7 +1048,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ## Plan de acción sugerido
 
-> **Estado al 21/08/2026: 12 de 13 puntos completados.**
+> **Estado al 21/08/2026: 13 de 13 puntos completados.**
 > Fases 0, 1 y 2 completas · Fase 3 empezada.
 
 ### Fase 0 — Antes de exponer nada (bloqueante) — ✅ COMPLETA
@@ -1070,10 +1071,11 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
     (F4 — 🟡 ya creado en la Fase 0.3-D), permisos en tenant (F5 — ⬜),
     seeders condicionados (F6 — ✅ *Fase 2.1*).
 
-### Fase 3 — Frontend — 🟡 empezada
-13. 🟡 Cupones (G2, G3 — ✅ *Fase 3.1*, junto con B3 y C6 del backend), revalidación de
+### Fase 3 — Frontend — 🟡 el punto 13 del plan está completo; quedan G9, G13, G14 y G15
+13. ✅ Cupones (G2, G3 — ✅ *Fase 3.1*, junto con B3 y C6 del backend), revalidación de
     carrito (G4 — ✅ *Fase 3.2*, junto con G5, G6, G11 y G12), `isCentralDomain` desde el
-    servidor (G7 — ⬜), refresco de sesión SSO (G10 — ⬜).
+    servidor (G7 — ✅ *Fase 3.3*), refresco de sesión SSO (G10 — ✅ *Fase 3.3*, junto con
+    la mitad pendiente de G8). **Punto 13 completo.**
 
 ---
 

@@ -14,6 +14,8 @@ export interface SharedData {
     auth: Auth;
     tenant: Tenant | null;
     current_domain: string;
+    /** Lo decide el servidor segun si la tenancy se inicializo (hallazgo G7). */
+    is_central: boolean;
     [key: string]: unknown;
 }
 

@@ -50,6 +50,11 @@ class HandleInertiaRequests extends Middleware
                 'name' => tenant()->name,
             ] : null,
             'current_domain' => $request->getHost(),
+            // Hallazgo G7: el frontend deducia esto contando las etiquetas del dominio
+            // (`parts.length <= 2`), asi que una tienda con dominio propio se clasificaba
+            // como central y con `www.` delante el resultado se invertia. Aqui no hay
+            // heuristica: si la tenancy no se inicializo, el dominio es central.
+            'is_central' => ! tenancy()->initialized,
         ];
     }
 }

@@ -1036,7 +1036,17 @@ function CheckoutPageContent({
                                 color="blue"
                                 size="md"
                                 className="w-full font-bold"
-                                onClick={() => (window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`)}
+                                onClick={() => {
+                                    // Hallazgo G8 (segunda mitad): esto hacia
+                                    // `window.location.href = '/auth/login?redirect=...'`,
+                                    // una recarga completa que PERDIA los datos ya escritos
+                                    // —nombre, direccion, notas—, porque solo el carrito
+                                    // esta persistido. El modal de autenticacion ya vive en
+                                    // `StorefrontLayout`, asi que se abre sin salir de la
+                                    // pagina y el formulario sigue donde estaba.
+                                    setIsAuthGateModalOpen(false);
+                                    openAuthModal('login');
+                                }}
                             >
                                 <HiUser className="mr-2 h-4 w-4" />
                                 Iniciar Sesión / Registrarme

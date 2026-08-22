@@ -3,8 +3,8 @@ import CustomerAuthServices, {
     CentralCustomerData,
     LoginCustomerPayload,
     RegisterCustomerPayload,
-    isCentralDomain,
 } from '@/Services/CustomerAuthServices';
+import { useIsCentralDomain } from '@/hooks/useIsCentralDomain';
 
 export interface CustomerAddress {
     id: string;
@@ -41,6 +41,8 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const [addresses, setAddresses] = useState<CustomerAddress[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+    // Hallazgo G7: lo decide el servidor, no el numero de puntos del hostname.
+    const isCentral = useIsCentralDomain();
     const [authModalTab, setAuthModalTab] = useState<'login' | 'register'>('login');
 
     const openAuthModal = (tab: 'login' | 'register' = 'login') => {
@@ -73,11 +75,32 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
                 } catch {}
             }
 
-            // 2. If on tenant storefront, sync with tenant session
-            if (!isCentralDomain()) {
+            // 2. En el storefront de una tienda, contrastar con la sesion real.
+            //
+            // Hallazgo G10: si la tienda respondia «no autenticado», esta rama no hacia
+            // NADA: ni reintentaba el SSO ni borraba el cache. El cliente que volvia al dia
+            // siguiente, con la cookie de la tienda ya expirada, veia la navbar y el
+            // checkout como si siguiera dentro, pasaba la puerta de autenticacion del paso
+            // 3 y confirmaba el pedido; el backend lo trataba como invitado o devolvia 401,
+            // y los `.catch(() => {})` del portal mostraban listas vacias en lugar de
+            // «sesion expirada».
+            if (!isCentral) {
                 const res = await CustomerAuthServices.getTenantSession();
-                if (res && res.code === 200 && res.data?.authenticated && res.data?.customer) {
-                    setCustomer(res.data.customer);
+                const autenticado = res && res.code === 200 && res.data?.authenticated && res.data?.customer;
+
+                if (autenticado) {
+                    setCustomer(res.data!.customer);
+                } else {
+                    // La cookie de la tienda no vale. Si el cliente sigue con sesion en el
+                    // dominio central, se rehace el SSO en silencio; es exactamente lo que
+                    // hace `login()` tras autenticar.
+                    const restablecida = await tryRestoreTenantSession();
+
+                    if (!restablecida) {
+                        // Ni tienda ni central: se limpia todo en vez de dejar al usuario
+                        // creyendo que sigue dentro.
+                        clearCachedSession();
+                    }
                 }
             }
         } catch {
@@ -85,6 +108,46 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
         } finally {
             setLoading(false);
         }
+    };
+
+    /**
+     * Rehace el intercambio SSO con la tienda a partir del cliente central cacheado.
+     * Devuelve `false` si no hay con que rehacerlo, que es la senal para limpiar.
+     */
+    const tryRestoreTenantSession = async (): Promise<boolean> => {
+        const cached = localStorage.getItem('owo_central_customer');
+        if (!cached) return false;
+
+        try {
+            const parsed = JSON.parse(cached);
+            if (!parsed?.id) return false;
+
+            const ssoRes = await CustomerAuthServices.generateSsoToken(parsed.id);
+            if (ssoRes.code !== 200 || !ssoRes.data?.token) return false;
+
+            const consumeRes = await CustomerAuthServices.consumeSsoToken(ssoRes.data.token);
+            if (consumeRes.code !== 200 || !consumeRes.data) return false;
+
+            setCustomer(consumeRes.data.customer);
+            setCentralCustomer(consumeRes.data.central_customer || parsed);
+            if (consumeRes.data.addresses) {
+                setAddresses(consumeRes.data.addresses);
+                localStorage.setItem('owo_customer_addresses', JSON.stringify(consumeRes.data.addresses));
+            }
+
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    /** Deja el estado y el cache como los de un visitante anonimo. */
+    const clearCachedSession = () => {
+        localStorage.removeItem('owo_central_customer');
+        localStorage.removeItem('owo_customer_addresses');
+        setCustomer(null);
+        setCentralCustomer(null);
+        setAddresses([]);
     };
 
     useEffect(() => {
@@ -105,7 +168,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
             const centralCust = loginRes.data.customer;
 
             // 2. If on central marketplace domain, complete login immediately
-            if (isCentralDomain()) {
+            if (isCentral) {
                 setCustomer(centralCust);
                 setCentralCustomer(centralCust);
                 localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
@@ -185,7 +248,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     const logout = async (): Promise<void> => {
         try {
-            if (isCentralDomain()) {
+            if (isCentral) {
                 await CustomerAuthServices.logoutCentral();
             } else {
                 await CustomerAuthServices.logoutTenant();
