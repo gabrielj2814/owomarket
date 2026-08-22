@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class PlatformCommission extends \Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission
-{
-}
+class PlatformCommission extends \Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission {}

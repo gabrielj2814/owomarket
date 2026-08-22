@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class Shipment extends \Src\Shipment\Infrastructure\Eloquent\Models\Shipment
-{
-}
+class Shipment extends \Src\Shipment\Infrastructure\Eloquent\Models\Shipment {}

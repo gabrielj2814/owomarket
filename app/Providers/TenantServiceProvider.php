@@ -6,6 +6,7 @@ use Illuminate\Support\ServiceProvider;
 use Src\Tenant\Application\Contracts\Repositories\TenantOwnerRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantRepositoryInterface;
 use Src\Tenant\Application\Contracts\Repositories\TenantUserRepositoryInterface;
+use Src\Tenant\Infrastructure\Console\Commands\ProvisionTenantRolesCommand;
 use Src\Tenant\Infrastructure\Eloquent\Repositories\TenantOwnerRepository;
 use Src\Tenant\Infrastructure\Eloquent\Repositories\TenantRepository;
 use Src\Tenant\Infrastructure\Eloquent\Repositories\TenantUserRepository;
@@ -27,6 +28,10 @@ class TenantServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ProvisionTenantRolesCommand::class,
+            ]);
+        }
     }
 }

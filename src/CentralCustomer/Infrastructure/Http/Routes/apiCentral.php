@@ -41,8 +41,10 @@ use Src\CentralCustomer\Infrastructure\Http\Controller\UpdateCustomerProfilePUTC
 |
 */
 Route::middleware('web')->group(function () {
-    Route::post('/register', RegisterCentralCustomerPOSTController::class);
-    Route::post('/login', LoginCentralCustomerPOSTController::class);
+    // Hallazgo N18: las cuatro puertas sin sesion del cliente central. El PIN ya
+    // llevaba freno desde la Fase 4.1; el alta y el acceso no.
+    Route::post('/register', RegisterCentralCustomerPOSTController::class)->middleware('throttle:altas');
+    Route::post('/login', LoginCentralCustomerPOSTController::class)->middleware('throttle:credenciales');
     Route::post('/forgot-password', SendCustomerPasswordResetPinPOSTController::class);
     Route::post('/reset-password', ResetCustomerPasswordWithPinPOSTController::class);
 
@@ -64,7 +66,7 @@ Route::middleware('web')->group(function () {
     */
     Route::middleware('auth:central_customer')->group(function () {
         Route::post('/logout', CustomerLogoutCentralPOSTController::class);
-        Route::post('/sso/generate-token', GenerateSsoTokenPOSTController::class);
+        Route::post('/sso/generate-token', GenerateSsoTokenPOSTController::class)->middleware('throttle:sso');
 
         // Perfil y Libreta de Direcciones
         Route::get('/profile/{id}', GetCustomerProfileGETController::class);

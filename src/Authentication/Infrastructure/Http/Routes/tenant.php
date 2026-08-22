@@ -8,9 +8,15 @@ use Src\Authentication\Infrastructure\Http\Controller\LogoutWebPOSTController;
 use Src\Authentication\Infrastructure\Http\Controller\PaginaInicialTestGETController;
 
 Route::get('login', [LoginTenantScreenGETController::class, 'index'])->name('tenant.web.auth.login-tenant');
-Route::get('sso-consume', \Src\Tenant\Infrastructure\Http\Controller\ConsumeTenantOwnerSsoTokenGETController::class)->name('tenant.web.auth.sso-consume');
+// Hallazgo N18: consumir un token SSO es canjear una credencial de un solo uso.
+Route::get('sso-consume', \Src\Tenant\Infrastructure\Http\Controller\ConsumeTenantOwnerSsoTokenGETController::class)
+    ->name('tenant.web.auth.sso-consume')
+    ->middleware('throttle:sso');
 
-Route::post('/login', [LoginWebTenantPOSTController::class, 'index'])->name('tenant.web.auth.login');
+// Hallazgo N18: sin limite se podia probar contrasenas a ritmo de maquina.
+Route::post('/login', [LoginWebTenantPOSTController::class, 'index'])
+    ->name('tenant.web.auth.login')
+    ->middleware('throttle:credenciales');
 Route::post('/logout', [LogoutWebPOSTController::class, 'index'])->name('tenant.web.auth.logout')->middleware('auth');
 Route::get('/pagina-inicial', [PaginaInicialTestGETController::class, 'index'])->name('tenant.web.inicial.page')->middleware('auth');
 Route::get('/user/{user_uuid}', [CurrentUserGETController::class, 'index'])->name('tenant.web.auth.user')->middleware('auth');

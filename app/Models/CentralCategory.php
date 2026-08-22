@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralCategory extends \Src\Category\Infrastructure\Eloquent\Models\CentralCategory
-{
-}
+class CentralCategory extends \Src\Category\Infrastructure\Eloquent\Models\CentralCategory {}

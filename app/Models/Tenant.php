@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class Tenant extends \Src\Tenant\Infrastructure\Eloquent\Models\Tenant
-{
-}
+class Tenant extends \Src\Tenant\Infrastructure\Eloquent\Models\Tenant {}

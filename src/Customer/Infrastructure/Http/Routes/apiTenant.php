@@ -47,7 +47,9 @@ Route::post('/auth/logout', CustomerLogoutPOSTController::class);
 | contacto, con un simple GET a /api-tenant/customer/{id}.
 |
 */
-Route::middleware('auth')->group(function () {
+// Hallazgo N19: La ficha de un cliente lleva datos personales y su historial de compras. Las lecturas siguen abiertas al `staff`;
+// `tenant_can` solo exige el permiso al escribir.
+Route::middleware(['auth', 'tenant_can:manage_customers'])->group(function () {
     Route::get('/metrics', GetCustomerMetricsGETController::class);
     Route::post('/filter', FilterCustomersPOSTController::class);
     Route::post('/create', CreateCustomerPOSTController::class);

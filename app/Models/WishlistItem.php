@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class WishlistItem extends \Src\Customer\Infrastructure\Eloquent\Models\WishlistItem
-{
-}
+class WishlistItem extends \Src\Customer\Infrastructure\Eloquent\Models\WishlistItem {}

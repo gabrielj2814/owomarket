@@ -34,7 +34,15 @@ test.describe('Login del dueño de tienda (subdominio de tenant)', () => {
             "$env:PLAYWRIGHT_BASE_URL='http://owomarket.local'; npx playwright test",
     );
 
-    test('el POST de login responde 200 y no 419 por CSRF', async ({ page }) => {
+    /*
+    | Los dos asertos van en UN solo test a propósito, y no en dos.
+    |
+    | Desde N18 el login está limitado a 5 intentos por minuto contra la misma cuenta.
+    | Con un test por aserto, dos ejecuciones seguidas de la suite gastaban 4 intentos y
+    | la tercera daba 429 — comprobado: la suite se puso intermitente. Con un único login
+    | por pasada caben cinco ejecuciones por minuto, que es de sobra para iterar.
+    */
+    test('un login correcto responde 200 y lleva al backoffice', async ({ page }) => {
         await page.goto(`${tenantBaseURL}/auth/login`);
 
         const respuestaLogin = page.waitForResponse((r) => r.url().includes('/auth/login') && r.request().method() === 'POST');
@@ -45,22 +53,11 @@ test.describe('Login del dueño de tienda (subdominio de tenant)', () => {
 
         const respuesta = await respuestaLogin;
 
-        // El assert que importa: 419 era exactamente el síntoma de la regresión.
+        // El aserto que motiva este spec: 419 era exactamente el síntoma de la regresión.
         expect(respuesta.status(), 'El login devolvió 419: la excepción de CSRF para api-tenant/*/interna/* dejó de aplicarse').not.toBe(419);
         expect(respuesta.status()).toBe(200);
 
-        // No se lee el cuerpo: en cuanto llega el 200 la página hace `window.location.href`
-        // al backoffice, y Chrome descarta el cuerpo de una respuesta de la que ya se navegó.
-        // Que el rol sea `owner` lo comprueba el test siguiente, por el destino del redirect.
-    });
-
-    test('un login correcto lleva al backoffice de la tienda', async ({ page }) => {
-        await page.goto(`${tenantBaseURL}/auth/login`);
-
-        await page.getByPlaceholder('name@owomarket.com').fill(tenantOwner.email);
-        await page.getByPlaceholder('password').fill(tenantOwner.password);
-        await page.getByRole('button', { name: /Submit/i }).click();
-
+        // Que el rol sea `owner` se comprueba por el destino: sólo esa rama redirige aquí.
         await expect(page).toHaveURL(/\/tenant\/backoffice\/[0-9a-f-]+\/dashboard/i);
     });
 
@@ -69,7 +66,11 @@ test.describe('Login del dueño de tienda (subdominio de tenant)', () => {
 
         const respuestaLogin = page.waitForResponse((r) => r.url().includes('/auth/login') && r.request().method() === 'POST');
 
-        await page.getByPlaceholder('name@owomarket.com').fill(tenantOwner.email);
+        // Correo único por ejecución: el límite de N18 cuenta por (cuenta + IP), así que
+        // reutilizar siempre el mismo lo agotaría al repetir la suite.
+        const correoInexistente = `no.existe.${Date.now()}@chivostore.com`;
+
+        await page.getByPlaceholder('name@owomarket.com').fill(correoInexistente);
         // Cumple las reglas de formato del formulario a propósito: si no, la validación de
         // cliente aborta antes del POST y el test no probaría nada del servidor.
         await page.getByPlaceholder('password').fill('EndAdmin_87654321');

@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralOrder extends \Src\Order\Infrastructure\Eloquent\Models\CentralOrder
-{
-}
+class CentralOrder extends \Src\Order\Infrastructure\Eloquent\Models\CentralOrder {}

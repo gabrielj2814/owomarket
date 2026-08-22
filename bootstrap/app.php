@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Support\Facades\Route;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureSupportRequesterIsAuthenticated;
+use Src\Shared\Infrastructure\Http\Middleware\EnsureTenantUserHasPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserHasStaffPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserIsSuperAdmin;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserIsTenantOwner;
@@ -45,6 +46,11 @@ return Application::configure(basePath: dirname(__DIR__))
             */
             Route::middleware([
                 'web',
+                // Hallazgo N18: techo general para la API de la tienda. Es alto a
+                // proposito —no es la defensa contra abuso dirigido, para eso estan los
+                // limitadores con nombre de RouteServiceProvider— sino el tope que impide
+                // que un bucle roto en el navegador o un raspador tumben la base.
+                'throttle:api',
                 InitializeTenancyByDomain::class,
                 PreventAccessFromCentralDomains::class,
             ])->prefix('api-tenant')->group(base_path('routes/tenantApi.php'));
@@ -86,6 +92,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // cookie. Por eso se antepone a toda la pila en vez de anadirse al grupo `web`.
         $middleware->prepend(ScopeSessionCookieToHost::class);
 
+        // Hallazgo N18: el grupo 'api' de Laravel 11+ viene vacio, asi que /api/* no
+        // tenia ningun limite. Mismo techo que /api-tenant/*.
+        $middleware->api(append: [
+            'throttle:api',
+        ]);
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
@@ -106,6 +118,10 @@ return Application::configure(basePath: dirname(__DIR__))
         |                    acepta parámetros: staff:manage_payouts,manage_plans (lógica OR).
         |                    El super administrador siempre pasa.
         |   'tenant_owner' → propietarios de tienda ('tenant_owner' u 'owner') y super admin.
+        |   'tenant_can'   → permisos DENTRO de una tienda (hallazgo N19). Acepta
+        |                    parametros: tenant_can:manage_catalog,manage_orders (OR).
+        |                    Las lecturas pasan siempre; solo exige permiso al escribir.
+        |                    El propietario de la tienda pasa siempre.
         |   'internal'     → comunicación entre servicios internos mediante secreto compartido.
         |   'support_session' → exige sesión de propietario de tienda (guard 'web') o de
         |                    cliente central (session('central_customer_id')). No resuelve
@@ -116,6 +132,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'super_admin' => EnsureUserIsSuperAdmin::class,
             'staff' => EnsureUserHasStaffPermission::class,
             'tenant_owner' => EnsureUserIsTenantOwner::class,
+            'tenant_can' => EnsureTenantUserHasPermission::class,
             'internal' => InternalServiceMiddleware::class,
             'support_session' => EnsureSupportRequesterIsAuthenticated::class,
         ]);

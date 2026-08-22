@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralCustomerSsoToken extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken
-{
-}
+class CentralCustomerSsoToken extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken {}

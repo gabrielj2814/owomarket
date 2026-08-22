@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class TenantSubscription extends \Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription
-{
-}
+class TenantSubscription extends \Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription {}

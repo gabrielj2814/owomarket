@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralProduct extends \Src\Product\Infrastructure\Eloquent\Models\CentralProduct
-{
-}
+class CentralProduct extends \Src\Product\Infrastructure\Eloquent\Models\CentralProduct {}

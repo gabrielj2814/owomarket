@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralBrand extends \Src\Brand\Infrastructure\Eloquent\Models\CentralBrand
-{
-}
+class CentralBrand extends \Src\Brand\Infrastructure\Eloquent\Models\CentralBrand {}

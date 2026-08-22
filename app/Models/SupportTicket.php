@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class SupportTicket extends \Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket
-{
-}
+class SupportTicket extends \Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket {}

@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CommissionSettlement extends \Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement
-{
-}
+class CommissionSettlement extends \Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement {}

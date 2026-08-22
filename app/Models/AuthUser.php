@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class AuthUser extends \Src\Authentication\Infrastructure\Eloquent\Models\AuthUser
-{
-}
+class AuthUser extends \Src\Authentication\Infrastructure\Eloquent\Models\AuthUser {}

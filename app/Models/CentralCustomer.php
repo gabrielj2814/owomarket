@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralCustomer extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer
-{
-}
+class CentralCustomer extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer {}

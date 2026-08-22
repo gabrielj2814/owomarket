@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class CentralHomeBanner extends \Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner
-{
-}
+class CentralHomeBanner extends \Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner {}

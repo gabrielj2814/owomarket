@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class User extends \Src\User\Infrastructure\Eloquent\Models\User
-{
-}
+class User extends \Src\User\Infrastructure\Eloquent\Models\User {}

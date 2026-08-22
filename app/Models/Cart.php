@@ -7,6 +7,4 @@ namespace App\Models;
 /**
  * Alias de compatibilidad hacia el modelo DDD canónico en el Bounded Context.
  */
-class Cart extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\Cart
-{
-}
+class Cart extends \Src\CentralCustomer\Infrastructure\Eloquent\Models\Cart {}

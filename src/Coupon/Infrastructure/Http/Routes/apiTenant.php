@@ -39,7 +39,9 @@ Route::post('/validate', ValidateCouponPOSTController::class);
 | creaba un cupón del 100% desde internet, sin login, y luego se usaba.
 |
 */
-Route::middleware('auth')->group(function () {
+// Hallazgo N19: Un cupon es dinero: quien pueda crearlos puede regalar el margen de la tienda. Las lecturas siguen abiertas al `staff`;
+// `tenant_can` solo exige el permiso al escribir.
+Route::middleware(['auth', 'tenant_can:manage_coupons'])->group(function () {
     Route::post('/create', CreateCouponPOSTController::class);
     Route::post('/filter', FilterCouponsPOSTController::class);
     Route::get('/{id}', ConsultCouponGETController::class);

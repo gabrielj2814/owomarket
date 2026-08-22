@@ -49,18 +49,48 @@ Route::prefix('user')->group(callback: base_path('src/User/Infrastructure/Http/R
 |    CentralMarketplaceServices, ExchangeRateServices, StorefrontServices,
 |    ReviewServices.create y CouponServices.validate).
 */
+/*
+| Hallazgo N19 — control de rol dentro de la tienda.
+|
+| Hasta ahora estos modulos solo exigian 'auth': cualquiera con sesion en la tienda,
+| incluido un `staff` recien contratado, podia borrar el catalogo entero o anular
+| facturas exactamente igual que el propietario.
+|
+| `tenant_can` solo exige permiso en los metodos que ESCRIBEN. Un `staff` sigue pudiendo
+| consultar catalogo, pedidos y facturacion —lo necesita para trabajar—; lo que no puede
+| es modificarlos sin que se lo hayan concedido. Y el propietario pasa siempre.
+|
+| Los permisos se agrupan por area de responsabilidad, no por modulo: quien lleva el
+| catalogo toca productos, categorias, marcas y atributos, y no tiene sentido concederlos
+| por separado.
+*/
 Route::middleware('auth')->group(function () {
-    Route::prefix('product')->group(callback: base_path('src/Product/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('category')->group(callback: base_path('src/Category/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('brand')->group(callback: base_path('src/Brand/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('attribute')->group(callback: base_path('src/Attribute/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('tax')->group(callback: base_path('src/Tax/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('shipping')->group(callback: base_path('src/Shipping/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('billing')->group(callback: base_path('src/Billing/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('payment')->group(callback: base_path('src/Payment/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('order')->group(callback: base_path('src/Order/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('shipment')->group(callback: base_path('src/Shipment/Infrastructure/Http/Routes/apiTenant.php'));
-    Route::prefix('settings')->group(callback: base_path('src/TenantSettings/Infrastructure/Http/Routes/apiTenant.php'));
+    Route::middleware('tenant_can:manage_catalog')->group(function () {
+        Route::prefix('product')->group(callback: base_path('src/Product/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('category')->group(callback: base_path('src/Category/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('brand')->group(callback: base_path('src/Brand/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('attribute')->group(callback: base_path('src/Attribute/Infrastructure/Http/Routes/apiTenant.php'));
+    });
+
+    Route::middleware('tenant_can:manage_orders')->group(function () {
+        Route::prefix('order')->group(callback: base_path('src/Order/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('shipment')->group(callback: base_path('src/Shipment/Infrastructure/Http/Routes/apiTenant.php'));
+    });
+
+    // Facturacion y cobros van juntos: anular una factura y tocar un pago son la misma
+    // clase de decision, y quien pueda una deberia poder la otra.
+    Route::middleware('tenant_can:manage_billing')->group(function () {
+        Route::prefix('billing')->group(callback: base_path('src/Billing/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('payment')->group(callback: base_path('src/Payment/Infrastructure/Http/Routes/apiTenant.php'));
+    });
+
+    // Impuestos, envios y ajustes de la tienda cambian lo que se le cobra a TODOS los
+    // clientes, asi que van al permiso mas restrictivo del conjunto.
+    Route::middleware('tenant_can:manage_settings')->group(function () {
+        Route::prefix('tax')->group(callback: base_path('src/Tax/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('shipping')->group(callback: base_path('src/Shipping/Infrastructure/Http/Routes/apiTenant.php'));
+        Route::prefix('settings')->group(callback: base_path('src/TenantSettings/Infrastructure/Http/Routes/apiTenant.php'));
+    });
 });
 
 /*
@@ -68,6 +98,13 @@ Route::middleware('auth')->group(function () {
 |    público necesita. Cada archivo declara su propio grupo 'auth' alrededor
 |    de las de backoffice y deja fuera, comentada una por una, la lista
 |    blanca pública.
+*/
+/*
+| Estos tres no se pueden envolver aqui: su grupo 'auth' esta DENTRO del archivo del
+| modulo, porque conviven con rutas publicas del storefront. Un `tenant_can` a este nivel
+| tambien alcanzaria a las publicas y dejaria al comprador sin poder escribir una resena
+| ni validar un cupon. El permiso se declara dentro de cada archivo, sobre su grupo
+| privado (hallazgo N19).
 */
 Route::prefix('customer')->group(callback: base_path('src/Customer/Infrastructure/Http/Routes/apiTenant.php'));
 Route::prefix('coupon')->group(callback: base_path('src/Coupon/Infrastructure/Http/Routes/apiTenant.php'));

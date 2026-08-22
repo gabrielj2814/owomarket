@@ -48,7 +48,9 @@ Route::post('create', CreateProductReviewPOSTController::class);
 | como la tienda, editar o borrar cualquier reseña.
 |
 */
-Route::middleware('auth')->group(function () {
+// Hallazgo N19: Moderar resenas decide que reputacion ve el comprador. Las lecturas siguen abiertas al `staff`;
+// `tenant_can` solo exige el permiso al escribir.
+Route::middleware(['auth', 'tenant_can:manage_reviews'])->group(function () {
     Route::post('filter', FilterReviewsPOSTController::class);
     Route::get('summary/{productId?}', GetProductRatingSummaryGETController::class);
     Route::get('{id}', ConsultReviewGETController::class);

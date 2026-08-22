@@ -8,11 +8,21 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, HasRoles, Notifiable, SoftDeletes;
+
+    /**
+     * Hallazgo N19: sin `HasRoles` no habia forma de preguntarle a un usuario de tienda
+     * que puede hacer, asi que `staff` y `owner` eran indistinguibles para la
+     * autorizacion. Las tablas de Spatie viven en la base de CADA inquilino desde la
+     * Fase 4.2 (hallazgo F5), asi que el trait resuelve contra la tienda activa sin
+     * fijar conexion.
+     */
+    protected string $guard_name = 'web';
 
     public $table = 'users';
 
