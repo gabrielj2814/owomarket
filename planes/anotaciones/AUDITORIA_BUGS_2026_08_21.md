@@ -2,18 +2,29 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 47 de 50 hallazgos cerrados (94%) · 3 parciales · 0 abiertos.**
+> **Hallazgos originales: 46 de 50 cerrados (92%) · 4 parciales · 0 abiertos.**
+> **Hallazgos nuevos (N1-N35): 15 cerrados · 20 abiertos.**
 >
-> **Los 50 hallazgos del documento original están atendidos.** Quedan 3 parciales —A9,
-> G9 y G15— y ninguno abierto. Lo que sigue vivo son los hallazgos **nuevos** (N1-N35),
-> descubiertos durante la remediación.
+> **Ningún hallazgo del documento original queda sin atender.** Lo que falta de los 4
+> parciales, para no tener que buscarlo:
 >
-> Fases 0, 1 y 2 completas. Fase 3 empezada.
+> | # | Lo que ya está | Lo que falta |
+> | :--- | :--- | :--- |
+> | **A9** | Exige `super_admin` (Fase 0.3-A) | **La URL sigue rota** — genera `/auth/sso` cuando la ruta real es `/auth/sso-consume`, así que el botón de «acceso directo» del expediente 360° da 404. Y la impersonación no se escribe en `CentralAuditLog` |
+> | **B4** | El backend ya no confía en `localStorage` (Fase 0.3-D) | El frontend sigue cacheando nombre, email, teléfono, documento y direcciones en `localStorage`, al alcance de cualquier XSS. Es exposición, ya no autorización |
+> | **G9** | La tasa BCV ya no está hardcodeada y el botón espera a tenerla (Fase 3.4) | El checkout central sigue **sin incluir envío ni impuestos**: funcionalidad que no existe |
+> | **G15** | Tres de los cuatro defectos (Fase 3.4) | Los 9 `.catch(() => {})` de `pages/customer`, que hacen que un error de red sea indistinguible de «no tienes pedidos» |
+>
+> **El trabajo que sigue vivo son los hallazgos nuevos**, los que fueron apareciendo al
+> implementar los arreglos. Están al final del documento, agrupados por frente.
+>
+> Fases 0, 1, 2, 3 y 4 completas.
 > **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
-> secciones de «menores», que hasta ahora no llevaban marca.
+> secciones de «menores» y la tabla de hallazgos nuevos.
 >
-> **Todos los 🔴 críticos que este documento marcó como bloqueantes están cerrados.**
-> Lo que queda es mayoritariamente 🟠 alto y 🟡 medio.
+> **Todos los 🔴 críticos están cerrados**, incluidos los que no estaban en el documento
+> original y aparecieron por el camino (N32: el checkout central tenía datos bancarios de
+> demostración incrustados, igual que G1 pero en el otro checkout).
 >
 > ### Cómo continuar en otra sesión
 >
@@ -75,14 +86,17 @@
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Configurar los datos de cobro de la plataforma** (N33): la Fase 3.4 dejó el
->    checkout central leyendo `central_settings`, pero **no hay pantalla para escribirlos**.
->    Hasta entonces el checkout central no ofrece ningún método de pago.
-> 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
->    fuera de desarrollo, así que una instalación nueva ya no tiene por dónde arrancar.
-> 3. **`domains.id` casteado a int** (P2/N23): `$domain->id` devuelve siempre `0` y
->    revienta la petición con ~6% de los UUID.
-> 4. **F3 y F5**, y **D5 y D6** — lo que queda de infraestructura y de dinero.
+> Ya no queda nada del documento original. El siguiente trabajo sale de la tabla de
+> **hallazgos nuevos** del final, por orden de lo que más duele:
+>
+> 1. **El stock del checkout central** (N14): crea pedidos de tienda **sin tocar el
+>    inventario**, así que todos los bloqueos de la Fase 1.3 sólo protegen el storefront
+>    de cada tienda. Y nadie repone al cancelar (N13).
+> 2. **El marketplace central va por detrás del de tienda** (N28, N31, N33, N34): sin
+>    cupones, sin revalidación de carrito, sin pantalla para los datos de cobro de la
+>    plataforma y sin envío ni impuestos.
+> 3. **Cuándo nace la comisión** (N15): nace al despachar y no al cobrar, que es la raíz
+>    de D2 — hoy dependemos de que alguien cancele el pedido para anularla.
 >
 > ### 📋 Pendientes explícitos (fuera de los bloques A-G)
 >
@@ -107,11 +121,30 @@
 > | 2.2 | Catálogo central desincronizado; índice único `(tenant_id, slug)` chocando con datos viejos | ✅ No aplica con la base reiniciada |
 > | 3.1 | `used_count` inflado por el incremento fuera de transacción | ✅ No aplica con la base reiniciada |
 >
-> **Lo único que sigue siendo requisito, también en una base nueva:**
+> **Lo que sigue siendo requisito, también en una base nueva:**
 >
 > - **Fase 1.4:** tiene que haber una **tasa activa** en `exchange_rates`, o
 >   `/api/exchange-rate/convert` devuelve 404. La siembra `ExchangeRateSeeder`, que desde
 >   la Fase 2.1 vive en `ProductionSeeder` — es decir, se carga también fuera de desarrollo.
+> - **Fase 3.4:** el checkout central **no acepta pagos** hasta que se carguen los datos de
+>   cobro de la plataforma en `central_settings`. En desarrollo lo hace
+>   `CentralPaymentDemoSeeder`; en producción no hay pantalla todavía (N33).
+> - **Fase 4.2:** hay que correr **`php artisan tenants:migrate`** para que las tiendas
+>   reciban las tablas de permisos (F5).
+>
+> ### 🔁 Cambios de comportamiento a comunicar antes de desplegar
+>
+> No son deuda, son decisiones tomadas que cambian lo que ve el usuario:
+>
+> | Fase | Cambio |
+> | :--- | :--- |
+> | 1.3 | El checkout **rechaza** pedidos sin existencias en vez de aceptarlos |
+> | 1.4 | Sin tasa activa, `/convert` devuelve **404** en vez de convertir con tasa 1.0 |
+> | 3.1 | Un cupón caducado o agotado **rechaza el pedido con 422**, y el cupón se retira del carrito si cambian las cantidades |
+> | 3.2 | Los carritos guardados **se pierden una vez** (la clave pasa a `_v2`), y el precio puede corregirse al alza al abrir el carrito |
+> | 3.4 | Sin tasa activa **no se muestran los precios en bolívares** en lugar de mostrar una inventada |
+> | 4.1 | El PIN sólo sirve para **cambiar tu propia contraseña**, y los enlaces SSO dejan de valer fuera de su dominio |
+> | 4.2 | **Todas las sesiones se invalidan** (la cookie cambia de nombre y ámbito). Los envíos gratuitos con umbral dejan de serlo por debajo de él, las tarifas por peso pasan a multiplicar, y sin país el impuesto es 0 en vez de la suma de todas las tasas |
 >
 > **Todo lo de arriba vuelve a aplicar el día que haya datos reales que preservar.** Cada
 > plan conserva su sección «Riesgo» con las consultas de comprobación.
@@ -1057,7 +1090,8 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 ## Plan de acción sugerido
 
 > **Estado al 21/08/2026: 13 de 13 puntos completados.**
-> Fases 0, 1 y 2 completas · Fase 3 empezada.
+> Fases 0, 1, 2 y 3 completas. Se añadió una **Fase 4** que no estaba en este plan, para
+> los hallazgos sueltos que no encajaban en ninguno de los 13 puntos.
 
 ### Fase 0 — Antes de exponer nada (bloqueante) — ✅ COMPLETA
 1. ✅ **Borrar `routes/tenant.php:31`** (A1). — *Fase 0.1*
@@ -1072,18 +1106,30 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 8. ✅ `lockForUpdate` en liquidaciones (C3), factura correlativa (C4) y stock (C1). — *Fase 1.3*
 9. ✅ Excepción en lugar de tasa 1.0 (D3) y arreglo del scraper BCV (D4). — *Fase 1.4*
 
-### Fase 2 — Consistencia — 🟡 2 de 3
+### Fase 2 — Consistencia — ✅ COMPLETA
 10. ✅ Sincronización central por eventos de modelo (E1, E2) y `(tenant_id, slug)` único (E3). — *Fase 2.2*
 11. ✅ Upsert de variantes en vez de borrar y recrear (E4). — *Fase 2.2*
-12. 🟡 `sessions.user_id` nullable (F1 — ✅ *Fase 2.1*), guard `central_customer`
-    (F4 — 🟡 ya creado en la Fase 0.3-D), permisos en tenant (F5 — ⬜),
-    seeders condicionados (F6 — ✅ *Fase 2.1*).
+12. ✅ `sessions.user_id` nullable (F1 — *Fase 2.1*), guard `central_customer`
+    (F4 — *Fase 0.3-D*; verificado el 21/08/2026: es el único guard con nombre que usa el
+    código y está definido), permisos en tenant (F5 — *Fase 4.2*), seeders condicionados
+    (F6 — *Fase 2.1*).
 
-### Fase 3 — Frontend — ✅ COMPLETA (G9 y G15 quedan parciales por funcionalidad que no existe, no por bugs)
+### Fase 3 — Frontend — ✅ COMPLETA (G9 y G15 quedan parciales; ver la tabla de parciales del bloque de estado)
 13. ✅ Cupones (G2, G3 — ✅ *Fase 3.1*, junto con B3 y C6 del backend), revalidación de
     carrito (G4 — ✅ *Fase 3.2*, junto con G5, G6, G11 y G12), `isCentralDomain` desde el
     servidor (G7 — ✅ *Fase 3.3*), refresco de sesión SSO (G10 — ✅ *Fase 3.3*, junto con
     la mitad pendiente de G8). **Punto 13 completo.**
+
+### Fase 4 — Lo que no entraba en ningún punto — ✅ COMPLETA
+
+Estos hallazgos estaban en el documento pero fuera de los 13 puntos del plan, más los dos
+pendientes que se acumularon por el camino.
+
+14. ✅ **Tokens SSO y PIN de administrador** (A7, A8, C5) y el comando `admin:create-super`
+    (pendiente P1). — *Fase 4.1*
+15. ✅ **Tarifas de envío e impuestos** (D5, D6), **cookie de sesión por dominio** (F3) y
+    **permisos en las bases de tenant** (F5), más `domains.id` como UUID
+    (pendiente P2, que además hacía intermitente la suite). — *Fase 4.2*
 
 ---
 
@@ -1093,15 +1139,18 @@ No estaban en la auditoría original; se descubrieron al implementar los arreglo
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
 **Estado al 21/08/2026: 15 cerrados · 20 abiertos.** Repasados uno a uno contra el código,
-no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
+no contra las notas de cada fase. **Aquí está todo el trabajo que queda**, agrupado por
+frente y ordenado por lo que más duele:
 
-| Frente | Hallazgos | Por qué importa |
-| :--- | :--- | :--- |
-| **Stock que nadie repone ni reserva** | N13, N14 | Un pedido cancelado no devuelve inventario, y el checkout central no lo descuenta siquiera |
-| **Cuándo nace y cómo se anula una comisión** | N15, N16 | La comisión nace al despachar y no al cobrar; revertir una ya liquidada sólo deja una marca |
-| **Nada se reintenta ni avisa** | N17, N20, N25 | Despachos fallidos, sincronizaciones del catálogo y fallos del BCV se quedan donde caen |
-| **Puertas sin cerrar** | N18, N19, N22, N23 | Sin límite de tasa, sin roles dentro de la tienda, sin forma de crear el primer superadmin, y `$domain->id` devolviendo `0` |
-| **Deuda del checkout y del frontend** | N12, N21, N24, N27, N28, N29, N30, N31 | Cupones y carrito del marketplace central, tipos de los servicios, y el formulario de reseñas roto desde siempre |
+| # | Frente | Hallazgos | Por qué importa |
+| :--- | :--- | :--- | :--- |
+| 1 | **Stock que nadie reserva ni repone** | N13, N14 | **El checkout central no descuenta inventario en absoluto**, así que todos los bloqueos de la Fase 1.3 sólo protegen el storefront de cada tienda. Y cancelar un pedido no devuelve nada |
+| 2 | **El marketplace central va por detrás del de tienda** | N28, N31, N33, N34 | No aplica cupones, no revalida el carrito, no tiene pantalla para los datos de cobro de la plataforma y no incluye envío ni impuestos. Cada arreglo del storefront ha ido dejando esta brecha más visible |
+| 3 | **Cuándo nace y cómo se anula una comisión** | N15, N16 | La comisión nace al despachar y no al cobrar — es la raíz de D2 — y revertir una ya liquidada sólo deja una marca `requires_manual_adjustment` |
+| 4 | **Nada se reintenta ni avisa** | N17, N20, N24, N25 | Despachos fallidos, sincronizaciones del catálogo y fallos del BCV se quedan donde caen. Falta un `catalog:resync` y que la sincronización sea un job en cola |
+| 5 | **Puertas a medio cerrar** | N18, N19 | El límite de tasa sólo llegó a las rutas del PIN; dentro de una tienda sigue sin haber control de rol, aunque la Fase 4.2 ya dejó las tablas de permisos en cada tenant |
+| 6 | **Deuda del frontend** | N12, N29, N30, N35 | El formulario de reseñas lleva roto desde siempre, 119 firmas mal tipadas en 16 servicios, el checkout no revalida al enviar, y 9 `.catch(() => {})` que ocultan errores de red |
+| 7 | **Limpieza** | N21 | Un `ExchangeRateServiceProvider` duplicado y muerto |
 
 | # | Hallazgo | Origen | Estado |
 | :--- | :--- | :--- | :--- |
@@ -1122,8 +1171,8 @@ no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
 | N15 | La comisión sigue naciendo al despachar y no al cobrar. Es la raíz de D2: mientras no cambie, dependemos de que alguien cancele el pedido para anularla | Fase 1.2 | ⬜ Abierto |
 | N16 | No existen notas de crédito: revertir una comisión ya liquidada sólo deja una marca `requires_manual_adjustment` | Fase 1.2 | ⬜ Abierto |
 | N17 | Los despachos fallidos quedan en `status = 'failed'` y nada los reintenta; el despacho sigue siendo síncrono | Fase 1.1 | ⬜ Abierto |
-| N18 | Ningún endpoint tiene límite de tasa. Al pasar `api-tenant` de `api` a `web` se perdió incluso la posibilidad de `throttleApi()` (aunque nunca estuvo activo) | Fase 0.3-E | ⬜ Abierto |
-| N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto — reverificado: `/api-tenant/*` lleva `web` + tenancy + `auth`, sin ningún alias de rol |
+| N18 | 🟡 **Parcial.** La Fase 4.1 puso `throttle:5,15` en las dos rutas del PIN, pero **el resto de la aplicación sigue sin ningún límite de tasa**: login, registro y consumo de SSO son los siguientes candidatos. Texto original: ningún endpoint tiene límite de tasa. Al pasar `api-tenant` de `api` a `web` se perdió incluso la posibilidad de `throttleApi()` (aunque nunca estuvo activo) | Fase 0.3-E | 🟡 Parcial |
+| N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto — reverificado: `/api-tenant/*` lleva `web` + tenancy + `auth`, sin ningún alias de rol. **La Fase 4.2 puso el habilitador**: las tablas de permisos ya existen en cada base de tenant (F5) |
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ✅ Cerrado (Fase 4.1) |
