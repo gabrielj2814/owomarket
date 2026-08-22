@@ -1,7 +1,6 @@
 <?php
 
 return [
-    App\Providers\SharedServiceProvider::class,
     App\Providers\AdminServiceProvider::class,
     App\Providers\AppServiceProvider::class,
     App\Providers\AttributeServiceProvider::class,
@@ -12,12 +11,14 @@ return [
     App\Providers\CouponServiceProvider::class,
     App\Providers\CustomerServiceProvider::class,
     App\Providers\ExchangeRateServiceProvider::class,
+    App\Providers\HorizonServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\OrderServiceProvider::class,
     App\Providers\PaymentServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\ReviewServiceProvider::class,
     App\Providers\RouteServiceProvider::class,
+    App\Providers\SharedServiceProvider::class,
     App\Providers\ShipmentServiceProvider::class,
     App\Providers\ShippingServiceProvider::class,
     App\Providers\TaxServiceProvider::class,

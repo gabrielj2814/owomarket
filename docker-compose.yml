@@ -1,4 +1,19 @@
-version: '3.8'
+# ------------------------------------------------------------------------------
+# Hallazgo N40: dentro de los contenedores los servicios se alcanzan por su nombre
+# de red, no por 127.0.0.1 — que es lo que dice el `.env` del host, montado como
+# volumen. Estas variables lo corrigen sin tocar el `.env`, para que seguir
+# trabajando con Laragon fuera de Docker siga funcionando.
+#
+# Las variables de entorno del contenedor ganan sobre el `.env`: Dotenv no
+# sobrescribe lo que ya existe en el entorno.
+# ------------------------------------------------------------------------------
+x-entorno-contenedor: &entorno-contenedor
+  DB_HOST: db
+  CENTRAL_DB_HOST: db
+  REDIS_HOST: redis
+  QUEUE_CONNECTION: redis
+  CACHE_STORE: redis
+  SESSION_DRIVER: redis
 
 services:
   # ----------------------------------------------------
@@ -13,6 +28,7 @@ services:
     restart: unless-stopped
     tty: true
     environment:
+      <<: *entorno-contenedor
       SERVICE_NAME: app
       SERVICE_TAGS: dev
     volumes:
@@ -71,7 +87,41 @@ services:
       retries: 5
 
   # ----------------------------------------------------
-  # Contenedor 4: Redis (Cache, Sesiones y Colas/Horizon)
+  # Contenedor 4: Horizon (worker de colas)
+  # ----------------------------------------------------
+  #
+  # Hallazgo N40: sin esto, la aplicacion no despacha. Desde N17 y N25 el pedido
+  # central llega a cada tienda y el catalogo se sincroniza EN COLA, asi que sin
+  # un worker un pedido cobrado no llega nunca a su tienda.
+  #
+  # Misma imagen que `app`: comparte codigo y dependencias, solo cambia el proceso.
+  # `stop_signal: SIGTERM` es lo que Horizon espera para terminar el job en curso
+  # antes de morir, en vez de dejarlo a medias.
+  horizon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    container_name: owomarket_horizon
+    restart: unless-stopped
+    command: php artisan horizon
+    stop_signal: SIGTERM
+    environment:
+      <<: *entorno-contenedor
+      SERVICE_NAME: horizon
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini:ro
+    networks:
+      - owomarket_net
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  # ----------------------------------------------------
+  # Contenedor 5: Redis (Cache, Sesiones y Colas/Horizon)
   # ----------------------------------------------------
   redis:
     image: redis:alpine

@@ -1,0 +1,130 @@
+# ====================================================
+# Hallazgo N40 — el worker de colas y su Redis
+# ====================================================
+#
+# Desde N17 y N25 la aplicación NECESITA un worker: el despacho de un pedido central a
+# cada tienda y la sincronización del catálogo van en cola. Sin worker, un pedido cobrado
+# no llega nunca a su tienda y nadie se entera, porque no falla nada — simplemente no pasa.
+#
+# `k8s/deployment.yaml` ya apuntaba a `redis-service` en su ConfigMap, pero ese Service no
+# existía en ningún manifiesto. Se define aquí junto al worker que lo usa.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: owomarket-redis
+  namespace: owomarket
+  labels:
+    app: owomarket-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: owomarket-redis
+  template:
+    metadata:
+      labels:
+        app: owomarket-redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          # `appendonly` para que una cola pendiente sobreviva a un reinicio del pod. Sin
+          # esto, reiniciar Redis pierde los despachos que aún no se habían procesado.
+          args: ["redis-server", "--appendonly", "yes"]
+          ports:
+            - containerPort: 6379
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+      volumes:
+        - name: redis-data
+          persistentVolumeClaim:
+            claimName: owomarket-redis-pvc
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: owomarket-redis-pvc
+  namespace: owomarket
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: owomarket
+spec:
+  selector:
+    app: owomarket-redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: owomarket-horizon
+  namespace: owomarket
+  labels:
+    app: owomarket-horizon
+spec:
+  # Una sola réplica a propósito: Horizon ya reparte el trabajo entre varios procesos
+  # dentro del pod (ver `maxProcesses` en config/horizon.php). Escalar réplicas duplica
+  # supervisores sobre la misma cola sin ganar nada, y complica leer el panel.
+  replicas: 1
+  strategy:
+    # `Recreate` y no rolling: dos Horizon a la vez sobre la misma cola se pisan las
+    # métricas y los supervisores.
+    type: Recreate
+  selector:
+    matchLabels:
+      app: owomarket-horizon
+  template:
+    metadata:
+      labels:
+        app: owomarket-horizon
+    spec:
+      # Horizon termina el job en curso al recibir SIGTERM. Este margen es lo que le damos
+      # para hacerlo antes de que Kubernetes lo mate: un despacho a medias deja un pedido
+      # sin llegar a su tienda.
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: horizon
+          image: ghcr.io/tu-usuario/owomarket-backend:v1.0.0 # Misma imagen que el backend
+          imagePullPolicy: IfNotPresent
+          command: ["php", "artisan", "horizon"]
+          envFrom:
+            - configMapRef:
+                name: owomarket-config
+            - secretRef:
+                name: owomarket-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            # Si el proceso sigue en pie pero Horizon dejó de supervisar, la cola se para
+            # en silencio. `horizon:status` es lo que distingue «vivo» de «trabajando».
+            exec:
+              command: ["sh", "-c", "php artisan horizon:status | grep -q running"]
+            initialDelaySeconds: 30
+            periodSeconds: 60
