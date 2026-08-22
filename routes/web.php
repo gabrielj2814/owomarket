@@ -22,6 +22,8 @@ foreach (config('tenancy.central_domains') as $domain) {
 
         Route::prefix('admin')->group(callback: base_path('src/Admin/Infrastructure/Http/Routes/web.php'));
         Route::prefix('admin')->group(callback: base_path('src/ExchangeRate/Infrastructure/Http/Routes/web.php'));
+        // Hallazgo N33: datos de cobro de la plataforma, bajo `super_admin`.
+        Route::prefix('admin')->group(callback: base_path('src/Payment/Infrastructure/Http/Routes/web.php'));
         Route::prefix('tenant')->group(callback: base_path('src/Tenant/Infrastructure/Http/Routes/web.php'));
         Route::prefix('tenant')->group(callback: base_path('src/SupportTicket/Infrastructure/Http/Routes/web.php'));
 
