@@ -58,8 +58,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/backoffice/{user_uuid}/profile', [ViewAdminProfileGETController::class, 'index'])->name('central.backoffice.web.admin.profile');
     Route::put('/backoffice/{user_uuid}/profile', [UpdateAdminProfilePUTController::class, 'index']);
     Route::post('/backoffice/{user_uuid}/profile/avatar', [UploadAdminAvatarPOSTController::class, 'index']);
-    Route::post('/backoffice/{user_uuid}/profile/send-pin', [SendSecurityPinPOSTController::class, 'index']);
-    Route::put('/backoffice/{user_uuid}/profile/change-password', [ChangePasswordWithPinPUTController::class, 'index']);
+    // Hallazgo A7: el PIN son 6 digitos (un millon de combinaciones) y NO habia ningun
+    // limite de tasa, ni en la ruta ni global (`bootstrap/app.php` no invoca
+    // `throttleApi()`), asi que el espacio entero se agotaba dentro de la ventana de
+    // validez de 15 minutos.
+    Route::post('/backoffice/{user_uuid}/profile/send-pin', [SendSecurityPinPOSTController::class, 'index'])
+        ->middleware('throttle:5,15');
+    Route::put('/backoffice/{user_uuid}/profile/change-password', [ChangePasswordWithPinPUTController::class, 'index'])
+        ->middleware('throttle:5,15');
 });
 
 // ---------------------------------------------------------------------------

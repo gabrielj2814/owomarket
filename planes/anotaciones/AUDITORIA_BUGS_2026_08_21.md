@@ -2,10 +2,10 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 40 de 50 hallazgos cerrados (80%) · 2 parciales · 8 abiertos.**
+> **Avance: 43 de 50 hallazgos cerrados (86%) · 2 parciales · 5 abiertos.**
 >
-> **Bloques B, C, E y G cerrados enteros.** Lo que queda son 8 hallazgos sueltos de
-> autenticación (A7, A8), concurrencia (C5), dinero (D5, D6) e infraestructura (F3, F5).
+> **Bloques A, B, C, E y G cerrados** (A9 queda parcial). Lo que queda son 5 hallazgos:
+> dinero (D5, D6) e infraestructura (F3, F5), más el 🟡 A9.
 >
 > Fases 0, 1 y 2 completas. Fase 3 empezada.
 > **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
@@ -33,9 +33,9 @@
 >
 > | Bloque | Cerrados | Parciales | Abiertos |
 > | :--- | :--- | :--- | :--- |
-> | **A. Autenticación** | A1 A2 A3 A4 A5 A6 | A9 | A7 A8 |
+> | **A. Autenticación** | A1-A8 | A9 | — |
 > | **B. Datos del cliente** | B1 B2 B3 | B4 | — |
-> | **C. Concurrencia** | C1 C2 C3 C4 C6 | — | C5 |
+> | **C. Concurrencia** | C1 C2 C3 C4 C5 C6 | — | — |
 > | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1 F2 F4 F6 | — | F3 F5 |
@@ -69,10 +69,13 @@
 > | 3.2 | G4, G5, G6, G11, G12 | `PLAN_FASE3_2_INTEGRIDAD_DEL_CARRITO.md` |
 > | 3.3 | G7, G10, G8 | `PLAN_FASE3_3_SESION_DEL_COMPRADOR.md` |
 > | 3.4 | G13, G14, G9 y G15 (parciales), N32 | `PLAN_FASE3_4_MONEDA_Y_ERRORES_VISIBLES.md` |
+> | 4.1 | A7, A8, C5, P1 | `PLAN_FASE4_1_TOKENS_Y_PIN.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **Configurar los datos de cobro de la plataforma** (N33): la Fase 3.4 dejó el
+> 1. **D5 y D6** (tarifas de envío e impuestos) y **F3 y F5** (cookie de sesión entre
+>    subdominios y tablas de permisos ausentes en las bases de tenant).
+> 2. **Configurar los datos de cobro de la plataforma** (N33): la Fase 3.4 dejó el
 >    checkout central leyendo `central_settings`, pero **no hay pantalla para escribirlos**.
 >    Hasta entonces el checkout central no ofrece ningún método de pago.
 > 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
@@ -85,7 +88,7 @@
 >
 > | # | Pendiente | Por qué | Estado |
 > | :--- | :--- | :--- | :--- |
-> | **P1** | **Comando `admin:create-super`** para crear el primer superadmin por consola | La Fase 2.1 vetó `RootUserSeeder` fuera de desarrollo, así que **una instalación nueva no tiene ningún camino para crear el superadmin inicial**. No rompe los despliegues existentes, que ya tienen el suyo. Debe pedir nombre, email y contraseña de forma interactiva, validarla con `PasswordValidator` y negarse a sobrescribir un usuario existente | ⬜ Abierto |
+> | **P1** | ✅ **HECHO (Fase 4.1)** — comando `admin:create-super` interactivo: contraseña oculta (nunca por argumento, acabaría en el historial del shell), validada con `PasswordValidator`, y se niega a sobrescribir un usuario existente | La Fase 2.1 vetó `RootUserSeeder` fuera de desarrollo, así que **una instalación nueva no tiene ningún camino para crear el superadmin inicial**. No rompe los despliegues existentes, que ya tienen el suyo | ✅ Cerrado |
 > | **P2** | **`domains.id` es UUID pero el modelo lo declara `int`** | Ver N23: `$domain->id` devuelve **siempre `0`**, y con ~6% de los UUID revienta la petición entera | ⬜ Abierto |
 >
 > ### ⚠️ Deuda operativa sobre datos (no sobre código)
@@ -291,7 +294,7 @@ if ($userId) { $query->where('user_id', $userId); }   // sin userId => sin filtr
 
 ### A7. 🟠 PIN de 6 dígitos fuerza-brutable y aplicable a cualquier administrador
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.1) — el destinatario es el usuario en sesión, `throttle:5,15` en ambas rutas, y el PIN se quema a los 3 fallos
 
 **Archivo:** `src/Admin/Infrastructure/Http/Routes/web.php:37-38` + `ChangePasswordWithPinUseCase.php:36-45`
 
@@ -305,7 +308,7 @@ El destinatario del cambio de contraseña es el `{user_uuid}` de la URL, **no** 
 
 ### A8. 🟠 El token SSO no se ata al destino: se puede redimir en otra tienda
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.1) — `target_domain` comparado con `hash_equals`, filtro por `tenant_id`, y se conserva el tipo real del usuario en vez de forzar `owner`
 
 **Archivos:** `src/CentralCustomer/Application/UseCases/ValidateAndConsumeSsoTokenUseCase.php:20-44` y `src/Tenant/Application/UseCase/ConsumeTenantOwnerSsoTokenUseCase.php:25-47`
 
@@ -481,7 +484,7 @@ Se leen las comisiones pendientes, se crea la liquidación con los totales y **d
 
 ### C5. 🟠 Consumo de tokens SSO sin atomicidad (replay por carrera)
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.1) — comprobación y consumo en la misma sentencia, mirando las filas afectadas, en los dos flujos de SSO
 
 **Archivos:** `ValidateAndConsumeSsoTokenUseCase.php:30-39`, `ConsumeTenantOwnerSsoTokenUseCase.php:25-36`
 
@@ -1123,7 +1126,7 @@ no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
 | N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto — reverificado: `/api-tenant/*` lleva `web` + tenancy + `auth`, sin ningún alias de rol |
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
-| N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ⬜ Abierto |
+| N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ✅ Cerrado (Fase 4.1) |
 | N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ⬜ Abierto |
 | N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ⬜ Abierto |
 | N25 | La sincronización con el catálogo central es **síncrona**: escribe en la base central dentro de la misma petición, incluida la transacción del checkout. Si el marketplace no responde, la fila queda desincronizada y sólo queda el log. Lo natural es un job en cola con reintentos | Fase 2.2 | ⬜ Abierto |

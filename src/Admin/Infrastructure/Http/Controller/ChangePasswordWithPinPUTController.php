@@ -21,8 +21,12 @@ class ChangePasswordWithPinPUTController extends Controller
     public function index(ChangePasswordWithPinRequest $request, string $user_uuid): JsonResponse
     {
         try {
+            // Hallazgo A7: el destinatario del cambio era el `{user_uuid}` de la URL, no el
+            // usuario en sesion. Un usuario autenticado de bajo privilegio podia disparar
+            // `/send-pin` contra el UUID de un admin y luego iterar los PIN posibles
+            // contra `/change-password`. Ahora solo puedes cambiar TU contrasena.
             $this->useCase->execute(
-                $user_uuid,
+                (string) auth()->id(),
                 $request->input('pin'),
                 $request->input('password'),
                 $request->input('password_confirmation')

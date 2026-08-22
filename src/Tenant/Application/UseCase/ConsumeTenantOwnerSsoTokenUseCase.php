@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 final class ConsumeTenantOwnerSsoTokenUseCase
@@ -21,19 +21,37 @@ final class ConsumeTenantOwnerSsoTokenUseCase
             ? config('database.default')
             : (config('tenancy.database.central_connection') ?: 'central');
 
-        // 1. Buscar token en base de datos central
-        $ssoToken = TenantOwnerSsoToken::on($centralConn)
+        // 1. Consumir el token de forma atomica (hallazgo C5).
+        //
+        // Buscar y despues marcar eran dos sentencias, asi que dos peticiones simultaneas
+        // con el mismo enlace lo consumian ambas. La comprobacion y la escritura van ahora
+        // juntas, y se mira el numero de filas afectadas.
+        //
+        // Ademas se exige que el token sea de ESTA tienda (hallazgo A8): la consulta no
+        // filtraba por `tenant_id`, asi que un token legitimo de la tienda A servia para
+        // entrar como propietario en la tienda B.
+        $tenantActual = (function_exists('tenancy') && tenancy()->initialized) ? (string) tenant('id') : null;
+
+        $query = TenantOwnerSsoToken::on($centralConn)
             ->where('token', $token)
             ->whereNull('used_at')
-            ->where('expires_at', '>', now())
-            ->first();
+            ->where('expires_at', '>', now());
+
+        if ($tenantActual !== null) {
+            $query->where('tenant_id', $tenantActual);
+        }
+
+        $consumed = (clone $query)->update(['used_at' => now()]);
+
+        if ($consumed === 0) {
+            throw new Exception('El token SSO es inválido, ya fue utilizado, ha expirado o no corresponde a esta tienda.', 401);
+        }
+
+        $ssoToken = TenantOwnerSsoToken::on($centralConn)->where('token', $token)->first();
 
         if (! $ssoToken) {
             throw new Exception('El token SSO es inválido o ha expirado.', 401);
         }
-
-        // 2. Marcar token como consumido en la base de datos central
-        $ssoToken->update(['used_at' => now()]);
 
         // 3. Buscar usuario en base de datos central
         $centralUser = User::on($centralConn)->find($ssoToken->user_id);
@@ -42,7 +60,10 @@ final class ConsumeTenantOwnerSsoTokenUseCase
         }
 
         // 4. Sincronizar o aprovisionar el usuario en la base de datos del inquilino
-        $userType = (function_exists('tenancy') && tenancy()->initialized) ? 'owner' : ($centralUser->type ?: 'tenant_owner');
+        // Hallazgo A8: aqui se forzaba `type = 'owner'` sin mirar quien era el usuario, asi
+        // que consumir un token creaba un propietario en la base del inquilino aunque la
+        // persona no lo fuera. Se conserva su tipo real.
+        $userType = $centralUser->type ?: 'tenant_owner';
 
         $tenantUser = User::updateOrCreate(
             ['id' => $centralUser->id],

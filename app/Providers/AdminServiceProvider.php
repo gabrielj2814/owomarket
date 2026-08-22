@@ -29,6 +29,13 @@ class AdminServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        if ($this->app->runningInConsole()) {
+            // Pendiente P1 / hallazgo N22: la Fase 2.1 veto `RootUserSeeder` fuera de
+            // desarrollo, asi que una instalacion nueva se quedaba sin forma de crear el
+            // primer superadministrador. Este comando es ese camino.
+            $this->commands([
+                \Src\Admin\Infrastructure\Console\Commands\CreateSuperAdminCommand::class,
+            ]);
+        }
     }
 }

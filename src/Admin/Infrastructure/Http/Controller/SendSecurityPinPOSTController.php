@@ -21,7 +21,10 @@ class SendSecurityPinPOSTController extends Controller
     public function index(Request $request, string $user_uuid): JsonResponse
     {
         try {
-            $this->useCase->execute($user_uuid);
+            // Hallazgo A7: se enviaba el PIN al `{user_uuid}` de la URL, asi que cualquier
+            // autenticado podia generar PINes contra la cuenta de un admin. Solo puedes
+            // pedir un PIN para ti.
+            $this->useCase->execute((string) auth()->id());
 
             return ApiResponse::success(
                 data: null,
