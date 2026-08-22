@@ -73,14 +73,7 @@ beforeEach(function () {
     // Fase 0.3-E: /api-tenant/* dejó de estar abierto (hallazgo A5). Las rutas
     // de backoffice exigen ahora sesión de usuario de la tienda; se autentica
     // aquí para todo el archivo.
-    $this->tenantUser = \Src\Tenant\Infrastructure\Eloquent\Models\User::create([
-        'id' => (string) \Illuminate\Support\Str::uuid(),
-        'name' => 'Store Staff',
-        'email' => 'staff_'.bin2hex(random_bytes(5)).'@example.com',
-        'password' => bcrypt('Password123!'),
-        'type' => 'tenant_owner',
-    ]);
-    $this->actingAs($this->tenantUser);
+    $this->tenantUser = actingAsTenantOwner();
 });
 
 afterEach(function () {

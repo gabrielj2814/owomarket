@@ -1196,14 +1196,31 @@ frente y ordenado por lo que más duele:
 
 - **`lockForUpdate` no hace nada en SQLite**, que es lo que usa la suite de tests.
   Los tests de concurrencia (C1, C3, C4) validan que la lógica de comprobación sea
-  correcta, **no** que la carrera esté cerrada. Esa garantía depende de MySQL/PostgreSQL
-  en producción. Si el volumen lo justifica, hace falta una prueba de carga real.
+  correcta, **no** que la carrera esté cerrada.
+
+  **Decisión del 21/08/2026: no se hace nada al respecto, y es deliberado.** Ninguna
+  suite secuencial puede demostrar que una carrera está cerrada, corra sobre SQLite o
+  sobre MySQL: haría falta arrancar procesos en paralelo. Y una prueba de carga es para
+  un volumen que todavía no existe. Si algún día un `lockForUpdate` falla en producción
+  por SQL inválido en MySQL, el arreglo es mirar ese error — no montar antes un CI con
+  dos motores que tampoco probaría la carrera.
 - **Los tests que tocan `/api-tenant/*` necesitan `actingAs`** desde la Fase 0.3-E.
-  El patrón usado es crear un `Src\Tenant\...\User` con `type => 'tenant_owner'` en el
-  `beforeEach` y llamar a `$this->actingAs(...)`; cubre todo el archivo.
-- **Las clases que se sustituyen por dobles de Mockery no pueden ser `final`.**
-  Ya pasó con `VerifiedPurchaseChecker` y `ReverseOrderCommissionUseCase`; ambas llevan
-  un comentario explicando por qué rompen la convención del proyecto.
+  Hay un helper en `tests/Pest.php`; una línea en el `beforeEach` cubre todo el archivo:
+
+  ```php
+  $this->tenantUser = actingAsTenantOwner();
+  ```
+
+  Sustituyó al bloque de ocho líneas que se repetía en 33 archivos: 25 eran idénticos
+  byte a byte y se migraron de golpe. Los **6 restantes se dejan a propósito** — no son
+  boilerplate, crean usuarios con datos concretos para su prueba (comprobar un 403, un
+  email duplicado, el SSO).
+- **Las clases que se sustituyen por dobles de Mockery no llevan `final`**, porque
+  Mockery necesita heredar de ellas. **No es una excepción: es la regla**, declarada en
+  el punto 5 de las reglas de backend de `reglas.md`. Que dos clases llevaran un
+  comentario pidiendo disculpas por «romper la convención» era señal de que la
+  convención estaba mal escrita, no de que las clases estuvieran mal. Tampoco se crea
+  una interfaz con una sola implementación sólo para poder doblarla.
 ### Decisión de negocio sobre la comisión — confirmada el 21/08/2026
 
 **La comisión se cobra sobre la mercancía neta de descuento, sin incluir el envío.**
