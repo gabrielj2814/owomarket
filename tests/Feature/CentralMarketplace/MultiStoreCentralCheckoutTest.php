@@ -2,9 +2,6 @@
 
 declare(strict_types=1);
 
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
@@ -12,6 +9,8 @@ use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
@@ -180,7 +179,7 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     // Set Tenant A on Pro Plan (3.5% fee)
     app(SubscribeTenantToPlanUseCase::class)->execute($this->tenantA->id, 'pro');
 
-    $refNumber = 'PM-MASTER-' . random_int(100000, 999999);
+    $refNumber = 'PM-MASTER-'.random_int(100000, 999999);
 
     $payload = [
         'customer' => [
@@ -489,4 +488,72 @@ test('El despacho no repite el pedido en una tienda ya despachada (hallazgo C2)'
     tenancy()->end();
 
     expect(PlatformCommission::where('tenant_id', $this->tenantA->id)->count())->toBe(1);
+});
+
+/**
+ * Hallazgo N14: **el checkout central no reservaba stock en absoluto.**
+ * `DispatchCentralOrderToTenantsUseCase` creaba pedidos en cada tienda sin tocar el
+ * inventario, así que todo el trabajo de bloqueos de la Fase 1.3 sólo protegía el
+ * storefront de cada tienda: por el marketplace se podían vender unidades que no existían,
+ * y el stock nunca bajaba con las ventas.
+ */
+test('el checkout central descuenta el stock de cada tienda (hallazgo N14)', function () {
+    $payload = [
+        'customer' => ['name' => 'Ana', 'email' => 'ana.stock@example.com'],
+        'shipping_address' => ['address' => 'Av. 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'payment_details' => ['reference_number' => 'PM-'.random_int(100000, 999999)],
+        'items' => [
+            [
+                'tenant_id' => $this->tenantA->id,
+                'product_id' => $this->productA->id,
+                'quantity' => 2,
+                'price' => 50.00,
+            ],
+            [
+                'tenant_id' => $this->tenantB->id,
+                'product_id' => $this->productB->id,
+                'quantity' => 3,
+                'price' => 25.00,
+            ],
+        ],
+    ];
+
+    $this->postJson('http://owomarket.local/api/central/marketplace/checkout/create-order', $payload)
+        ->assertStatus(201);
+
+    tenancy()->initialize($this->tenantA);
+    expect(Product::find($this->productA->id)->quantity)->toBe(8); // 10 - 2
+    tenancy()->end();
+
+    tenancy()->initialize($this->tenantB);
+    expect(Product::find($this->productB->id)->quantity)->toBe(17); // 20 - 3
+    tenancy()->end();
+});
+
+test('el checkout central rechaza el pedido si una tienda no tiene existencias', function () {
+    tenancy()->initialize($this->tenantA);
+    Product::where('id', $this->productA->id)->first()->update(['quantity' => 1]);
+    tenancy()->end();
+
+    $payload = [
+        'customer' => ['name' => 'Ana', 'email' => 'ana.sinstock@example.com'],
+        'shipping_address' => ['address' => 'Av. 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'payment_details' => ['reference_number' => 'PM-'.random_int(100000, 999999)],
+        'items' => [[
+            'tenant_id' => $this->tenantA->id,
+            'product_id' => $this->productA->id,
+            'quantity' => 5,
+            'price' => 50.00,
+        ]],
+    ];
+
+    $this->postJson('http://owomarket.local/api/central/marketplace/checkout/create-order', $payload);
+
+    // Lo que no puede pasar es que el stock quede negativo ni que se cree el pedido
+    // de tienda como si hubiera existencias.
+    tenancy()->initialize($this->tenantA);
+    expect(Product::find($this->productA->id)->quantity)->toBe(1);
+    tenancy()->end();
 });

@@ -176,6 +176,27 @@ export interface CentralProductDetailResponse {
     store: TenantStoreItem;
 }
 
+export interface CentralRevalidatedCartLine {
+    tenant_id: string;
+    product_id: string;
+    central_product_id?: string;
+    available: boolean;
+    reason: string | null;
+    name?: string;
+    sku?: string | null;
+    price?: number;
+    quantity?: number;
+    available_stock?: number;
+    price_changed?: boolean;
+    previous_price?: number | null;
+    quantity_reduced?: boolean;
+}
+
+export interface CentralRevalidateCartResponse {
+    lines: CentralRevalidatedCartLine[];
+    has_changes: boolean;
+}
+
 const CentralMarketplaceServices = {
     getHomeData: async (): Promise<Data<MarketplaceHomeData>> => {
         try {
@@ -258,6 +279,31 @@ const CentralMarketplaceServices = {
                     message: 'Error al consultar tiendas asociadas',
                     data: [],
                     meta: [],
+                }
+            );
+        }
+    },
+
+    /**
+     * Hallazgo N31: la Fase 3.2 dio revalidacion al carrito de tienda y dejo fuera el
+     * central, que seguia con precios y stock congelados en `localStorage`.
+     */
+    revalidateCart: async (
+        items: Array<{ tenant_id: string; product_id: string; quantity: number; price?: number }>
+    ): Promise<Data<CentralRevalidateCartResponse>> => {
+        try {
+            const response = await axiosCentral.post<Data<CentralRevalidateCartResponse>>(
+                'cart/revalidate',
+                { items }
+            );
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'No se pudo comprobar el carrito',
+                    data: null as any,
                 }
             );
         }

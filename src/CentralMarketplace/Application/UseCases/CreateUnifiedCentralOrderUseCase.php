@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\CentralMarketplace\Application\UseCases;
 
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\CentralMarketplace\Application\Service\CentralItemPriceResolver;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 
 final class CreateUnifiedCentralOrderUseCase
 {
@@ -19,8 +19,7 @@ final class CreateUnifiedCentralOrderUseCase
     ) {}
 
     /**
-     * @param array<string, mixed> $payload
-     * @return CentralOrder
+     * @param  array<string, mixed>  $payload
      */
     public function execute(array $payload): CentralOrder
     {

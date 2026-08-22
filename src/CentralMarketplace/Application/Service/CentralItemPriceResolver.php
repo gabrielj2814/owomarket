@@ -32,7 +32,7 @@ final class CentralItemPriceResolver
 {
     /**
      * @param  array<string, mixed>  $item  Línea tal como llega del navegador.
-     * @return array{tenant_id: string, product_id: string, name: string, sku: string|null, price: float, quantity: int, attributes: array<string, mixed>|null}
+     * @return array{tenant_id: string, product_id: string, central_product_id: string, name: string, sku: string|null, price: float, quantity: int, available_stock: int, attributes: array<string, mixed>|null}
      *
      * @throws Exception 422 si el producto no existe en el catálogo central o no está publicado
      */
@@ -75,10 +75,14 @@ final class CentralItemPriceResolver
             // DispatchCentralOrderToTenantsUseCase usa para crear el pedido
             // en la tienda.
             'product_id' => (string) ($product->tenant_product_id ?: $product->id),
+            // El id central se devuelve aparte para que la revalidacion del carrito pueda
+            // enlazar cada linea con su ficha (hallazgo N31).
+            'central_product_id' => (string) $product->id,
             'name' => (string) $product->name,
             'sku' => $product->sku !== null ? (string) $product->sku : null,
             'price' => (float) $product->price,
             'quantity' => $quantity,
+            'available_stock' => (int) ($product->quantity ?? 0),
             'attributes' => isset($item['attributes']) && is_array($item['attributes'])
                 ? $item['attributes']
                 : null,

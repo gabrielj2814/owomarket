@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
 import { useCentralCart } from '@/contexts/CentralCartContext';
@@ -24,18 +24,48 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
         updateQuantity,
         removeItem,
         clearStoreItems,
-        clearCart,
-    } = useCentralCart();
+        clearCart, revalidate, revalidationNotices, dismissRevalidationNotices } = useCentralCart();
 
     const storeGroups = getItemsByStore();
     const subtotal = getSubtotal();
     const totalCount = getItemCount();
+
+    // Hallazgo N31: se contrasta con `central_products` al abrir el carrito, igual que
+    // hace el de tienda desde la Fase 3.2.
+    useEffect(() => {
+        void revalidate();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     return (
         <>
             <Head title="Carrito Multi-Tienda - OwOMarket Central" />
 
             <div className="space-y-8">
+                {revalidationNotices.length > 0 && (
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="space-y-1">
+                                <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
+                                    Tu carrito ha cambiado desde la última vez:
+                                </p>
+                                <ul className="list-inside list-disc space-y-0.5 text-xs text-amber-800 dark:text-amber-300">
+                                    {revalidationNotices.map((aviso, i) => (
+                                        <li key={i}>{aviso}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={dismissRevalidationNotices}
+                                className="shrink-0 text-xs font-bold text-amber-900 hover:underline dark:text-amber-200"
+                            >
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                )}
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-4">
                     <div>

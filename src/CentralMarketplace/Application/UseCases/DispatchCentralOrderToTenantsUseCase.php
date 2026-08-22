@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Src\CentralMarketplace\Application\Service\CentralOrderProrator;
 use Src\CentralMarketplace\Infrastructure\Eloquent\Models\CentralOrderDispatch;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
+use Src\Marketplace\Application\Service\StockReserver;
 use Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase;
 use Src\Order\Application\DTOs\CreateOrderData;
 use Src\Order\Application\DTOs\OrderItemInputData;
@@ -23,7 +24,8 @@ final class DispatchCentralOrderToTenantsUseCase
     public function __construct(
         private readonly CreateOrderUseCase $createOrderUseCase,
         private readonly CalculateAndRecordOrderCommissionUseCase $recordCommissionUseCase,
-        private readonly CentralOrderProrator $prorator
+        private readonly CentralOrderProrator $prorator,
+        private readonly StockReserver $stockReserver
     ) {}
 
     /**
@@ -118,6 +120,25 @@ final class DispatchCentralOrderToTenantsUseCase
                             price: (float) $item->price,
                             quantity: (int) $item->quantity,
                             attributes: $item->attributes
+                        );
+
+                        // Hallazgo N14: **el checkout central no reservaba stock en
+                        // absoluto**. Creaba pedidos de tienda sin tocar el inventario, asi
+                        // que todo el trabajo de bloqueos de la Fase 1.3 solo protegia el
+                        // storefront de cada tienda: se podian vender por el marketplace
+                        // unidades que no existian, y el stock nunca bajaba.
+                        //
+                        // Corre dentro de la transaccion del despacho y con la tenancy ya
+                        // inicializada, que es lo que hace efectivo el `lockForUpdate`.
+                        // La variante va en null porque `central_order_items` no la
+                        // guarda: el marketplace central todavia no vende por variante.
+                        // Cuando lo haga, hay que anadir la columna y pasarla aqui, o se
+                        // descontara del producto padre en vez de la variante.
+                        $this->stockReserver->reserve(
+                            (string) $item->product_id,
+                            null,
+                            (int) $item->quantity,
+                            (string) $item->product_name
                         );
                     }
 

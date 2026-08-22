@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Src\CentralMarketplace\Application\UseCases;
 
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Exception;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class GetCentralOrderConfirmationUseCase
 {
     /**
-     * @param string $centralOrderIdOrNumber
      * @return array<string, mixed>
      */
     public function execute(string $centralOrderIdOrNumber): array

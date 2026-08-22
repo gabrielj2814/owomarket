@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;

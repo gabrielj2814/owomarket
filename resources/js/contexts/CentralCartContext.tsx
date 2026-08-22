@@ -3,7 +3,10 @@ import {
     readStoredArray,
     versionedCartKey,
 } from '@/utils/cartStorage';
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import CentralMarketplaceServices, {
+    CentralRevalidatedCartLine,
+} from '@/Services/CentralMarketplaceServices';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 export interface CentralCartItem {
     id: string; // unique item key
@@ -41,6 +44,10 @@ interface CentralCartContextType {
     getItemCount: () => number;
     isDrawerOpen: boolean;
     setIsDrawerOpen: (open: boolean) => void;
+    /** Hallazgo N31: contrasta el carrito con `central_products` y lo corrige. */
+    revalidate: () => Promise<void>;
+    revalidationNotices: string[];
+    dismissRevalidationNotices: () => void;
 }
 
 const CentralCartContext = createContext<CentralCartContextType | undefined>(undefined);
@@ -54,6 +61,71 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
     );
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [revalidationNotices, setRevalidationNotices] = useState<string[]>([]);
+
+    /**
+     * Hallazgo N31: el carrito central seguia con el precio y el stock del dia en que se
+     * anadio cada producto. Desde la Fase 2.2 el catalogo central si se mantiene al dia,
+     * asi que la diferencia con lo que el comprador ve es real; y desde la Fase 0.4 el
+     * checkout resuelve los precios por su cuenta, asi que se la encontraba al pagar.
+     *
+     * Se avisa de cada cambio: corregir el precio en silencio seria tan malo como no
+     * corregirlo.
+     */
+    const revalidate = useCallback(async () => {
+        if (items.length === 0) return;
+
+        const res = await CentralMarketplaceServices.revalidateCart(
+            items.map(i => ({
+                tenant_id: i.tenant_id,
+                product_id: i.product_id,
+                quantity: i.quantity,
+                price: i.price,
+            }))
+        );
+
+        if (res.code !== 200 || !res.data) return;
+
+        const avisos: string[] = [];
+        const porClave = new Map<string, CentralRevalidatedCartLine>(
+            res.data.lines.map(l => [`${l.tenant_id}_${l.product_id}`, l] as const)
+        );
+
+        setItems(prev =>
+            prev.flatMap(item => {
+                const line = porClave.get(`${item.tenant_id}_${item.product_id}`);
+                if (!line) return [item];
+
+                if (!line.available) {
+                    avisos.push(line.reason ?? `«${item.product_name}» ya no está disponible y se ha quitado.`);
+                    return [];
+                }
+
+                if (line.price_changed && typeof line.price === 'number') {
+                    const subio = line.price > item.price;
+                    avisos.push(
+                        `El precio de «${item.product_name}» ${subio ? 'subió' : 'bajó'} de $${item.price.toFixed(2)} a $${line.price.toFixed(2)}.`
+                    );
+                }
+
+                if (line.quantity_reduced && typeof line.quantity === 'number') {
+                    avisos.push(`Solo quedan ${line.quantity} unidades de «${item.product_name}»; se ajustó la cantidad.`);
+                }
+
+                return [
+                    {
+                        ...item,
+                        price: typeof line.price === 'number' ? line.price : item.price,
+                        quantity: typeof line.quantity === 'number' ? line.quantity : item.quantity,
+                    },
+                ];
+            })
+        );
+
+        setRevalidationNotices(avisos);
+    }, [items]);
+
+    const dismissRevalidationNotices = () => setRevalidationNotices([]);
 
     useEffect(() => {
         try {
@@ -163,6 +235,9 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 getItemCount,
                 isDrawerOpen,
                 setIsDrawerOpen,
+                revalidate,
+                revalidationNotices,
+                dismissRevalidationNotices,
             }}
         >
             {children}
