@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Psr\Log\LoggerInterface;
 use Src\ExchangeRate\Domain\Contracts\BcvScraperInterface;
 use Src\ExchangeRate\Domain\Contracts\ExchangeRateRepositoryInterface;
+use Src\ExchangeRate\Domain\Contracts\StaleRateAlerter;
 use Src\ExchangeRate\Domain\Entities\ExchangeRate;
 use Src\ExchangeRate\Domain\ValueObjects\CurrencyCode;
 use Src\ExchangeRate\Domain\ValueObjects\RateAmount;
@@ -29,7 +30,8 @@ final class SyncBcvExchangeRateUseCase
         private readonly BcvScraperInterface $scraper,
         private readonly ExchangeRateRepositoryInterface $repository,
         private readonly UuidGenerator $generator,
-        private readonly ?LoggerInterface $logger = null
+        private readonly ?LoggerInterface $logger = null,
+        private readonly ?StaleRateAlerter $alerter = null
     ) {}
 
     public function execute(): ExchangeRate
@@ -106,6 +108,11 @@ final class SyncBcvExchangeRateUseCase
                 'Todo el sitio está facturando con una tasa desactualizada.',
                 $context
             );
+
+            // Hallazgo N20: el `error` del log no despierta a nadie. El aviso sale ahora
+            // por un canal que alguien lee. El alerter es opcional a propósito, para que
+            // el caso de uso siga instanciable sin contenedor (así lo hacen los tests).
+            $this->alerter?->alertStaleRate($fallback, $daysStale, $errorMessage);
 
             return;
         }
