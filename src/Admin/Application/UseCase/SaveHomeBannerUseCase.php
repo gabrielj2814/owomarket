@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
 
 final class SaveHomeBannerUseCase
 {
@@ -35,7 +35,7 @@ final class SaveHomeBannerUseCase
                 throw new Exception("Banner '{$id}' no encontrado.", 404);
             }
         } else {
-            $banner = new CentralHomeBanner();
+            $banner = new CentralHomeBanner;
             $banner->id = (string) Str::uuid();
         }
 

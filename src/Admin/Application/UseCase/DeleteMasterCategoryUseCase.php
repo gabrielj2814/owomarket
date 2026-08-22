@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Exception;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 
 final class DeleteMasterCategoryUseCase
 {

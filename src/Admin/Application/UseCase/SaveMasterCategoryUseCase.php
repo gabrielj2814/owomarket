@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 
 final class SaveMasterCategoryUseCase
 {
@@ -35,7 +35,7 @@ final class SaveMasterCategoryUseCase
                 throw new Exception("Categoría central '{$id}' no encontrada.", 404);
             }
         } else {
-            $cat = new CentralCategory();
+            $cat = new CentralCategory;
             $cat->id = (string) Str::uuid();
         }
 

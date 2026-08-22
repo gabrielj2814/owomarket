@@ -2,19 +2,16 @@
 
 declare(strict_types=1);
 
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
-use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
-use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
 use Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase;
-use Src\Monetization\Application\UseCases\GetTenantMonetizationSummaryUseCase;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
 use Src\Monetization\Application\UseCases\UpdateTenantCustomCommissionUseCase;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;

@@ -4,18 +4,14 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
+use Exception;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
-use Exception;
 
 final class ConfirmAndSettleCommissionUseCase
 {
     /**
-     * @param string $settlementId
-     * @param string|null $paymentMethod 'pago_movil' | 'binance_pay' | 'bank_transfer'
-     * @param string|null $paymentReference
-     * @param string|null $notes
-     * @return CommissionSettlement
+     * @param  string|null  $paymentMethod  'pago_movil' | 'binance_pay' | 'bank_transfer'
      */
     public function execute(
         string $settlementId,

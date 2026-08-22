@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerWishlist;
 use Illuminate\Database\Eloquent\Collection;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerWishlist;
 
 final class ListCustomerWishlistUseCase
 {

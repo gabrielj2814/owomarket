@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\ExchangeRate\Domain\Repositories\ExchangeRateRepositoryInterface;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 
 final class ListCentralPayoutRequestsUseCase
 {

@@ -10,13 +10,11 @@ class CreateDomainsTable extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
         Schema::create('domains', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
             $table->string('domain', 255)->unique();
             $table->string('tenant_id');
             $table->boolean('is_primary')->default(false);
@@ -28,8 +26,6 @@ class CreateDomainsTable extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

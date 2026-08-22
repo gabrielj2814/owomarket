@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class ListCentralOrdersForAdminUseCase

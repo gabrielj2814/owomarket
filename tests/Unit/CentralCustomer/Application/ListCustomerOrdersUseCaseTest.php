@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\CentralCustomer\Application\UseCases\ListCustomerOrdersUseCase;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;

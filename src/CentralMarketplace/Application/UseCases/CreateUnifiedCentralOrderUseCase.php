@@ -9,13 +9,13 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\CentralMarketplace\Application\Service\CentralItemPriceResolver;
 use Src\CentralMarketplace\Application\Service\CentralOrderChargesCalculator;
+use Src\CentralMarketplace\Infrastructure\Jobs\DispatchCentralOrderJob;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 
 final class CreateUnifiedCentralOrderUseCase
 {
     public function __construct(
-        private readonly DispatchCentralOrderToTenantsUseCase $dispatchUseCase,
         private readonly CentralItemPriceResolver $priceResolver,
         private readonly CentralOrderChargesCalculator $chargesCalculator
     ) {}
@@ -49,8 +49,7 @@ final class CreateUnifiedCentralOrderUseCase
             if ($existing) {
                 // Se reintenta el despacho: es idempotente por tienda, así que
                 // sólo alcanzará a las que quedaron pendientes.
-                $existing->load(['items', 'customer']);
-                $this->dispatchUseCase->execute($existing);
+                DispatchCentralOrderJob::dispatch($existing->id);
 
                 return $existing->fresh(['items', 'customer']);
             }
@@ -151,8 +150,13 @@ final class CreateUnifiedCentralOrderUseCase
         // bases de datos de las tiendas (otra conexión), así que englobarlo
         // aquí no daría atomicidad real. Su seguridad viene de ser idempotente
         // por (pedido central, tienda), no de la transacción.
-        $centralOrder->load(['items', 'customer']);
-        $this->dispatchUseCase->execute($centralOrder);
+        //
+        // Hallazgo N17: además va FUERA de la petición. Antes el comprador esperaba a
+        // que respondieran todas las tiendas, y la que fallaba se quedaba en `failed`
+        // sin que nada la reintentara jamás. Ahora el pedido central ya está guardado
+        // —con sus líneas, que es lo que lee la pantalla de confirmación— y la
+        // propagación a las tiendas la hace la cola, con reintentos y espera creciente.
+        DispatchCentralOrderJob::dispatch($centralOrder->id);
 
         return $centralOrder->fresh(['items', 'customer']);
     }

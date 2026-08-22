@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\SupportTicket\Application\UseCase;
 
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Exception;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 
 final class UpdateTicketStatusUseCase
 {
@@ -15,13 +15,12 @@ final class UpdateTicketStatusUseCase
      *                                    que puede tocar cualquier ticket. Si viene informado, se
      *                                    exige que sea el dueño (antes cualquiera podía cerrar o
      *                                    reabrir el ticket de otra persona, hallazgo A6).
-     * @return SupportTicket
      */
     public function execute(string $ticketId, string $status, ?string $requesterId = null): SupportTicket
     {
         $allowed = ['open', 'in_progress', 'waiting_reply', 'resolved', 'closed'];
         if (! in_array($status, $allowed, true)) {
-            throw new Exception("Estado inválido. Permitidos: ".implode(', ', $allowed), 422);
+            throw new Exception('Estado inválido. Permitidos: '.implode(', ', $allowed), 422);
         }
 
         $ticket = SupportTicket::find($ticketId);

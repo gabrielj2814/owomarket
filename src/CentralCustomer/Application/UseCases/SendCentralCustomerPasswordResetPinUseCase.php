@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerPasswordReset;
 use Exception;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerPasswordReset;
 
 final class SendCentralCustomerPasswordResetPinUseCase
 {

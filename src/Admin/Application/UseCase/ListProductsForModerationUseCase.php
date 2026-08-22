@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class ListProductsForModerationUseCase

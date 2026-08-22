@@ -4,16 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
-use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
-use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
-use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
-use Src\User\Infrastructure\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Tests\TestCase;
 
 class AdminPhaseThreeOperationsTest extends TestCase
@@ -21,6 +17,7 @@ class AdminPhaseThreeOperationsTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private Tenant $tenant;
 
     protected function setUp(): void

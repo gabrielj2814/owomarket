@@ -15,7 +15,6 @@ final class GetTenantMonetizationSummaryUseCase
     ) {}
 
     /**
-     * @param string $tenantId
      * @return array<string, mixed>
      */
     public function execute(string $tenantId): array

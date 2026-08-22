@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Exception;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 
 final class DeleteSubscriptionPlanUseCase
 {

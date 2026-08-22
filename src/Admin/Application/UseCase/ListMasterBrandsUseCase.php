@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Str;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 
 final class ListMasterBrandsUseCase
 {

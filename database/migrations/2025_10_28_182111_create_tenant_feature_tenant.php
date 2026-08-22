@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_feature_tenant', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
             // Tenants use string UUID IDs, so use string FK
             $table->string('tenant_id');
             $table->string('tenant_feature_id');

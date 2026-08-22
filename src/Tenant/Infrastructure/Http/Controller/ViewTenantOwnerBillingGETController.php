@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Src\Tenant\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
-use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
-use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
 use Inertia\Inertia;
 use Inertia\Response;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class ViewTenantOwnerBillingGETController extends Controller

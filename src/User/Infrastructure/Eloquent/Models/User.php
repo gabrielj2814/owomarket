@@ -18,7 +18,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\TenantUser;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, SoftDeletes, HasRoles, HasUuids;
+    use HasFactory, HasRoles, HasUuids, Notifiable, SoftDeletes;
 
     public $table = 'users';
 

@@ -6,7 +6,6 @@ namespace Src\CentralCustomer\Infrastructure\Http\Controller;
 
 use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Src\CentralCustomer\Application\UseCases\GetCentralCustomerProfileUseCase;
 use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 use Src\Shared\Helper\ApiResponse;

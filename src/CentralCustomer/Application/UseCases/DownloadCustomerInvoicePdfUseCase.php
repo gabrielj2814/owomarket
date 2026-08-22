@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 
 final class DownloadCustomerInvoicePdfUseCase
 {

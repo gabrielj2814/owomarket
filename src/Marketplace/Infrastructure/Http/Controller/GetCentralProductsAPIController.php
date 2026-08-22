@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Shared\Helper\ApiResponse;
 
 final class GetCentralProductsAPIController

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 use Exception;
 use Spatie\Permission\Models\Role;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 
 final class SaveStaffRoleUseCase
 {
@@ -42,7 +42,7 @@ final class SaveStaffRoleUseCase
             action: $id ? 'role.updated' : 'role.created',
             entityType: 'Role',
             entityId: (string) $role->id,
-            description: "Rol '{$role->name}' guardado con " . count($permissions) . " permisos.",
+            description: "Rol '{$role->name}' guardado con ".count($permissions).' permisos.',
             oldValues: ['permissions' => $oldPermissions],
             newValues: ['permissions' => $permissions]
         );

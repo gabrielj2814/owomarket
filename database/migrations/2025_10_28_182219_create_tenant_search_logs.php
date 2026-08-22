@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_search_logs', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
             $table->string('query');
             $table->integer('results_count')->default(0);
             $table->json('filters_applied')->nullable();

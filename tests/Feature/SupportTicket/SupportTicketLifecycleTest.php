@@ -2,16 +2,14 @@
 
 declare(strict_types=1);
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Src\Tenant\Infrastructure\Eloquent\Models\Domain;
-use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -148,7 +146,7 @@ test('Support ticket web views render successfully', function () {
     ]);
 
     $this->actingAs($user)->get("/tenant/owner/backoffice/{$user->id}/support")->assertStatus(200);
-    $this->withSession(['central_customer_id' => $customer->id])->get("/account/support")->assertStatus(200);
+    $this->withSession(['central_customer_id' => $customer->id])->get('/account/support')->assertStatus(200);
 });
 
 test('Anonymous requests to the central support API are rejected', function () {

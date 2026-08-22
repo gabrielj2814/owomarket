@@ -4,17 +4,15 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerAddress;
 use Exception;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerAddress;
 
 final class AddCentralCustomerAddressUseCase
 {
     /**
-     * @param string $customerId
-     * @param array{label?: string, address: string, city: string, state?: string|null, zip_code?: string|null, country?: string, is_default?: bool} $data
-     * @return CentralCustomerAddress
+     * @param  array{label?: string, address: string, city: string, state?: string|null, zip_code?: string|null, country?: string, is_default?: bool}  $data
      */
     public function execute(string $customerId, array $data): CentralCustomerAddress
     {

@@ -2,14 +2,11 @@
 
 declare(strict_types=1);
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
-use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Inertia\Testing\AssertableInertia as Assert;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Domain;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;

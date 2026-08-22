@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\CentralCustomer\Application\UseCases\GetCustomerOrderTrackingUseCase;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;

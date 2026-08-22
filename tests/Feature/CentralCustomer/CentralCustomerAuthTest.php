@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer as TenantCustomer;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -56,7 +56,7 @@ beforeEach(function () {
 });
 
 test('POST /api/central/customer/register registers a new central customer with hashed password', function () {
-    $email = 'carlos_' . bin2hex(random_bytes(3)) . '@example.com';
+    $email = 'carlos_'.bin2hex(random_bytes(3)).'@example.com';
 
     $response = $this->postJson('/api/central/customer/register', [
         'name' => 'Carlos Mendoza',
@@ -79,7 +79,7 @@ test('POST /api/central/customer/register registers a new central customer with 
 });
 
 test('POST /api/central/customer/login authenticates valid central credentials', function () {
-    $email = 'ana_' . bin2hex(random_bytes(3)) . '@example.com';
+    $email = 'ana_'.bin2hex(random_bytes(3)).'@example.com';
     CentralCustomer::create([
         'id' => (string) Str::uuid(),
         'name' => 'Ana Gomez',
@@ -110,7 +110,7 @@ test('POST /api/central/customer/login authenticates valid central credentials',
 
 test('POST /api/central/customer/sso/generate-token creates ephemeral token and POST /api-tenant/customer/sso/consume synchronizes customer in tenant', function () {
     $customerId = (string) Str::uuid();
-    $email = 'pedro_' . bin2hex(random_bytes(3)) . '@example.com';
+    $email = 'pedro_'.bin2hex(random_bytes(3)).'@example.com';
 
     $centralCustomer = CentralCustomer::create([
         'id' => $customerId,
@@ -159,7 +159,7 @@ test('POST /api/central/customer/sso/generate-token creates ephemeral token and 
 
 test('GET /api-tenant/customer/auth/session and POST /api-tenant/customer/auth/logout manage tenant customer session', function () {
     $customerId = (string) Str::uuid();
-    $email = 'elena_' . bin2hex(random_bytes(3)) . '@example.com';
+    $email = 'elena_'.bin2hex(random_bytes(3)).'@example.com';
 
     $centralCustomer = CentralCustomer::create([
         'id' => $customerId,
@@ -208,7 +208,7 @@ test('GET /api-tenant/customer/auth/session and POST /api-tenant/customer/auth/l
 });
 
 test('POST /api/central/customer/login establishes a real session usable by protected endpoints', function () {
-    $email = 'session_' . bin2hex(random_bytes(3)) . '@example.com';
+    $email = 'session_'.bin2hex(random_bytes(3)).'@example.com';
     $customer = CentralCustomer::create([
         'id' => (string) Str::uuid(),
         'name' => 'Sesión Real',

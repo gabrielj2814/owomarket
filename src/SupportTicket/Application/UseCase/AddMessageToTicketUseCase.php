@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\SupportTicket\Application\UseCase;
 
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 use Exception;
 use Illuminate\Support\Str;
 use Src\SupportTicket\Application\Service\UploadSupportAttachmentService;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 
 final class AddMessageToTicketUseCase
 {
@@ -31,7 +31,6 @@ final class AddMessageToTicketUseCase
      *                                    que puede responder cualquier ticket. Si viene informado,
      *                                    se exige que sea el dueño del ticket (hallazgo A6: antes
      *                                    cualquier sesión válida podía escribir en el ticket de otro).
-     * @return SupportTicketMessage
      */
     public function execute(array $data, ?string $requesterId = null): SupportTicketMessage
     {

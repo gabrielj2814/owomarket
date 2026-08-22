@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Exception;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 
 final class ToggleProductMarketplacePublicationUseCase

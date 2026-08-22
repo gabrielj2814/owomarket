@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 
 final class CreateTenantOwnerPayoutRequestUseCase

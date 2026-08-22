@@ -12,11 +12,13 @@ use Illuminate\Support\Str;
 final class UploadSupportAttachmentService
 {
     private const ALLOWED_IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'];
+
     private const ALLOWED_VIDEO_EXTENSIONS = ['mp4', 'webm', 'mov', 'avi', 'mkv', 'ogg'];
+
     private const MAX_FILE_SIZE_KB = 51200; // 50MB
 
     /**
-     * @param array<UploadedFile> $files
+     * @param  array<UploadedFile>  $files
      * @return array<array{url: string, type: 'image'|'video'|'file', original_name: string, size_bytes: int, mime_type: string}>
      */
     public function uploadMultiple(array $files): array
@@ -27,6 +29,7 @@ final class UploadSupportAttachmentService
                 $uploaded[] = $this->uploadSingle($file);
             }
         }
+
         return $uploaded;
     }
 

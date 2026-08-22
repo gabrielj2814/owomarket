@@ -6,9 +6,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Src\Brand\Infrastructure\Eloquent\Models\Brand;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
-use Src\Customer\Infrastructure\Eloquent\Models\Customer;
 use Src\Payment\Application\Contracts\PaymentGatewayFactoryInterface;
 use Src\Payment\Infrastructure\Adapters\BinancePayPaymentGateway;
 use Src\Payment\Infrastructure\Adapters\PagoMovilPaymentGateway;
@@ -115,7 +113,7 @@ test('PaymentGatewayFactory resolves PagoMovil and BinancePay adapters', functio
 });
 
 test('Storefront checkout creates order and records payment with Pago Movil details', function () {
-    $refNumber = 'PM-REF-' . random_int(100000, 999999);
+    $refNumber = 'PM-REF-'.random_int(100000, 999999);
 
     $payload = [
         'customer' => [
@@ -176,7 +174,7 @@ test('Storefront checkout creates order and records payment with Pago Movil deta
 });
 
 test('Storefront checkout creates order and records payment with Binance Pay USDT details', function () {
-    $txHash = 'BN-TX-' . Str::random(16);
+    $txHash = 'BN-TX-'.Str::random(16);
 
     $payload = [
         'customer' => [

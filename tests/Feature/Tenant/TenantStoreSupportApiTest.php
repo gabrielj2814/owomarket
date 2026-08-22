@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;

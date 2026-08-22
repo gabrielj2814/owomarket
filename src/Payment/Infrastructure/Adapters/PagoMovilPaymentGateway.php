@@ -45,16 +45,16 @@ final class PagoMovilPaymentGateway implements PaymentGatewayInterface
             ?? $paymentData['metadata']['payment_details']['phone_origin']
             ?? null;
 
-        $txId = 'PM-' . $reference;
+        $txId = 'PM-'.$reference;
 
         $instructions = $this->config['instructions']
-            ?? 'Pago Móvil registrado con la referencia: ' . $reference . '. Pendiente de conciliación bancaria.';
+            ?? 'Pago Móvil registrado con la referencia: '.$reference.'. Pendiente de conciliación bancaria.';
 
         return PaymentResult::pending(
             transactionId: $txId,
             instructions: $instructions,
             redirectUrl: null,
-            message: 'Pago Móvil registrado exitosamente. Referencia: ' . $reference,
+            message: 'Pago Móvil registrado exitosamente. Referencia: '.$reference,
             rawResponse: [
                 'gateway' => 'pago_movil',
                 'reference_number' => $reference,
@@ -69,7 +69,7 @@ final class PagoMovilPaymentGateway implements PaymentGatewayInterface
 
     public function refund(string $transactionId, float $amount, ?string $reason = null): RefundResult
     {
-        $refundId = 'REF-PM-' . strtoupper(Str::random(8));
+        $refundId = 'REF-PM-'.strtoupper(Str::random(8));
 
         return RefundResult::success(
             refundId: $refundId,

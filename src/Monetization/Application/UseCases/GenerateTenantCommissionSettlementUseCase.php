@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class GenerateTenantCommissionSettlementUseCase

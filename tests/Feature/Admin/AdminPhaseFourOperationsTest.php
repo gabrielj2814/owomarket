@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
-use Src\User\Infrastructure\Eloquent\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Inertia\Testing\AssertableInertia as Assert;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
+use Src\User\Infrastructure\Eloquent\Models\User;
 use Tests\TestCase;
 
 class AdminPhaseFourOperationsTest extends TestCase
@@ -18,6 +17,7 @@ class AdminPhaseFourOperationsTest extends TestCase
     use RefreshDatabase;
 
     private User $superAdmin;
+
     private User $staffUser;
 
     protected function setUp(): void

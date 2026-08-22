@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerWishlist;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerWishlist;
 
 final class ToggleCustomerWishlistProductUseCase
 {

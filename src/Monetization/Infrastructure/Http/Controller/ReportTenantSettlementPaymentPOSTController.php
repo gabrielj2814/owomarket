@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Infrastructure\Http\Controller;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Shared\Helper\ApiResponse;
 
 final class ReportTenantSettlementPaymentPOSTController

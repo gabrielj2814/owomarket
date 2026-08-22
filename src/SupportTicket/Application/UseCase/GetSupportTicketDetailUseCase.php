@@ -4,14 +4,11 @@ declare(strict_types=1);
 
 namespace Src\SupportTicket\Application\UseCase;
 
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Exception;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 
 final class GetSupportTicketDetailUseCase
 {
-    /**
-     * @return SupportTicket
-     */
     public function execute(string $ticketId, ?string $userId = null): SupportTicket
     {
         $query = SupportTicket::with(['messages']);

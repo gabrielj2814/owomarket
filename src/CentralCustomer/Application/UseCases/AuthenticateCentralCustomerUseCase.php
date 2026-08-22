@@ -4,16 +4,14 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Exception;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 
 final class AuthenticateCentralCustomerUseCase
 {
     /**
-     * @param string $email
-     * @param string $password
      * @return array{customer: CentralCustomer, token: string}
      */
     public function execute(string $email, string $password): array

@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tenant_users', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
 
             $table->enum('role', ['owner', 'admin', 'manager', 'staff'])->default('staff');
             $table->json('permissions')->nullable();
@@ -23,14 +23,14 @@ return new class extends Migration
 
             // Foreign keys explícitas
             $table->foreign('tenant_id')
-                  ->references('id')
-                  ->on('tenants')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('tenants')
+                ->onDelete('cascade');
 
             $table->foreign('user_id')
-                  ->references('id')
-                  ->on('users')
-                  ->onDelete('cascade');
+                ->references('id')
+                ->on('users')
+                ->onDelete('cascade');
 
             $table->unique(['tenant_id', 'user_id']);
         });

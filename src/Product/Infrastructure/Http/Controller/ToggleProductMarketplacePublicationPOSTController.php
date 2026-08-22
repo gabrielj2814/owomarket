@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Src\Product\Infrastructure\Http\Controller;
 
-use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Src\Product\Application\UseCase\ToggleProductMarketplacePublicationUseCase;

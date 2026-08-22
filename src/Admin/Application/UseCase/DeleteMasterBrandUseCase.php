@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 use Exception;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 
 final class DeleteMasterBrandUseCase
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 
 final class SaveSubscriptionPlanUseCase
 {
@@ -36,7 +36,7 @@ final class SaveSubscriptionPlanUseCase
                 throw new Exception("Plan de suscripción '{$id}' no encontrado.", 404);
             }
         } else {
-            $plan = new SubscriptionPlan();
+            $plan = new SubscriptionPlan;
             $plan->id = (string) Str::uuid();
         }
 

@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Src\SupportTicket\Application\UseCase;
 
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
-use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 use Exception;
 use Illuminate\Support\Str;
 use Src\SupportTicket\Application\Service\UploadSupportAttachmentService;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
+use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicketMessage;
 
 final class CreateSupportTicketUseCase
 {
@@ -29,7 +29,6 @@ final class CreateSupportTicketUseCase
      *     metadata?: array<string, mixed>,
      *     files?: array<\Illuminate\Http\UploadedFile>
      * } $data
-     * @return SupportTicket
      */
     public function execute(array $data): SupportTicket
     {

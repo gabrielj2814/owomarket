@@ -3,10 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
-use Src\Tenant\Infrastructure\Eloquent\Models\Domain;
-use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -62,8 +59,8 @@ test('POST /tenant/create/account fails validation with duplicate email', functi
         'phone' => '04121234567',
         'password' => 'SecurePass123!',
         'confirmPassword' => 'SecurePass123!',
-        'store_name' => 'Comercio Nuevo Unico ' . bin2hex(random_bytes(3)),
-        'tenant_name' => 'comercio-nuevo-' . bin2hex(random_bytes(3)) . '.owomarket.local',
+        'store_name' => 'Comercio Nuevo Unico '.bin2hex(random_bytes(3)),
+        'tenant_name' => 'comercio-nuevo-'.bin2hex(random_bytes(3)).'.owomarket.local',
     ];
 
     $response = $this->postJson('/tenant/create/account', $payload);
@@ -75,12 +72,12 @@ test('POST /tenant/create/account fails validation with duplicate email', functi
 test('POST /tenant/create/account fails validation with mismatching password confirmation', function () {
     $payload = [
         'name' => 'Comercio Pass Test',
-        'email' => 'unique_' . bin2hex(random_bytes(3)) . '@example.com',
+        'email' => 'unique_'.bin2hex(random_bytes(3)).'@example.com',
         'phone' => '04121234567',
         'password' => 'SecurePass123!',
         'confirmPassword' => 'DifferentPass456!',
-        'store_name' => 'Comercio Pass ' . bin2hex(random_bytes(3)),
-        'tenant_name' => 'comercio-pass-' . bin2hex(random_bytes(3)) . '.owomarket.local',
+        'store_name' => 'Comercio Pass '.bin2hex(random_bytes(3)),
+        'tenant_name' => 'comercio-pass-'.bin2hex(random_bytes(3)).'.owomarket.local',
     ];
 
     $response = $this->postJson('/tenant/create/account', $payload);

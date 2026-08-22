@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerAddress;
 use Exception;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerAddress;
 
 final class DeleteCentralCustomerAddressUseCase
 {

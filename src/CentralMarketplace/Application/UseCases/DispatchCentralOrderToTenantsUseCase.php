@@ -22,6 +22,13 @@ use Throwable;
 
 final class DispatchCentralOrderToTenantsUseCase
 {
+    /**
+     * Tope de intentos por tienda (hallazgo N17). Pasado este número, la fila se queda
+     * en `failed` de forma definitiva y hace falta intervención manual: seguir
+     * reintentando contra una tienda rota sólo llena la cola de trabajo inútil.
+     */
+    public const MAX_DISPATCH_ATTEMPTS = 5;
+
     public function __construct(
         private readonly CreateOrderUseCase $createOrderUseCase,
         private readonly CalculateAndRecordOrderCommissionUseCase $recordCommissionUseCase,
@@ -284,11 +291,21 @@ final class DispatchCentralOrderToTenantsUseCase
     }
 
     /**
-     * Inserta la reserva de despacho. Devuelve null si ya existía —es decir,
-     * si otra ejecución (o un reintento) ya se ocupó de esta tienda—.
+     * Inserta la reserva de despacho, o reclama la de un intento fallido.
      *
-     * La exclusividad la garantiza el índice único de la tabla, no una lectura
-     * previa: dos procesos simultáneos no pueden ganar los dos.
+     * Devuelve null cuando esta tienda ya está despachada o en curso por otro
+     * proceso. La exclusividad la garantiza el índice único de la tabla, no una
+     * lectura previa: dos procesos simultáneos no pueden ganar los dos.
+     *
+     * **Hallazgo N17.** Antes, el `catch` devolvía null sin mirar el estado de la
+     * fila existente, así que una tienda que hubiera quedado en `failed` se saltaba
+     * para siempre: aunque alguien reintentara el despacho, esa tienda no volvía a
+     * intentarse nunca. Poner el reintento en cola sin arreglar esto habría dado
+     * una cola que no reintentaba nada.
+     *
+     * El reclamo es un UPDATE condicionado a `status = 'failed'`, y se decide por
+     * las filas afectadas: si dos trabajadores concurrentes intentan reclamar la
+     * misma fila, sólo uno ve un 1 y el otro se retira.
      */
     private function reserveDispatch(string $centralOrderId, string $tenantId): ?CentralOrderDispatch
     {
@@ -300,7 +317,29 @@ final class DispatchCentralOrderToTenantsUseCase
                 'status' => 'pending',
             ]);
         } catch (Throwable) {
-            return null;
+            // Ya hay fila para (pedido, tienda). Sólo se reclama si quedó fallida y
+            // no ha agotado el tope: una tienda permanentemente rota no puede
+            // reintentarse eternamente y bloquear la cola.
+            $reclamadas = CentralOrderDispatch::query()
+                ->where('central_order_id', $centralOrderId)
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'failed')
+                ->where('attempts', '<', self::MAX_DISPATCH_ATTEMPTS)
+                ->update([
+                    'status' => 'pending',
+                    'error_message' => null,
+                    'attempts' => DB::raw('attempts + 1'),
+                    'updated_at' => now(),
+                ]);
+
+            if ($reclamadas === 0) {
+                return null;
+            }
+
+            return CentralOrderDispatch::query()
+                ->where('central_order_id', $centralOrderId)
+                ->where('tenant_id', $tenantId)
+                ->first();
         }
     }
 

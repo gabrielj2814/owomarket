@@ -10,13 +10,11 @@ class CreateTenantsTable extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
         Schema::create('tenants', function (Blueprint $table) {
-            $table->uuid("id")->primary();
+            $table->uuid('id')->primary();
 
             // your custom columns may go here
             $table->string('name')->nullable();
@@ -28,7 +26,6 @@ class CreateTenantsTable extends Migration
             $table->string('currency')->default('USD');
             $table->enum('request', ['approved', 'rejected', 'in progress'])->default('in progress');
 
-
             $table->timestamps();
             $table->softDeletes();
             $table->json('data')->nullable();
@@ -37,8 +34,6 @@ class CreateTenantsTable extends Migration
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

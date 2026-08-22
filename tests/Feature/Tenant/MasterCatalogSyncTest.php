@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
-use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Brand\Infrastructure\Eloquent\Models\Brand;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -71,10 +71,10 @@ beforeEach(function () {
 test('POST /api-tenant/brand/sync-central synchronizes central master brands into tenant database with central_uuid', function () {
     $centralUuid1 = (string) Str::uuid();
     $centralUuid2 = (string) Str::uuid();
-    $name1 = 'Brand Alpha ' . bin2hex(random_bytes(3));
-    $name2 = 'Brand Beta ' . bin2hex(random_bytes(3));
-    $slug1 = 'brand-alpha-' . bin2hex(random_bytes(4));
-    $slug2 = 'brand-beta-' . bin2hex(random_bytes(4));
+    $name1 = 'Brand Alpha '.bin2hex(random_bytes(3));
+    $name2 = 'Brand Beta '.bin2hex(random_bytes(3));
+    $slug1 = 'brand-alpha-'.bin2hex(random_bytes(4));
+    $slug2 = 'brand-beta-'.bin2hex(random_bytes(4));
 
     CentralBrand::create([
         'id' => $centralUuid1,
@@ -119,10 +119,10 @@ test('POST /api-tenant/brand/sync-central synchronizes central master brands int
 test('POST /api-tenant/category/sync-central synchronizes hierarchical central categories into tenant database with central_uuid and parent_id', function () {
     $parentUuid = (string) Str::uuid();
     $childUuid = (string) Str::uuid();
-    $parentName = 'Parent Cat ' . bin2hex(random_bytes(3));
-    $childName = 'Child Cat ' . bin2hex(random_bytes(3));
-    $parentSlug = 'parent-cat-' . bin2hex(random_bytes(4));
-    $childSlug = 'child-cat-' . bin2hex(random_bytes(4));
+    $parentName = 'Parent Cat '.bin2hex(random_bytes(3));
+    $childName = 'Child Cat '.bin2hex(random_bytes(3));
+    $parentSlug = 'parent-cat-'.bin2hex(random_bytes(4));
+    $childSlug = 'child-cat-'.bin2hex(random_bytes(4));
 
     CentralCategory::create([
         'id' => $parentUuid,
@@ -170,8 +170,8 @@ test('POST /api-tenant/category/sync-central synchronizes hierarchical central c
 
 test('sync updates existing tenant brands by slug or name without creating duplicates', function () {
     $centralUuid = (string) Str::uuid();
-    $name = 'Shoes Brand ' . bin2hex(random_bytes(3));
-    $slug = 'shoes-brand-' . bin2hex(random_bytes(4));
+    $name = 'Shoes Brand '.bin2hex(random_bytes(3));
+    $slug = 'shoes-brand-'.bin2hex(random_bytes(4));
 
     // Existing local brand created previously without central_uuid
     $localBrand = Brand::create([
@@ -211,8 +211,8 @@ test('sync updates existing tenant brands by slug or name without creating dupli
 
 test('sync is fully idempotent on multiple executions', function () {
     $centralUuid = (string) Str::uuid();
-    $name = 'Electronics ' . bin2hex(random_bytes(3));
-    $slug = 'electronics-' . bin2hex(random_bytes(4));
+    $name = 'Electronics '.bin2hex(random_bytes(3));
+    $slug = 'electronics-'.bin2hex(random_bytes(4));
 
     CentralBrand::create([
         'id' => $centralUuid,

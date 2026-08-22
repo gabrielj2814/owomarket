@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Exception;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 
 final class ToggleCentralCustomerStatusUseCase
 {
@@ -22,7 +22,7 @@ final class ToggleCentralCustomerStatusUseCase
         if ($reason) {
             $notes = $customer->notes ?? '';
             $statusText = $customer->is_active ? 'Reactivado' : 'Bloqueado';
-            $customer->notes = trim("{$notes}\n[" . now()->toIso8601String() . "] {$statusText}: {$reason}");
+            $customer->notes = trim("{$notes}\n[".now()->toIso8601String()."] {$statusText}: {$reason}");
         }
 
         $customer->save();

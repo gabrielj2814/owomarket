@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Exception;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 
 final class CreateCustomerReturnRequestUseCase
 {

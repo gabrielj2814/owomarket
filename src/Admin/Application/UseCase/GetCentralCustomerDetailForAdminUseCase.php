@@ -4,11 +4,10 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
+use Exception;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerWishlist;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
-use Exception;
 
 final class GetCentralCustomerDetailForAdminUseCase
 {

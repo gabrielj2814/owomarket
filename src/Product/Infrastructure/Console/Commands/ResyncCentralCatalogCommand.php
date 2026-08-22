@@ -17,6 +17,11 @@ use Throwable;
  * `central_products` el dia de su publicacion. Reparar eso pedia un `tinker` a mano.
  *
  * Es idempotente: `touch()` dispara el observador sin cambiar ningun dato del producto.
+ *
+ * **Desde N25 el observador encola en vez de sincronizar**, asi que este comando deja el
+ * trabajo preparado y quien lo termina es el worker. Con la cola parada no se re-sincroniza
+ * nada, por eso el resumen habla de productos ENCOLADOS y no de re-sincronizados: decir lo
+ * segundo seria mentir sobre algo que aun no ha pasado.
  */
 final class ResyncCentralCatalogCommand extends Command
 {
@@ -57,7 +62,8 @@ final class ResyncCentralCatalogCommand extends Command
             }
         }
 
-        $this->info("✅ {$total} productos re-sincronizados en {$tenants->count()} tienda(s).");
+        $this->info("✅ {$total} productos encolados para re-sincronizar en {$tenants->count()} tienda(s).");
+        $this->line('   Los procesa el worker de colas; sin worker corriendo no se aplicaran.');
 
         return self::SUCCESS;
     }

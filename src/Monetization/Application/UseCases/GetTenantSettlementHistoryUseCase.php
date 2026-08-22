@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Illuminate\Database\Eloquent\Collection;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 
 final class GetTenantSettlementHistoryUseCase
 {
     /**
-     * @param string $tenantId
      * @return Collection<int, CommissionSettlement>
      */
     public function execute(string $tenantId): Collection

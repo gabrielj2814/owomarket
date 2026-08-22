@@ -36,11 +36,13 @@ class CentralOrderDispatch extends Model
         'tenant_id',
         'tenant_order_id',
         'status',
+        'attempts',
         'error_message',
         'dispatched_at',
     ];
 
     protected $casts = [
         'dispatched_at' => 'datetime',
+        'attempts' => 'integer',
     ];
 }

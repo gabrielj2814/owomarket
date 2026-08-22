@@ -9,13 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('categories', function (Blueprint $table) {
-            if (!Schema::hasColumn('categories', 'central_uuid')) {
+            if (! Schema::hasColumn('categories', 'central_uuid')) {
                 $table->string('central_uuid', 36)->nullable()->after('id')->index();
             }
         });
 
         Schema::table('brands', function (Blueprint $table) {
-            if (!Schema::hasColumn('brands', 'central_uuid')) {
+            if (! Schema::hasColumn('brands', 'central_uuid')) {
                 $table->string('central_uuid', 36)->nullable()->after('id')->index();
             }
         });

@@ -4,19 +4,15 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken;
 use Exception;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomerSsoToken;
 
 final class GenerateCustomerSsoTokenUseCase
 {
     /**
      * Genera un token efímero de un solo uso con 5 minutos de validez.
-     *
-     * @param string $customerId
-     * @param string|null $targetDomain
-     * @return CentralCustomerSsoToken
      */
     public function execute(string $customerId, ?string $targetDomain = null): CentralCustomerSsoToken
     {

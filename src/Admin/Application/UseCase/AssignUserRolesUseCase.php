@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
+use Exception;
 use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 use Src\User\Infrastructure\Eloquent\Models\User;
-use Exception;
 
 final class AssignUserRolesUseCase
 {
@@ -38,7 +38,7 @@ final class AssignUserRolesUseCase
             action: 'user_roles.assigned',
             entityType: 'User',
             entityId: $user->id,
-            description: "Roles del usuario '{$user->email}' actualizados a [" . implode(', ', $roles) . "].",
+            description: "Roles del usuario '{$user->email}' actualizados a [".implode(', ', $roles).'].',
             oldValues: ['roles' => $oldRoles, 'permissions' => $oldPermissions],
             newValues: ['roles' => $roles, 'permissions' => $data['direct_permissions'] ?? []]
         );

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
 use Exception;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralHomeBanner;
 
 final class DeleteHomeBannerUseCase
 {

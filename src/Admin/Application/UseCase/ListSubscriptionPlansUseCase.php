@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
+use Illuminate\Database\Eloquent\Collection;
 use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
-use Illuminate\Database\Eloquent\Collection;
 
 final class ListSubscriptionPlansUseCase
 {

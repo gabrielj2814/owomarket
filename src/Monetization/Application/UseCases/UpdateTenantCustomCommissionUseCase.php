@@ -10,9 +10,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 final class UpdateTenantCustomCommissionUseCase
 {
     /**
-     * @param string $tenantId
-     * @param float|null $customRate Porcentaje personalizado (e.g. 2.50) o null para restablecer al plan
-     * @return Tenant
+     * @param  float|null  $customRate  Porcentaje personalizado (e.g. 2.50) o null para restablecer al plan
      */
     public function execute(string $tenantId, ?float $customRate): Tenant
     {

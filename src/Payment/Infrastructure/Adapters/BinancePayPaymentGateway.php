@@ -42,7 +42,7 @@ final class BinancePayPaymentGateway implements PaymentGatewayInterface
             ?? $paymentData['metadata']['reference_number']
             ?? strtoupper(Str::random(12));
 
-        $txId = 'BN-' . $txHash;
+        $txId = 'BN-'.$txHash;
 
         $merchantPayId = $this->config['merchant_pay_id'] ?? '284759302';
         $instructions = "Transfiere el monto exacto en USDT a través de Binance Pay al Pay ID: {$merchantPayId}. Tu orden será confirmada con el Hash/ID: {$txHash}.";
@@ -51,7 +51,7 @@ final class BinancePayPaymentGateway implements PaymentGatewayInterface
             transactionId: $txId,
             instructions: $instructions,
             redirectUrl: null,
-            message: 'Pago vía Binance Pay registrado exitosamente. ID/Hash: ' . $txHash,
+            message: 'Pago vía Binance Pay registrado exitosamente. ID/Hash: '.$txHash,
             rawResponse: [
                 'gateway' => 'binance_pay',
                 'merchant_pay_id' => $merchantPayId,
@@ -66,7 +66,7 @@ final class BinancePayPaymentGateway implements PaymentGatewayInterface
 
     public function refund(string $transactionId, float $amount, ?string $reason = null): RefundResult
     {
-        $refundId = 'REF-BN-' . strtoupper(Str::random(8));
+        $refundId = 'REF-BN-'.strtoupper(Str::random(8));
 
         return RefundResult::success(
             refundId: $refundId,

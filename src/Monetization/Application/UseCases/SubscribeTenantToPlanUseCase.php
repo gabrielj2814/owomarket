@@ -4,18 +4,15 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
-use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
-use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
+use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 
 final class SubscribeTenantToPlanUseCase
 {
     /**
-     * @param string $tenantId
-     * @param string $planSlugOrId
-     * @param string $billingCycle 'monthly' | 'yearly'
-     * @return TenantSubscription
+     * @param  string  $billingCycle  'monthly' | 'yearly'
      */
     public function execute(string $tenantId, string $planSlugOrId, string $billingCycle = 'monthly'): TenantSubscription
     {

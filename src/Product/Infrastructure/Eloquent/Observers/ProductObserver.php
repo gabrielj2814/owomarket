@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Src\Product\Infrastructure\Eloquent\Observers;
 
 use Illuminate\Support\Facades\Log;
-use Src\Product\Application\UseCase\SyncProductToCentralMarketplaceUseCase;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
+use Src\Product\Infrastructure\Jobs\SyncProductToCentralCatalogJob;
 use Throwable;
 
 /**
@@ -25,46 +25,56 @@ use Throwable;
  * **Requisito:** los eventos de Eloquent sólo se disparan sobre instancias de modelo. Las
  * escrituras con el query builder (`Product::where(...)->update(...)`) los saltan por
  * completo, por eso `ProductRepository` y `StockReserver` pasaron a operar sobre modelos.
+ *
+ * **Hallazgo N25 — el observer ya no sincroniza, encola.** La escritura en la base
+ * central iba dentro de la misma petición que había tocado el producto, incluida la
+ * transacción del checkout: si el marketplace no respondía, la fila quedaba descuadrada
+ * y sólo quedaba una línea de log que nada reintentaba. Ahora el trabajo se delega a
+ * `SyncProductToCentralCatalogJob`, que reintenta cinco veces con espera creciente.
  */
 final class ProductObserver
 {
-    public function __construct(
-        private readonly SyncProductToCentralMarketplaceUseCase $syncUseCase
-    ) {}
-
     public function saved(Product $product): void
     {
-        $this->sync($product, fn () => $this->syncUseCase->execute($product), 'sincronizar');
+        $this->encolar($product, 'sync');
     }
 
     public function deleted(Product $product): void
     {
-        $this->sync($product, fn () => $this->syncUseCase->withdraw($product), 'retirar');
+        $this->encolar($product, 'withdraw');
     }
 
     public function restored(Product $product): void
     {
-        $this->sync($product, fn () => $this->syncUseCase->execute($product), 'restaurar');
+        $this->encolar($product, 'sync');
     }
 
     /**
-     * El catálogo central vive en otra conexión, así que un fallo suyo **no** revierte la
-     * escritura de la tienda: abortar una venta porque el marketplace no responde sería
-     * peor que la desincronización que causa.
+     * Encolar tampoco puede tumbar la escritura de la tienda: si la conexión de la cola
+     * falla, se registra y se sigue. Abortar una venta porque el marketplace no responde
+     * sería peor que la desincronización que causa.
      *
-     * Pero se registra como `error`, no en silencio como hacía el `catch (\Throwable) {}`
-     * del antiguo `updateStock()`: una fila desincronizada es dinero mal cobrado, y tiene
-     * que quedar rastro de qué producto y de qué tienda quedó descuadrado.
+     * El `tenant_id` se captura AQUÍ, que es donde todavía hay contexto de tienda: el
+     * worker que ejecute el job no lo tendrá.
      */
-    private function sync(Product $product, callable $operation, string $accion): void
+    private function encolar(Product $product, string $accion): void
     {
+        $tenantId = tenant('id');
+
+        if ($tenantId === null) {
+            // Fuera de una tienda no hay catálogo que sincronizar: es el caso de los
+            // seeders centrales y de los tests que crean productos sin tenancy.
+            return;
+        }
+
         try {
-            $operation();
+            SyncProductToCentralCatalogJob::dispatch((string) $tenantId, (string) $product->id, $accion);
         } catch (Throwable $e) {
-            Log::error("No se pudo {$accion} el producto en el catálogo del marketplace central.", [
-                'tenant_id' => tenant('id'),
+            Log::error('No se pudo encolar la sincronización del producto con el catálogo central.', [
+                'tenant_id' => $tenantId,
                 'product_id' => $product->id,
                 'product_name' => $product->name,
+                'accion' => $accion,
                 'exception' => $e->getMessage(),
             ]);
         }

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Category\Application\UseCase;
 
-use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 use Illuminate\Support\Facades\DB;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
+use Src\Category\Infrastructure\Eloquent\Models\CentralCategory;
 
 final class SyncCentralCategoriesUseCase
 {
@@ -81,7 +81,7 @@ final class SyncCentralCategoriesUseCase
 
             // Second pass: resolve parent_id hierarchy using central_uuid
             foreach ($centralCategories as $centralCat) {
-                if (!empty($centralCat->parent_id)) {
+                if (! empty($centralCat->parent_id)) {
                     $parentTenantCat = Category::where('central_uuid', $centralCat->parent_id)->first();
                     $currentTenantCat = Category::where('central_uuid', $centralCat->id)->first();
 

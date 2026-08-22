@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Src\Marketplace\Infrastructure\Http\Controller;
 
 use App\Http\Controllers\Controller;
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Inertia\Response;
+use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class ViewHomePageCentralGETController extends Controller

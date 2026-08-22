@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Admin\Application\UseCase\ModerateCentralProductUseCase;
@@ -11,6 +12,7 @@ use Src\Product\Domain\ValueObjects\ProductId;
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Product\Infrastructure\Eloquent\Models\Product as EloquentProduct;
 use Src\Product\Infrastructure\Eloquent\Repositories\ProductRepository;
+use Src\Product\Infrastructure\Jobs\SyncProductToCentralCatalogJob;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -277,4 +279,46 @@ test('the central catalogue rejects two products with the same slug within one s
 
     expect(fn () => centralProductFor($this->tenant->id, 'camisa-blanca', 70.00))
         ->toThrow(Illuminate\Database\UniqueConstraintViolationException::class);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo N25 — la sincronización se encola
+|--------------------------------------------------------------------------
+|
+| Escribía en la base central dentro de la misma petición que había tocado el producto,
+| incluida la transacción del checkout. Si el marketplace no respondía, la fila quedaba
+| desincronizada y sólo quedaba una línea de log que nada reintentaba. Y desde la Fase
+| 0.4 el checkout central toma los precios de `central_products`: una fila desincronizada
+| es dinero mal cobrado.
+*/
+
+test('guardar un producto encola la sincronización en vez de hacerla en la petición (N25)', function () {
+    Queue::fake();
+
+    $product = ($this->publishedProduct)();
+
+    Queue::assertPushed(SyncProductToCentralCatalogJob::class);
+
+    // La escritura de la tienda no espera al marketplace.
+    expect(EloquentProduct::find($product->id))->not->toBeNull();
+});
+
+test('borrar un producto encola su retirada del catálogo (N25)', function () {
+    $product = ($this->publishedProduct)();
+
+    Queue::fake();
+    $product->delete();
+
+    Queue::assertPushed(SyncProductToCentralCatalogJob::class);
+});
+
+test('un fallo al encolar no tumba la escritura de la tienda (N25)', function () {
+    // Abortar una venta porque el marketplace no responde sería peor que la
+    // desincronización que causa, así que encolar tampoco puede propagar su fallo.
+    Queue::shouldReceive('connection')->andThrow(new RuntimeException('Cola caída'));
+
+    $product = ($this->publishedProduct)();
+
+    expect(EloquentProduct::find($product->id))->not->toBeNull();
 });

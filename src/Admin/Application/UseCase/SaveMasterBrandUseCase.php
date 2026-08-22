@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Brand\Infrastructure\Eloquent\Models\CentralBrand;
 
 final class SaveMasterBrandUseCase
 {
@@ -33,7 +33,7 @@ final class SaveMasterBrandUseCase
                 throw new Exception("Marca central '{$id}' no encontrada.", 404);
             }
         } else {
-            $brand = new CentralBrand();
+            $brand = new CentralBrand;
             $brand->id = (string) Str::uuid();
         }
 

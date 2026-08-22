@@ -176,8 +176,8 @@ test('POST /api-tenant/product/filter returns paginated products', function () {
 test('POST /api-tenant/product/filter with null boolean filters returns all active products without erroneous filtering', function () {
     $this->postJson("http://{$this->domain}/api-tenant/product/create", [
         'name' => 'Audífonos Bluetooth',
-        'slug' => 'audifonos-bluetooth-' . bin2hex(random_bytes(3)),
-        'sku' => 'AUD-BT-' . bin2hex(random_bytes(2)),
+        'slug' => 'audifonos-bluetooth-'.bin2hex(random_bytes(3)),
+        'sku' => 'AUD-BT-'.bin2hex(random_bytes(2)),
         'price' => 80.00,
         'quantity' => 10,
         'is_visible' => true,

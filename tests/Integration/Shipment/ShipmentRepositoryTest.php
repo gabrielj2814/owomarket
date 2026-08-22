@@ -44,20 +44,20 @@ beforeEach(function () {
 
     $tenantId = 't_'.bin2hex(random_bytes(4));
     $this->tenant = ModelsTenant::create([
-        'id'      => $tenantId,
-        'name'    => 'Shipment Tenant Store',
-        'slug'    => $tenantId,
-        'status'  => 'active',
+        'id' => $tenantId,
+        'name' => 'Shipment Tenant Store',
+        'slug' => $tenantId,
+        'status' => 'active',
         'request' => 'approved',
     ]);
     $this->domain = "{$tenantId}.localhost";
     $this->tenant->domains()->create([
-        'id'     => (string) Str::uuid(),
+        'id' => (string) Str::uuid(),
         'domain' => $this->domain,
     ]);
 
     tenancy()->initialize($this->tenant);
-    $this->repository = new EloquentShipmentRepository();
+    $this->repository = new EloquentShipmentRepository;
 });
 
 afterEach(function () {
@@ -69,23 +69,23 @@ afterEach(function () {
 it('saves and retrieves shipment with automatic order status sync', function () {
     // 1. Create Customer
     $customer = EloquentCustomer::create([
-        'id'        => (string) Str::uuid(),
-        'name'      => 'Juan Pérez',
-        'email'     => 'juan.perez@test.cl',
+        'id' => (string) Str::uuid(),
+        'name' => 'Juan Pérez',
+        'email' => 'juan.perez@test.cl',
         'is_active' => true,
     ]);
 
     // 2. Create Eloquent Order
     $order = EloquentOrder::create([
-        'id'              => (string) Str::uuid(),
-        'order_number'    => 'ORD-20260818-SHIP01',
-        'customer_id'     => $customer->id,
-        'status'          => 'processing',
-        'payment_status'  => 'paid',
-        'payment_method'  => 'webpay',
-        'currency'        => 'USD',
-        'subtotal'        => 100.00,
-        'total'           => 100.00,
+        'id' => (string) Str::uuid(),
+        'order_number' => 'ORD-20260818-SHIP01',
+        'customer_id' => $customer->id,
+        'status' => 'processing',
+        'payment_status' => 'paid',
+        'payment_method' => 'webpay',
+        'currency' => 'USD',
+        'subtotal' => 100.00,
+        'total' => 100.00,
     ]);
 
     // 3. Create and save pending shipment
@@ -140,34 +140,34 @@ it('saves and retrieves shipment with automatic order status sync', function () 
 
 it('filters shipments and retrieves metrics correctly in tenant database', function () {
     $customer = EloquentCustomer::create([
-        'id'        => (string) Str::uuid(),
-        'name'      => 'Maria López',
-        'email'     => 'maria@test.cl',
+        'id' => (string) Str::uuid(),
+        'name' => 'Maria López',
+        'email' => 'maria@test.cl',
         'is_active' => true,
     ]);
 
     $order1 = EloquentOrder::create([
-        'id'             => (string) Str::uuid(),
-        'order_number'   => 'ORD-MTRX-01',
-        'customer_id'    => $customer->id,
-        'status'         => 'processing',
+        'id' => (string) Str::uuid(),
+        'order_number' => 'ORD-MTRX-01',
+        'customer_id' => $customer->id,
+        'status' => 'processing',
         'payment_status' => 'paid',
         'payment_method' => 'webpay',
-        'currency'       => 'USD',
-        'subtotal'       => 50.00,
-        'total'          => 50.00,
+        'currency' => 'USD',
+        'subtotal' => 50.00,
+        'total' => 50.00,
     ]);
 
     $order2 = EloquentOrder::create([
-        'id'             => (string) Str::uuid(),
-        'order_number'   => 'ORD-MTRX-02',
-        'customer_id'    => $customer->id,
-        'status'         => 'processing',
+        'id' => (string) Str::uuid(),
+        'order_number' => 'ORD-MTRX-02',
+        'customer_id' => $customer->id,
+        'status' => 'processing',
         'payment_status' => 'paid',
         'payment_method' => 'cash',
-        'currency'       => 'USD',
-        'subtotal'       => 80.00,
-        'total'          => 80.00,
+        'currency' => 'USD',
+        'subtotal' => 80.00,
+        'total' => 80.00,
     ]);
 
     // Shipment 1: In Transit ($20)

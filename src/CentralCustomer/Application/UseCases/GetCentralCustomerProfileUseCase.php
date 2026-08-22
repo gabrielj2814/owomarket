@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Exception;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 
 final class GetCentralCustomerProfileUseCase
 {
-    /**
-     * @param string $customerId
-     * @return CentralCustomer
-     */
     public function execute(string $customerId): CentralCustomer
     {
         $customer = CentralCustomer::with('addresses')->find($customerId);

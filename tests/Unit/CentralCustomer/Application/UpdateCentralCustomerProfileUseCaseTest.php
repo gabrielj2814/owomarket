@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\CentralCustomer\Application\UseCases\UpdateCentralCustomerProfileUseCase;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;

@@ -59,7 +59,7 @@ return new class extends Migration
                 ->references('id')
                 ->on('central_customers')
                 ->onDelete('cascade');
-            
+
             $table->index(['token', 'expires_at']);
         });
     }

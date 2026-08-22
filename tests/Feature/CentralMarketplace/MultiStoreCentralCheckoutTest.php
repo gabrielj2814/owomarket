@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
+use Src\CentralMarketplace\Application\UseCases\DispatchCentralOrderToTenantsUseCase;
+use Src\CentralMarketplace\Infrastructure\Eloquent\Models\CentralOrderDispatch;
+use Src\CentralMarketplace\Infrastructure\Jobs\DispatchCentralOrderJob;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
@@ -665,4 +669,114 @@ test('el presupuesto informa de un cupón inválido sin romperse', function () {
         ->assertJsonPath("data.by_tenant.{$this->tenantA->id}.coupon_code", null);
 
     expect($response->json("data.by_tenant.{$this->tenantA->id}.coupon_error"))->not->toBeNull();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo N17 — el despacho se reintenta
+|--------------------------------------------------------------------------
+|
+| Los despachos fallidos se quedaban en `status = 'failed'` y nada los volvía a
+| intentar: un pedido cobrado podía no llegar nunca a su tienda. Y el despacho iba
+| dentro de la petición del checkout, así que la respuesta al comprador quedaba a
+| merced de la tienda más lenta.
+*/
+
+test('el checkout encola el despacho en vez de hacerlo dentro de la petición (N17)', function () {
+    Queue::fake();
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Cola', 'email' => 'cola@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ]);
+
+    $response->assertStatus(201);
+
+    // El comprador ya tiene su número de pedido; la propagación a las tiendas va aparte.
+    Queue::assertPushed(DispatchCentralOrderJob::class);
+});
+
+test('un despacho fallido se reclama en el siguiente intento (N17)', function () {
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Reintento', 'email' => 'reintento@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $order = CentralOrder::with(['items', 'customer'])->find($response->json('data.order_id'));
+
+    // Se simula el estado en el que quedaba un despacho roto: fila en 'failed' y sin
+    // pedido en la tienda. Antes de N17 esa fila bloqueaba la tienda PARA SIEMPRE, porque
+    // `reserveDispatch` devolvía null en cuanto existía cualquier fila.
+    tenancy()->initialize($this->tenantA);
+    // En orden hijo -> padre: `orders` tiene claves foraneas apuntandole.
+    DB::table('payments')->delete();
+    DB::table('order_items')->delete();
+    DB::table('orders')->delete();
+    tenancy()->end();
+
+    CentralOrderDispatch::where('central_order_id', $order->id)
+        ->where('tenant_id', $this->tenantA->id)
+        ->update(['status' => 'failed', 'tenant_order_id' => null, 'error_message' => 'BD de la tienda caída']);
+
+    app(DispatchCentralOrderToTenantsUseCase::class)->execute($order->fresh(['items', 'customer']));
+
+    // El reintento sí alcanza a la tienda que había fallado.
+    tenancy()->initialize($this->tenantA);
+    expect(DB::table('orders')->count())->toBe(1);
+    tenancy()->end();
+
+    $dispatch = CentralOrderDispatch::where('central_order_id', $order->id)
+        ->where('tenant_id', $this->tenantA->id)
+        ->first();
+
+    expect($dispatch->status)->toBe('dispatched')
+        ->and($dispatch->attempts)->toBe(1)
+        ->and($dispatch->error_message)->toBeNull();
+});
+
+test('una tienda que agota los intentos deja de reintentarse (N17)', function () {
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Tope', 'email' => 'tope@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $order = CentralOrder::with(['items', 'customer'])->find($response->json('data.order_id'));
+
+    tenancy()->initialize($this->tenantA);
+    DB::table('payments')->delete();
+    DB::table('order_items')->delete();
+    DB::table('orders')->delete();
+    tenancy()->end();
+
+    // Fila fallida que ya gastó el tope: seguir machacando una tienda rota sólo llena la
+    // cola de trabajo inútil, así que se queda como está hasta que alguien intervenga.
+    CentralOrderDispatch::where('central_order_id', $order->id)
+        ->where('tenant_id', $this->tenantA->id)
+        ->update([
+            'status' => 'failed',
+            'tenant_order_id' => null,
+            'attempts' => DispatchCentralOrderToTenantsUseCase::MAX_DISPATCH_ATTEMPTS,
+        ]);
+
+    app(DispatchCentralOrderToTenantsUseCase::class)->execute($order->fresh(['items', 'customer']));
+
+    tenancy()->initialize($this->tenantA);
+    expect(DB::table('orders')->count())->toBe(0);
+    tenancy()->end();
+
+    expect(CentralOrderDispatch::where('central_order_id', $order->id)->first()->status)->toBe('failed');
 });

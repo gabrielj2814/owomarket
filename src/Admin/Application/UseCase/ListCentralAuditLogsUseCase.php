@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 
 final class ListCentralAuditLogsUseCase
 {

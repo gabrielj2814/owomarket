@@ -3,6 +3,9 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Src\CentralCustomer\Infrastructure\Http\Controller\ConsumeSsoTokenPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\CustomerLogoutPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\GetTenantCustomerSessionGETController;
 use Src\Customer\Infrastructure\Http\Controller\AddCustomerAddressPOSTController;
 use Src\Customer\Infrastructure\Http\Controller\ConsultCustomerGETController;
 use Src\Customer\Infrastructure\Http\Controller\CreateCustomerPOSTController;
@@ -12,10 +15,6 @@ use Src\Customer\Infrastructure\Http\Controller\FilterCustomersPOSTController;
 use Src\Customer\Infrastructure\Http\Controller\GetCustomerMetricsGETController;
 use Src\Customer\Infrastructure\Http\Controller\SetDefaultCustomerAddressPOSTController;
 use Src\Customer\Infrastructure\Http\Controller\UpdateCustomerPUTController;
-
-use Src\CentralCustomer\Infrastructure\Http\Controller\ConsumeSsoTokenPOSTController;
-use Src\CentralCustomer\Infrastructure\Http\Controller\CustomerLogoutPOSTController;
-use Src\CentralCustomer\Infrastructure\Http\Controller\GetTenantCustomerSessionGETController;
 
 /*
 |--------------------------------------------------------------------------

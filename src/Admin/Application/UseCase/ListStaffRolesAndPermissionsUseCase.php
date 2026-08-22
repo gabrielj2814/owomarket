@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
-use Src\User\Infrastructure\Eloquent\Models\User;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Src\User\Infrastructure\Eloquent\Models\User;
 
 final class ListStaffRolesAndPermissionsUseCase
 {
