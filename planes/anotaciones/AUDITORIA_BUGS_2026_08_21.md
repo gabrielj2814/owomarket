@@ -1204,9 +1204,45 @@ frente y ordenado por lo que más duele:
 - **Las clases que se sustituyen por dobles de Mockery no pueden ser `final`.**
   Ya pasó con `VerifiedPurchaseChecker` y `ReverseOrderCommissionUseCase`; ambas llevan
   un comentario explicando por qué rompen la convención del proyecto.
-- **Decisión de negocio confirmada (21/08/2026):** la comisión de la plataforma se cobra
-  sobre la **mercancía neta de descuento, sin incluir el envío**. Punto único de cambio:
-  `DispatchCentralOrderToTenantsUseCase::recordCommission()`.
+### Decisión de negocio sobre la comisión — confirmada el 21/08/2026
+
+**La comisión se cobra sobre la mercancía neta de descuento, sin incluir el envío.**
+Es decir, sobre lo que realmente le queda al inquilino por la venta.
+
+```php
+$commissionBase = max(0.0, round($tenantSubtotal - $proratedDiscount, 2));
+```
+
+| Concepto | Ejemplo |
+| :--- | ---: |
+| Mercancía | $100,00 |
+| Descuento | −$30,00 |
+| **Base de comisión** | **$70,00** |
+| Envío | *no entra en la fórmula* |
+
+El envío queda fuera **porque se lo lleva quien hace el transporte**, no la tienda. Sí se
+le reparte a cada tienda en su pedido (`shippingAmount`, para que lo vea), pero no suma a
+la base. El `max(0.0, …)` evita que un descuento mayor que la mercancía dé base negativa.
+
+**En un pedido multi-tienda, las tiendas absorben el cupón**, cada una en proporción a lo
+que vende:
+
+| | Tienda A | Tienda B |
+| :--- | ---: | ---: |
+| Mercancía | $60,00 | $40,00 |
+| Cupón −$30 prorrateado | −$18,00 | −$12,00 |
+| **Base de comisión** | **$42,00** | **$28,00** |
+
+Esto se planteó explícitamente el 21/08/2026 y **se decidió dejarlo así**. La alternativa
+—que la plataforma absorba sus propias promociones y la tienda cobre íntegro— exigiría
+distinguir «cupón de tienda» de «cupón de plataforma», algo que hoy no existe: todos los
+cupones son de tienda. Si algún día se lanzan promociones pagadas por OwoMarket, ese es el
+momento de revisarlo, y no antes.
+
+**Punto único de cambio:** `DispatchCentralOrderToTenantsUseCase::recordCommission()`.
+Cada comisión guarda además en su `metadata` el `commission_base`, el `tenant_subtotal` y
+el `prorated_discount`, así que un número reclamado por un comerciante se puede
+reconstruir sin adivinar.
 
 ---
 
