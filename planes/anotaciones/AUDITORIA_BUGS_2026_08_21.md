@@ -1,26 +1,17 @@
 # Auditoría de Bugs — OwoMarket
 
-> ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
+> ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 22/08/2026
 >
-> **Hallazgos originales: 46 de 50 cerrados (92%) · 4 parciales · 0 abiertos.**
-> **Hallazgos nuevos (N1-N35): 15 cerrados · 20 abiertos.**
+> **Hallazgos originales: 50 de 50 cerrados (100%).**
+> **Hallazgos nuevos (N1-N36): 29 cerrados · 1 parcial · 6 abiertos.**
 >
-> **Ningún hallazgo del documento original queda sin atender.** Lo que falta de los 4
-> parciales, para no tener que buscarlo:
+> **Los 50 hallazgos del documento original están cerrados.** Ninguno queda parcial ni
+> abierto. Todo el trabajo que sigue vivo son los hallazgos **nuevos**, los que fueron
+> apareciendo al implementar los arreglos; están al final del documento.
 >
-> | # | Lo que ya está | Lo que falta |
-> | :--- | :--- | :--- |
-> | **A9** | Exige `super_admin` (Fase 0.3-A) | **La URL sigue rota** — genera `/auth/sso` cuando la ruta real es `/auth/sso-consume`, así que el botón de «acceso directo» del expediente 360° da 404. Y la impersonación no se escribe en `CentralAuditLog` |
-> | **B4** | El backend ya no confía en `localStorage` (Fase 0.3-D) | El frontend sigue cacheando nombre, email, teléfono, documento y direcciones en `localStorage`, al alcance de cualquier XSS. Es exposición, ya no autorización |
-> | **G9** | La tasa BCV ya no está hardcodeada y el botón espera a tenerla (Fase 3.4) | El checkout central sigue **sin incluir envío ni impuestos**: funcionalidad que no existe |
-> | **G15** | Tres de los cuatro defectos (Fase 3.4) | Los 9 `.catch(() => {})` de `pages/customer`, que hacen que un error de red sea indistinguible de «no tienes pedidos» |
->
-> **El trabajo que sigue vivo son los hallazgos nuevos**, los que fueron apareciendo al
-> implementar los arreglos. Están al final del documento, agrupados por frente.
->
-> Fases 0, 1, 2, 3 y 4 completas.
-> **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
-> secciones de «menores» y la tabla de hallazgos nuevos.
+> Fases 0 a 6 completas.
+> **Estado revisado hallazgo por hallazgo contra el código**, incluidas las secciones de
+> «menores» y la tabla de hallazgos nuevos.
 >
 > **Todos los 🔴 críticos están cerrados**, incluidos los que no estaban en el documento
 > original y aparecieron por el camino (N32: el checkout central tenía datos bancarios de
@@ -45,13 +36,13 @@
 >
 > | Bloque | Cerrados | Parciales | Abiertos |
 > | :--- | :--- | :--- | :--- |
-> | **A. Autenticación** | A1-A8 | A9 | — |
-> | **B. Datos del cliente** | B1 B2 B3 | B4 | — |
+> | **A. Autenticación** | A1-A9 | — | — |
+> | **B. Datos del cliente** | B1-B4 | — | — |
 > | **C. Concurrencia** | C1 C2 C3 C4 C5 C6 | — | — |
 > | **D. Dinero** | D1-D6 | — | — |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
 > | **F. Infraestructura** | F1-F6 | — | — |
-> | **G. Frontend** | G1-G8 G10 G11 G12 G13 G14 | G9 G15 | — |
+> | **G. Frontend** | G1-G15 | — | — |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
 > alias») lo cerró la Fase 0.2, y era la **causa raíz de todo el bloque A**: no
@@ -83,20 +74,25 @@
 > | 3.4 | G13, G14, G9 y G15 (parciales), N32 | `PLAN_FASE3_4_MONEDA_Y_ERRORES_VISIBLES.md` |
 > | 4.1 | A7, A8, C5, P1 | `PLAN_FASE4_1_TOKENS_Y_PIN.md` |
 > | 4.2 | D5, D6, F3, F5, P2 | `PLAN_FASE4_2_DINERO_E_INFRAESTRUCTURA.md` |
+> | 5.1 | A9, N12, N13, N21, N24, N30 | — (sin plan: tanda de arreglos sueltos) |
+> | 5.2 | B4, G15/N35, N27 | — |
+> | 6.1 | N14, N31 | — |
+> | 6.2 | N33, N34, N28 | — |
+> | 6.3 | N15, N16 | — |
 >
 > ### 🔜 Siguiente paso recomendado
 >
 > Ya no queda nada del documento original. El siguiente trabajo sale de la tabla de
 > **hallazgos nuevos** del final, por orden de lo que más duele:
 >
-> 1. **El stock del checkout central** (N14): crea pedidos de tienda **sin tocar el
->    inventario**, así que todos los bloqueos de la Fase 1.3 sólo protegen el storefront
->    de cada tienda. Y nadie repone al cancelar (N13).
-> 2. **El marketplace central va por detrás del de tienda** (N28, N31, N33, N34): sin
->    cupones, sin revalidación de carrito, sin pantalla para los datos de cobro de la
->    plataforma y sin envío ni impuestos.
-> 3. **Cuándo nace la comisión** (N15): nace al despachar y no al cobrar, que es la raíz
->    de D2 — hoy dependemos de que alguien cancele el pedido para anularla.
+> 1. **N17 y N25** — que el despacho y la sincronización del catálogo pasen a una cola con
+>    reintentos. Son el mismo problema visto en dos sitios, y hoy un fallo se queda donde
+>    cae.
+> 2. **N19** — control de rol dentro de la tienda. La Fase 4.2 ya dejó las tablas de
+>    permisos en cada tenant, así que el habilitador está puesto.
+> 3. **N18** — extender el límite de tasa más allá de las rutas del PIN: login, registro y
+>    consumo de SSO son los siguientes candidatos.
+> 4. **N29** — la pasada de tipos, mecánica pero extensa.
 >
 > ### 📋 Pendientes explícitos (fuera de los bloques A-G)
 >
@@ -355,7 +351,7 @@ El primero **recibe `$currentDomain` y nunca lo usa**; el campo `target_domain` 
 
 ### A9. 🟠 Impersonación de tenant sin control de rol, sin auditoría y con URL rota
 
-> **Estado:** 🟡 PARCIAL (Fase 0.3-A: ya exige super_admin; faltan la auditoría y la URL rota)
+> **Estado:** ✅ CERRADO (Fase 0.3-A + 5.1) — exige `super_admin`, la URL apunta ya a `/auth/sso-consume` (la real; antes daba 404) y la impersonación se escribe en `CentralAuditLog`
 
 **Archivo:** `src/Tenant/Application/UseCase/AdminImpersonateTenantUseCase.php:23-53`
 
@@ -435,7 +431,7 @@ Se ignoran `valid_from`/`valid_to`, `usage_limit`, `usage_limit_per_customer` y 
 
 ### B4. 🔴 La identidad del cliente del portal sale de `localStorage`
 
-> **Estado:** 🟡 PARCIAL (Fase 0.3-D: el backend ya no confía en localStorage; el frontend sigue cacheando el perfil)
+> **Estado:** ✅ CERRADO (Fase 0.3-D + 5.2) — el backend no confía en el caché desde la 0.3-D, y desde la 5.2 sólo se guarda el **id**: nombre, email, teléfono, documento y direcciones los da el servidor
 
 **Archivos:** `resources/js/Services/CustomerPortalServices.ts:181-247` y `resources/js/contexts/CustomerAuthContext.tsx:59,206`
 
@@ -993,7 +989,7 @@ Cualquier anónimo llega al paso de pago sin cuenta, justo lo que el modal dice 
 
 ### G9. 🟠 Checkout central: tasa BCV hardcodeada, carrera con la petición, y sin envío ni impuestos
 
-> **Estado:** 🟡 PARCIAL (Fase 3.4) — la tasa ya no está hardcodeada y el botón espera a tenerla. **Falta la tercera parte: el checkout central sigue sin incluir envío ni impuestos**, que es funcionalidad que no existe, no un bug
+> **Estado:** ✅ CERRADO (Fase 3.4 + 6.2) — la tasa ya no está hardcodeada y el botón espera a tenerla; y desde la 6.2 el checkout central **sí incluye envío e impuestos**, calculados por cada tienda y sumados
 
 **Archivo:** `resources/js/pages/marketplace/checkout/CentralCheckoutPage.tsx:31,75,129-130`
 
@@ -1079,7 +1075,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ### G15. Otros defectos verificados
 
-> **Estado:** 🟡 PARCIAL (Fase 3.4) — cerrados los tres primeros: el backend enriquece los items del pedido con `tenant_name` y `product_slug`, el layout respeta `loading`, y la ficha central deja de cargar para siempre. **Queda el cuarto:** los 9 `.catch(() => {})` de `pages/customer`
+> **Estado:** ✅ CERRADO (Fase 3.4 + 5.2) — los cuatro defectos: items del pedido enriquecidos, el layout respeta `loading`, la ficha central deja de cargar para siempre, y los 9 `.catch(() => {})` muestran ahora un aviso con reintentar
 - `CustomerOrdersPage.tsx:52-64` reconstruye el carrito con `tenant_name: item.tenant_id` y `slug: item.product_id` → el drawer muestra el UUID de la tienda y el enlace al producto rompe.
 - `CustomerAccountLayout.tsx:97` ignora `loading` del contexto → muestra "Inicia sesión" durante cada carga antes de resolver la sesión.
 - `CentralProductDetailPage.tsx:60-63` deja "Cargando producto…" para siempre si la petición falla.
@@ -1089,7 +1085,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 
 ## Plan de acción sugerido
 
-> **Estado al 21/08/2026: 13 de 13 puntos completados.**
+> **Estado: 13 de 13 puntos completados.**
 > Fases 0, 1, 2 y 3 completas. Se añadió una **Fase 4** que no estaba en este plan, para
 > los hallazgos sueltos que no encajaban en ninguno de los 13 puntos.
 
@@ -1138,19 +1134,16 @@ pendientes que se acumularon por el camino.
 No estaban en la auditoría original; se descubrieron al implementar los arreglos.
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
-**Estado al 21/08/2026: 15 cerrados · 20 abiertos.** Repasados uno a uno contra el código,
-no contra las notas de cada fase. **Aquí está todo el trabajo que queda**, agrupado por
-frente y ordenado por lo que más duele:
+**Estado al 22/08/2026: 29 cerrados · 1 parcial (N18) · 6 abiertos.** Repasados uno a uno contra el código,
+no contra las notas de cada fase. **Lo que queda**, que es poco y está acotado:
 
-| # | Frente | Hallazgos | Por qué importa |
+| # | Frente | Hallazgos | Qué falta |
 | :--- | :--- | :--- | :--- |
-| 1 | **Stock que nadie reserva ni repone** | N13, N14 | **El checkout central no descuenta inventario en absoluto**, así que todos los bloqueos de la Fase 1.3 sólo protegen el storefront de cada tienda. Y cancelar un pedido no devuelve nada |
-| 2 | **El marketplace central va por detrás del de tienda** | N28, N31, N33, N34 | No aplica cupones, no revalida el carrito, no tiene pantalla para los datos de cobro de la plataforma y no incluye envío ni impuestos. Cada arreglo del storefront ha ido dejando esta brecha más visible |
-| 3 | **Cuándo nace y cómo se anula una comisión** | N15, N16 | La comisión nace al despachar y no al cobrar — es la raíz de D2 — y revertir una ya liquidada sólo deja una marca `requires_manual_adjustment` |
-| 4 | **Nada se reintenta ni avisa** | N17, N20, N24, N25 | Despachos fallidos, sincronizaciones del catálogo y fallos del BCV se quedan donde caen. Falta un `catalog:resync` y que la sincronización sea un job en cola |
-| 5 | **Puertas a medio cerrar** | N18, N19 | El límite de tasa sólo llegó a las rutas del PIN; dentro de una tienda sigue sin haber control de rol, aunque la Fase 4.2 ya dejó las tablas de permisos en cada tenant |
-| 6 | **Deuda del frontend** | N12, N29, N30, N35 | El formulario de reseñas lleva roto desde siempre, 119 firmas mal tipadas en 16 servicios, el checkout no revalida al enviar, y 9 `.catch(() => {})` que ocultan errores de red |
-| 7 | **Limpieza** | N21 | Un `ExchangeRateServiceProvider` duplicado y muerto |
+| 1 | **Nada se reintenta** | N17, N25 | Los despachos fallidos se quedan en `status = 'failed'` y nada los reintenta; la sincronización del catálogo central es síncrona y va dentro de la petición. Los dos piden lo mismo: una cola con reintentos |
+| 2 | **Puertas a medio cerrar** | N18 🟡, N19 | El límite de tasa sólo llegó a las dos rutas del PIN; dentro de una tienda sigue sin haber control de rol, aunque la Fase 4.2 ya dejó las tablas de permisos en cada tenant |
+| 3 | **Avisos que no llegan** | N20 | El `error` del fallback prolongado del BCV sube de nivel pero no notifica a nadie. Falta decidir el canal |
+| 4 | **Deuda de tipos** | N29 | 119 firmas mal tipadas en 16 servicios del frontend: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`. Mecánico pero extenso |
+| 5 | **Límite conocido** | N36 | El marketplace central no vende por variante; el día que lo haga hay que añadir la columna |
 
 | # | Hallazgo | Origen | Estado |
 | :--- | :--- | :--- | :--- |
@@ -1165,30 +1158,31 @@ frente y ordenado por lo que más duele:
 | N9 | Los datos bancarios de demostración estaban hardcodeados también en el **backend**, no sólo como fallback del frontend | Fase 0.5 | ✅ Cerrado |
 | N10 | No existía ningún lugar donde el comerciante configurara sus datos de cobro | Fase 0.5 | ✅ Cerrado (grupo de settings `payment`) |
 | N11 | El tipo `StorefrontPaymentMethod` sólo declaraba 4 campos, lo que obligaba a `(method as any)` y hacía invisible G1 para TypeScript | Fase 0.5 | ✅ Cerrado |
-| N12 | **El formulario de reseñas del storefront lleva roto desde siempre:** exige `customer_id` y `TenantProductDetailPage.tsx` nunca lo envía (422 garantizado) | Fase 0.4 | ⬜ Abierto |
-| N13 | `StockReserver::release()` existe pero nadie lo llama: **nadie repone stock al cancelar un pedido**. Falta decidir en qué estados corresponde (decisión de producto) | Fase 1.3 | ⬜ Abierto — reverificado: la Fase 3.2 no lo tocó, `release()` sólo se invoca desde un test |
-| N14 | **El checkout central no reserva stock en absoluto:** `DispatchCentralOrderToTenantsUseCase` crea pedidos de tienda sin tocar el inventario | Fase 1.3 | ⬜ Abierto |
-| N15 | La comisión sigue naciendo al despachar y no al cobrar. Es la raíz de D2: mientras no cambie, dependemos de que alguien cancele el pedido para anularla | Fase 1.2 | ⬜ Abierto |
-| N16 | No existen notas de crédito: revertir una comisión ya liquidada sólo deja una marca `requires_manual_adjustment` | Fase 1.2 | ⬜ Abierto |
+| N12 | **El formulario de reseñas del storefront lleva roto desde siempre:** exige `customer_id` y `TenantProductDetailPage.tsx` nunca lo envía (422 garantizado) | Fase 0.4 | ✅ Cerrado (Fase 5.1) — `customer_id` sale de la sesión; y `ReviewServices.create` arrastraba el error de tipos de G2, así que el éxito tampoco se detectaba |
+| N13 | `StockReserver::release()` existe pero nadie lo llama: **nadie repone stock al cancelar un pedido**. Falta decidir en qué estados corresponde (decisión de producto) | Fase 1.3 | ✅ Cerrado (Fase 5.1) — cancelar repone. La «decisión de producto» pendiente ya la tomaba el dominio: `canBeCancelled()` no admite pedidos enviados |
+| N14 | **El checkout central no reserva stock en absoluto:** `DispatchCentralOrderToTenantsUseCase` crea pedidos de tienda sin tocar el inventario | Fase 1.3 | ✅ Cerrado (Fase 6.1) — el despacho reserva stock por tienda, dentro de su transacción y con la tenancy inicializada |
+| N15 | La comisión sigue naciendo al despachar y no al cobrar. Es la raíz de D2: mientras no cambie, dependemos de que alguien cancele el pedido para anularla | Fase 1.2 | ✅ Cerrado (Fase 6.3) — estado `awaiting_payment`: devengada pero fuera de las liquidaciones hasta que se confirma el pago |
+| N16 | No existen notas de crédito: revertir una comisión ya liquidada sólo deja una marca `requires_manual_adjustment` | Fase 1.2 | ✅ Cerrado (Fase 6.3) — nota de crédito como comisión de importe negativo: la siguiente liquidación la compensa sola |
 | N17 | Los despachos fallidos quedan en `status = 'failed'` y nada los reintenta; el despacho sigue siendo síncrono | Fase 1.1 | ⬜ Abierto |
 | N18 | 🟡 **Parcial.** La Fase 4.1 puso `throttle:5,15` en las dos rutas del PIN, pero **el resto de la aplicación sigue sin ningún límite de tasa**: login, registro y consumo de SSO son los siguientes candidatos. Texto original: ningún endpoint tiene límite de tasa. Al pasar `api-tenant` de `api` a `web` se perdió incluso la posibilidad de `throttleApi()` (aunque nunca estuvo activo) | Fase 0.3-E | 🟡 Parcial |
 | N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto — reverificado: `/api-tenant/*` lleva `web` + tenancy + `auth`, sin ningún alias de rol. **La Fase 4.2 puso el habilitador**: las tablas de permisos ya existen en cada base de tenant (F5) |
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
-| N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
+| N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ✅ Cerrado (Fase 5.1) — provider muerto borrado |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ✅ Cerrado (Fase 4.1) |
 | N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ✅ Cerrado (Fase 4.2) |
-| N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ⬜ Abierto |
+| N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ✅ Cerrado (Fase 5.1) — comando `catalog:resync`, idempotente |
 | N25 | La sincronización con el catálogo central es **síncrona**: escribe en la base central dentro de la misma petición, incluida la transacción del checkout. Si el marketplace no responde, la fila queda desincronizada y sólo queda el log. Lo natural es un job en cola con reintentos | Fase 2.2 | ⬜ Abierto |
 | N26 | El `metadata` de `central_products` se sobrescribía con el del producto de la tienda en cada sincronización, **borrando el historial de moderación y la comisión personalizada**. Pasaba desapercibido porque la sincronización casi nunca corría | Fase 2.2 | ✅ Cerrado |
-| N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ⬜ Abierto |
-| N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ⬜ Abierto |
+| N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ✅ Cerrado (Fase 5.2) — columna `coupon_code` indexada por `(coupon_code, customer_id)`, y el checkout pasa el cliente a la validación |
+| N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ✅ Cerrado (Fase 6.2) — **decisión: los cupones son de tienda.** Un código sólo descuenta las líneas de quien lo emitió, validado dentro de la tenancy y consumido en la transacción del despacho |
 | N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto — medido: **119 firmas en 16 servicios**. La Fase 3.1 sólo corrigió `CouponServices.validate`; `StorefrontServices` ya estaba bien |
 | N32 | **El checkout central tenía datos bancarios de demostración incrustados** (`Banesco (0134)`, `J-501234567`, `0412-9998877`). Es G1 otra vez: la Fase 0.5 lo arregló en el checkout del inquilino y el central se quedó con los suyos. En un pedido multi-tienda cobra la plataforma, así que el comprador transfería a una cuenta que no era de nadie | Fase 3.4 | ✅ Cerrado |
-| N33 | **No hay pantalla para configurar los datos de cobro de la plataforma.** `CentralPaymentMethodsProvider` lee `central_settings`, pero el superadmin no tiene dónde escribirlos: hoy sólo los pone un seeder. Es el equivalente central de lo que la Fase 0.5 construyó para las tiendas | Fase 3.4 | ⬜ Abierto |
-| N34 | **El checkout central sigue sin envío ni impuestos:** el total mostrado es el subtotal puro, así que el importe que el comprador transfiere no coincidirá con el total real en cuanto se añada el envío | Fase 3.4 | ⬜ Abierto |
-| N35 | Los 9 `.catch(() => {})` de `pages/customer` hacen que un error de red sea indistinguible de «no tienes pedidos». Cada sitio necesita su propio estado de error | Fase 3.4 | ⬜ Abierto |
-| N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ⬜ Abierto |
-| N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ⬜ Abierto |
+| N33 | **No hay pantalla para configurar los datos de cobro de la plataforma.** `CentralPaymentMethodsProvider` lee `central_settings`, pero el superadmin no tiene dónde escribirlos: hoy sólo los pone un seeder. Es el equivalente central de lo que la Fase 0.5 construyó para las tiendas | Fase 3.4 | ✅ Cerrado (Fase 6.2) — pantalla bajo `super_admin`, que muestra los métodos que el comprador ve ahora mismo |
+| N34 | **El checkout central sigue sin envío ni impuestos:** el total mostrado es el subtotal puro, así que el importe que el comprador transfiere no coincidirá con el total real en cuanto se añada el envío | Fase 3.4 | ✅ Cerrado (Fase 6.2) — **decisión: cada tienda calcula lo suyo y el pedido central suma.** Endpoint `/checkout/quote` para que la pantalla no invente el total |
+| N36 | `central_order_items` **no guarda la variante**, así que el marketplace central no puede vender por variante y la reserva de stock de la Fase 6.1 descuenta del producto padre. Hoy no se vende por variante centralmente, pero el día que se haga hay que añadir la columna y pasarla al `StockReserver` | Fase 6.1 | ⬜ Abierto |
+| N35 | Los 9 `.catch(() => {})` de `pages/customer` hacen que un error de red sea indistinguible de «no tienes pedidos». Cada sitio necesita su propio estado de error | Fase 3.4 | ✅ Cerrado (Fase 5.2) — `PortalLoadError`, aviso compartido con reintentar, en las nueve páginas |
+| N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ✅ Cerrado (Fase 5.1) — el checkout revalida al entrar, no sólo al abrir el carrito |
+| N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ✅ Cerrado (Fase 6.1) — `POST /api/central/marketplace/cart/revalidate`, mismo contrato que el de tienda |
 
 ---
 
