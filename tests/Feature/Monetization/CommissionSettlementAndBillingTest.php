@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase;
 use Src\Monetization\Application\UseCases\ConfirmAndSettleCommissionUseCase;
 use Src\Monetization\Application\UseCases\GenerateTenantCommissionSettlementUseCase;
-use Src\Monetization\Application\UseCases\GetSuperAdminMonetizationMetricsUseCase;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
-use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
+use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -85,7 +83,10 @@ test('SuperAdmin can generate and confirm commission settlements converting pend
         orderId: (string) Str::uuid(),
         orderNumber: 'ORD-S1',
         orderTotal: 100.00,
-        paymentGateway: 'pago_movil'
+        paymentGateway: 'pago_movil',
+        // Hallazgo N15: sólo entra en una liquidación lo que está cobrado. Estas tres
+        // comisiones se crean como pagadas porque de eso trata el test.
+        paid: true
     );
 
     $comm2 = $commissionUseCase->execute(
@@ -93,7 +94,8 @@ test('SuperAdmin can generate and confirm commission settlements converting pend
         orderId: (string) Str::uuid(),
         orderNumber: 'ORD-S2',
         orderTotal: 200.00,
-        paymentGateway: 'pago_movil'
+        paymentGateway: 'pago_movil',
+        paid: true
     );
 
     $comm3 = $commissionUseCase->execute(
@@ -101,7 +103,8 @@ test('SuperAdmin can generate and confirm commission settlements converting pend
         orderId: (string) Str::uuid(),
         orderNumber: 'ORD-S3',
         orderTotal: 300.00,
-        paymentGateway: 'binance_pay'
+        paymentGateway: 'binance_pay',
+        paid: true
     );
 
     expect($comm1->status)->toBe('pending');
@@ -206,4 +209,93 @@ test('los endpoints de monetización central rechazan a quien no es super admini
 
     // La tasa de comisión de la tienda no debe haber cambiado.
     expect($this->tenant->fresh()->custom_commission_rate)->toBeNull();
+});
+
+/**
+ * Hallazgo N15: la comisión nacía en `pending` sin mirar el `payment_status` —que para
+ * pago móvil, transferencia manual y contra entrega es siempre `pending`— y la liquidación
+ * se llevaba todo lo que estuviera en `pending`.
+ *
+ * Resultado: **a la tienda se le cobraba comisión por ventas que nunca cobró**. La Fase 1.2
+ * tapó el síntoma revirtiendo al cancelar, pero eso dependía de que alguien cancelara: si
+ * el cliente simplemente no pagaba y nadie tocaba el pedido, la comisión se liquidaba.
+ */
+test('una comisión sin pago confirmado NO entra en la liquidación (hallazgo N15)', function () {
+    $commissionUseCase = app(CalculateAndRecordOrderCommissionUseCase::class);
+
+    $sinPagar = $commissionUseCase->execute(
+        tenantId: $this->tenant->id,
+        orderId: (string) Str::uuid(),
+        orderNumber: 'ORD-SINPAGAR',
+        orderTotal: 500.00,
+        paymentGateway: 'pago_movil',
+        paid: false
+    );
+
+    expect($sinPagar->status)->toBe('awaiting_payment');
+
+    // No hay nada cobrable, así que no se puede generar liquidación.
+    expect(fn () => app(GenerateTenantCommissionSettlementUseCase::class)->execute($this->tenant->id))
+        ->toThrow(Exception::class);
+});
+
+test('confirmar el pago vuelve cobrable la comisión (hallazgo N15)', function () {
+    $orderId = (string) Str::uuid();
+
+    app(CalculateAndRecordOrderCommissionUseCase::class)->execute(
+        tenantId: $this->tenant->id,
+        orderId: $orderId,
+        orderNumber: 'ORD-PAGADO',
+        orderTotal: 500.00,
+        paymentGateway: 'pago_movil',
+        paid: false
+    );
+
+    app(Src\Monetization\Application\UseCases\ActivateOrderCommissionUseCase::class)->execute($orderId);
+
+    expect(PlatformCommission::where('order_id', $orderId)->value('status'))->toBe('pending');
+});
+
+/**
+ * Hallazgo N16: revertir una comisión **ya liquidada** sólo dejaba una marca
+ * `requires_manual_adjustment` y un aviso en el log. Alguien tenía que acordarse de
+ * descontársela al comerciante a mano.
+ */
+test('revertir una comisión ya liquidada emite una nota de crédito (hallazgo N16)', function () {
+    $orderId = (string) Str::uuid();
+
+    $comision = app(CalculateAndRecordOrderCommissionUseCase::class)->execute(
+        tenantId: $this->tenant->id,
+        orderId: $orderId,
+        orderNumber: 'ORD-LIQUIDADO',
+        orderTotal: 1000.00,
+        paymentGateway: 'pago_movil',
+        paid: true
+    );
+
+    // Se liquida y se cobra.
+    $settlement = app(GenerateTenantCommissionSettlementUseCase::class)->execute($this->tenant->id);
+    expect(PlatformCommission::find($comision->id)->settlement_id)->toBe($settlement->id);
+
+    // Y después el pedido se reembolsa.
+    app(Src\Monetization\Application\UseCases\ReverseOrderCommissionUseCase::class)->execute(
+        $orderId,
+        Src\Monetization\Application\UseCases\ReverseOrderCommissionUseCase::REASON_REFUNDED,
+        'Devolución del cliente'
+    );
+
+    $notaCredito = PlatformCommission::where('order_id', $orderId)
+        ->where('id', '!=', $comision->id)
+        ->first();
+
+    expect($notaCredito)->not->toBeNull()
+        ->and($notaCredito->metadata['credit_note'])->toBeTrue()
+        ->and((float) $notaCredito->commission_amount)->toBe(-1 * (float) $comision->commission_amount)
+        ->and($notaCredito->status)->toBe('pending')
+        ->and($notaCredito->settlement_id)->toBeNull();
+
+    // La siguiente liquidación la recoge sola y el neto sale corregido: no hace falta
+    // que nadie se acuerde de un ajuste manual.
+    $siguiente = app(GenerateTenantCommissionSettlementUseCase::class)->execute($this->tenant->id);
+    expect((float) $siguiente->commission_amount)->toBe(-1 * (float) $comision->commission_amount);
 });

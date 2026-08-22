@@ -177,7 +177,13 @@ it('UpdateOrderPaymentStatusUseCase updates payment status', function () {
     $repository->shouldReceive('findById')->once()->andReturn($order);
     $repository->shouldReceive('save')->once()->with($order);
 
-    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository);
+    // Hallazgo N15: al confirmar el pago, la comision pasa de `awaiting_payment` a
+    // `pending`. Aqui se comprueba que se invoque; su logica se prueba en
+    // tests/Feature/Monetization/TenantMonetizationAndCommissionTest.php.
+    $activateCommission = m::mock(\Src\Monetization\Application\UseCases\ActivateOrderCommissionUseCase::class);
+    $activateCommission->shouldReceive('execute')->once();
+
+    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository, $activateCommission);
     $paymentUseCase->execute($order->id()->value(), 'paid');
 
     expect($order->paymentStatus())->toBe(PaymentStatus::PAID);

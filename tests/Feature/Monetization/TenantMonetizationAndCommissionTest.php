@@ -132,7 +132,9 @@ test('CalculateAndRecordOrderCommissionUseCase resolves 3-tier hierarchy accurat
     );
     expect($comm1->commission_rate)->toBe(8.00);
     expect($comm1->commission_amount)->toBe(16.00); // 200 * 8%
-    expect($comm1->status)->toBe('pending');
+    // Hallazgo N15: la comisión nace en `awaiting_payment` —devengada pero NO cobrable—
+    // y sólo pasa a `pending` cuando el pago se confirma.
+    expect($comm1->status)->toBe('awaiting_payment');
 
     // 2. Tier 2: Subscription Plan Pro (3.50%)
     $subscribeUseCase->execute($this->tenant->id, 'pro', 'monthly');
@@ -250,7 +252,9 @@ test('Storefront checkout automatically records platform commission in central d
     expect($commission->order_total)->toBe(110.00); // 100 + 10 shipping
     expect($commission->commission_rate)->toBe(3.50);
     expect($commission->commission_amount)->toBe(3.85); // 110 * 3.5% = 3.85
-    expect($commission->status)->toBe('pending');
+    // Hallazgo N15: la comisión nace en `awaiting_payment` —devengada pero NO cobrable—
+    // y sólo pasa a `pending` cuando el pago se confirma.
+    expect($commission->status)->toBe('awaiting_payment');
     expect($commission->payment_gateway)->toBe('pago_movil');
 });
 
@@ -288,7 +292,9 @@ test('Cancelar un pedido anula la comisión de la plataforma (hallazgo D2)', fun
 
     $commission = PlatformCommission::where('order_id', $orderId)->first();
     expect($commission)->not->toBeNull();
-    expect($commission->status)->toBe('pending');
+    // Hallazgo N15: la comisión nace en `awaiting_payment` —devengada pero NO cobrable—
+    // y sólo pasa a `pending` cuando el pago se confirma.
+    expect($commission->status)->toBe('awaiting_payment');
 
     // La tienda cancela porque el pago nunca llegó.
     $cancelResponse = $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/cancel", [
@@ -304,7 +310,7 @@ test('Cancelar un pedido anula la comisión de la plataforma (hallazgo D2)', fun
 
     // Y ya no la recoge el generador de liquidaciones.
     $pendientes = PlatformCommission::where('tenant_id', $this->tenant->id)
-        ->where('status', 'pending')
+        ->whereIn('status', ['pending', 'awaiting_payment'])
         ->whereNull('settlement_id')
         ->count();
     expect($pendientes)->toBe(0);

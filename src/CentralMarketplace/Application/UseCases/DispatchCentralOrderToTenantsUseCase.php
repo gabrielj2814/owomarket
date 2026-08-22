@@ -377,6 +377,11 @@ final class DispatchCentralOrderToTenantsUseCase
                 orderTotal: $commissionBase,
                 paymentGateway: $centralOrder->payment_method,
                 currency: $centralOrder->currency ?? 'USD',
+                // Hallazgo N15: la comision solo nace cobrable si el pedido central ya
+                // esta pagado. Con pago movil, transferencia manual o contra entrega no lo
+                // esta, asi que queda en `awaiting_payment` hasta que alguien confirme el
+                // cobro — antes se cobraba igual una comision por una venta inexistente.
+                paid: ($centralOrder->payment_status ?? 'pending') === 'paid',
                 metadata: [
                     'central_order_id' => $centralOrder->id,
                     'central_order_number' => $centralOrder->order_number,

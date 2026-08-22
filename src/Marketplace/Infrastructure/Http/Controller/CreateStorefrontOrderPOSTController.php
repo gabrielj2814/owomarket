@@ -255,6 +255,11 @@ final class CreateStorefrontOrderPOSTController extends Controller
                         orderTotal: (float) $orderTotal,
                         paymentGateway: $paymentMethod,
                         currency: 'USD',
+                        // Hallazgo N15: el checkout del storefront crea el pedido con el
+                        // pago pendiente —pago movil, transferencia y contra entrega se
+                        // confirman despues—, asi que la comision nace devengada pero no
+                        // cobrable. Se vuelve cobrable al marcar el pedido como pagado.
+                        paid: false,
                         metadata: [
                             'customer_email' => $request->input('customer.email'),
                             'source' => 'storefront_checkout',

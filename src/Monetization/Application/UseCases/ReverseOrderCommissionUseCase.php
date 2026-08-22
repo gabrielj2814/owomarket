@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Monetization\Application\UseCases;
 
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Throwable;
 
@@ -51,7 +52,11 @@ class ReverseOrderCommissionUseCase
 
         try {
             $commissions = PlatformCommission::where('order_id', $orderId)
-                ->whereIn('status', ['pending', 'collected'])
+                // Hallazgo N15: se incluye `awaiting_payment`. Desde que la comision
+                // nace devengada pero no cobrable, cancelar un pedido cuyo pago nunca se
+                // confirmo tiene que anularla igual — si no, se quedaria viva esperando
+                // un pago que ya no va a llegar.
+                ->whereIn('status', ['awaiting_payment', 'pending', 'collected'])
                 ->get();
         } catch (Throwable $e) {
             // La comisión vive en la base central; si no está accesible desde
@@ -91,6 +96,18 @@ class ReverseOrderCommissionUseCase
             $commission->metadata = $metadata;
             $commission->save();
 
+            // Hallazgo N16: no existian notas de credito. Revertir una comision **ya
+            // liquidada** solo dejaba una marca `requires_manual_adjustment` y un aviso en
+            // el log: alguien tenia que acordarse de descontarsela al comerciante a mano.
+            //
+            // Ahora se emite una comision de importe NEGATIVO, cobrable y sin liquidar,
+            // que la siguiente liquidacion suma como cualquier otra y por tanto compensa
+            // sola. No hace falta tabla nueva: una nota de credito es una comision al
+            // reves.
+            if ($requiresManualAdjustment) {
+                $this->issueCreditNote($commission, $reason, $notes);
+            }
+
             $reversed++;
 
             if ($requiresManualAdjustment) {
@@ -105,5 +122,39 @@ class ReverseOrderCommissionUseCase
         }
 
         return $reversed;
+    }
+
+    /**
+     * Emite la nota de credito que compensa una comision ya liquidada (hallazgo N16).
+     *
+     * Es una `PlatformCommission` normal con el importe en negativo, `pending` y sin
+     * `settlement_id`, asi que `GenerateTenantCommissionSettlementUseCase` la recoge y la
+     * suma igual que a las demas: el neto de la siguiente liquidacion ya sale corregido.
+     */
+    private function issueCreditNote(PlatformCommission $original, string $reason, ?string $notes): void
+    {
+        PlatformCommission::create([
+            'id' => (string) Str::uuid(),
+            'tenant_id' => $original->tenant_id,
+            'order_id' => $original->order_id,
+            'order_number' => $original->order_number,
+            // El total del pedido tambien va en negativo para que las metricas de venta
+            // bruta de la liquidacion no cuenten dos veces la misma venta.
+            'order_total' => -1 * (float) $original->order_total,
+            'commission_rate' => $original->commission_rate,
+            'commission_amount' => -1 * (float) $original->commission_amount,
+            'currency' => $original->currency,
+            'status' => 'pending',
+            'payment_gateway' => $original->payment_gateway,
+            'settlement_id' => null,
+            'metadata' => [
+                'credit_note' => true,
+                'reverses_commission_id' => $original->id,
+                'reverses_settlement_id' => $original->metadata['reversal']['previous_settlement_id'] ?? null,
+                'reason' => $reason,
+                'notes' => $notes,
+                'issued_at' => now()->toIso8601String(),
+            ],
+        ]);
     }
 }

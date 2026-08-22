@@ -4,22 +4,15 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
+use Illuminate\Support\Str;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
-use Illuminate\Support\Str;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 final class CalculateAndRecordOrderCommissionUseCase
 {
     /**
-     * @param string $tenantId
-     * @param string $orderId
-     * @param string $orderNumber
-     * @param float $orderTotal
-     * @param string|null $paymentGateway
-     * @param string $currency
-     * @param array<string, mixed> $metadata
-     * @return PlatformCommission
+     * @param  array<string, mixed>  $metadata
      */
     public function execute(
         string $tenantId,
@@ -28,6 +21,13 @@ final class CalculateAndRecordOrderCommissionUseCase
         float $orderTotal,
         ?string $paymentGateway = null,
         string $currency = 'USD',
+        /**
+         * Hallazgo N15: la comision nace devengada pero NO cobrable. Solo se pone en
+         * `pending` —y por tanto entra en la siguiente liquidacion— cuando el pago esta
+         * confirmado. Antes nacia en `pending` sin mirar el `payment_status`, que para
+         * pago_movil, transferencia manual y contra entrega es siempre `pending`.
+         */
+        bool $paid = false,
         array $metadata = []
     ): PlatformCommission {
         // 1. Resolve applicable commission rate based on 3-tier hierarchy:
@@ -47,7 +47,7 @@ final class CalculateAndRecordOrderCommissionUseCase
             'commission_rate' => $rate,
             'commission_amount' => $commissionAmount,
             'currency' => $currency,
-            'status' => 'pending',
+            'status' => $paid ? 'pending' : 'awaiting_payment',
             'payment_gateway' => $paymentGateway,
             'metadata' => array_merge($metadata, [
                 'resolved_rate_source' => $this->resolveRateSource($tenantId),
@@ -61,8 +61,8 @@ final class CalculateAndRecordOrderCommissionUseCase
 
         // Priority 1: Custom tenant rate
         if ($tenant) {
-            $customRate = $tenant->custom_commission_rate 
-                ?? $tenant->getAttribute('custom_commission_rate') 
+            $customRate = $tenant->custom_commission_rate
+                ?? $tenant->getAttribute('custom_commission_rate')
                 ?? ($tenant->data['custom_commission_rate'] ?? null);
 
             if ($customRate !== null && is_numeric($customRate)) {
@@ -88,8 +88,8 @@ final class CalculateAndRecordOrderCommissionUseCase
     {
         $tenant = Tenant::find($tenantId);
         if ($tenant) {
-            $customRate = $tenant->custom_commission_rate 
-                ?? $tenant->getAttribute('custom_commission_rate') 
+            $customRate = $tenant->custom_commission_rate
+                ?? $tenant->getAttribute('custom_commission_rate')
                 ?? ($tenant->data['custom_commission_rate'] ?? null);
 
             if ($customRate !== null && is_numeric($customRate)) {
@@ -103,7 +103,7 @@ final class CalculateAndRecordOrderCommissionUseCase
             ->first();
 
         if ($subscription && $subscription->isActive() && $subscription->plan) {
-            return 'subscription_plan:' . $subscription->plan->slug;
+            return 'subscription_plan:'.$subscription->plan->slug;
         }
 
         return 'platform_default';
