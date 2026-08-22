@@ -19,15 +19,20 @@
 >
 > ### Cómo continuar en otra sesión
 >
-> 1. Leer este bloque de estado y la sección **«Plan de acción sugerido»** al final,
->    que está anotada con el estado real de cada punto.
-> 2. Los planes de cada fase ejecutada están en `planes/implementados/PLAN_FASE*.md`,
->    con su checklist de cierre marcado. Los únicos puntos que siguen sin marcar son
->    las verificaciones en navegador, que no se hicieron; las tareas sobre datos de
->    producción quedaron anotadas como no aplicables al reiniciarse la base de
->    desarrollo desde cero.
+> 1. **El trabajo pendiente está en la tabla de «Hallazgos nuevos» del final**, no en los
+>    bloques A-G: esos están todos cerrados. El resumen por frentes que precede a la tabla
+>    dice qué queda y por qué importa.
+> 2. **Los planes existen para las fases 0 a 4**, en `planes/implementados/PLAN_FASE*.md`,
+>    con su checklist marcado. **Las fases 5 y 6 no tienen plan**: fueron tandas de
+>    arreglos sueltos y lo que hicieron está en los mensajes de commit, que son detallados
+>    a propósito. Los únicos puntos sin marcar en los planes son las verificaciones en
+>    navegador, que no se hicieron.
 > 3. Cada arreglo lleva un comentario en el código citando su hallazgo
->    (buscar `hallazgo A5`, `hallazgo B1`, etc.) con el escenario que corregía.
+>    (buscar `hallazgo A5`, `hallazgo N15`, etc.) con el escenario que corregía. Es la
+>    forma más rápida de entender por qué algo está escrito como está.
+> 4. **Las decisiones de negocio tomadas** están en «Notas técnicas para quien retome»:
+>    base de la comisión, quién absorbe los cupones, envío por tienda, y por qué no se
+>    hace nada con `lockForUpdate` en SQLite. No hace falta volver a plantearlas.
 >
 > ### Leyenda
 > ✅ cerrado · 🟡 parcial · ⬜ abierto
