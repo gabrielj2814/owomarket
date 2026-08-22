@@ -11,6 +11,7 @@ use Src\Category\Infrastructure\Eloquent\Models\Category;
 use Src\CentralMarketplace\Application\UseCases\DispatchCentralOrderToTenantsUseCase;
 use Src\CentralMarketplace\Infrastructure\Eloquent\Models\CentralOrderDispatch;
 use Src\CentralMarketplace\Infrastructure\Jobs\DispatchCentralOrderJob;
+use Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
@@ -954,4 +955,82 @@ test('el checkout rechaza el pedido si la variante no tiene existencias (N36)', 
     tenancy()->initialize($this->tenantA);
     expect((int) ProductVariant::find($v['M']->id)->quantity)->toBe(3);
     tenancy()->end();
+});
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo Auditoria #1 — la comision se relaciona con su pedido central
+|--------------------------------------------------------------------------
+|
+| `order_id` guarda el UUID del pedido dentro de la base del INQUILINO, pero las
+| relaciones Eloquent lo declaraban contra `central_orders`. Como esos identificadores
+| viven en bases distintas, nunca coincidian: `$centralOrder->commissions` devolvia
+| SIEMPRE una coleccion vacia, y sin lanzar ningun error.
+*/
+
+test('la comision de un pedido central se puede recuperar desde el pedido (#1)', function () {
+    $v = ['tenant' => $this->tenantA];
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Comision', 'email' => 'comision@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $centralOrder = CentralOrder::find($response->json('data.order_id'));
+
+    // Esto era lo roto: la coleccion salia vacia aunque la comision existiera.
+    expect($centralOrder->commissions)->toHaveCount(1);
+
+    $comision = $centralOrder->commissions->first();
+
+    // Y la relacion inversa tambien resuelve.
+    expect($comision->order)->not->toBeNull()
+        ->and((string) $comision->order->id)->toBe((string) $centralOrder->id);
+});
+
+test('order_id sigue apuntando al pedido de la tienda, no al central (#1)', function () {
+    // El arreglo NO renombra `order_id`: los informes del comerciante lo necesitan
+    // apuntando a su propio pedido. Lo que se anade es una columna aparte.
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Doble Id', 'email' => 'dobleid@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    $centralOrder = CentralOrder::find($response->json('data.order_id'));
+    $comision = PlatformCommission::where('central_order_id', $centralOrder->id)->first();
+
+    expect($comision)->not->toBeNull()
+        ->and((string) $comision->central_order_id)->toBe((string) $centralOrder->id)
+        ->and((string) $comision->order_id)->not->toBe((string) $centralOrder->id);
+
+    // El `order_id` es el pedido que se creo dentro de la tienda.
+    tenancy()->initialize($this->tenantA);
+    $pedidoDeTienda = DB::table('orders')->first();
+    tenancy()->end();
+
+    expect((string) $comision->order_id)->toBe((string) $pedidoDeTienda->id);
+});
+
+test('una comision del storefront no inventa pedido central (#1)', function () {
+    // El checkout de tienda no pasa por ningun pedido central, asi que su comision debe
+    // quedarse con `central_order_id` a null en vez de apuntar a cualquier cosa.
+    $comision = app(CalculateAndRecordOrderCommissionUseCase::class)->execute(
+        tenantId: $this->tenantA->id,
+        orderId: (string) Str::uuid(),
+        orderNumber: 'ORD-SOLO-TIENDA',
+        orderTotal: 100.0,
+    );
+
+    expect($comision->central_order_id)->toBeNull()
+        ->and($comision->order)->toBeNull();
 });

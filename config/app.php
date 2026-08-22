@@ -69,6 +69,29 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Zona horaria del negocio
+    |--------------------------------------------------------------------------
+    |
+    | Hallazgo Auditoria #4: hay decisiones que dependen del DIA DEL CALENDARIO, no del
+    | instante: hasta cuando vale un cupon, y a que fecha corresponde la tasa del BCV.
+    | Evaluadas en UTC, el dia cambia a las 20:00 de Caracas, asi que un cupon valido
+    | «hasta el 21» dejaba de funcionar cuatro horas antes de lo prometido al cliente.
+    |
+    | `timezone` se queda en UTC a proposito. Es donde se ALMACENA, y moverlo cambiaria el
+    | significado de todas las fechas ya guardadas —comprobado: lo escrito hasta hoy esta
+    | en UTC— ademas de romper el orden por `created_at` en la ventana del cambio. Guardar
+    | en UTC e interpretar en la zona del negocio es lo que hace Laravel por defecto.
+    |
+    | Esta variable es SOLO para preguntar «que dia es hoy para el negocio». Si algun dia
+    | OwoMarket opera fuera de Venezuela, esto pasa a resolverse por tienda y el sitio
+    | donde mirar son sus dos usos: `Coupon::validateUsability()` y `RateDate::today()`.
+    |
+    */
+
+    'business_timezone' => env('APP_BUSINESS_TIMEZONE', 'America/Caracas'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |

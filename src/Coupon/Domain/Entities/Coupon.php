@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Coupon\Domain\Entities;
 
+use DateTimeImmutable;
+use DateTimeZone;
 use Src\Coupon\Domain\Exceptions\CouponExpiredException;
 use Src\Coupon\Domain\Exceptions\CouponUsageLimitReachedException;
 use Src\Coupon\Domain\Exceptions\InvalidCouponException;
@@ -189,13 +191,35 @@ final class Coupon
         $this->usedCount++;
     }
 
-    public function validateUsability(float $subtotal, string $currentDate = 'now'): void
-    {
+    /**
+     * @param  string  $currentDate  Instante a evaluar.
+     * @param  string  $businessTimezone  Zona en la que se decide el DIA de calendario.
+     */
+    public function validateUsability(
+        float $subtotal,
+        string $currentDate = 'now',
+        string $businessTimezone = 'America/Caracas'
+    ): void {
         if (! $this->isActive->value()) {
             throw new InvalidCouponException(sprintf('El cupón "%s" se encuentra inactivo.', $this->code->value()));
         }
 
-        $dateFormatted = date('Y-m-d', strtotime($currentDate));
+        /*
+         * Hallazgo Auditoria #4: esto usaba `date()`, que resuelve con la zona horaria por
+         * defecto de PHP —UTC—, asi que el dia cambiaba a las 20:00 de Caracas. Un cupon
+         * valido «hasta el 21» dejaba de funcionar cuatro horas antes de lo prometido.
+         *
+         * `$this->dateRange` compara dias de calendario, no instantes, asi que lo unico
+         * que hace falta es saber en que dia esta el negocio.
+         *
+         * La zona llega como PARAMETRO y no se lee de `config()`: esto es dominio y no
+         * puede depender del framework —los tests unitarios lo instancian sin aplicacion
+         * levantada—. Quien la resuelve es la capa de aplicacion.
+         */
+        $zonaDelNegocio = new DateTimeZone($businessTimezone);
+        $dateFormatted = (new DateTimeImmutable($currentDate, $zonaDelNegocio))
+            ->setTimezone($zonaDelNegocio)
+            ->format('Y-m-d');
         if (! $this->dateRange->isDateWithin($dateFormatted)) {
             throw new CouponExpiredException($this->code->value());
         }

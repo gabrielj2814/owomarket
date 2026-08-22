@@ -71,9 +71,13 @@ class CentralOrder extends Model
         return $this->hasMany(CentralOrderItem::class, 'central_order_id', 'id');
     }
 
+    /**
+     * Hallazgo Auditoria #1: la clave real es `central_order_id`. Con `order_id` esto
+     * devolvia SIEMPRE una coleccion vacia, porque ahi va el id del pedido de la tienda.
+     */
     public function commissions(): HasMany
     {
-        return $this->hasMany(PlatformCommission::class, 'order_id', 'id');
+        return $this->hasMany(PlatformCommission::class, 'central_order_id', 'id');
     }
 
     public function getTotalUsdAttribute(): float

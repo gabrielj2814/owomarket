@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\ExchangeRate\Domain\ValueObjects;
 
 use DateTimeImmutable;
+use DateTimeZone;
 use InvalidArgumentException;
 
 final class RateDate
@@ -33,9 +34,24 @@ final class RateDate
         return new self($value);
     }
 
-    public static function today(): self
+    /**
+     * Hoy, segun el calendario del NEGOCIO.
+     *
+     * Hallazgo Auditoria #4: `new DateTimeImmutable` resuelve con la zona por defecto de
+     * PHP —UTC—, asi que entre las 20:00 y la medianoche de Caracas esto ya devolvia el
+     * dia siguiente. Una tasa sincronizada a las 21:00 quedaba fechada manana, y el aviso
+     * de tasa congelada (N20) contaba mal los dias de antiguedad.
+     *
+     * Es una fecha de calendario, no un instante, asi que se pregunta en la zona del
+     * negocio. Lo almacenado sigue en UTC; ver la nota de `business_timezone` en
+     * config/app.php.
+     *
+     * La zona llega como PARAMETRO y no se lee de `config()`: esto es dominio y no puede
+     * depender del framework. Quien la resuelve es la capa de aplicacion.
+     */
+    public static function today(string $businessTimezone = 'America/Caracas'): self
     {
-        return new self(new DateTimeImmutable);
+        return new self(new DateTimeImmutable('now', new DateTimeZone($businessTimezone)));
     }
 
     public function value(): string

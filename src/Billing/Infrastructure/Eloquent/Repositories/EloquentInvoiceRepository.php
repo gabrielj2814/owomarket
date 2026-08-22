@@ -238,12 +238,16 @@ final class EloquentInvoiceRepository implements InvoiceRepositoryInterface
             pdfPath: $model->pdf_path,
             notes: $model->notes,
             metadata: $model->metadata,
-            exchangeRate: $model->exchange_rate ? (float) $model->exchange_rate : null,
-            subtotalVes: $model->subtotal_ves ? (float) $model->subtotal_ves : null,
-            totalVes: $model->total_ves ? (float) $model->total_ves : null,
-            subtotalUsd: $model->subtotal_usd ? (float) $model->subtotal_usd : null,
-            totalUsd: $model->total_usd ? (float) $model->total_usd : null,
-            commissionAmount: $model->commission_amount ? (float) $model->commission_amount : null,
+            // Hallazgo Auditoria #3: `$x ? (float) $x : null` convierte un importe
+            // legitimo de CERO en null, porque 0.00 es falsy en PHP. Una venta exenta
+            // perdia la diferencia entre «sin comision» y «comision cero», que en una
+            // factura no son lo mismo. Se compara contra null, que es lo que se pregunta.
+            exchangeRate: $model->exchange_rate !== null ? (float) $model->exchange_rate : null,
+            subtotalVes: $model->subtotal_ves !== null ? (float) $model->subtotal_ves : null,
+            totalVes: $model->total_ves !== null ? (float) $model->total_ves : null,
+            subtotalUsd: $model->subtotal_usd !== null ? (float) $model->subtotal_usd : null,
+            totalUsd: $model->total_usd !== null ? (float) $model->total_usd : null,
+            commissionAmount: $model->commission_amount !== null ? (float) $model->commission_amount : null,
             commissionCurrency: $model->commission_currency
         );
     }

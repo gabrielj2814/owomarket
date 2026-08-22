@@ -180,7 +180,15 @@ final class EloquentOrderRepository implements OrderRepositoryInterface
             ->whereNotIn('status', ['cancelled', 'refunded'])
             ->sum('total');
 
-        $averageOrderValue = $totalOrders > 0 ? round($totalSalesAmount / $totalOrders, 2) : 0.0;
+        // Hallazgo Auditoria #2: el numerador excluia cancelados y reembolsados, pero el
+        // denominador los contaba. Con la mitad de los pedidos cancelados, el valor medio
+        // salia a la mitad — un numero que se mira para tomar decisiones y que no fallaba,
+        // solo mentia. El denominador tiene que contar los mismos pedidos que el numerador.
+        $activeOrders = EloquentOrder::query()
+            ->whereNotIn('status', ['cancelled', 'refunded'])
+            ->count();
+
+        $averageOrderValue = $activeOrders > 0 ? round($totalSalesAmount / $activeOrders, 2) : 0.0;
 
         return new OrderMetricsData(
             totalOrders: $totalOrders,

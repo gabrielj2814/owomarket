@@ -28,7 +28,15 @@ final class CalculateAndRecordOrderCommissionUseCase
          * pago_movil, transferencia manual y contra entrega es siempre `pending`.
          */
         bool $paid = false,
-        array $metadata = []
+        array $metadata = [],
+        /**
+         * Hallazgo Auditoria #1: `$orderId` es el pedido de la TIENDA. El del pedido
+         * central va aparte, porque son identificadores de bases distintas y meterlos en
+         * la misma columna era lo que dejaba `$centralOrder->commissions` siempre vacio.
+         *
+         * Opcional porque el checkout del storefront no pasa por ningun pedido central.
+         */
+        ?string $centralOrderId = null
     ): PlatformCommission {
         // 1. Resolve applicable commission rate based on 3-tier hierarchy:
         // Priority 1: Tenant specific custom_commission_rate
@@ -42,6 +50,7 @@ final class CalculateAndRecordOrderCommissionUseCase
             'id' => (string) Str::uuid(),
             'tenant_id' => $tenantId,
             'order_id' => $orderId,
+            'central_order_id' => $centralOrderId,
             'order_number' => $orderNumber,
             'order_total' => $orderTotal,
             'commission_rate' => $rate,

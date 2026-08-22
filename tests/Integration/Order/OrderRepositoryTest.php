@@ -187,3 +187,59 @@ it('filters orders by multiple criteria and calculates metrics correctly', funct
         ->and($metrics->totalSalesAmount)->toBe(150.0) // 50 + 100 = 150
         ->and($metrics->averageOrderValue)->toBe(75.0);
 });
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo Auditoria #2 — el valor medio de pedido
+|--------------------------------------------------------------------------
+|
+| `totalSalesAmount` excluia cancelados y reembolsados, pero el denominador los contaba.
+| Con la mitad de los pedidos anulados el KPI salia a la mitad, sin fallar: un numero que
+| se mira para tomar decisiones y que simplemente mentia.
+*/
+it('excludes cancelled and refunded orders from the average order value denominator', function () {
+    $cliente = Customer::create(name: 'Ana Metricas', email: 'ana.metricas@test.cl');
+    $this->customerRepository->save($cliente);
+
+    $producto = \Src\Product\Infrastructure\Eloquent\Models\Product::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Articulo Metricas',
+        'slug' => 'articulo-metricas',
+        'sku' => 'MET-1',
+        'price' => 100.0,
+        'quantity' => 100,
+        'is_visible' => true,
+    ]);
+
+    // Dos pedidos entregados de $100 y dos anulados de $100.
+    foreach (['delivered', 'delivered', 'cancelled', 'refunded'] as $estado) {
+        $item = OrderItem::create($producto->id, 'Articulo Metricas', 'MET-1', 100.0, 1);
+        $pedido = Order::create($cliente->id()->value(), 'transfer', [$item]);
+
+        if ($estado === 'delivered') {
+            $pedido->confirm();
+            $pedido->process();
+            $pedido->markAsShipped('Chilexpress');
+            $pedido->markAsDelivered();
+        }
+
+        $this->orderRepository->save($pedido);
+
+        // Los estados anulados se fijan directamente: llegar a `refunded` por el dominio
+        // exigiria un pago, y lo que se prueba aqui es la metrica, no la transicion.
+        if ($estado !== 'delivered') {
+            \Illuminate\Support\Facades\DB::table('orders')
+                ->where('id', $pedido->id()->value())
+                ->update(['status' => $estado]);
+        }
+    }
+
+    $metrics = $this->orderRepository->getMetrics();
+
+    // Ventas netas: 200, de los dos entregados. Pedidos que aportan a esa cifra: 2, no 4.
+    expect($metrics->totalOrders)->toBe(4)
+        ->and($metrics->totalSalesAmount)->toBe(200.0)
+        // Antes esto daba 50.0: 200 repartido entre los cuatro pedidos, incluidos los
+        // dos que no vendieron nada.
+        ->and($metrics->averageOrderValue)->toBe(100.0);
+});

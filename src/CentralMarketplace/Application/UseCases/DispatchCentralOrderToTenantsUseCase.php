@@ -433,7 +433,10 @@ final class DispatchCentralOrderToTenantsUseCase
                     'commission_base' => 'merchandise_net_of_discount',
                     'tenant_subtotal' => $tenantSubtotal,
                     'prorated_discount' => $proratedDiscount,
-                ]
+                ],
+                // Hallazgo Auditoria #1: el metadato ya llevaba este id, pero ninguna
+                // relacion lo miraba. Ahora va tambien a su columna.
+                centralOrderId: (string) $centralOrder->id
             );
 
             // Reparto de la comisión entre las líneas, con el mismo método del

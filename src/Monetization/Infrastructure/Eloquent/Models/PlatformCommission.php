@@ -30,6 +30,7 @@ class PlatformCommission extends Model
         'id',
         'tenant_id',
         'order_id',
+        'central_order_id',
         'order_number',
         'order_total',
         'commission_rate',
@@ -58,8 +59,17 @@ class PlatformCommission extends Model
         return $this->belongsTo(CommissionSettlement::class, 'settlement_id', 'id');
     }
 
+    /**
+     * Hallazgo Auditoria #1: esto apuntaba a `order_id`, que contiene el UUID del pedido
+     * dentro de la base del INQUILINO. Como `central_orders.id` vive en la base central,
+     * los dos identificadores nunca coinciden y la relacion devolvia null siempre — sin
+     * error, que es lo que la hacia dificil de ver.
+     *
+     * `order_id` no se toca: sigue siendo el pedido de la tienda, que es lo que necesitan
+     * los informes del comerciante.
+     */
     public function order(): BelongsTo
     {
-        return $this->belongsTo(CentralOrder::class, 'order_id', 'id');
+        return $this->belongsTo(CentralOrder::class, 'central_order_id', 'id');
     }
 }

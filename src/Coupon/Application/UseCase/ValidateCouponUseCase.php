@@ -13,7 +13,17 @@ use Src\Order\Infrastructure\Eloquent\Models\Order;
 final class ValidateCouponUseCase
 {
     public function __construct(
-        private readonly CouponRepositoryInterface $repository
+        private readonly CouponRepositoryInterface $repository,
+        /**
+         * Hallazgo Auditoria #4: zona en la que se decide el DIA de calendario del cupon.
+         *
+         * Se inyecta en vez de leerse con `config()` aqui dentro por dos motivos. Uno, que
+         * los tests unitarios instancian este caso de uso sin aplicacion levantada. Y dos,
+         * mas serio: el `try/catch` de abajo convertia el fallo de `config()` en «cupon
+         * invalido», asi que un error de arranque se habria mostrado al comprador como un
+         * cupon que no vale. El valor real lo inyecta CouponServiceProvider.
+         */
+        private readonly string $businessTimezone = 'America/Caracas'
     ) {}
 
     /**
@@ -37,7 +47,10 @@ final class ValidateCouponUseCase
         }
 
         try {
-            $coupon->validateUsability($orderSubtotal, $currentDate);
+            // Hallazgo Auditoria #4: el dominio compara dias de calendario, y con la zona
+            // por defecto de PHP (UTC) el dia cambiaba a las 20:00 de Caracas — un cupon
+            // valido «hasta el 21» caducaba esa tarde.
+            $coupon->validateUsability($orderSubtotal, $currentDate, $this->businessTimezone);
 
             // Hallazgo N27: `usage_limit_per_customer` existia en la tabla desde el
             // principio y no lo miraba nadie. `validateUsability()` solo comprueba el

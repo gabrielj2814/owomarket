@@ -16,7 +16,13 @@ final class CreateManualExchangeRateUseCase
 {
     public function __construct(
         private readonly ExchangeRateRepositoryInterface $repository,
-        private readonly UuidGenerator $generator
+        private readonly UuidGenerator $generator,
+        /**
+         * Hallazgo Auditoria #4: zona en la que se decide la FECHA VALOR de la tasa.
+         * Inyectada, no leida con `config()` aqui: los tests unitarios instancian este
+         * caso de uso sin aplicacion levantada. El valor real lo pone el service provider.
+         */
+        private readonly string $businessTimezone = 'America/Caracas'
     ) {}
 
     public function execute(
@@ -38,7 +44,7 @@ final class CreateManualExchangeRateUseCase
             $ves,
             RateAmount::make($rateValue),
             RateSource::manual(),
-            $rateDate ? RateDate::make($rateDate) : RateDate::today(),
+            $rateDate ? RateDate::make($rateDate) : RateDate::today($this->businessTimezone),
             true,
             [
                 'created_by_admin' => $adminUserId,

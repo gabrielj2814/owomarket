@@ -171,3 +171,54 @@ it('saves and retrieves invoice with multi-currency and BCV exchange rate data',
         ->and($retrieved->totalVes())->toBe(44969.46)
         ->and($retrieved->commissionCurrency())->toBe('USDT');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo Auditoria #3 — un importe de cero no es «sin importe»
+|--------------------------------------------------------------------------
+|
+| El repositorio leia los seis importes opcionales con `$x ? (float) $x : null`, y `0.00`
+| es falsy en PHP. Una venta exenta de comision se leia como si no tuviera comision, que
+| en una factura no es lo mismo: uno dice «cero», el otro dice «no aplica».
+*/
+it('preserves a zero commission instead of reading it as null', function () {
+    $item = InvoiceItem::create('Producto Exento', 1, 50.00, 0.0);
+
+    $invoice = Invoice::createDirect(
+        invoiceNumber: 'FAC-2026-000900',
+        customer: ['name' => 'Comprador Exento', 'email' => 'exento@ve.com', 'address_line_1' => 'C1', 'city' => 'Caracas', 'state' => 'Miranda', 'postal_code' => '1060', 'country' => 'Venezuela'],
+        issuer: ['legal_name' => 'Tienda VE', 'tax_id' => 'J-12345678-0', 'billing_email' => 'tienda@ve.com', 'address_line_1' => 'E1', 'city' => 'Caracas', 'state' => 'Miranda', 'postal_code' => '1060', 'country' => 'Venezuela', 'invoice_prefix' => 'FAC-'],
+        items: [$item],
+        currency: 'USD',
+        commissionAmount: 0.0,
+        commissionCurrency: 'USDT'
+    );
+
+    $saved = $this->repository->save($invoice);
+    $leida = $this->repository->findById($saved->id());
+
+    // Antes esto devolvia null y la factura perdia la diferencia entre «comision cero»
+    // y «sin comision».
+    expect($leida->commissionAmount())->not->toBeNull()
+        ->and($leida->commissionAmount())->toBe(0.0);
+});
+
+it('still reads genuinely absent amounts as null', function () {
+    // El contraste importa: el arreglo no puede convertir los nulos de verdad en ceros.
+    $item = InvoiceItem::create('Producto Simple', 1, 50.00, 16.0);
+
+    $invoice = Invoice::createDirect(
+        invoiceNumber: 'FAC-2026-000901',
+        customer: ['name' => 'Comprador Simple', 'email' => 'simple@ve.com', 'address_line_1' => 'C1', 'city' => 'Caracas', 'state' => 'Miranda', 'postal_code' => '1060', 'country' => 'Venezuela'],
+        issuer: ['legal_name' => 'Tienda VE', 'tax_id' => 'J-12345678-0', 'billing_email' => 'tienda@ve.com', 'address_line_1' => 'E1', 'city' => 'Caracas', 'state' => 'Miranda', 'postal_code' => '1060', 'country' => 'Venezuela', 'invoice_prefix' => 'FAC-'],
+        items: [$item],
+        currency: 'USD'
+    );
+
+    $saved = $this->repository->save($invoice);
+    $leida = $this->repository->findById($saved->id());
+
+    expect($leida->exchangeRate())->toBeNull()
+        ->and($leida->totalVes())->toBeNull()
+        ->and($leida->commissionAmount())->toBeNull();
+});
