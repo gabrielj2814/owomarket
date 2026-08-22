@@ -32,5 +32,13 @@ class ProductServiceProvider extends ServiceProvider
         // camino se acordara de invocarla, y sólo lo hacía el botón de publicación. Desde
         // aquí la disparan los eventos del modelo, por los que sí pasan todos los caminos.
         Product::observe(ProductObserver::class);
+
+        if ($this->app->runningInConsole()) {
+            // N24: el observador solo reacciona a guardados nuevos, asi que reparar un
+            // catalogo ya desincronizado pedia un `tinker` a mano.
+            $this->commands([
+                \Src\Product\Infrastructure\Console\Commands\ResyncCentralCatalogCommand::class,
+            ]);
+        }
     }
 }

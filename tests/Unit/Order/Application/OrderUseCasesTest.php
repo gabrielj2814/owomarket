@@ -156,7 +156,13 @@ it('CancelOrderUseCase and RefundOrderUseCase transition order status', function
     $reverseCommission = m::mock(\Src\Monetization\Application\UseCases\ReverseOrderCommissionUseCase::class);
     $reverseCommission->shouldReceive('execute')->once();
 
-    $cancelUseCase = new CancelOrderUseCase($repository, $reverseCommission);
+    // Hallazgo N13: cancelar repone el stock. Aqui se comprueba que se invoque una vez
+    // por linea; el descuento y la reposicion reales se prueban en
+    // tests/Feature/Product/CentralCatalogSyncTest.php.
+    $stockReserver = m::mock(\Src\Marketplace\Application\Service\StockReserver::class);
+    $stockReserver->shouldReceive('release')->once();
+
+    $cancelUseCase = new CancelOrderUseCase($repository, $reverseCommission, $stockReserver);
     $cancelUseCase->execute($order->id()->value(), 'Cliente cambió de opinión');
 
     expect($order->status())->toBe(OrderStatus::CANCELLED);

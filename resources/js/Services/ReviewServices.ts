@@ -5,7 +5,7 @@ import {
 } from '@/types/ErrorsFormProductReview';
 import { FilterReviewsParams, FormCreateReview, FormUpdateReview } from '@/types/FormProductReview';
 import { ProductRatingSummary, ProductReview } from '@/types/models/ProductReview';
-import { ApiResponse } from '@/types/ResponseApi';
+import { ApiResponse, Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -85,9 +85,13 @@ const ReviewServices = {
         }
     },
 
-    create: async (data: FormCreateReview): Promise<ApiResponse<ProductReview, ErrorsFormCreateReview>> => {
+    /**
+     * Devuelve el sobre del backend, no la respuesta de axios. Ver hallazgo G2: tiparlo
+     * como `ApiResponse` hacia que el consumidor desenvolviera una capa de mas.
+     */
+    create: async (data: FormCreateReview): Promise<Data<ProductReview, ErrorsFormCreateReview>> => {
         try {
-            const response = await axiosReview.post<ApiResponse<ProductReview, ErrorsFormCreateReview>>('create', data);
+            const response = await axiosReview.post<Data<ProductReview, ErrorsFormCreateReview>>('create', data);
             return response.data;
         } catch (error: any) {
             return (

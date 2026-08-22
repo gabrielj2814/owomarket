@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Src\Tenant\Application\UseCase;
 
-use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Exception;
 use Illuminate\Support\Str;
+use Src\Admin\Infrastructure\Eloquent\Models\CentralAuditLog;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 final class AdminImpersonateTenantUseCase
@@ -30,7 +31,7 @@ final class AdminImpersonateTenantUseCase
 
         $adminUser = User::find($adminUserId);
         if (! $adminUser) {
-            throw new Exception("Usuario administrador no encontrado.", 404);
+            throw new Exception('Usuario administrador no encontrado.', 404);
         }
 
         // Obtener el dominio del inquilino
@@ -50,7 +51,25 @@ final class AdminImpersonateTenantUseCase
         ]);
 
         $scheme = config('app.env') === 'production' ? 'https' : 'http';
-        $ssoUrl = "{$scheme}://{$domain}/auth/sso?token={$token}";
+        // Hallazgo A9: apuntaba a `/auth/sso`, ruta que NO EXISTE. La real es
+        // `/auth/sso-consume` (ver `src/Tenant/.../Routes/web.php`), asi que el boton de
+        // «acceso directo» del expediente 360 daba 404 y la funcion no servia.
+        $ssoUrl = "{$scheme}://{$domain}/auth/sso-consume?token={$token}";
+
+        // Hallazgo A9: entrar como otro es de las cosas mas sensibles que puede hacer un
+        // superadmin y no dejaba ningun rastro, a diferencia de `AssignUserRolesUseCase`.
+        CentralAuditLog::create([
+            'id' => (string) Str::uuid(),
+            'user_id' => $adminUser->id,
+            'user_name' => $adminUser->name,
+            'user_email' => $adminUser->email,
+            'action' => 'tenant.impersonate',
+            'entity_type' => Tenant::class,
+            'entity_id' => $tenant->id,
+            'description' => "Acceso directo a la tienda «{$tenant->name}» ({$domain}).",
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
 
         return [
             'sso_url' => $ssoUrl,

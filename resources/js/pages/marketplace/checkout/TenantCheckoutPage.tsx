@@ -49,7 +49,7 @@ function CheckoutPageContent({
     payment_methods = [],
     auth_user = null,
 }: StorefrontCheckoutPageProps) {
-    const { items, subtotal, discountAmount, total, coupon, clearCart, formatPrice } = useCart();
+    const { items, subtotal, discountAmount, total, coupon, clearCart, formatPrice, revalidate } = useCart();
     const { customer, addresses, openAuthModal } = useCustomerAuth();
 
     // Steps: 1 = Contact & Customer, 2 = Shipping Address & Method, 3 = Payment & Login Gate
@@ -113,6 +113,15 @@ function CheckoutPageContent({
 
     // Auth gate modal state
     const [isAuthGateModalOpen, setIsAuthGateModalOpen] = useState<boolean>(false);
+
+    // Hallazgo N30: la Fase 3.2 revalidaba el carrito al abrir el carrito, pero entre eso
+    // y el pago puede pasar tiempo. El servidor resuelve los precios de todos modos
+    // (Fase 0.4), asi que no se cobra mal — pero el comprador podia pagar viendo un total
+    // viejo. Se revalida tambien al entrar aqui.
+    useEffect(() => {
+        void revalidate();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
 

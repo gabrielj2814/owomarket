@@ -150,8 +150,12 @@ function ProductDetailPageContent({
                 email: authorEmail.trim() !== '' ? authorEmail.trim() : undefined,
             };
 
+            // Hallazgo N12: `customer_id` lo pone el servidor desde la sesión de cliente,
+            // no el navegador. Antes el request lo exigía y esta página no lo enviaba
+            // nunca: 422 garantizado. Y `res.data.code` nunca existió (hallazgo G2), así
+            // que ni siquiera se detectaba el éxito.
             const res = await ReviewServices.create(payload as any);
-            if (res.data && (res.data.code === 200 || res.data.status === 'success')) {
+            if (res.code === 200 || res.code === 201 || res.status === 'success') {
                 showToast(
                     'success',
                     '¡Gracias por tu opinión! Tu reseña ha sido enviada para moderación y aprobación.'
@@ -160,7 +164,7 @@ function ProductDetailPageContent({
                 setReviewComment('');
                 setReviewTitle('');
             } else {
-                showToast('error', res.data?.message || 'Error al enviar reseña.');
+                showToast('error', res.message || 'Error al enviar reseña.');
             }
         } catch {
             showToast('error', 'Error al comunicarse con el servidor.');

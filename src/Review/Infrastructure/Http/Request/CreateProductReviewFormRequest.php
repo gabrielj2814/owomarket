@@ -20,6 +20,11 @@ class CreateProductReviewFormRequest extends FormRequest
     {
         return [
             'product_id' => ['required', 'string', 'exists:products,id'],
+            // Hallazgo N12: era `required`, pero `TenantProductDetailPage.tsx` NUNCA lo
+            // enviaba, asi que el formulario de resenas del storefront devolvia 422
+            // garantizado — llevaba roto desde siempre. Y pedirselo al navegador era
+            // ademas el mismo error que A3/A6: la identidad no la manda el cliente.
+            // Ahora lo pone el servidor desde la sesion (`prepareForValidation`).
             'customer_id' => ['required', 'string', 'exists:customers,id'],
             'rating' => ['required', 'integer', 'min:1', 'max:5'],
             'order_id' => ['nullable', 'string', 'exists:orders,id'],
@@ -51,6 +56,18 @@ class CreateProductReviewFormRequest extends FormRequest
             'rating.max' => 'La calificación máxima es de 5 estrellas.',
             'order_id.exists' => 'La orden especificada no existe.',
         ];
+    }
+
+    /**
+     * La identidad de quien resena sale de la sesion de cliente de la tienda, la misma
+     * que crea `ConsumeSsoTokenPOSTController`. Si el navegador manda un `customer_id`,
+     * se ignora.
+     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'customer_id' => session('tenant_customer_id') ?? $this->input('customer_id'),
+        ]);
     }
 
     public function toDto(): CreateReviewData

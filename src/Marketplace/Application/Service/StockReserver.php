@@ -37,7 +37,12 @@ use Src\Product\Infrastructure\Eloquent\Models\ProductVariant;
  * **Debe invocarse dentro de una transacción** (lo hace el checkout): el
  * `lockForUpdate()` sólo tiene efecto dentro de una.
  */
-final class StockReserver
+/*
+ * Sin `final`: los tests lo sustituyen por un doble de Mockery. Es la regla del
+ * proyecto para los colaboradores que se doblan en tests (ver `reglas.md`), no una
+ * excepcion.
+ */
+class StockReserver
 {
     /**
      * Descuenta $quantity del producto o de su variante, bloqueando la fila.

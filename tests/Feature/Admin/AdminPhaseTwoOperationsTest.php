@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Admin;
 
-use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
-use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
-use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
-use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
-use Src\Tenant\Infrastructure\Eloquent\Models\TenantOwnerSsoToken;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
+use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -26,6 +21,7 @@ final class AdminPhaseTwoOperationsTest extends TestCase
     use RefreshDatabase;
 
     private User $adminUser;
+
     private Tenant $tenant;
 
     protected function setUp(): void
@@ -44,16 +40,16 @@ final class AdminPhaseTwoOperationsTest extends TestCase
         $this->adminUser = User::create([
             'id' => (string) Str::uuid(),
             'name' => 'Super Admin Test',
-            'email' => 'admin_' . Str::random(6) . '@owomarket.com',
+            'email' => 'admin_'.Str::random(6).'@owomarket.com',
             'password' => bcrypt('password123'),
             'type' => 'super_admin',
             'is_active' => true,
         ]);
 
         $this->tenant = Tenant::create([
-            'id' => 'shop-' . Str::random(6),
+            'id' => 'shop-'.Str::random(6),
             'name' => 'Tienda Tech Demo',
-            'slug' => 'tech-demo-' . Str::random(4),
+            'slug' => 'tech-demo-'.Str::random(4),
             'status' => 'active',
             'request' => 'approved',
         ]);
@@ -90,7 +86,7 @@ final class AdminPhaseTwoOperationsTest extends TestCase
             ]);
 
         $this->assertNotEmpty($responseSso->json('data.token'));
-        $this->assertStringContainsString('/auth/sso?token=', $responseSso->json('data.sso_url'));
+        $this->assertStringContainsString('/auth/sso-consume?token=', $responseSso->json('data.sso_url'));
 
         // 4. Actualizar gobernanza (suspender tienda con motivo)
         $responseGov = $this->patchJson("/admin/api/tenants/{$this->tenant->id}/governance-status", [
@@ -112,7 +108,7 @@ final class AdminPhaseTwoOperationsTest extends TestCase
         $customer = CentralCustomer::create([
             'id' => (string) Str::uuid(),
             'name' => 'Carlos Comprador',
-            'email' => 'carlos_' . Str::random(5) . '@example.com',
+            'email' => 'carlos_'.Str::random(5).'@example.com',
             'password' => bcrypt('secret123'),
             'is_active' => true,
         ]);
@@ -148,7 +144,7 @@ final class AdminPhaseTwoOperationsTest extends TestCase
 
         $order = CentralOrder::create([
             'id' => (string) Str::uuid(),
-            'order_number' => 'ORD-' . strtoupper(Str::random(8)),
+            'order_number' => 'ORD-'.strtoupper(Str::random(8)),
             'customer_name' => 'Ana Compradora',
             'customer_email' => 'ana@example.com',
             'subtotal' => 100.00,
