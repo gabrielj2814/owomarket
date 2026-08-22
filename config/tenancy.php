@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Database\Models\Domain;
+
 // use Stancl\Tenancy\Database\Models\Tenant;
 
 return [
     'tenant_model' => ModelsTenant::class,
     'id_generator' => Stancl\Tenancy\UUIDGenerator::class,
 
-    'domain_model' => Domain::class,
+    // Pendiente P2 / hallazgo N23: el modelo de Stancl declara la clave primaria como
+    // entera, pero `domains.id` es un uuid, asi que `$domain->id` devolvia siempre 0.
+    'domain_model' => \Src\Tenant\Infrastructure\Eloquent\Models\Domain::class,
 
     /**
      * The list of domains hosting your central app.

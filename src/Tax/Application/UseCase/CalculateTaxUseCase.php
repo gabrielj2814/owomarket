@@ -22,6 +22,10 @@ final class CalculateTaxUseCase
     ): CalculateTaxResult {
         $rates = $this->repository->findApplicableRates($country, $state, $city, $zip);
 
+        // Varias tasas aplicables SI se suman a proposito: hay jurisdicciones donde el
+        // impuesto nacional, el estatal y el municipal se acumulan. Lo que estaba mal era
+        // que se sumaran tasas de paises distintos, y eso se corrige en el repositorio
+        // acotando que tasas son aplicables (hallazgo D6).
         $totalTax = 0.0;
         $appliedRates = [];
 

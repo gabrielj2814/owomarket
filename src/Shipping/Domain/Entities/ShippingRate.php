@@ -127,10 +127,14 @@ final class ShippingRate
             return false;
         }
 
-        if ($this->type->isFree()) {
-            return true;
-        }
-
+        // Hallazgo D5: aqui habia un `if ($this->type->isFree()) return true;` ANTES de
+        // evaluar `minValue`/`maxValue`, asi que un «Envio gratis a partir de $100» se
+        // aplicaba a un pedido de $5. Y como era la opcion mas barata,
+        // `CalculateShippingOptionsUseCase` la marcaba como recomendada: **todos los
+        // envios salian gratis**.
+        //
+        // Una tarifa gratuita tiene exactamente los mismos umbrales que cualquier otra;
+        // lo unico que la distingue es que su coste es 0.
         $comparisonValue = $this->type->isWeightBased() ? $totalWeight : $orderValue;
 
         if ($this->minValue !== null && $comparisonValue < $this->minValue) {
@@ -144,10 +148,22 @@ final class ShippingRate
         return true;
     }
 
-    public function calculateCost(): float
+    /**
+     * Hallazgo D5: no recibia ni el peso ni el valor del pedido, asi que una tarifa
+     * «$3 por kg» cobraba **$3 por un pedido de 20 kg** en vez de $60.
+     *
+     * Para `weight_based` el coste configurado es el precio por unidad de peso; para el
+     * resto es el importe plano. `free` sigue siendo gratis, pero ahora solo se ofrece
+     * cuando el pedido cumple sus umbrales.
+     */
+    public function calculateCost(float $orderValue = 0.0, float $totalWeight = 0.0): float
     {
         if ($this->type->isFree()) {
             return 0.0;
+        }
+
+        if ($this->type->isWeightBased()) {
+            return round($this->cost->value() * max(0.0, $totalWeight), 2);
         }
 
         return $this->cost->value();

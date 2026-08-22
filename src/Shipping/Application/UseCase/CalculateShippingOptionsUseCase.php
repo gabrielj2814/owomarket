@@ -29,7 +29,7 @@ final class CalculateShippingOptionsUseCase
         foreach ($zones as $zone) {
             foreach ($zone->rates() as $rate) {
                 if ($rate->appliesTo($orderValue, $totalWeight)) {
-                    $cost = $rate->calculateCost();
+                    $cost = $rate->calculateCost($orderValue, $totalWeight);
                     $option = [
                         'zone_id' => $zone->id()?->value(),
                         'zone_name' => $zone->name()->value(),

@@ -156,7 +156,10 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN', '.owomarket.local'),
+    // Hallazgo F3: el comodín '.owomarket.local' compartía la cookie con TODOS los
+    // subdominios. Se deja sin valor por defecto —cookie atada al host— y
+    //  además le da un nombre distinto por dominio.
+    'domain' => env('SESSION_DOMAIN'),
 
     /*
     |--------------------------------------------------------------------------

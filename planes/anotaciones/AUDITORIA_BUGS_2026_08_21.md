@@ -2,10 +2,11 @@
 
 > ## 📌 ESTADO DE LA REMEDIACIÓN — actualizado el 21/08/2026
 >
-> **Avance: 43 de 50 hallazgos cerrados (86%) · 2 parciales · 5 abiertos.**
+> **Avance: 47 de 50 hallazgos cerrados (94%) · 3 parciales · 0 abiertos.**
 >
-> **Bloques A, B, C, E y G cerrados** (A9 queda parcial). Lo que queda son 5 hallazgos:
-> dinero (D5, D6) e infraestructura (F3, F5), más el 🟡 A9.
+> **Los 50 hallazgos del documento original están atendidos.** Quedan 3 parciales —A9,
+> G9 y G15— y ninguno abierto. Lo que sigue vivo son los hallazgos **nuevos** (N1-N35),
+> descubiertos durante la remediación.
 >
 > Fases 0, 1 y 2 completas. Fase 3 empezada.
 > **Estado revisado hallazgo por hallazgo contra el código el 21/08/2026**, incluidas las
@@ -36,9 +37,9 @@
 > | **A. Autenticación** | A1-A8 | A9 | — |
 > | **B. Datos del cliente** | B1 B2 B3 | B4 | — |
 > | **C. Concurrencia** | C1 C2 C3 C4 C5 C6 | — | — |
-> | **D. Dinero** | D1 D2 D3 D4 | — | D5 D6 |
+> | **D. Dinero** | D1-D6 | — | — |
 > | **E. Catálogo** | E1 E2 E3 E4 | — | — |
-> | **F. Infraestructura** | F1 F2 F4 F6 | — | F3 F5 |
+> | **F. Infraestructura** | F1-F6 | — | — |
 > | **G. Frontend** | G1-G8 G10 G11 G12 G13 G14 | G9 G15 | — |
 >
 > F2 («`bootstrap/app.php` importa middlewares que no existen y no registra ningún
@@ -70,12 +71,11 @@
 > | 3.3 | G7, G10, G8 | `PLAN_FASE3_3_SESION_DEL_COMPRADOR.md` |
 > | 3.4 | G13, G14, G9 y G15 (parciales), N32 | `PLAN_FASE3_4_MONEDA_Y_ERRORES_VISIBLES.md` |
 > | 4.1 | A7, A8, C5, P1 | `PLAN_FASE4_1_TOKENS_Y_PIN.md` |
+> | 4.2 | D5, D6, F3, F5, P2 | `PLAN_FASE4_2_DINERO_E_INFRAESTRUCTURA.md` |
 >
 > ### 🔜 Siguiente paso recomendado
 >
-> 1. **D5 y D6** (tarifas de envío e impuestos) y **F3 y F5** (cookie de sesión entre
->    subdominios y tablas de permisos ausentes en las bases de tenant).
-> 2. **Configurar los datos de cobro de la plataforma** (N33): la Fase 3.4 dejó el
+> 1. **Configurar los datos de cobro de la plataforma** (N33): la Fase 3.4 dejó el
 >    checkout central leyendo `central_settings`, pero **no hay pantalla para escribirlos**.
 >    Hasta entonces el checkout central no ofrece ningún método de pago.
 > 2. **Un comando para crear el superadmin** (P1/N22): la Fase 2.1 vetó `RootUserSeeder`
@@ -89,7 +89,7 @@
 > | # | Pendiente | Por qué | Estado |
 > | :--- | :--- | :--- | :--- |
 > | **P1** | ✅ **HECHO (Fase 4.1)** — comando `admin:create-super` interactivo: contraseña oculta (nunca por argumento, acabaría en el historial del shell), validada con `PasswordValidator`, y se niega a sobrescribir un usuario existente | La Fase 2.1 vetó `RootUserSeeder` fuera de desarrollo, así que **una instalación nueva no tiene ningún camino para crear el superadmin inicial**. No rompe los despliegues existentes, que ya tienen el suyo | ✅ Cerrado |
-> | **P2** | **`domains.id` es UUID pero el modelo lo declara `int`** | Ver N23: `$domain->id` devuelve **siempre `0`**, y con ~6% de los UUID revienta la petición entera | ⬜ Abierto |
+> | **P2** | ✅ **HECHO (Fase 4.2)** — modelo `Domain` propio con `keyType = 'string'`, registrado en `config/tenancy.php`. La suite pasó tres veces seguidas tras el cambio; antes fallaba ~1 de cada 3 | ✅ Cerrado |
 >
 > ### ⚠️ Deuda operativa sobre datos (no sobre código)
 >
@@ -594,7 +594,7 @@ Se elimina el espacio y se cambia la coma decimal por punto, pero **no se quita 
 
 ### D5. 🟠 Tarifas de envío: `free` ignora su umbral y `weight_based` cobra plano
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.2) — la tarifa gratuita evalúa sus umbrales como cualquier otra, y `calculateCost()` recibe peso e importe para multiplicar en `weight_based`
 
 **Archivo:** `src/Shipping/Domain/Entities/ShippingRate.php:130-132,147-154`
 
@@ -617,7 +617,7 @@ public function calculateCost(): float
 
 ### D6. 🟠 Sin país, se suman **todas** las tasas de impuesto activas
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.2) — una tasa con campo geográfico fijado sólo aplica si coincide; sin destino sólo aplican las tasas sin destino. La suma de varias tasas se conserva a propósito
 
 **Archivos:** `TaxRateRepository.php:120-151`, `CalculateTaxUseCase.php:28-37`
 
@@ -761,7 +761,7 @@ use App\Http\Middleware\VerifyCsrfToken;        // ← tampoco
 
 ### F3. 🟠 Cookie de sesión compartida por todos los subdominios
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.2) — **decisión tomada: aislar.** El SSO ya existe para cruzar dominios y no depende de una cookie compartida. `SESSION_DOMAIN` sin comodín + `ScopeSessionCookieToHost` antepuesto a `StartSession`
 
 **Archivo:** `config/session.php:159, 172`
 
@@ -790,7 +790,7 @@ Comodín para todos los subdominios y un único nombre de cookie para toda la ap
 
 ### F5. 🟠 Tablas de permisos (Spatie) solo en la BD central, pero `User` usa `HasRoles` también en tenants
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO (Fase 4.2) — la migración se copia a `database/migrations/tenant/`; cada tienda tiene su propio espacio de roles, que es lo que hará falta para N19
 
 La migración `2026_08_21_000826_create_permission_tables.php` vive solo en `database/migrations/`, no en `migrations/tenant/`. `Src\User\...\User` (el provider `users`) no fija conexión, así que en un dominio de tenant resuelve la BD del tenant, donde `roles` y `permissions` no existen.
 
@@ -1092,7 +1092,7 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 No estaban en la auditoría original; se descubrieron al implementar los arreglos.
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
-**Estado al 21/08/2026: 13 cerrados · 22 abiertos.** Repasados uno a uno contra el código,
+**Estado al 21/08/2026: 15 cerrados · 20 abiertos.** Repasados uno a uno contra el código,
 no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
 
 | Frente | Hallazgos | Por qué importa |
@@ -1127,7 +1127,7 @@ no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ✅ Cerrado (Fase 4.1) |
-| N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ⬜ Abierto |
+| N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ✅ Cerrado (Fase 4.2) |
 | N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ⬜ Abierto |
 | N25 | La sincronización con el catálogo central es **síncrona**: escribe en la base central dentro de la misma petición, incluida la transacción del checkout. Si el marketplace no responde, la fila queda desincronizada y sólo queda el log. Lo natural es un job en cola con reintentos | Fase 2.2 | ⬜ Abierto |
 | N26 | El `metadata` de `central_products` se sobrescribía con el del producto de la tienda en cada sincronización, **borrando el historial de moderación y la comisión personalizada**. Pasaba desapercibido porque la sincronización casi nunca corría | Fase 2.2 | ✅ Cerrado |

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\CorsHeaders;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\ScopeSessionCookieToHost;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -48,17 +49,21 @@ return Application::configure(basePath: dirname(__DIR__))
                 PreventAccessFromCentralDomains::class,
             ])->prefix('api-tenant')->group(base_path('routes/tenantApi.php'));
 
-        // // O si quieres separar tenant web de tenant api:
-        // Route::middleware('web')
-        //     ->group(base_path('routes/tenant-web.php'));
+            // // O si quieres separar tenant web de tenant api:
+            // Route::middleware('web')
+            //     ->group(base_path('routes/tenant-web.php'));
         }
     )
     ->withMiddleware(function (Middleware $middleware): void {
 
+        // Hallazgo F3: tiene que correr ANTES de `StartSession`, que es quien lee la
+        // cookie. Por eso se antepone a toda la pila en vez de anadirse al grupo `web`.
+        $middleware->prepend(ScopeSessionCookieToHost::class);
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
-            CorsHeaders::class
+            CorsHeaders::class,
 
         ]);
 
@@ -91,4 +96,4 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-})->create();
+    })->create();

@@ -121,27 +121,26 @@ final class TaxRateRepository implements TaxRateRepositoryInterface
     {
         $query = EloquentTaxRate::where('is_active', true);
 
-        if ($country !== null) {
-            $query->where(function ($q) use ($country) {
-                $q->whereNull('country')->orWhere('country', '')->orWhere('country', $country);
-            });
-        }
+        // Hallazgo D6: cada filtro geografico se aplicaba **solo si el parametro no era
+        // null**, asi que una peticion sin pais no filtraba por pais y devolvia TODAS las
+        // tasas activas — que el caso de uso despues suma. Un inquilino con «IVA Venezuela
+        // 16%» e «IVA Espana 21%» configurados devolvia un 37% de impuesto.
+        //
+        // La regla correcta es la simetrica: una tasa con el campo geografico fijado solo
+        // aplica cuando ese campo coincide; una tasa con el campo vacio aplica siempre.
+        // Si no sabemos el destino, solo pueden aplicar las tasas sin destino.
+        foreach ([
+            'country' => $country,
+            'state' => $state,
+            'city' => $city,
+            'zip' => $zip,
+        ] as $columna => $valor) {
+            $query->where(function ($q) use ($columna, $valor) {
+                $q->whereNull($columna)->orWhere($columna, '');
 
-        if ($state !== null) {
-            $query->where(function ($q) use ($state) {
-                $q->whereNull('state')->orWhere('state', '')->orWhere('state', $state);
-            });
-        }
-
-        if ($city !== null) {
-            $query->where(function ($q) use ($city) {
-                $q->whereNull('city')->orWhere('city', '')->orWhere('city', $city);
-            });
-        }
-
-        if ($zip !== null) {
-            $query->where(function ($q) use ($zip) {
-                $q->whereNull('zip')->orWhere('zip', '')->orWhere('zip', $zip);
+                if ($valor !== null && $valor !== '') {
+                    $q->orWhere($columna, $valor);
+                }
             });
         }
 
