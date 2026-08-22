@@ -1,35 +1,12 @@
-import React, { useEffect, useState } from 'react';
 import Dashboard from '@/components/layouts/Dashboard';
 import TenantSettingsServices from '@/Services/TenantSettingsServices';
 import { ErrorsFormUpdateStoreSettings } from '@/types/ErrorsFormTenantSettings';
 import { FormUpdateStoreSettings } from '@/types/FormTenantSettings';
 import { StoreSettingsFlat } from '@/types/models/TenantSettings';
 import { Head } from '@inertiajs/react';
-import {
-    Alert,
-    Badge,
-    Breadcrumb,
-    BreadcrumbItem,
-    Button,
-    Card,
-    Label,
-    Select,
-    Spinner,
-    TabItem,
-    Tabs,
-    TextInput,
-    Textarea,
-} from 'flowbite-react';
-import {
-    HiCheck,
-    HiGlobeAlt,
-    HiHome,
-    HiInformationCircle,
-    HiOutlineExternalLink,
-    HiPhotograph,
-    HiSave,
-    HiSearch,
-} from 'react-icons/hi';
+import { Breadcrumb, BreadcrumbItem, Button, Card, Label, Select, Spinner, TabItem, Tabs, TextInput, Textarea } from 'flowbite-react';
+import React, { useEffect, useState } from 'react';
+import { HiGlobeAlt, HiHome, HiInformationCircle, HiPhotograph, HiSave, HiSearch } from 'react-icons/hi';
 
 interface TenantSettingsPageProps {
     title: string;
@@ -38,12 +15,7 @@ interface TenantSettingsPageProps {
     user_name: string;
 }
 
-export default function TenantSettingsPage({
-    title,
-    user_id,
-    host,
-    user_name,
-}: TenantSettingsPageProps) {
+export default function TenantSettingsPage({ title, user_id, host, user_name }: TenantSettingsPageProps) {
     const [formData, setFormData] = useState<StoreSettingsFlat>({
         store_name: '',
         store_email: '',
@@ -75,8 +47,8 @@ export default function TenantSettingsPage({
         setLoading(true);
         try {
             const response = await TenantSettingsServices.getStoreSettings();
-            if (response.data && (response.data.code === 200 || response.data.status === 'success') && response.data.data) {
-                const flat = response.data.data.flat;
+            if (response.data && (response.code === 200 || response.status === 'success') && response.data) {
+                const flat = response.data.flat;
                 setFormData({
                     store_name: flat.store_name || '',
                     store_email: flat.store_email || '',
@@ -142,12 +114,12 @@ export default function TenantSettingsPage({
             };
 
             const response = await TenantSettingsServices.updateStoreSettings(payload);
-            if (response.data && (response.data.code === 200 || response.data.status === 'success')) {
+            if (response.data && (response.code === 200 || response.status === 'success')) {
                 showToast('success', 'Configuración de la tienda guardada con éxito.');
             } else {
-                showToast('error', response.data?.message || 'Error al guardar configuración.');
-                if (response.data?.errors) {
-                    setErrors(response.data.errors);
+                showToast('error', response.message || 'Error al guardar configuración.');
+                if (response.errors) {
+                    setErrors(response.errors);
                 }
             }
         } catch (e) {
@@ -160,19 +132,17 @@ export default function TenantSettingsPage({
     return (
         <Dashboard user_uuid={user_id}>
             <Head title={title} />
-            <div className="p-4 sm:p-6 space-y-6 max-w-6xl mx-auto">
+            <div className="mx-auto max-w-6xl space-y-6 p-4 sm:p-6">
                 {/* Toast Notification */}
                 {toastMessage && (
                     <div
-                        className={`fixed top-5 right-5 z-50 flex items-center p-4 mb-4 text-sm rounded-lg shadow-lg ${
+                        className={`fixed top-5 right-5 z-50 mb-4 flex items-center rounded-lg p-4 text-sm shadow-lg ${
                             toastMessage.type === 'success'
-                                ? 'text-green-800 bg-green-100 dark:bg-green-800 dark:text-green-200 border border-green-300'
-                                : 'text-red-800 bg-red-100 dark:bg-red-800 dark:text-red-200 border border-red-300'
+                                ? 'border border-green-300 bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200'
+                                : 'border border-red-300 bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200'
                         }`}
                     >
-                        <span className="font-medium mr-2">
-                            {toastMessage.type === 'success' ? 'Éxito:' : 'Error:'}
-                        </span>
+                        <span className="mr-2 font-medium">{toastMessage.type === 'success' ? 'Éxito:' : 'Error:'}</span>
                         {toastMessage.text}
                     </div>
                 )}
@@ -186,20 +156,14 @@ export default function TenantSettingsPage({
                 </Breadcrumb>
 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white">
-                            Configuración de la Tienda
-                        </h1>
-                        <p className="text-sm text-gray-500 mt-1">
+                        <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">Configuración de la Tienda</h1>
+                        <p className="mt-1 text-sm text-gray-500">
                             Personaliza la identidad de tu comercio, moneda por defecto, imágenes de marca, canales sociales y optimización SEO.
                         </p>
                     </div>
-                    <Button
-                        color="blue"
-                        onClick={() => handleSave()}
-                        disabled={saving || loading}
-                    >
+                    <Button color="blue" onClick={() => handleSave()} disabled={saving || loading}>
                         {saving ? <Spinner size="sm" className="mr-2" /> : <HiSave className="mr-2 h-4 w-4" />}
                         Guardar Cambios
                     </Button>
@@ -208,7 +172,7 @@ export default function TenantSettingsPage({
                 {loading ? (
                     <div className="py-20 text-center">
                         <Spinner size="xl" />
-                        <p className="text-sm text-gray-500 mt-3">Cargando configuración...</p>
+                        <p className="mt-3 text-sm text-gray-500">Cargando configuración...</p>
                     </div>
                 ) : (
                     <Card className="shadow-sm">
@@ -216,7 +180,7 @@ export default function TenantSettingsPage({
                             {/* TAB 1: Información General & Contacto */}
                             <TabItem active title="General & Contacto" icon={HiInformationCircle}>
                                 <div className="space-y-4 pt-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div>
                                             <Label htmlFor="store_name_input">Nombre Comercial de la Tienda (*)</Label>
                                             <TextInput
@@ -228,9 +192,7 @@ export default function TenantSettingsPage({
                                                 className="mt-1"
                                                 color={errors.store_name ? 'failure' : 'gray'}
                                             />
-                                            {errors.store_name && (
-                                                <span className="text-xs text-red-600 mt-1 block">{errors.store_name[0]}</span>
-                                            )}
+                                            {errors.store_name && <span className="mt-1 block text-xs text-red-600">{errors.store_name[0]}</span>}
                                         </div>
 
                                         <div>
@@ -245,9 +207,7 @@ export default function TenantSettingsPage({
                                                 className="mt-1"
                                                 color={errors.store_email ? 'failure' : 'gray'}
                                             />
-                                            {errors.store_email && (
-                                                <span className="text-xs text-red-600 mt-1 block">{errors.store_email[0]}</span>
-                                            )}
+                                            {errors.store_email && <span className="mt-1 block text-xs text-red-600">{errors.store_email[0]}</span>}
                                         </div>
 
                                         <div>
@@ -266,7 +226,7 @@ export default function TenantSettingsPage({
                                                 <option value="MXN">MXN - Peso Mexicano ($)</option>
                                                 <option value="PEN">PEN - Sol Peruano (S/)</option>
                                             </Select>
-                                            <p className="text-xs text-gray-400 mt-1">
+                                            <p className="mt-1 text-xs text-gray-400">
                                                 Moneda base utilizada para cotizaciones, catálogo y transacciones.
                                             </p>
                                         </div>
@@ -300,7 +260,7 @@ export default function TenantSettingsPage({
                             {/* TAB 2: Imagen y Branding */}
                             <TabItem title="Imagen y Marca" icon={HiPhotograph}>
                                 <div className="space-y-6 pt-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                         {/* Logo Section */}
                                         <div className="space-y-3">
                                             <Label htmlFor="logo_url_input">URL del Logotipo</Label>
@@ -310,27 +270,22 @@ export default function TenantSettingsPage({
                                                 onChange={(e) => handleChange('logo_url', e.target.value)}
                                                 placeholder="https://cdn.tusitio.com/logo.png"
                                             />
-                                            <p className="text-xs text-gray-400">
-                                                Recomendado: Imagen PNG transparente o SVG de 250x60 px.
-                                            </p>
+                                            <p className="text-xs text-gray-400">Recomendado: Imagen PNG transparente o SVG de 250x60 px.</p>
 
-                                            <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 text-center">
-                                                <span className="text-xs font-bold text-gray-500 block mb-2">
-                                                    Vista Previa del Logotipo:
-                                                </span>
+                                            <div className="mt-2 rounded-lg border bg-gray-50 p-4 text-center dark:bg-gray-800">
+                                                <span className="mb-2 block text-xs font-bold text-gray-500">Vista Previa del Logotipo:</span>
                                                 {formData.logo_url ? (
                                                     <img
                                                         src={formData.logo_url}
                                                         alt="Logo Preview"
-                                                        className="max-h-16 mx-auto object-contain"
+                                                        className="mx-auto max-h-16 object-contain"
                                                         onError={(e) => {
-                                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200x60?text=Logo+Invalido';
+                                                            (e.target as HTMLImageElement).src =
+                                                                'https://via.placeholder.com/200x60?text=Logo+Invalido';
                                                         }}
                                                     />
                                                 ) : (
-                                                    <div className="text-xs text-gray-400 italic py-4">
-                                                        Sin logotipo configurado
-                                                    </div>
+                                                    <div className="py-4 text-xs text-gray-400 italic">Sin logotipo configurado</div>
                                                 )}
                                             </div>
                                         </div>
@@ -348,23 +303,20 @@ export default function TenantSettingsPage({
                                                 Recomendado: Imagen horizontal de 1920x600 px en formato WebP o JPG.
                                             </p>
 
-                                            <div className="mt-2 p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 text-center">
-                                                <span className="text-xs font-bold text-gray-500 block mb-2">
-                                                    Vista Previa de la Portada:
-                                                </span>
+                                            <div className="mt-2 rounded-lg border bg-gray-50 p-4 text-center dark:bg-gray-800">
+                                                <span className="mb-2 block text-xs font-bold text-gray-500">Vista Previa de la Portada:</span>
                                                 {formData.banner_url ? (
                                                     <img
                                                         src={formData.banner_url}
                                                         alt="Banner Preview"
                                                         className="max-h-24 w-full rounded object-cover"
                                                         onError={(e) => {
-                                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/600x200?text=Banner+Invalido';
+                                                            (e.target as HTMLImageElement).src =
+                                                                'https://via.placeholder.com/600x200?text=Banner+Invalido';
                                                         }}
                                                     />
                                                 ) : (
-                                                    <div className="text-xs text-gray-400 italic py-6">
-                                                        Sin banner configurado
-                                                    </div>
+                                                    <div className="py-6 text-xs text-gray-400 italic">Sin banner configurado</div>
                                                 )}
                                             </div>
                                         </div>
@@ -375,7 +327,7 @@ export default function TenantSettingsPage({
                             {/* TAB 3: Redes Sociales */}
                             <TabItem title="Redes Sociales" icon={HiGlobeAlt}>
                                 <div className="space-y-4 pt-4">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                         <div>
                                             <Label htmlFor="social_facebook_input">Página de Facebook</Label>
                                             <TextInput
@@ -465,25 +417,21 @@ export default function TenantSettingsPage({
                                                 placeholder="tienda online, electronica, calzado, santiago chile"
                                                 className="mt-1"
                                             />
-                                            <p className="text-xs text-gray-400 mt-1">
-                                                Separadas por coma.
-                                            </p>
+                                            <p className="mt-1 text-xs text-gray-400">Separadas por coma.</p>
                                         </div>
                                     </div>
 
                                     {/* Google Search Result Preview Card */}
-                                    <div className="p-4 border rounded-lg bg-gray-50 dark:bg-gray-800 space-y-2">
-                                        <div className="flex items-center gap-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                                    <div className="space-y-2 rounded-lg border bg-gray-50 p-4 dark:bg-gray-800">
+                                        <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-gray-500 uppercase">
                                             <span>Previsualización en Resultados de Google:</span>
                                         </div>
-                                        <div className="p-3 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 font-sans">
-                                            <span className="text-xs text-gray-600 dark:text-gray-400 block truncate">
-                                                https://{host}
-                                            </span>
-                                            <h4 className="text-blue-700 dark:text-blue-400 text-base hover:underline cursor-pointer font-medium mt-0.5">
+                                        <div className="rounded border border-gray-200 bg-white p-3 font-sans dark:border-gray-700 dark:bg-gray-900">
+                                            <span className="block truncate text-xs text-gray-600 dark:text-gray-400">https://{host}</span>
+                                            <h4 className="mt-0.5 cursor-pointer text-base font-medium text-blue-700 hover:underline dark:text-blue-400">
                                                 {formData.seo_title || formData.store_name || 'Mi Tienda Online'}
                                             </h4>
-                                            <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 mt-1">
+                                            <p className="mt-1 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">
                                                 {formData.seo_description ||
                                                     'Descubre nuestra amplia selección de productos con los mejores precios y envíos a todo el país.'}
                                             </p>
@@ -494,12 +442,8 @@ export default function TenantSettingsPage({
                         </Tabs>
 
                         {/* Bottom Save Action */}
-                        <div className="flex justify-end pt-4 border-t dark:border-gray-700">
-                            <Button
-                                color="blue"
-                                onClick={() => handleSave()}
-                                disabled={saving}
-                            >
+                        <div className="flex justify-end border-t pt-4 dark:border-gray-700">
+                            <Button color="blue" onClick={() => handleSave()} disabled={saving}>
                                 {saving ? <Spinner size="sm" className="mr-2" /> : <HiSave className="mr-2 h-4 w-4" />}
                                 Guardar Cambios
                             </Button>

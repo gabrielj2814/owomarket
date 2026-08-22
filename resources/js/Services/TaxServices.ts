@@ -1,7 +1,7 @@
 import { ErrorsFormTaxRate } from '@/types/ErrorsFormTaxRate';
 import { FormTaxRate } from '@/types/FormTaxRate';
 import { TaxRate } from '@/types/models/TaxRate';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -43,8 +43,8 @@ const TaxServices = {
         prePage: number = 10,
         page: number = 1,
         sortBy: string = 'priority',
-        sortDirection: string = 'asc'
-    ): Promise<ApiResponse<TaxRate[]>> => {
+        sortDirection: string = 'asc',
+    ): Promise<Data<TaxRate[]>> => {
         try {
             const body = {
                 search,
@@ -57,7 +57,7 @@ const TaxServices = {
                 sortDirection,
             };
 
-            const response = await axiosTax.post<ApiResponse<TaxRate[]>>('filter', body);
+            const response = await axiosTax.post<Data<TaxRate[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -71,9 +71,9 @@ const TaxServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<TaxRate>> => {
+    consultById: async (id: string): Promise<Data<TaxRate>> => {
         try {
-            const response = await axiosTax.get<ApiResponse<TaxRate>>(`${id}`);
+            const response = await axiosTax.get<Data<TaxRate>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -87,9 +87,9 @@ const TaxServices = {
         }
     },
 
-    create: async (data: FormTaxRate): Promise<ApiResponse<TaxRate, ErrorsFormTaxRate>> => {
+    create: async (data: FormTaxRate): Promise<Data<TaxRate, ErrorsFormTaxRate>> => {
         try {
-            const response = await axiosTax.post<ApiResponse<TaxRate, ErrorsFormTaxRate>>('create', data);
+            const response = await axiosTax.post<Data<TaxRate, ErrorsFormTaxRate>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -103,9 +103,9 @@ const TaxServices = {
         }
     },
 
-    update: async (id: string, data: FormTaxRate): Promise<ApiResponse<TaxRate, ErrorsFormTaxRate>> => {
+    update: async (id: string, data: FormTaxRate): Promise<Data<TaxRate, ErrorsFormTaxRate>> => {
         try {
-            const response = await axiosTax.put<ApiResponse<TaxRate, ErrorsFormTaxRate>>(`${id}`, data);
+            const response = await axiosTax.put<Data<TaxRate, ErrorsFormTaxRate>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -119,9 +119,9 @@ const TaxServices = {
         }
     },
 
-    delete: async (id: string): Promise<ApiResponse<null>> => {
+    delete: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosTax.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosTax.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -135,9 +135,9 @@ const TaxServices = {
         }
     },
 
-    calculate: async (data: CalculateTaxPayload): Promise<ApiResponse<CalculateTaxResponse>> => {
+    calculate: async (data: CalculateTaxPayload): Promise<Data<CalculateTaxResponse>> => {
         try {
-            const response = await axiosTax.post<ApiResponse<CalculateTaxResponse>>('calculate', data);
+            const response = await axiosTax.post<Data<CalculateTaxResponse>>('calculate', data);
             return response.data;
         } catch (error: any) {
             return (

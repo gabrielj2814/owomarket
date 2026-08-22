@@ -5,7 +5,7 @@ import { FilterInvoicesParams, FormDirectInvoice } from '@/types/FormDirectInvoi
 import { BillingProfile } from '@/types/models/BillingProfile';
 import { Invoice, InvoiceMetrics } from '@/types/models/Invoice';
 import { PaymentGateway } from '@/types/models/PaymentGateway';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data, PaginatedPayload } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -31,9 +31,9 @@ class BillingServices {
     /**
      * Obtiene las métricas agregadas de facturación para el dashboard.
      */
-    async getMetrics(): Promise<ApiResponse<InvoiceMetrics>> {
+    async getMetrics(): Promise<Data<InvoiceMetrics>> {
         try {
-            const response = await axiosBilling.get<ApiResponse<InvoiceMetrics>>('metrics');
+            const response = await axiosBilling.get<Data<InvoiceMetrics>>('metrics');
             return response.data;
         } catch (error: any) {
             return (
@@ -50,9 +50,9 @@ class BillingServices {
     /**
      * Filtra y lista facturas paginadas.
      */
-    async filterInvoices(params: FilterInvoicesParams = {}): Promise<ApiResponse<Invoice[]>> {
+    async filterInvoices(params: FilterInvoicesParams = {}): Promise<Data<PaginatedPayload<Invoice>>> {
         try {
-            const response = await axiosBilling.post<ApiResponse<Invoice[]>>('invoices/filter', params);
+            const response = await axiosBilling.post<Data<PaginatedPayload<Invoice>>>('invoices/filter', params);
             return response.data;
         } catch (error: any) {
             return (
@@ -69,9 +69,9 @@ class BillingServices {
     /**
      * Consulta una factura por su ID.
      */
-    async getInvoice(id: string): Promise<ApiResponse<Invoice>> {
+    async getInvoice(id: string): Promise<Data<Invoice>> {
         try {
-            const response = await axiosBilling.get<ApiResponse<Invoice>>(`invoices/${id}`);
+            const response = await axiosBilling.get<Data<Invoice>>(`invoices/${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -88,9 +88,9 @@ class BillingServices {
     /**
      * Emite una nueva factura directa / mostrador.
      */
-    async createDirectInvoice(data: FormDirectInvoice): Promise<ApiResponse<Invoice, ErrorsFormDirectInvoice>> {
+    async createDirectInvoice(data: FormDirectInvoice): Promise<Data<Invoice, ErrorsFormDirectInvoice>> {
         try {
-            const response = await axiosBilling.post<ApiResponse<Invoice, ErrorsFormDirectInvoice>>('invoices', data);
+            const response = await axiosBilling.post<Data<Invoice, ErrorsFormDirectInvoice>>('invoices', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -107,9 +107,9 @@ class BillingServices {
     /**
      * Anula una factura existente.
      */
-    async cancelInvoice(id: string, reason?: string): Promise<ApiResponse<Invoice>> {
+    async cancelInvoice(id: string, reason?: string): Promise<Data<Invoice>> {
         try {
-            const response = await axiosBilling.post<ApiResponse<Invoice>>(`invoices/${id}/cancel`, { reason });
+            const response = await axiosBilling.post<Data<Invoice>>(`invoices/${id}/cancel`, { reason });
             return response.data;
         } catch (error: any) {
             return (
@@ -126,9 +126,9 @@ class BillingServices {
     /**
      * Reenvía la factura por correo electrónico al cliente.
      */
-    async resendEmail(id: string, email?: string): Promise<ApiResponse<Invoice>> {
+    async resendEmail(id: string, email?: string): Promise<Data<Invoice>> {
         try {
-            const response = await axiosBilling.post<ApiResponse<Invoice>>(`invoices/${id}/resend-email`, { email });
+            const response = await axiosBilling.post<Data<Invoice>>(`invoices/${id}/resend-email`, { email });
             return response.data;
         } catch (error: any) {
             return (
@@ -164,9 +164,9 @@ class BillingServices {
     /**
      * Obtiene el perfil fiscal actual de la tienda.
      */
-    async getBillingProfile(): Promise<ApiResponse<BillingProfile>> {
+    async getBillingProfile(): Promise<Data<BillingProfile>> {
         try {
-            const response = await axiosBilling.get<ApiResponse<BillingProfile>>('profile');
+            const response = await axiosBilling.get<Data<BillingProfile>>('profile');
             return response.data;
         } catch (error: any) {
             return (
@@ -183,9 +183,9 @@ class BillingServices {
     /**
      * Actualiza o configura los datos fiscales de la tienda.
      */
-    async updateBillingProfile(data: FormBillingProfile): Promise<ApiResponse<BillingProfile, ErrorsFormBillingProfile>> {
+    async updateBillingProfile(data: FormBillingProfile): Promise<Data<BillingProfile, ErrorsFormBillingProfile>> {
         try {
-            const response = await axiosBilling.put<ApiResponse<BillingProfile, ErrorsFormBillingProfile>>('profile', data);
+            const response = await axiosBilling.put<Data<BillingProfile, ErrorsFormBillingProfile>>('profile', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -202,9 +202,9 @@ class BillingServices {
     /**
      * Obtiene los métodos de pago disponibles en el tenant.
      */
-    async getPaymentGateways(): Promise<ApiResponse<PaymentGateway[]>> {
+    async getPaymentGateways(): Promise<Data<PaymentGateway[]>> {
         try {
-            const response = await axiosPayment.get<ApiResponse<PaymentGateway[]>>('gateways');
+            const response = await axiosPayment.get<Data<PaymentGateway[]>>('gateways');
             return response.data;
         } catch (error: any) {
             return (

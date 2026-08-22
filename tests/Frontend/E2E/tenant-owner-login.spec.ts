@@ -1,4 +1,4 @@
-import { expect, tenantBaseURL, tenantOwner, test } from './fixtures';
+import { expect, tenantOwnerAlterno, test } from './fixtures';
 
 /*
 |--------------------------------------------------------------------------
@@ -29,7 +29,7 @@ test.describe('Login del dueño de tienda (subdominio de tenant)', () => {
     | embebido de PHP ignora esa variable en Windows. Ahí hay que apuntar a Laragon.
     */
     test.skip(
-        process.platform === 'win32' && new URL(tenantBaseURL).port === '8000',
+        process.platform === 'win32' && new URL(tenantOwnerAlterno.baseURL).port === '8000',
         'En Windows este flujo necesita un servidor multiproceso (Laragon). Ejecuta: ' +
             "$env:PLAYWRIGHT_BASE_URL='http://owomarket.local'; npx playwright test",
     );
@@ -43,12 +43,12 @@ test.describe('Login del dueño de tienda (subdominio de tenant)', () => {
     | por pasada caben cinco ejecuciones por minuto, que es de sobra para iterar.
     */
     test('un login correcto responde 200 y lleva al backoffice', async ({ page }) => {
-        await page.goto(`${tenantBaseURL}/auth/login`);
+        await page.goto(`${tenantOwnerAlterno.baseURL}/auth/login`);
 
         const respuestaLogin = page.waitForResponse((r) => r.url().includes('/auth/login') && r.request().method() === 'POST');
 
-        await page.getByPlaceholder('name@owomarket.com').fill(tenantOwner.email);
-        await page.getByPlaceholder('password').fill(tenantOwner.password);
+        await page.getByPlaceholder('name@owomarket.com').fill(tenantOwnerAlterno.email);
+        await page.getByPlaceholder('password').fill(tenantOwnerAlterno.password);
         await page.getByRole('button', { name: /Submit/i }).click();
 
         const respuesta = await respuestaLogin;
@@ -62,13 +62,13 @@ test.describe('Login del dueño de tienda (subdominio de tenant)', () => {
     });
 
     test('unas credenciales inválidas no crean sesión', async ({ page }) => {
-        await page.goto(`${tenantBaseURL}/auth/login`);
+        await page.goto(`${tenantOwnerAlterno.baseURL}/auth/login`);
 
         const respuestaLogin = page.waitForResponse((r) => r.url().includes('/auth/login') && r.request().method() === 'POST');
 
         // Correo único por ejecución: el límite de N18 cuenta por (cuenta + IP), así que
         // reutilizar siempre el mismo lo agotaría al repetir la suite.
-        const correoInexistente = `no.existe.${Date.now()}@chivostore.com`;
+        const correoInexistente = `no.existe.${Date.now()}@tecs.com`;
 
         await page.getByPlaceholder('name@owomarket.com').fill(correoInexistente);
         // Cumple las reglas de formato del formulario a propósito: si no, la validación de

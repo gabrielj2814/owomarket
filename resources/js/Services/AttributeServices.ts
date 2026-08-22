@@ -2,7 +2,7 @@ import { ErrorsFormAttribute } from '@/types/ErrorsFormAttribute';
 import { FormAttribute, FormAttributeValue } from '@/types/FormAttribute';
 import { ProductAttribute } from '@/types/models/ProductAttribute';
 import { ProductAttributeValue } from '@/types/models/ProductAttributeValue';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -24,8 +24,8 @@ const AttributeServices = {
         prePage: number = 10,
         page: number = 1,
         sortBy: string = 'position',
-        sortDirection: string = 'asc'
-    ): Promise<ApiResponse<ProductAttribute[]>> => {
+        sortDirection: string = 'asc',
+    ): Promise<Data<ProductAttribute[]>> => {
         try {
             const body = {
                 search,
@@ -38,7 +38,7 @@ const AttributeServices = {
                 sortDirection,
             };
 
-            const response = await axiosAttribute.post<ApiResponse<ProductAttribute[]>>('filter', body);
+            const response = await axiosAttribute.post<Data<ProductAttribute[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -52,9 +52,9 @@ const AttributeServices = {
         }
     },
 
-    listWithValues: async (): Promise<ApiResponse<ProductAttribute[]>> => {
+    listWithValues: async (): Promise<Data<ProductAttribute[]>> => {
         try {
-            const response = await axiosAttribute.get<ApiResponse<ProductAttribute[]>>('with-values');
+            const response = await axiosAttribute.get<Data<ProductAttribute[]>>('with-values');
             return response.data;
         } catch (error: any) {
             return (
@@ -68,9 +68,9 @@ const AttributeServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<ProductAttribute>> => {
+    consultById: async (id: string): Promise<Data<ProductAttribute>> => {
         try {
-            const response = await axiosAttribute.get<ApiResponse<ProductAttribute>>(`${id}`);
+            const response = await axiosAttribute.get<Data<ProductAttribute>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -84,9 +84,9 @@ const AttributeServices = {
         }
     },
 
-    create: async (data: FormAttribute): Promise<ApiResponse<ProductAttribute, ErrorsFormAttribute>> => {
+    create: async (data: FormAttribute): Promise<Data<ProductAttribute, ErrorsFormAttribute>> => {
         try {
-            const response = await axiosAttribute.post<ApiResponse<ProductAttribute, ErrorsFormAttribute>>('create', data);
+            const response = await axiosAttribute.post<Data<ProductAttribute, ErrorsFormAttribute>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -100,9 +100,9 @@ const AttributeServices = {
         }
     },
 
-    update: async (id: string, data: FormAttribute): Promise<ApiResponse<ProductAttribute, ErrorsFormAttribute>> => {
+    update: async (id: string, data: FormAttribute): Promise<Data<ProductAttribute, ErrorsFormAttribute>> => {
         try {
-            const response = await axiosAttribute.put<ApiResponse<ProductAttribute, ErrorsFormAttribute>>(`${id}`, data);
+            const response = await axiosAttribute.put<Data<ProductAttribute, ErrorsFormAttribute>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -116,9 +116,9 @@ const AttributeServices = {
         }
     },
 
-    delete: async (id: string): Promise<ApiResponse<null>> => {
+    delete: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosAttribute.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosAttribute.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -132,9 +132,9 @@ const AttributeServices = {
         }
     },
 
-    createValue: async (attributeId: string, data: FormAttributeValue): Promise<ApiResponse<ProductAttributeValue>> => {
+    createValue: async (attributeId: string, data: FormAttributeValue): Promise<Data<ProductAttributeValue>> => {
         try {
-            const response = await axiosAttribute.post<ApiResponse<ProductAttributeValue>>(`${attributeId}/values`, data);
+            const response = await axiosAttribute.post<Data<ProductAttributeValue>>(`${attributeId}/values`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -148,9 +148,9 @@ const AttributeServices = {
         }
     },
 
-    deleteValue: async (valueId: string): Promise<ApiResponse<null>> => {
+    deleteValue: async (valueId: string): Promise<Data<null>> => {
         try {
-            const response = await axiosAttribute.delete<ApiResponse<null>>(`values/${valueId}`);
+            const response = await axiosAttribute.delete<Data<null>>(`values/${valueId}`);
             return response.data;
         } catch (error: any) {
             return (

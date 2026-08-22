@@ -4,7 +4,7 @@ import { FormShippingRate } from '@/types/FormShippingRate';
 import { FormShippingZone } from '@/types/FormShippingZone';
 import { ShippingRate } from '@/types/models/ShippingRate';
 import { ShippingZone } from '@/types/models/ShippingZone';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -46,8 +46,8 @@ const ShippingServices = {
         prePage: number = 10,
         page: number = 1,
         sortBy: string = 'priority',
-        sortDirection: string = 'asc'
-    ): Promise<ApiResponse<ShippingZone[]>> => {
+        sortDirection: string = 'asc',
+    ): Promise<Data<ShippingZone[]>> => {
         try {
             const body = {
                 search,
@@ -58,7 +58,7 @@ const ShippingServices = {
                 sortDirection,
             };
 
-            const response = await axiosShipping.post<ApiResponse<ShippingZone[]>>('zones/filter', body);
+            const response = await axiosShipping.post<Data<ShippingZone[]>>('zones/filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -72,9 +72,9 @@ const ShippingServices = {
         }
     },
 
-    consultarZonaPorId: async (id: string): Promise<ApiResponse<ShippingZone>> => {
+    consultarZonaPorId: async (id: string): Promise<Data<ShippingZone>> => {
         try {
-            const response = await axiosShipping.get<ApiResponse<ShippingZone>>(`zones/${id}`);
+            const response = await axiosShipping.get<Data<ShippingZone>>(`zones/${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -88,9 +88,9 @@ const ShippingServices = {
         }
     },
 
-    crearZona: async (data: FormShippingZone): Promise<ApiResponse<ShippingZone, ErrorsFormShippingZone>> => {
+    crearZona: async (data: FormShippingZone): Promise<Data<ShippingZone, ErrorsFormShippingZone>> => {
         try {
-            const response = await axiosShipping.post<ApiResponse<ShippingZone, ErrorsFormShippingZone>>('zones/create', data);
+            const response = await axiosShipping.post<Data<ShippingZone, ErrorsFormShippingZone>>('zones/create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -104,9 +104,9 @@ const ShippingServices = {
         }
     },
 
-    actualizarZona: async (id: string, data: FormShippingZone): Promise<ApiResponse<ShippingZone, ErrorsFormShippingZone>> => {
+    actualizarZona: async (id: string, data: FormShippingZone): Promise<Data<ShippingZone, ErrorsFormShippingZone>> => {
         try {
-            const response = await axiosShipping.put<ApiResponse<ShippingZone, ErrorsFormShippingZone>>(`zones/${id}`, data);
+            const response = await axiosShipping.put<Data<ShippingZone, ErrorsFormShippingZone>>(`zones/${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -120,9 +120,9 @@ const ShippingServices = {
         }
     },
 
-    eliminarZona: async (id: string): Promise<ApiResponse<null>> => {
+    eliminarZona: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosShipping.delete<ApiResponse<null>>(`zones/${id}`);
+            const response = await axiosShipping.delete<Data<null>>(`zones/${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -136,9 +136,9 @@ const ShippingServices = {
         }
     },
 
-    crearTarifa: async (shippingZoneId: string, data: FormShippingRate): Promise<ApiResponse<ShippingRate, ErrorsFormShippingRate>> => {
+    crearTarifa: async (shippingZoneId: string, data: FormShippingRate): Promise<Data<ShippingRate, ErrorsFormShippingRate>> => {
         try {
-            const response = await axiosShipping.post<ApiResponse<ShippingRate, ErrorsFormShippingRate>>(`zones/${shippingZoneId}/rates`, data);
+            const response = await axiosShipping.post<Data<ShippingRate, ErrorsFormShippingRate>>(`zones/${shippingZoneId}/rates`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -152,9 +152,9 @@ const ShippingServices = {
         }
     },
 
-    eliminarTarifa: async (rateId: string): Promise<ApiResponse<null>> => {
+    eliminarTarifa: async (rateId: string): Promise<Data<null>> => {
         try {
-            const response = await axiosShipping.delete<ApiResponse<null>>(`rates/${rateId}`);
+            const response = await axiosShipping.delete<Data<null>>(`rates/${rateId}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -168,9 +168,9 @@ const ShippingServices = {
         }
     },
 
-    calcularEnvio: async (data: CalculateShippingPayload): Promise<ApiResponse<CalculateShippingResponse>> => {
+    calcularEnvio: async (data: CalculateShippingPayload): Promise<Data<CalculateShippingResponse>> => {
         try {
-            const response = await axiosShipping.post<ApiResponse<CalculateShippingResponse>>('calculate', data);
+            const response = await axiosShipping.post<Data<CalculateShippingResponse>>('calculate', data);
             return response.data;
         } catch (error: any) {
             return (

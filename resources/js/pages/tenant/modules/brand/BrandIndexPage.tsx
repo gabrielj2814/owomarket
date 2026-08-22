@@ -1,9 +1,9 @@
-import Dashboard from "@/components/layouts/Dashboard";
-import BrandServices from "@/Services/BrandServices";
-import { ErrorsFormBrand } from "@/types/ErrorsFormBrand";
-import { FormBrand } from "@/types/FormBrand";
-import { Brand } from "@/types/models/Brand";
-import { Head } from "@inertiajs/react";
+import Dashboard from '@/components/layouts/Dashboard';
+import BrandServices from '@/Services/BrandServices';
+import { ErrorsFormBrand } from '@/types/ErrorsFormBrand';
+import { FormBrand } from '@/types/FormBrand';
+import { Brand } from '@/types/models/Brand';
+import { Head } from '@inertiajs/react';
 import {
     Badge,
     Breadcrumb,
@@ -26,17 +26,10 @@ import {
     Textarea,
     TextInput,
     ToggleSwitch,
-} from "flowbite-react";
-import { FC, useEffect, useState } from "react";
-import {
-    HiBookmark,
-    HiHome,
-    HiPlus,
-    HiRefresh,
-    HiSearch,
-    HiTrash,
-} from "react-icons/hi";
-import { LuTag } from "react-icons/lu";
+} from 'flowbite-react';
+import { FC, useEffect, useState } from 'react';
+import { HiBookmark, HiHome, HiPlus, HiRefresh, HiSearch, HiTrash } from 'react-icons/hi';
+import { LuTag } from 'react-icons/lu';
 
 interface BrandIndexPageProps {
     user_id: string;
@@ -46,10 +39,10 @@ interface BrandIndexPageProps {
 }
 
 const initialFormBrand: FormBrand = {
-    name: "",
-    slug: "",
-    description: "",
-    logo: "",
+    name: '',
+    slug: '',
+    description: '',
+    logo: '',
     is_active: true,
     position: 0,
 };
@@ -57,8 +50,8 @@ const initialFormBrand: FormBrand = {
 const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_name }) => {
     const [brands, setBrands] = useState<Brand[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [search, setSearch] = useState<string>("");
-    const [isActiveFilter, setIsActiveFilter] = useState<string>("");
+    const [search, setSearch] = useState<string>('');
+    const [isActiveFilter, setIsActiveFilter] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -78,22 +71,22 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
         setLoading(true);
         try {
             const res = await BrandServices.filtrar(
-                search.trim() !== "" ? search.trim() : null,
-                isActiveFilter !== "" ? isActiveFilter === "true" : null,
+                search.trim() !== '' ? search.trim() : null,
+                isActiveFilter !== '' ? isActiveFilter === 'true' : null,
                 perPage,
-                page
+                page,
             );
-            const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []);
+            const items = Array.isArray(res.data) ? res.data : [];
             setBrands(items);
 
-            const pagination = (res as any)?.pagination || (res as any)?.data?.pagination;
+            const pagination = res.pagination;
             if (pagination) {
                 setCurrentPage(pagination.current_page);
                 setTotalPages(pagination.last_page);
                 setTotalItems(pagination.total);
             }
         } catch (err) {
-            console.error("Error al cargar marcas", err);
+            console.error('Error al cargar marcas', err);
         } finally {
             setLoading(false);
         }
@@ -127,14 +120,14 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
             };
 
             const res = await BrandServices.create(payload);
-            if ((res as any)?.code === 201 || (res as any)?.code === 200 || (res as any)?.status === "success" || res?.status === 201 || res?.status === 200) {
+            if (res.code === 201 || res.code === 200 || res.status === 'success') {
                 setCreateModalOpen(false);
                 fetchBrands(1);
-            } else if ((res as any)?.errors || (res as any)?.data?.errors) {
-                setFormErrors((res as any)?.errors || (res as any)?.data?.errors);
+            } else if (res.errors) {
+                setFormErrors(res.errors);
             }
         } catch (err) {
-            console.error("Error creando marca", err);
+            console.error('Error creando marca', err);
         } finally {
             setActionLoading(false);
         }
@@ -142,29 +135,29 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
 
     // Sync State
     const [syncLoading, setSyncLoading] = useState<boolean>(false);
-    const [syncMessage, setSyncMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [syncMessage, setSyncMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
     const handleSyncCentral = async () => {
         setSyncLoading(true);
         setSyncMessage(null);
         try {
             const res = await BrandServices.syncCentral();
-            if (res?.code === 200 || res?.status === "success") {
+            if (res?.code === 200 || res?.status === 'success') {
                 setSyncMessage({
-                    type: "success",
-                    text: res.message || "Marcas sincronizadas exitosamente desde el Catálogo Central",
+                    type: 'success',
+                    text: res.message || 'Marcas sincronizadas exitosamente desde el Catálogo Central',
                 });
                 fetchBrands(1);
             } else {
                 setSyncMessage({
-                    type: "error",
-                    text: res?.message || "No se pudieron sincronizar las marcas",
+                    type: 'error',
+                    text: res?.message || 'No se pudieron sincronizar las marcas',
                 });
             }
         } catch (err) {
             setSyncMessage({
-                type: "error",
-                text: "Error de conexión al sincronizar con el Catálogo Central",
+                type: 'error',
+                text: 'Error de conexión al sincronizar con el Catálogo Central',
             });
         } finally {
             setSyncLoading(false);
@@ -177,13 +170,13 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
         setActionLoading(true);
         try {
             const res = await BrandServices.delete(brandToDelete.id);
-            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
+            if (res.code === 200 || res.status === 'success') {
                 setDeleteModalOpen(false);
                 setBrandToDelete(null);
                 fetchBrands(currentPage);
             }
         } catch (err) {
-            console.error("Error eliminando marca", err);
+            console.error('Error eliminando marca', err);
         } finally {
             setActionLoading(false);
         }
@@ -195,65 +188,62 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                 <title>{title}</title>
             </Head>
             <Dashboard user_uuid={user_id}>
-                <Breadcrumb aria-label="Navegación" className="hidden lg:block bg-gray-50 px-5 py-3 rounded-lg dark:bg-gray-800 mb-5 border border-gray-100 dark:border-gray-700">
+                <Breadcrumb
+                    aria-label="Navegación"
+                    className="mb-5 hidden rounded-lg border border-gray-100 bg-gray-50 px-5 py-3 lg:block dark:border-gray-700 dark:bg-gray-800"
+                >
                     <BreadcrumbItem icon={HiHome} href={`/tenant/backoffice/${user_id}/dashboard`}>
                         Inicio
                     </BreadcrumbItem>
-                    <BreadcrumbItem href={`/product/backoffice/${user_id}/module`}>
-                        Catálogo
-                    </BreadcrumbItem>
-                    <BreadcrumbItem>
-                        Marcas
-                    </BreadcrumbItem>
+                    <BreadcrumbItem href={`/product/backoffice/${user_id}/module`}>Catálogo</BreadcrumbItem>
+                    <BreadcrumbItem>Marcas</BreadcrumbItem>
                 </Breadcrumb>
 
                 {syncMessage && (
                     <div
-                        className={`mb-5 p-4 rounded-lg flex items-center justify-between text-sm font-medium ${
-                            syncMessage.type === "success"
-                                ? "bg-green-50 text-green-800 dark:bg-gray-800 dark:text-green-400 border border-green-200 dark:border-green-800"
-                                : "bg-red-50 text-red-800 dark:bg-gray-800 dark:text-red-400 border border-red-200 dark:border-red-800"
+                        className={`mb-5 flex items-center justify-between rounded-lg p-4 text-sm font-medium ${
+                            syncMessage.type === 'success'
+                                ? 'border border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-gray-800 dark:text-green-400'
+                                : 'border border-red-200 bg-red-50 text-red-800 dark:border-red-800 dark:bg-gray-800 dark:text-red-400'
                         }`}
                     >
                         <span>{syncMessage.text}</span>
-                        <button onClick={() => setSyncMessage(null)} className="text-gray-400 hover:text-gray-600 font-bold ml-3">
+                        <button onClick={() => setSyncMessage(null)} className="ml-3 font-bold text-gray-400 hover:text-gray-600">
                             ✕
                         </button>
                     </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-                            <HiBookmark className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                        <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
+                            <HiBookmark className="h-8 w-8 text-purple-600 dark:text-purple-400" />
                             Marcas y Fabricantes
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Gestiona las marcas comerciales de los productos en tu catálogo
                         </p>
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
                         <Button color="gray" onClick={() => fetchBrands(currentPage)} disabled={loading || syncLoading}>
-                            <HiRefresh className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                            <HiRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             Actualizar
                         </Button>
                         <Button color="blue" onClick={handleSyncCentral} disabled={loading || syncLoading}>
-                            <HiRefresh className={`w-4 h-4 mr-2 ${syncLoading ? "animate-spin" : ""}`} />
-                            {syncLoading ? "Sincronizando..." : "Sincronizar Catálogo Central"}
+                            <HiRefresh className={`mr-2 h-4 w-4 ${syncLoading ? 'animate-spin' : ''}`} />
+                            {syncLoading ? 'Sincronizando...' : 'Sincronizar Catálogo Central'}
                         </Button>
                         <Button color="purple" onClick={handleOpenCreate}>
-                            <HiPlus className="w-4 h-4 mr-2" />
+                            <HiPlus className="mr-2 h-4 w-4" />
                             Crear Marca
                         </Button>
                     </div>
                 </div>
 
-                <Card className="mb-6 shadow-sm border-gray-100 dark:border-gray-700">
-                    <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                <Card className="mb-6 border-gray-100 shadow-sm dark:border-gray-700">
+                    <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
                         <div className="sm:col-span-2">
-                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                                Buscar por Nombre o Slug
-                            </label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">Buscar por Nombre o Slug</label>
                             <TextInput
                                 icon={HiSearch}
                                 placeholder="Ej: Sony, Apple, Nike..."
@@ -262,9 +252,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                             />
                         </div>
                         <div>
-                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                                Estado
-                            </label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">Estado</label>
                             <Select value={isActiveFilter} onChange={(e) => setIsActiveFilter(e.target.value)}>
                                 <option value="">Todos los Estados</option>
                                 <option value="true">Activas</option>
@@ -274,10 +262,10 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                     </form>
                 </Card>
 
-                <Card className="shadow-sm border-gray-100 dark:border-gray-700 overflow-hidden">
+                <Card className="overflow-hidden border-gray-100 shadow-sm dark:border-gray-700">
                     <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
                         <Table hoverable>
-                            <TableHead className="bg-gray-50 dark:bg-gray-700 text-xs uppercase tracking-wider">
+                            <TableHead className="bg-gray-50 text-xs tracking-wider uppercase dark:bg-gray-700">
                                 <TableHeadCell>Marca</TableHeadCell>
                                 <TableHeadCell>Slug</TableHeadCell>
                                 <TableHeadCell>Posición</TableHeadCell>
@@ -287,17 +275,15 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                             <TableBody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12">
+                                        <TableCell colSpan={5} className="py-12 text-center">
                                             <Spinner size="xl" />
                                         </TableCell>
                                     </TableRow>
                                 ) : brands.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12">
-                                            <LuTag className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                                            <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
-                                                No se encontraron marcas
-                                            </p>
+                                        <TableCell colSpan={5} className="py-12 text-center">
+                                            <LuTag className="mx-auto mb-2 h-12 w-12 text-gray-300 dark:text-gray-600" />
+                                            <p className="text-base font-semibold text-gray-700 dark:text-gray-300">No se encontraron marcas</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
@@ -306,24 +292,24 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                             <TableCell className="font-semibold text-gray-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
                                                     {b.logo ? (
-                                                        <img src={b.logo} alt={b.name} className="w-9 h-9 object-contain rounded-lg border p-0.5" />
+                                                        <img src={b.logo} alt={b.name} className="h-9 w-9 rounded-lg border object-contain p-0.5" />
                                                     ) : (
-                                                        <div className="w-9 h-9 rounded-lg bg-purple-50 dark:bg-gray-700 flex items-center justify-center text-purple-500">
-                                                            <LuTag className="w-5 h-5" />
+                                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-50 text-purple-500 dark:bg-gray-700">
+                                                            <LuTag className="h-5 w-5" />
                                                         </div>
                                                     )}
                                                     <span>{b.name}</span>
                                                 </div>
                                             </TableCell>
-                                            <TableCell className="font-mono text-xs text-gray-500">
-                                                /{b.slug}
+                                            <TableCell className="font-mono text-xs text-gray-500">/{b.slug}</TableCell>
+                                            <TableCell>
+                                                <Badge color="gray" size="sm">
+                                                    {b.position}
+                                                </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge color="gray" size="sm">{b.position}</Badge>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge color={b.is_active ? "success" : "failure"} size="sm">
-                                                    {b.is_active ? "Activa" : "Inactiva"}
+                                                <Badge color={b.is_active ? 'success' : 'failure'} size="sm">
+                                                    {b.is_active ? 'Activa' : 'Inactiva'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -332,10 +318,10 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                                         setBrandToDelete(b);
                                                         setDeleteModalOpen(true);
                                                     }}
-                                                    className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg"
+                                                    className="rounded-lg p-1.5 text-gray-500 hover:text-red-600"
                                                     title="Eliminar"
                                                 >
-                                                    <HiTrash className="w-4 h-4" />
+                                                    <HiTrash className="h-4 w-4" />
                                                 </button>
                                             </TableCell>
                                         </TableRow>
@@ -346,7 +332,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="flex justify-center mt-6">
+                        <div className="mt-6 flex justify-center">
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={totalPages}
@@ -364,7 +350,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                 <Modal show={createModalOpen} onClose={() => setCreateModalOpen(false)} size="md">
                     <ModalHeader>
                         <span className="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
-                            <HiBookmark className="w-6 h-6 text-purple-600" />
+                            <HiBookmark className="h-6 w-6 text-purple-600" />
                             Crear Nueva Marca
                         </span>
                     </ModalHeader>
@@ -378,10 +364,10 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     required
-                                    color={formErrors.name ? "failure" : undefined}
+                                    color={formErrors.name ? 'failure' : undefined}
                                 />
                                 {formErrors.name && (
-                                    <span className="text-xs text-red-500 mt-1 block">
+                                    <span className="mt-1 block text-xs text-red-500">
                                         {Array.isArray(formErrors.name) ? formErrors.name[0] : formErrors.name}
                                     </span>
                                 )}
@@ -392,12 +378,12 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                 <TextInput
                                     id="brand-slug"
                                     placeholder="Dejar vacío para autogenerar"
-                                    value={formData.slug ?? ""}
+                                    value={formData.slug ?? ''}
                                     onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                                    color={formErrors.slug ? "failure" : undefined}
+                                    color={formErrors.slug ? 'failure' : undefined}
                                 />
                                 {formErrors.slug && (
-                                    <span className="text-xs text-red-500 mt-1 block">
+                                    <span className="mt-1 block text-xs text-red-500">
                                         {Array.isArray(formErrors.slug) ? formErrors.slug[0] : formErrors.slug}
                                     </span>
                                 )}
@@ -408,7 +394,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                 <TextInput
                                     id="brand-logo"
                                     placeholder="https://..."
-                                    value={formData.logo ?? ""}
+                                    value={formData.logo ?? ''}
                                     onChange={(e) => setFormData({ ...formData, logo: e.target.value })}
                                 />
                             </div>
@@ -419,7 +405,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                     id="brand-desc"
                                     rows={2}
                                     placeholder="Breve reseña de la marca..."
-                                    value={formData.description ?? ""}
+                                    value={formData.description ?? ''}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 />
                             </div>
@@ -443,7 +429,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
                                 <Button color="gray" onClick={() => setCreateModalOpen(false)}>
                                     Cancelar
                                 </Button>
@@ -462,9 +448,7 @@ const BrandIndexPage: FC<BrandIndexPageProps> = ({ user_id, title, host, user_na
                     <ModalBody>
                         <div className="text-center">
                             <HiTrash className="mx-auto mb-4 h-14 w-14 text-red-500" />
-                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                                ¿Eliminar Marca?
-                            </h3>
+                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">¿Eliminar Marca?</h3>
                             <p className="mb-5 text-sm text-gray-500">
                                 ¿Deseas eliminar la marca <strong>"{brandToDelete?.name}"</strong>?
                             </p>

@@ -1,7 +1,7 @@
 import { ErrorsFormCoupon } from '@/types/ErrorsFormCoupon';
 import { FormCoupon } from '@/types/FormCoupon';
 import { Coupon } from '@/types/models/Coupon';
-import { ApiResponse, Data } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -38,7 +38,7 @@ const CouponServices = {
         page: number = 1,
         sortBy: string = 'created_at',
         sortDirection: string = 'desc',
-    ): Promise<ApiResponse<Coupon[]>> => {
+    ): Promise<Data<Coupon[]>> => {
         try {
             const body = {
                 search,
@@ -51,7 +51,7 @@ const CouponServices = {
                 sortDirection,
             };
 
-            const response = await axiosCoupon.post<ApiResponse<Coupon[]>>('filter', body);
+            const response = await axiosCoupon.post<Data<Coupon[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -65,9 +65,9 @@ const CouponServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<Coupon>> => {
+    consultById: async (id: string): Promise<Data<Coupon>> => {
         try {
-            const response = await axiosCoupon.get<ApiResponse<Coupon>>(`${id}`);
+            const response = await axiosCoupon.get<Data<Coupon>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -81,9 +81,9 @@ const CouponServices = {
         }
     },
 
-    create: async (data: FormCoupon): Promise<ApiResponse<Coupon, ErrorsFormCoupon>> => {
+    create: async (data: FormCoupon): Promise<Data<Coupon, ErrorsFormCoupon>> => {
         try {
-            const response = await axiosCoupon.post<ApiResponse<Coupon, ErrorsFormCoupon>>('create', data);
+            const response = await axiosCoupon.post<Data<Coupon, ErrorsFormCoupon>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -97,9 +97,9 @@ const CouponServices = {
         }
     },
 
-    update: async (id: string, data: FormCoupon): Promise<ApiResponse<Coupon, ErrorsFormCoupon>> => {
+    update: async (id: string, data: FormCoupon): Promise<Data<Coupon, ErrorsFormCoupon>> => {
         try {
-            const response = await axiosCoupon.put<ApiResponse<Coupon, ErrorsFormCoupon>>(`${id}`, data);
+            const response = await axiosCoupon.put<Data<Coupon, ErrorsFormCoupon>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -113,9 +113,9 @@ const CouponServices = {
         }
     },
 
-    delete: async (id: string): Promise<ApiResponse<null>> => {
+    delete: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosCoupon.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosCoupon.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (

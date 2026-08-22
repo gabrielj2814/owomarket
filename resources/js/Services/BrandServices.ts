@@ -1,7 +1,7 @@
 import { ErrorsFormBrand } from '@/types/ErrorsFormBrand';
 import { FormBrand } from '@/types/FormBrand';
 import { Brand } from '@/types/models/Brand';
-import { ApiResponse, Data } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -19,8 +19,8 @@ const BrandServices = {
         search: string | null = null,
         isActive: boolean | null = null,
         prePage: number = 50,
-        page: number = 1
-    ): Promise<ApiResponse<Brand[]>> => {
+        page: number = 1,
+    ): Promise<Data<Brand[]>> => {
         try {
             const body = {
                 search,
@@ -29,7 +29,7 @@ const BrandServices = {
                 page,
             };
 
-            const response = await axiosBrand.post<ApiResponse<Brand[]>>('filter', body);
+            const response = await axiosBrand.post<Data<Brand[]>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -43,9 +43,9 @@ const BrandServices = {
         }
     },
 
-    listActive: async (): Promise<ApiResponse<Brand[]>> => {
+    listActive: async (): Promise<Data<Brand[]>> => {
         try {
-            const response = await axiosBrand.get<ApiResponse<Brand[]>>('active');
+            const response = await axiosBrand.get<Data<Brand[]>>('active');
             return response.data;
         } catch (error: any) {
             return (
@@ -59,9 +59,9 @@ const BrandServices = {
         }
     },
 
-    consultById: async (id: number): Promise<ApiResponse<Brand>> => {
+    consultById: async (id: number): Promise<Data<Brand>> => {
         try {
-            const response = await axiosBrand.get<ApiResponse<Brand>>(`${id}`);
+            const response = await axiosBrand.get<Data<Brand>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -75,9 +75,9 @@ const BrandServices = {
         }
     },
 
-    create: async (data: FormBrand): Promise<ApiResponse<Brand, ErrorsFormBrand>> => {
+    create: async (data: FormBrand): Promise<Data<Brand, ErrorsFormBrand>> => {
         try {
-            const response = await axiosBrand.post<ApiResponse<Brand, ErrorsFormBrand>>('create', data);
+            const response = await axiosBrand.post<Data<Brand, ErrorsFormBrand>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -91,9 +91,9 @@ const BrandServices = {
         }
     },
 
-    update: async (id: number, data: FormBrand): Promise<ApiResponse<Brand, ErrorsFormBrand>> => {
+    update: async (id: number, data: FormBrand): Promise<Data<Brand, ErrorsFormBrand>> => {
         try {
-            const response = await axiosBrand.put<ApiResponse<Brand, ErrorsFormBrand>>(`${id}`, data);
+            const response = await axiosBrand.put<Data<Brand, ErrorsFormBrand>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -107,9 +107,9 @@ const BrandServices = {
         }
     },
 
-    delete: async (id: number): Promise<ApiResponse<null>> => {
+    delete: async (id: number): Promise<Data<null>> => {
         try {
-            const response = await axiosBrand.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosBrand.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (

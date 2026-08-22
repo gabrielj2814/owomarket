@@ -44,9 +44,25 @@ final class EnsureTenantUserHasPermission
      */
     private const METODOS_DE_LECTURA = ['GET', 'HEAD', 'OPTIONS'];
 
+    /**
+     * Últimos segmentos de ruta que son lectura aunque lleguen por POST.
+     *
+     * **Esta API lista con POST.** Los doce `/{modulo}/filter` mandan los criterios en el
+     * cuerpo, y los `calculate` de envío e impuestos son presupuestos que no escriben nada.
+     * Mirar sólo el verbo dejaba a un `staff` sin poder ver ni un listado: la regla de «las
+     * lecturas pasan siempre» no servía de nada porque aquí leer es un POST.
+     *
+     * Se detectó al comprobar en un navegador que el backoffice se quedaba vacío.
+     *
+     * La lista es explícita y corta a propósito. Un patrón amplio —«todo POST que empiece
+     * por filter»— acabaría dejando pasar una escritura el día que alguien llame
+     * `filter-and-archive` a algo.
+     */
+    private const POST_DE_LECTURA = ['filter', 'calculate'];
+
     public function handle(Request $request, Closure $next, string ...$permisos): Response
     {
-        if (in_array($request->getMethod(), self::METODOS_DE_LECTURA, true)) {
+        if ($this->esLectura($request)) {
             return $next($request);
         }
 
@@ -71,6 +87,17 @@ final class EnsureTenantUserHasPermission
         }
 
         return $this->denegar($request, 'Tu rol en esta tienda no permite realizar esta acción.', 403);
+    }
+
+    private function esLectura(Request $request): bool
+    {
+        if (in_array($request->getMethod(), self::METODOS_DE_LECTURA, true)) {
+            return true;
+        }
+
+        $ultimoSegmento = last(explode('/', (string) $request->route()?->uri()));
+
+        return $request->isMethod('POST') && in_array($ultimoSegmento, self::POST_DE_LECTURA, true);
     }
 
     /**

@@ -71,3 +71,38 @@ export const tenantOwner = {
     email: 'admin@chivostore.com',
     password: process.env.PLAYWRIGHT_TENANT_OWNER_PASSWORD || 'EndAdmin_12345678',
 };
+
+/**
+ * Segunda tienda, usada SÓLO por el spec que prueba el login.
+ *
+ * El límite de N18 cuenta por (cuenta + IP). Con una sola cuenta, la suite gastaba dos
+ * intentos por pasada —uno el setup de sesión, otro el propio spec de login— y a la
+ * tercera ejecución dentro del minuto empezaba a dar 429. Comprobado.
+ *
+ * Repartir en dos cuentas da a cada una su propio cupo: un intento por pasada cada una,
+ * cinco ejecuciones por minuto. `tecs` sirve porque este spec sólo comprueba que el login
+ * funcione y aterrice en un backoffice; los datos los mira el spec de backoffice, que
+ * sigue en `chivostore`.
+ */
+export const tenantOwnerAlterno = {
+    baseURL: tenantBaseURL.replace('chivostore.', 'tecs.'),
+    email: 'admin@tecs.com',
+    password: process.env.PLAYWRIGHT_TENANT_OWNER_PASSWORD || 'EndAdmin_12345678',
+};
+
+/*
+|--------------------------------------------------------------------------
+| Sesión compartida
+|--------------------------------------------------------------------------
+|
+| `auth.setup.ts` inicia sesión una vez y deja aquí las cookies y el uuid del
+| propietario. El límite de tasa de N18 —5 intentos por minuto contra la misma cuenta—
+| hacía intermitente la suite cuando cada spec de backoffice iniciaba el suyo.
+|
+| Las rutas viven en este módulo y no en el propio setup porque Playwright no deja que un
+| fichero de test importe a otro.
+*/
+export const ESTADO_SESION = 'test-results/.auth/tenant-owner.json';
+
+/** El uuid del propietario va en la URL del backoffice; las cookies solas no lo llevan. */
+export const FICHERO_UUID = 'test-results/.auth/tenant-owner-uuid.txt';

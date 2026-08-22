@@ -36,8 +36,8 @@ final class UpdateCustomerFormRequest extends FormRequest
             phone: $this->input('phone'),
             birth_date: $this->input('birth_date'),
             gender: $this->input('gender'),
-            is_active: $this->has('is_active') ? $this->boolean('is_active') : null,
-            accepts_marketing: $this->has('accepts_marketing') ? $this->boolean('accepts_marketing') : null,
+            is_active: $this->input('is_active') === null ? null : $this->boolean('is_active'),
+            accepts_marketing: $this->input('accepts_marketing') === null ? null : $this->boolean('accepts_marketing'),
             metadata: $this->input('metadata')
         );
     }

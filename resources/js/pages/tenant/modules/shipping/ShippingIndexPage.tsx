@@ -1,7 +1,7 @@
-import Dashboard from "@/components/layouts/Dashboard";
-import ShippingServices from "@/Services/ShippingServices";
-import { ShippingZone } from "@/types/models/ShippingZone";
-import { Head } from "@inertiajs/react";
+import Dashboard from '@/components/layouts/Dashboard';
+import ShippingServices from '@/Services/ShippingServices';
+import { ShippingZone } from '@/types/models/ShippingZone';
+import { Head } from '@inertiajs/react';
 import {
     Badge,
     Breadcrumb,
@@ -20,15 +20,9 @@ import {
     TableHeadCell,
     TableRow,
     TextInput,
-} from "flowbite-react";
-import { FC, useEffect, useState } from "react";
-import {
-    HiHome,
-    HiRefresh,
-    HiSearch,
-    HiTrash,
-    HiTruck,
-} from "react-icons/hi";
+} from 'flowbite-react';
+import { FC, useEffect, useState } from 'react';
+import { HiHome, HiRefresh, HiSearch, HiTrash, HiTruck } from 'react-icons/hi';
 
 interface ShippingIndexPageProps {
     user_id: string;
@@ -40,7 +34,7 @@ interface ShippingIndexPageProps {
 const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, user_name }) => {
     const [zones, setZones] = useState<ShippingZone[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [search, setSearch] = useState<string>("");
+    const [search, setSearch] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -53,23 +47,18 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
     const fetchZones = async (page = currentPage) => {
         setLoading(true);
         try {
-            const res = await ShippingServices.filtrarZonas(
-                search.trim() !== "" ? search.trim() : null,
-                null,
-                perPage,
-                page
-            );
-            const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []);
+            const res = await ShippingServices.filtrarZonas(search.trim() !== '' ? search.trim() : null, null, perPage, page);
+            const items = Array.isArray(res.data) ? res.data : [];
             setZones(items);
 
-            const pagination = (res as any)?.pagination || (res as any)?.data?.pagination;
+            const pagination = res.pagination;
             if (pagination) {
                 setCurrentPage(pagination.current_page);
                 setTotalPages(pagination.last_page);
                 setTotalItems(pagination.total);
             }
         } catch (err) {
-            console.error("Error al cargar zonas de envío", err);
+            console.error('Error al cargar zonas de envío', err);
         } finally {
             setLoading(false);
         }
@@ -89,13 +78,13 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
         setActionLoading(true);
         try {
             const res = await ShippingServices.eliminarZona(zoneToDelete.id);
-            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
+            if (res.code === 200 || res.status === 'success') {
                 setDeleteModalOpen(false);
                 setZoneToDelete(null);
                 fetchZones(currentPage);
             }
         } catch (err) {
-            console.error("Error eliminando zona de envío", err);
+            console.error('Error eliminando zona de envío', err);
         } finally {
             setActionLoading(false);
         }
@@ -107,42 +96,39 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                 <title>{title}</title>
             </Head>
             <Dashboard user_uuid={user_id}>
-                <Breadcrumb aria-label="Navegación" className="hidden lg:block bg-gray-50 px-5 py-3 rounded-lg dark:bg-gray-800 mb-5 border border-gray-100 dark:border-gray-700">
+                <Breadcrumb
+                    aria-label="Navegación"
+                    className="mb-5 hidden rounded-lg border border-gray-100 bg-gray-50 px-5 py-3 lg:block dark:border-gray-700 dark:bg-gray-800"
+                >
                     <BreadcrumbItem icon={HiHome} href={`/tenant/backoffice/${user_id}/dashboard`}>
                         Inicio
                     </BreadcrumbItem>
-                    <BreadcrumbItem>
-                        Configuración
-                    </BreadcrumbItem>
-                    <BreadcrumbItem>
-                        Envíos
-                    </BreadcrumbItem>
+                    <BreadcrumbItem>Configuración</BreadcrumbItem>
+                    <BreadcrumbItem>Envíos</BreadcrumbItem>
                 </Breadcrumb>
 
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-                            <HiTruck className="w-8 h-8 text-cyan-600 dark:text-cyan-400" />
+                        <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
+                            <HiTruck className="h-8 w-8 text-cyan-600 dark:text-cyan-400" />
                             Zonas y Tarifas de Envío
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Configura regiones de despacho, costos fijos, envíos gratis o tarifas por peso
                         </p>
                     </div>
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="flex w-full items-center gap-3 sm:w-auto">
                         <Button color="gray" onClick={() => fetchZones(currentPage)} disabled={loading}>
-                            <HiRefresh className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                            <HiRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             Actualizar
                         </Button>
                     </div>
                 </div>
 
-                <Card className="mb-6 shadow-sm border-gray-100 dark:border-gray-700">
-                    <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                <Card className="mb-6 border-gray-100 shadow-sm dark:border-gray-700">
+                    <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                                Buscar por Nombre de Zona
-                            </label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">Buscar por Nombre de Zona</label>
                             <TextInput
                                 icon={HiSearch}
                                 placeholder="Ej: Nacional, Local, Internacional..."
@@ -153,10 +139,10 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                     </form>
                 </Card>
 
-                <Card className="shadow-sm border-gray-100 dark:border-gray-700 overflow-hidden">
+                <Card className="overflow-hidden border-gray-100 shadow-sm dark:border-gray-700">
                     <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
                         <Table hoverable>
-                            <TableHead className="bg-gray-50 dark:bg-gray-700 text-xs uppercase tracking-wider">
+                            <TableHead className="bg-gray-50 text-xs tracking-wider uppercase dark:bg-gray-700">
                                 <TableHeadCell>Zona de Envío</TableHeadCell>
                                 <TableHeadCell>Países</TableHeadCell>
                                 <TableHeadCell>Tarifas Configuradas</TableHeadCell>
@@ -166,14 +152,14 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                             <TableBody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12">
+                                        <TableCell colSpan={5} className="py-12 text-center">
                                             <Spinner size="xl" />
                                         </TableCell>
                                     </TableRow>
                                 ) : zones.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-12">
-                                            <HiTruck className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
+                                        <TableCell colSpan={5} className="py-12 text-center">
+                                            <HiTruck className="mx-auto mb-2 h-12 w-12 text-gray-300 dark:text-gray-600" />
                                             <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
                                                 No se encontraron zonas de envío
                                             </p>
@@ -182,9 +168,7 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                                 ) : (
                                     zones.map((z) => (
                                         <TableRow key={z.id} className="bg-white dark:bg-gray-800">
-                                            <TableCell className="font-semibold text-gray-900 dark:text-white">
-                                                {z.name}
-                                            </TableCell>
+                                            <TableCell className="font-semibold text-gray-900 dark:text-white">{z.name}</TableCell>
                                             <TableCell>
                                                 <div className="flex flex-wrap gap-1">
                                                     {z.countries && z.countries.length > 0 ? (
@@ -212,8 +196,8 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge color={z.is_active ? "success" : "failure"} size="sm">
-                                                    {z.is_active ? "Activa" : "Inactiva"}
+                                                <Badge color={z.is_active ? 'success' : 'failure'} size="sm">
+                                                    {z.is_active ? 'Activa' : 'Inactiva'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -222,10 +206,10 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                                                         setZoneToDelete(z);
                                                         setDeleteModalOpen(true);
                                                     }}
-                                                    className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg"
+                                                    className="rounded-lg p-1.5 text-gray-500 hover:text-red-600"
                                                     title="Eliminar"
                                                 >
-                                                    <HiTrash className="w-4 h-4" />
+                                                    <HiTrash className="h-4 w-4" />
                                                 </button>
                                             </TableCell>
                                         </TableRow>
@@ -236,7 +220,7 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="flex justify-center mt-6">
+                        <div className="mt-6 flex justify-center">
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={totalPages}
@@ -256,9 +240,7 @@ const ShippingIndexPage: FC<ShippingIndexPageProps> = ({ user_id, title, host, u
                     <ModalBody>
                         <div className="text-center">
                             <HiTrash className="mx-auto mb-4 h-14 w-14 text-red-500" />
-                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                                ¿Eliminar Zona de Envío?
-                            </h3>
+                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">¿Eliminar Zona de Envío?</h3>
                             <p className="mb-5 text-sm text-gray-500">
                                 ¿Deseas eliminar la zona <strong>"{zoneToDelete?.name}"</strong> y sus tarifas?
                             </p>

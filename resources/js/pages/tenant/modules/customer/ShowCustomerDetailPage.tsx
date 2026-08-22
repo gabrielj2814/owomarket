@@ -1,9 +1,9 @@
-import Dashboard from "@/components/layouts/Dashboard";
-import CustomerServices from "@/Services/CustomerServices";
-import { ErrorsFormCustomer } from "@/types/ErrorsFormCustomer";
-import { FormCustomerAddress } from "@/types/FormCustomer";
-import { Customer } from "@/types/models/Customer";
-import { Head, Link } from "@inertiajs/react";
+import Dashboard from '@/components/layouts/Dashboard';
+import CustomerServices from '@/Services/CustomerServices';
+import { ErrorsFormCustomer } from '@/types/ErrorsFormCustomer';
+import { FormCustomerAddress } from '@/types/FormCustomer';
+import { Customer } from '@/types/models/Customer';
+import { Head, Link } from '@inertiajs/react';
 import {
     Badge,
     Breadcrumb,
@@ -19,22 +19,9 @@ import {
     Select,
     Spinner,
     TextInput,
-} from "flowbite-react";
-import { FC, useEffect, useState } from "react";
-import {
-    HiArrowLeft,
-    HiCalendar,
-    HiHome,
-    HiIdentification,
-    HiMail,
-    HiLocationMarker,
-    HiPencil,
-    HiPhone,
-    HiPlus,
-    HiStar,
-    HiTrash,
-    HiUsers,
-} from "react-icons/hi";
+} from 'flowbite-react';
+import { FC, useEffect, useState } from 'react';
+import { HiArrowLeft, HiCalendar, HiHome, HiIdentification, HiLocationMarker, HiMail, HiPhone, HiPlus, HiStar, HiTrash } from 'react-icons/hi';
 
 interface ShowCustomerDetailPageProps {
     user_id: string;
@@ -45,27 +32,21 @@ interface ShowCustomerDetailPageProps {
 }
 
 const emptyAddressForm: FormCustomerAddress = {
-    first_name: "",
-    last_name: "",
-    address_line_1: "",
-    address_line_2: "",
-    city: "",
-    state: "",
-    postal_code: "",
-    country: "Chile",
-    type: "shipping",
-    company: "",
-    phone: "",
+    first_name: '',
+    last_name: '',
+    address_line_1: '',
+    address_line_2: '',
+    city: '',
+    state: '',
+    postal_code: '',
+    country: 'Chile',
+    type: 'shipping',
+    company: '',
+    phone: '',
     is_default: false,
 };
 
-const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
-    user_id,
-    customer_id,
-    title,
-    host,
-    user_name,
-}) => {
+const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({ user_id, customer_id, title, host, user_name }) => {
     const [customer, setCustomer] = useState<Customer | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [loadingAction, setLoadingAction] = useState<boolean>(false);
@@ -76,9 +57,9 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
     const [addressErrors, setAddressErrors] = useState<ErrorsFormCustomer>({});
 
     // Notification toast
-    const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    const showAlert = (type: "success" | "error", text: string) => {
+    const showAlert = (type: 'success' | 'error', text: string) => {
         setAlertMessage({ type, text });
         setTimeout(() => setAlertMessage(null), 5000);
     };
@@ -86,10 +67,10 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
     const fetchCustomer = async () => {
         setLoading(true);
         const res = await CustomerServices.consultById(customer_id);
-        if (res?.data?.data) {
-            setCustomer(res.data.data);
+        if (res.data) {
+            setCustomer(res.data);
         } else {
-            showAlert("error", "No se pudo cargar la información del cliente.");
+            showAlert('error', 'No se pudo cargar la información del cliente.');
         }
         setLoading(false);
     };
@@ -102,12 +83,12 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
 
     const handleOpenAddAddress = () => {
         if (customer) {
-            const names = customer.name.split(" ");
+            const names = customer.name.split(' ');
             setAddressForm({
                 ...emptyAddressForm,
-                first_name: names[0] || "",
-                last_name: names.slice(1).join(" ") || "",
-                phone: customer.phone || "",
+                first_name: names[0] || '',
+                last_name: names.slice(1).join(' ') || '',
+                phone: customer.phone || '',
                 is_default: customer.addresses.length === 0,
             });
         }
@@ -123,16 +104,16 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
         const res = await CustomerServices.addAddress(customer_id, addressForm);
         setLoadingAction(false);
 
-        if (res?.data?.status === "success" || res?.status === 201) {
-            showAlert("success", "Dirección agregada exitosamente.");
+        if (res.status === 'success') {
+            showAlert('success', 'Dirección agregada exitosamente.');
             setShowAddAddressModal(false);
-            if (res?.data?.data) {
-                setCustomer(res.data.data);
+            if (res.data) {
+                setCustomer(res.data);
             } else {
                 fetchCustomer();
             }
         } else {
-            showAlert("error", res?.data?.message || "Error al agregar dirección.");
+            showAlert('error', res.message || 'Error al agregar dirección.');
         }
     };
 
@@ -141,43 +122,43 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
         const res = await CustomerServices.setDefaultAddress(customer_id, addressId);
         setLoadingAction(false);
 
-        if (res?.data?.status === "success" || res?.status === 200) {
-            showAlert("success", "Dirección predeterminada actualizada.");
-            if (res?.data?.data) {
-                setCustomer(res.data.data);
+        if (res.status === 'success') {
+            showAlert('success', 'Dirección predeterminada actualizada.');
+            if (res.data) {
+                setCustomer(res.data);
             } else {
                 fetchCustomer();
             }
         } else {
-            showAlert("error", res?.data?.message || "Error al actualizar dirección.");
+            showAlert('error', res.message || 'Error al actualizar dirección.');
         }
     };
 
     const handleDeleteAddress = async (addressId: string) => {
-        if (!confirm("¿Estás seguro de eliminar esta dirección?")) return;
+        if (!confirm('¿Estás seguro de eliminar esta dirección?')) return;
 
         setLoadingAction(true);
         const res = await CustomerServices.deleteAddress(customer_id, addressId);
         setLoadingAction(false);
 
-        if (res?.data?.status === "success" || res?.status === 200) {
-            showAlert("success", "Dirección eliminada correctamente.");
-            if (res?.data?.data) {
-                setCustomer(res.data.data);
+        if (res.status === 'success') {
+            showAlert('success', 'Dirección eliminada correctamente.');
+            if (res.data) {
+                setCustomer(res.data);
             } else {
                 fetchCustomer();
             }
         } else {
-            showAlert("error", res?.data?.message || "Error al eliminar dirección.");
+            showAlert('error', res.message || 'Error al eliminar dirección.');
         }
     };
 
     const getInitials = (name: string) => {
         return name
-            .split(" ")
+            .split(' ')
             .map((n) => n[0])
             .slice(0, 2)
-            .join("")
+            .join('')
             .toUpperCase();
     };
 
@@ -185,21 +166,18 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
         <Dashboard user_uuid={user_id}>
             <Head title={title} />
 
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 {/* Alert Toast */}
                 {alertMessage && (
                     <div
-                        className={`p-4 rounded-xl shadow-lg border flex items-center justify-between text-sm transition-all duration-300 ${
-                            alertMessage.type === "success"
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
-                                : "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"
+                        className={`flex items-center justify-between rounded-xl border p-4 text-sm shadow-lg transition-all duration-300 ${
+                            alertMessage.type === 'success'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                : 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300'
                         }`}
                     >
                         <span className="font-medium">{alertMessage.text}</span>
-                        <button
-                            onClick={() => setAlertMessage(null)}
-                            className="font-bold text-lg leading-none hover:opacity-75"
-                        >
+                        <button onClick={() => setAlertMessage(null)} className="text-lg leading-none font-bold hover:opacity-75">
                             ×
                         </button>
                     </div>
@@ -211,15 +189,13 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                         <BreadcrumbItem href="#" icon={HiHome}>
                             Inicio
                         </BreadcrumbItem>
-                        <BreadcrumbItem href={`/customer/backoffice/${user_id}/module`}>
-                            Clientes
-                        </BreadcrumbItem>
+                        <BreadcrumbItem href={`/customer/backoffice/${user_id}/module`}>Clientes</BreadcrumbItem>
                         <BreadcrumbItem>Ficha 360°</BreadcrumbItem>
                     </Breadcrumb>
 
                     <Link
                         href={`/customer/backoffice/${user_id}/module`}
-                        className="inline-flex items-center text-xs font-semibold text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="inline-flex items-center text-xs font-semibold text-gray-600 transition-colors hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
                     >
                         <HiArrowLeft className="mr-1.5 h-4 w-4" />
                         Volver al Directorio
@@ -227,24 +203,22 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                 </div>
 
                 {loading || !customer ? (
-                    <div className="text-center py-24">
+                    <div className="py-24 text-center">
                         <Spinner size="xl" />
-                        <p className="text-sm text-gray-500 mt-3">Cargando perfil del cliente...</p>
+                        <p className="mt-3 text-sm text-gray-500">Cargando perfil del cliente...</p>
                     </div>
                 ) : (
                     <>
                         {/* Profile Header Banner */}
-                        <Card className="shadow-sm border-t-4 border-t-indigo-600">
-                            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <Card className="border-t-4 border-t-indigo-600 shadow-sm">
+                            <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-md flex-shrink-0">
+                                    <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-xl font-black text-white shadow-md">
                                         {getInitials(customer.name)}
                                     </div>
                                     <div>
-                                        <div className="flex items-center gap-2.5 flex-wrap">
-                                            <h1 className="text-2xl font-black text-gray-900 dark:text-white">
-                                                {customer.name}
-                                            </h1>
+                                        <div className="flex flex-wrap items-center gap-2.5">
+                                            <h1 className="text-2xl font-black text-gray-900 dark:text-white">{customer.name}</h1>
                                             {customer.is_active ? (
                                                 <Badge color="success" size="sm">
                                                     Activo
@@ -260,23 +234,20 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                                 </Badge>
                                             )}
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400 mt-1.5">
+                                        <div className="mt-1.5 flex flex-wrap items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                                             <span className="flex items-center gap-1">
-                                                <HiMail className="w-4 h-4 text-gray-400" />
+                                                <HiMail className="h-4 w-4 text-gray-400" />
                                                 {customer.email}
                                             </span>
                                             {customer.phone && (
                                                 <span className="flex items-center gap-1">
-                                                    <HiPhone className="w-4 h-4 text-gray-400" />
+                                                    <HiPhone className="h-4 w-4 text-gray-400" />
                                                     {customer.phone}
                                                 </span>
                                             )}
                                             <span className="flex items-center gap-1">
-                                                <HiCalendar className="w-4 h-4 text-gray-400" />
-                                                Registrado el:{" "}
-                                                {customer.created_at
-                                                    ? new Date(customer.created_at).toLocaleDateString()
-                                                    : "-"}
+                                                <HiCalendar className="h-4 w-4 text-gray-400" />
+                                                Registrado el: {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : '-'}
                                             </span>
                                         </div>
                                     </div>
@@ -285,75 +256,67 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                         </Card>
 
                         {/* Grid Content */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
                             {/* Left Column: Personal Information */}
                             <div className="space-y-6">
                                 <Card className="shadow-sm">
-                                    <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2 border-b dark:border-gray-700 pb-3">
-                                        <HiIdentification className="w-5 h-5 text-indigo-600" />
+                                    <h3 className="flex items-center gap-2 border-b pb-3 text-base font-bold text-gray-900 dark:border-gray-700 dark:text-white">
+                                        <HiIdentification className="h-5 w-5 text-indigo-600" />
                                         Información Personal
                                     </h3>
 
                                     <div className="space-y-3.5 text-xs">
                                         <div>
-                                            <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
-                                                Nombre Completo
-                                            </span>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium text-sm">
-                                                {customer.name}
-                                            </span>
+                                            <span className="mb-0.5 block font-semibold tracking-wider text-gray-400 uppercase">Nombre Completo</span>
+                                            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">{customer.name}</span>
                                         </div>
 
                                         <div>
-                                            <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
+                                            <span className="mb-0.5 block font-semibold tracking-wider text-gray-400 uppercase">
                                                 Correo Electrónico
                                             </span>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium">
-                                                {customer.email}
-                                            </span>
+                                            <span className="font-medium text-gray-800 dark:text-gray-200">{customer.email}</span>
                                         </div>
 
                                         <div>
-                                            <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
+                                            <span className="mb-0.5 block font-semibold tracking-wider text-gray-400 uppercase">
                                                 Teléfono de Contacto
                                             </span>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium">
-                                                {customer.phone || "No especificado"}
+                                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                {customer.phone || 'No especificado'}
                                             </span>
                                         </div>
 
                                         <div>
-                                            <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
+                                            <span className="mb-0.5 block font-semibold tracking-wider text-gray-400 uppercase">
                                                 Fecha de Nacimiento
                                             </span>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium">
-                                                {customer.birth_date ? `🎂 ${customer.birth_date}` : "No especificada"}
+                                            <span className="font-medium text-gray-800 dark:text-gray-200">
+                                                {customer.birth_date ? `🎂 ${customer.birth_date}` : 'No especificada'}
                                             </span>
                                         </div>
 
                                         <div>
-                                            <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
-                                                Género
-                                            </span>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium capitalize">
-                                                {customer.gender === "male"
-                                                    ? "Masculino"
-                                                    : customer.gender === "female"
-                                                    ? "Femenino"
-                                                    : customer.gender === "other"
-                                                    ? "Otro"
-                                                    : "No especificado"}
+                                            <span className="mb-0.5 block font-semibold tracking-wider text-gray-400 uppercase">Género</span>
+                                            <span className="font-medium text-gray-800 capitalize dark:text-gray-200">
+                                                {customer.gender === 'male'
+                                                    ? 'Masculino'
+                                                    : customer.gender === 'female'
+                                                      ? 'Femenino'
+                                                      : customer.gender === 'other'
+                                                        ? 'Otro'
+                                                        : 'No especificado'}
                                             </span>
                                         </div>
 
                                         <div>
-                                            <span className="font-semibold text-gray-400 uppercase tracking-wider block mb-0.5">
+                                            <span className="mb-0.5 block font-semibold tracking-wider text-gray-400 uppercase">
                                                 Consentimiento de Marketing
                                             </span>
-                                            <span className="text-gray-800 dark:text-gray-200 font-medium">
+                                            <span className="font-medium text-gray-800 dark:text-gray-200">
                                                 {customer.accepts_marketing
-                                                    ? "✅ Suscrito a boletines y promociones"
-                                                    : "❌ No suscrito a comunicaciones"}
+                                                    ? '✅ Suscrito a boletines y promociones'
+                                                    : '❌ No suscrito a comunicaciones'}
                                             </span>
                                         </div>
                                     </div>
@@ -361,50 +324,40 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                             </div>
 
                             {/* Right Column: Address Book Manager */}
-                            <div className="lg:col-span-2 space-y-6">
+                            <div className="space-y-6 lg:col-span-2">
                                 <Card className="shadow-sm">
-                                    <div className="flex items-center justify-between border-b dark:border-gray-700 pb-3">
-                                        <h3 className="text-base font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                                            <HiLocationMarker className="w-5 h-5 text-indigo-600" />
+                                    <div className="flex items-center justify-between border-b pb-3 dark:border-gray-700">
+                                        <h3 className="flex items-center gap-2 text-base font-bold text-gray-900 dark:text-white">
+                                            <HiLocationMarker className="h-5 w-5 text-indigo-600" />
                                             Libreta de Direcciones ({customer.addresses?.length || 0})
                                         </h3>
-                                        <Button
-                                            size="xs"
-                                            color="purple"
-                                            onClick={handleOpenAddAddress}
-                                            className="shadow-sm font-medium"
-                                        >
+                                        <Button size="xs" color="purple" onClick={handleOpenAddAddress} className="font-medium shadow-sm">
                                             <HiPlus className="mr-1 h-3.5 w-3.5" />
                                             Agregar Dirección
                                         </Button>
                                     </div>
 
                                     {customer.addresses?.length === 0 ? (
-                                        <div className="text-center py-10 text-gray-400 space-y-2">
-                                            <HiHome className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600" />
+                                        <div className="space-y-2 py-10 text-center text-gray-400">
+                                            <HiHome className="mx-auto h-8 w-8 text-gray-300 dark:text-gray-600" />
                                             <p className="text-sm">El cliente aún no tiene direcciones registradas.</p>
-                                            <Button
-                                                size="xs"
-                                                color="light"
-                                                onClick={handleOpenAddAddress}
-                                                className="mx-auto"
-                                            >
+                                            <Button size="xs" color="light" onClick={handleOpenAddAddress} className="mx-auto">
                                                 + Registrar primera dirección
                                             </Button>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                             {customer.addresses.map((addr) => (
                                                 <div
                                                     key={addr.id}
-                                                    className={`p-4 rounded-xl border transition-all ${
+                                                    className={`rounded-xl border p-4 transition-all ${
                                                         addr.is_default
-                                                            ? "bg-indigo-50/50 border-indigo-300 dark:bg-indigo-950/20 dark:border-indigo-800 ring-1 ring-indigo-400/50"
-                                                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                                                            ? 'border-indigo-300 bg-indigo-50/50 ring-1 ring-indigo-400/50 dark:border-indigo-800 dark:bg-indigo-950/20'
+                                                            : 'border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800'
                                                     }`}
                                                 >
-                                                    <div className="flex items-start justify-between gap-2 mb-2">
-                                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <div className="mb-2 flex items-start justify-between gap-2">
+                                                        <div className="flex flex-wrap items-center gap-1.5">
                                                             {addr.is_default && (
                                                                 <Badge color="indigo" size="xs">
                                                                     ⭐ Predeterminada
@@ -412,21 +365,17 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                                             )}
                                                             <Badge
                                                                 color={
-                                                                    addr.type === "shipping"
-                                                                        ? "info"
-                                                                        : addr.type === "billing"
-                                                                        ? "warning"
-                                                                        : "gray"
+                                                                    addr.type === 'shipping' ? 'info' : addr.type === 'billing' ? 'warning' : 'gray'
                                                                 }
                                                                 size="xs"
                                                             >
-                                                                {addr.type === "shipping"
-                                                                    ? "Envío"
-                                                                    : addr.type === "billing"
-                                                                    ? "Facturación"
-                                                                    : addr.type === "both"
-                                                                    ? "Envío y Factura"
-                                                                    : "General"}
+                                                                {addr.type === 'shipping'
+                                                                    ? 'Envío'
+                                                                    : addr.type === 'billing'
+                                                                      ? 'Facturación'
+                                                                      : addr.type === 'both'
+                                                                        ? 'Envío y Factura'
+                                                                        : 'General'}
                                                             </Badge>
                                                         </div>
 
@@ -434,44 +383,40 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                                             {!addr.is_default && (
                                                                 <button
                                                                     onClick={() => handleSetDefaultAddress(addr.id)}
-                                                                    className="p-1 text-xs text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 rounded transition-colors"
+                                                                    className="rounded p-1 text-xs text-indigo-600 transition-colors hover:bg-indigo-100 dark:hover:bg-indigo-900/40"
                                                                     title="Establecer como Predeterminada"
                                                                     disabled={loadingAction}
                                                                 >
-                                                                    <HiStar className="w-4 h-4" />
+                                                                    <HiStar className="h-4 w-4" />
                                                                 </button>
                                                             )}
                                                             <button
                                                                 onClick={() => handleDeleteAddress(addr.id)}
-                                                                className="p-1 text-xs text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/40 rounded transition-colors"
+                                                                className="rounded p-1 text-xs text-rose-600 transition-colors hover:bg-rose-100 dark:hover:bg-rose-900/40"
                                                                 title="Eliminar Dirección"
                                                                 disabled={loadingAction}
                                                             >
-                                                                <HiTrash className="w-4 h-4" />
+                                                                <HiTrash className="h-4 w-4" />
                                                             </button>
                                                         </div>
                                                     </div>
 
-                                                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                                                        {addr.full_name}
-                                                    </h4>
+                                                    <h4 className="text-sm font-bold text-gray-900 dark:text-white">{addr.full_name}</h4>
                                                     {addr.company && (
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
-                                                            🏢 {addr.company}
-                                                        </p>
+                                                        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">🏢 {addr.company}</p>
                                                     )}
 
-                                                    <p className="text-xs text-gray-700 dark:text-gray-300 mt-1">
+                                                    <p className="mt-1 text-xs text-gray-700 dark:text-gray-300">
                                                         {addr.address_line_1}
-                                                        {addr.address_line_2 ? `, ${addr.address_line_2}` : ""}
+                                                        {addr.address_line_2 ? `, ${addr.address_line_2}` : ''}
                                                     </p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400">
                                                         {addr.city}, {addr.state} ({addr.postal_code}), {addr.country}
                                                     </p>
 
                                                     {addr.phone && (
-                                                        <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-                                                            <HiPhone className="w-3.5 h-3.5" />
+                                                        <p className="mt-2 flex items-center gap-1 text-xs text-gray-400">
+                                                            <HiPhone className="h-3.5 w-3.5" />
                                                             {addr.phone}
                                                         </p>
                                                     )}
@@ -486,24 +431,17 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                 )}
 
                 {/* MODAL: Agregar Dirección */}
-                <Modal
-                    show={showAddAddressModal}
-                    onClose={() => setShowAddAddressModal(false)}
-                    size="lg"
-                    popup={false}
-                >
+                <Modal show={showAddAddressModal} onClose={() => setShowAddAddressModal(false)} size="lg" popup={false}>
                     <ModalHeader>Agregar Nueva Dirección</ModalHeader>
                     <form onSubmit={handleAddAddressSubmit}>
-                        <ModalBody className="space-y-4 max-h-[70vh] overflow-y-auto">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <ModalBody className="max-h-[70vh] space-y-4 overflow-y-auto">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="new-first-name">Nombre Destinatario *</Label>
                                     <TextInput
                                         id="new-first-name"
                                         value={addressForm.first_name}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, first_name: e.target.value })
-                                        }
+                                        onChange={(e) => setAddressForm({ ...addressForm, first_name: e.target.value })}
                                         required
                                         sizing="sm"
                                     />
@@ -514,9 +452,7 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                     <TextInput
                                         id="new-last-name"
                                         value={addressForm.last_name}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, last_name: e.target.value })
-                                        }
+                                        onChange={(e) => setAddressForm({ ...addressForm, last_name: e.target.value })}
                                         required
                                         sizing="sm"
                                     />
@@ -526,10 +462,8 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                     <Label htmlFor="new-company">Empresa / Razón Social (Opcional)</Label>
                                     <TextInput
                                         id="new-company"
-                                        value={addressForm.company || ""}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, company: e.target.value })
-                                        }
+                                        value={addressForm.company || ''}
+                                        onChange={(e) => setAddressForm({ ...addressForm, company: e.target.value })}
                                         sizing="sm"
                                     />
                                 </div>
@@ -540,9 +474,7 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                         id="new-line1"
                                         placeholder="Ej: Av. Apoquindo 4500"
                                         value={addressForm.address_line_1}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, address_line_1: e.target.value })
-                                        }
+                                        onChange={(e) => setAddressForm({ ...addressForm, address_line_1: e.target.value })}
                                         required
                                         sizing="sm"
                                     />
@@ -553,10 +485,8 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                     <TextInput
                                         id="new-line2"
                                         placeholder="Ej: Depto 102"
-                                        value={addressForm.address_line_2 || ""}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, address_line_2: e.target.value })
-                                        }
+                                        value={addressForm.address_line_2 || ''}
+                                        onChange={(e) => setAddressForm({ ...addressForm, address_line_2: e.target.value })}
                                         sizing="sm"
                                     />
                                 </div>
@@ -588,9 +518,7 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                     <TextInput
                                         id="new-zip"
                                         value={addressForm.postal_code}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, postal_code: e.target.value })
-                                        }
+                                        onChange={(e) => setAddressForm({ ...addressForm, postal_code: e.target.value })}
                                         required
                                         sizing="sm"
                                     />
@@ -601,9 +529,7 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                     <TextInput
                                         id="new-country"
                                         value={addressForm.country}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, country: e.target.value })
-                                        }
+                                        onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })}
                                         required
                                         sizing="sm"
                                     />
@@ -628,21 +554,19 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                                     <Label htmlFor="new-phone">Teléfono de Entrega</Label>
                                     <TextInput
                                         id="new-phone"
-                                        value={addressForm.phone || ""}
+                                        value={addressForm.phone || ''}
                                         onChange={(e) => setAddressForm({ ...addressForm, phone: e.target.value })}
                                         sizing="sm"
                                     />
                                 </div>
                             </div>
 
-                            <div className="pt-2 border-t dark:border-gray-700">
+                            <div className="border-t pt-2 dark:border-gray-700">
                                 <div className="flex items-center gap-2">
                                     <Checkbox
                                         id="new-default"
                                         checked={addressForm.is_default}
-                                        onChange={(e) =>
-                                            setAddressForm({ ...addressForm, is_default: e.target.checked })
-                                        }
+                                        onChange={(e) => setAddressForm({ ...addressForm, is_default: e.target.checked })}
                                     />
                                     <Label htmlFor="new-default" className="cursor-pointer">
                                         Establecer como dirección predeterminada
@@ -651,20 +575,11 @@ const ShowCustomerDetailPage: FC<ShowCustomerDetailPageProps> = ({
                             </div>
                         </ModalBody>
                         <ModalFooter>
-                            <Button
-                                type="submit"
-                                color="purple"
-                                disabled={loadingAction}
-                                className="font-semibold"
-                            >
+                            <Button type="submit" color="purple" disabled={loadingAction} className="font-semibold">
                                 {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                                 Guardar Dirección
                             </Button>
-                            <Button
-                                color="gray"
-                                onClick={() => setShowAddAddressModal(false)}
-                                disabled={loadingAction}
-                            >
+                            <Button color="gray" onClick={() => setShowAddAddressModal(false)} disabled={loadingAction}>
                                 Cancelar
                             </Button>
                         </ModalFooter>

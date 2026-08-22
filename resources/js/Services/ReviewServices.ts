@@ -1,11 +1,7 @@
-import {
-    ErrorsFormCreateReview,
-    ErrorsFormRespondReview,
-    ErrorsFormUpdateReview,
-} from '@/types/ErrorsFormProductReview';
+import { ErrorsFormCreateReview, ErrorsFormRespondReview, ErrorsFormUpdateReview } from '@/types/ErrorsFormProductReview';
 import { FilterReviewsParams, FormCreateReview, FormUpdateReview } from '@/types/FormProductReview';
 import { ProductRatingSummary, ProductReview } from '@/types/models/ProductReview';
-import { ApiResponse, Data } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -27,7 +23,7 @@ export interface PaginatedReviewsData {
 }
 
 const ReviewServices = {
-    filtrar: async (params: FilterReviewsParams = {}): Promise<ApiResponse<PaginatedReviewsData>> => {
+    filtrar: async (params: FilterReviewsParams = {}): Promise<Data<PaginatedReviewsData>> => {
         try {
             const body = {
                 search: params.search ?? null,
@@ -43,7 +39,7 @@ const ReviewServices = {
                 sort_direction: params.sort_direction ?? 'desc',
             };
 
-            const response = await axiosReview.post<ApiResponse<PaginatedReviewsData>>('filter', body);
+            const response = await axiosReview.post<Data<PaginatedReviewsData>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -63,10 +59,10 @@ const ReviewServices = {
         }
     },
 
-    getSummary: async (productId?: string): Promise<ApiResponse<ProductRatingSummary>> => {
+    getSummary: async (productId?: string): Promise<Data<ProductRatingSummary>> => {
         try {
             const endpoint = productId ? `summary/${productId}` : 'summary';
-            const response = await axiosReview.get<ApiResponse<ProductRatingSummary>>(endpoint);
+            const response = await axiosReview.get<Data<ProductRatingSummary>>(endpoint);
             return response.data;
         } catch (error: any) {
             return (
@@ -105,9 +101,9 @@ const ReviewServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<ProductReview>> => {
+    consultById: async (id: string): Promise<Data<ProductReview>> => {
         try {
-            const response = await axiosReview.get<ApiResponse<ProductReview>>(`${id}`);
+            const response = await axiosReview.get<Data<ProductReview>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -121,9 +117,9 @@ const ReviewServices = {
         }
     },
 
-    moderate: async (id: string, isApproved: boolean): Promise<ApiResponse<ProductReview>> => {
+    moderate: async (id: string, isApproved: boolean): Promise<Data<ProductReview>> => {
         try {
-            const response = await axiosReview.post<ApiResponse<ProductReview>>(`${id}/moderate`, {
+            const response = await axiosReview.post<Data<ProductReview>>(`${id}/moderate`, {
                 is_approved: isApproved,
             });
             return response.data;
@@ -139,12 +135,9 @@ const ReviewServices = {
         }
     },
 
-    respond: async (id: string, responseText: string): Promise<ApiResponse<ProductReview, ErrorsFormRespondReview>> => {
+    respond: async (id: string, responseText: string): Promise<Data<ProductReview, ErrorsFormRespondReview>> => {
         try {
-            const response = await axiosReview.post<ApiResponse<ProductReview, ErrorsFormRespondReview>>(
-                `${id}/respond`,
-                { response: responseText }
-            );
+            const response = await axiosReview.post<Data<ProductReview, ErrorsFormRespondReview>>(`${id}/respond`, { response: responseText });
             return response.data;
         } catch (error: any) {
             return (
@@ -158,9 +151,9 @@ const ReviewServices = {
         }
     },
 
-    update: async (id: string, data: FormUpdateReview): Promise<ApiResponse<ProductReview, ErrorsFormUpdateReview>> => {
+    update: async (id: string, data: FormUpdateReview): Promise<Data<ProductReview, ErrorsFormUpdateReview>> => {
         try {
-            const response = await axiosReview.put<ApiResponse<ProductReview, ErrorsFormUpdateReview>>(`${id}`, data);
+            const response = await axiosReview.put<Data<ProductReview, ErrorsFormUpdateReview>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -174,9 +167,9 @@ const ReviewServices = {
         }
     },
 
-    delete: async (id: string): Promise<ApiResponse<null>> => {
+    delete: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosReview.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosReview.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (

@@ -44,7 +44,7 @@ export const ProductImageDropzone: FC<ProductImageDropzoneProps> = ({
 
             try {
                 const response = await ProductServices.uploadImage(file);
-                const mediaData = response?.data?.data;
+                const mediaData = response.data;
                 if (mediaData?.image_path) {
                     const isFirst = currentImages.length === 0 && newImagesList.length === 0;
                     newImagesList.push({
@@ -54,7 +54,7 @@ export const ProductImageDropzone: FC<ProductImageDropzoneProps> = ({
                         order: currentImages.length + newImagesList.length,
                     });
                 } else {
-                    setErrorMessage(response?.data?.message || "Error al subir la imagen.");
+                    setErrorMessage(response.message || "Error al subir la imagen.");
                 }
             } catch (err: any) {
                 setErrorMessage("Error de conexión durante la subida.");

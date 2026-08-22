@@ -1,9 +1,9 @@
-import Dashboard from "@/components/layouts/Dashboard";
-import CouponServices from "@/Services/CouponServices";
-import { ErrorsFormCoupon } from "@/types/ErrorsFormCoupon";
-import { FormCoupon } from "@/types/FormCoupon";
-import { Coupon } from "@/types/models/Coupon";
-import { Head } from "@inertiajs/react";
+import Dashboard from '@/components/layouts/Dashboard';
+import CouponServices from '@/Services/CouponServices';
+import { ErrorsFormCoupon } from '@/types/ErrorsFormCoupon';
+import { FormCoupon } from '@/types/FormCoupon';
+import { Coupon } from '@/types/models/Coupon';
+import { Head } from '@inertiajs/react';
 import {
     Badge,
     Breadcrumb,
@@ -25,16 +25,9 @@ import {
     TableRow,
     TextInput,
     ToggleSwitch,
-} from "flowbite-react";
-import { FC, useEffect, useState } from "react";
-import {
-    HiHome,
-    HiPlus,
-    HiRefresh,
-    HiSearch,
-    HiTicket,
-    HiTrash,
-} from "react-icons/hi";
+} from 'flowbite-react';
+import { FC, useEffect, useState } from 'react';
+import { HiHome, HiPlus, HiRefresh, HiSearch, HiTicket, HiTrash } from 'react-icons/hi';
 
 interface CouponIndexPageProps {
     user_id: string;
@@ -44,21 +37,21 @@ interface CouponIndexPageProps {
 }
 
 const initialFormCoupon: FormCoupon = {
-    code: "",
-    type: "percentage",
+    code: '',
+    type: 'percentage',
     value: 10,
     min_order_amount: null,
     usage_limit: null,
     usage_limit_per_customer: null,
-    valid_from: new Date().toISOString().split("T")[0],
-    valid_to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+    valid_from: new Date().toISOString().split('T')[0],
+    valid_to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     is_active: true,
 };
 
 const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_name }) => {
     const [coupons, setCoupons] = useState<Coupon[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
-    const [search, setSearch] = useState<string>("");
+    const [search, setSearch] = useState<string>('');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -77,25 +70,18 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
     const fetchCoupons = async (page = currentPage) => {
         setLoading(true);
         try {
-            const res = await CouponServices.filtrar(
-                search.trim() !== "" ? search.trim() : null,
-                null,
-                null,
-                null,
-                perPage,
-                page
-            );
-            const items = Array.isArray(res?.data) ? res.data : (Array.isArray(res?.data?.data) ? res.data.data : []);
+            const res = await CouponServices.filtrar(search.trim() !== '' ? search.trim() : null, null, null, null, perPage, page);
+            const items = Array.isArray(res.data) ? res.data : [];
             setCoupons(items);
 
-            const pagination = (res as any)?.pagination || (res as any)?.data?.pagination;
+            const pagination = res.pagination;
             if (pagination) {
                 setCurrentPage(pagination.current_page);
                 setTotalPages(pagination.last_page);
                 setTotalItems(pagination.total);
             }
         } catch (err) {
-            console.error("Error al cargar cupones", err);
+            console.error('Error al cargar cupones', err);
         } finally {
             setLoading(false);
         }
@@ -131,14 +117,14 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
             };
 
             const res = await CouponServices.create(payload);
-            if ((res as any)?.code === 201 || (res as any)?.code === 200 || (res as any)?.status === "success" || res?.status === 201 || res?.status === 200) {
+            if (res.code === 201 || res.code === 200 || res.status === 'success') {
                 setCreateModalOpen(false);
                 fetchCoupons(1);
-            } else if ((res as any)?.errors || (res as any)?.data?.errors) {
-                setFormErrors((res as any)?.errors || (res as any)?.data?.errors);
+            } else if (res.errors) {
+                setFormErrors(res.errors);
             }
         } catch (err: any) {
-            console.error("Error creando cupón", err);
+            console.error('Error creando cupón', err);
         } finally {
             setActionLoading(false);
         }
@@ -149,13 +135,13 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
         setActionLoading(true);
         try {
             const res = await CouponServices.delete(couponToDelete.id);
-            if ((res as any)?.code === 200 || (res as any)?.status === "success" || res?.data?.code === 200) {
+            if (res.code === 200 || res.status === 'success') {
                 setDeleteModalOpen(false);
                 setCouponToDelete(null);
                 fetchCoupons(currentPage);
             }
         } catch (err) {
-            console.error("Error eliminando cupón", err);
+            console.error('Error eliminando cupón', err);
         } finally {
             setActionLoading(false);
         }
@@ -167,46 +153,43 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                 <title>{title}</title>
             </Head>
             <Dashboard user_uuid={user_id}>
-                <Breadcrumb aria-label="Navegación" className="hidden lg:block bg-gray-50 px-5 py-3 rounded-lg dark:bg-gray-800 mb-5 border border-gray-100 dark:border-gray-700">
+                <Breadcrumb
+                    aria-label="Navegación"
+                    className="mb-5 hidden rounded-lg border border-gray-100 bg-gray-50 px-5 py-3 lg:block dark:border-gray-700 dark:bg-gray-800"
+                >
                     <BreadcrumbItem icon={HiHome} href={`/tenant/backoffice/${user_id}/dashboard`}>
                         Inicio
                     </BreadcrumbItem>
-                    <BreadcrumbItem href={`/product/backoffice/${user_id}/module`}>
-                        Catálogo
-                    </BreadcrumbItem>
-                    <BreadcrumbItem>
-                        Cupones
-                    </BreadcrumbItem>
+                    <BreadcrumbItem href={`/product/backoffice/${user_id}/module`}>Catálogo</BreadcrumbItem>
+                    <BreadcrumbItem>Cupones</BreadcrumbItem>
                 </Breadcrumb>
 
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight flex items-center gap-2">
-                            <HiTicket className="w-8 h-8 text-pink-600 dark:text-pink-400" />
+                        <h1 className="flex items-center gap-2 text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl dark:text-white">
+                            <HiTicket className="h-8 w-8 text-pink-600 dark:text-pink-400" />
                             Cupones y Descuentos
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Crea códigos promocionales de descuento fijo o porcentual para tus clientes
                         </p>
                     </div>
-                    <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="flex w-full items-center gap-3 sm:w-auto">
                         <Button color="gray" onClick={() => fetchCoupons(currentPage)} disabled={loading}>
-                            <HiRefresh className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                            <HiRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             Actualizar
                         </Button>
                         <Button color="purple" onClick={handleOpenCreate}>
-                            <HiPlus className="w-4 h-4 mr-2" />
+                            <HiPlus className="mr-2 h-4 w-4" />
                             Crear Cupón
                         </Button>
                     </div>
                 </div>
 
-                <Card className="mb-6 shadow-sm border-gray-100 dark:border-gray-700">
-                    <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                <Card className="mb-6 border-gray-100 shadow-sm dark:border-gray-700">
+                    <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2">
                         <div>
-                            <label className="block text-xs font-semibold text-gray-600 dark:text-gray-300 mb-1">
-                                Buscar por Código
-                            </label>
+                            <label className="mb-1 block text-xs font-semibold text-gray-600 dark:text-gray-300">Buscar por Código</label>
                             <TextInput
                                 icon={HiSearch}
                                 placeholder="Ej: VERANO2026, BIENVENIDO..."
@@ -217,10 +200,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                     </form>
                 </Card>
 
-                <Card className="shadow-sm border-gray-100 dark:border-gray-700 overflow-hidden">
+                <Card className="overflow-hidden border-gray-100 shadow-sm dark:border-gray-700">
                     <div className="overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-700">
                         <Table hoverable>
-                            <TableHead className="bg-gray-50 dark:bg-gray-700 text-xs uppercase tracking-wider">
+                            <TableHead className="bg-gray-50 text-xs tracking-wider uppercase dark:bg-gray-700">
                                 <TableHeadCell>Código</TableHeadCell>
                                 <TableHeadCell>Tipo</TableHeadCell>
                                 <TableHeadCell>Valor</TableHeadCell>
@@ -231,39 +214,35 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                             <TableBody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-12">
+                                        <TableCell colSpan={6} className="py-12 text-center">
                                             <Spinner size="xl" />
                                         </TableCell>
                                     </TableRow>
                                 ) : coupons.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={6} className="text-center py-12">
-                                            <HiTicket className="w-12 h-12 mx-auto text-gray-300 dark:text-gray-600 mb-2" />
-                                            <p className="text-base font-semibold text-gray-700 dark:text-gray-300">
-                                                No se encontraron cupones
-                                            </p>
+                                        <TableCell colSpan={6} className="py-12 text-center">
+                                            <HiTicket className="mx-auto mb-2 h-12 w-12 text-gray-300 dark:text-gray-600" />
+                                            <p className="text-base font-semibold text-gray-700 dark:text-gray-300">No se encontraron cupones</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     coupons.map((c) => (
                                         <TableRow key={c.id} className="bg-white dark:bg-gray-800">
-                                            <TableCell className="font-mono font-bold text-gray-900 dark:text-white">
-                                                {c.code}
-                                            </TableCell>
+                                            <TableCell className="font-mono font-bold text-gray-900 dark:text-white">{c.code}</TableCell>
                                             <TableCell>
                                                 <Badge color="purple" size="sm">
-                                                    {c.type === "percentage" ? "Porcentaje" : "Monto Fijo"}
+                                                    {c.type === 'percentage' ? 'Porcentaje' : 'Monto Fijo'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="font-bold text-gray-900 dark:text-white">
-                                                {c.type === "percentage" ? `${c.value}%` : `$${c.value.toFixed(2)}`}
+                                                {c.type === 'percentage' ? `${c.value}%` : `$${c.value.toFixed(2)}`}
                                             </TableCell>
                                             <TableCell className="text-xs text-gray-500">
-                                                {c.used_count} / {c.usage_limit ?? "∞"}
+                                                {c.used_count} / {c.usage_limit ?? '∞'}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge color={c.is_active ? "success" : "failure"} size="sm">
-                                                    {c.is_active ? "Activo" : "Inactivo"}
+                                                <Badge color={c.is_active ? 'success' : 'failure'} size="sm">
+                                                    {c.is_active ? 'Activo' : 'Inactivo'}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell className="text-right">
@@ -272,10 +251,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                                         setCouponToDelete(c);
                                                         setDeleteModalOpen(true);
                                                     }}
-                                                    className="p-1.5 text-gray-500 hover:text-red-600 rounded-lg"
+                                                    className="rounded-lg p-1.5 text-gray-500 hover:text-red-600"
                                                     title="Eliminar"
                                                 >
-                                                    <HiTrash className="w-4 h-4" />
+                                                    <HiTrash className="h-4 w-4" />
                                                 </button>
                                             </TableCell>
                                         </TableRow>
@@ -286,7 +265,7 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                     </div>
 
                     {totalPages > 1 && (
-                        <div className="flex justify-center mt-6">
+                        <div className="mt-6 flex justify-center">
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={totalPages}
@@ -304,13 +283,13 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                 <Modal show={createModalOpen} onClose={() => setCreateModalOpen(false)} size="lg">
                     <ModalHeader>
                         <span className="flex items-center gap-2 font-bold text-gray-900 dark:text-white">
-                            <HiTicket className="w-6 h-6 text-pink-600" />
+                            <HiTicket className="h-6 w-6 text-pink-600" />
                             Crear Nuevo Cupón de Descuento
                         </span>
                     </ModalHeader>
                     <ModalBody>
                         <form onSubmit={handleCreateSubmit} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="code">Código del Cupón *</Label>
                                     <TextInput
@@ -319,10 +298,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         value={formData.code}
                                         onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
                                         required
-                                        color={formErrors.code ? "failure" : undefined}
+                                        color={formErrors.code ? 'failure' : undefined}
                                     />
                                     {formErrors.code && (
-                                        <span className="text-xs text-red-500 mt-1 block">
+                                        <span className="mt-1 block text-xs text-red-500">
                                             {Array.isArray(formErrors.code) ? formErrors.code[0] : formErrors.code}
                                         </span>
                                     )}
@@ -340,10 +319,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="value">
-                                        {formData.type === "percentage" ? "Porcentaje de Descuento (%) *" : "Monto de Descuento ($) *"}
+                                        {formData.type === 'percentage' ? 'Porcentaje de Descuento (%) *' : 'Monto de Descuento ($) *'}
                                     </Label>
                                     <TextInput
                                         id="value"
@@ -353,10 +332,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         value={formData.value}
                                         onChange={(e) => setFormData({ ...formData, value: Number(e.target.value) })}
                                         required
-                                        color={formErrors.value ? "failure" : undefined}
+                                        color={formErrors.value ? 'failure' : undefined}
                                     />
                                     {formErrors.value && (
-                                        <span className="text-xs text-red-500 mt-1 block">
+                                        <span className="mt-1 block text-xs text-red-500">
                                             {Array.isArray(formErrors.value) ? formErrors.value[0] : formErrors.value}
                                         </span>
                                     )}
@@ -369,13 +348,15 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         min="0"
                                         step="0.01"
                                         placeholder="Opcional (Ej: 20.00)"
-                                        value={formData.min_order_amount ?? ""}
-                                        onChange={(e) => setFormData({ ...formData, min_order_amount: e.target.value ? Number(e.target.value) : null })}
+                                        value={formData.min_order_amount ?? ''}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, min_order_amount: e.target.value ? Number(e.target.value) : null })
+                                        }
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="valid_from">Fecha de Inicio *</Label>
                                     <TextInput
@@ -384,10 +365,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         value={formData.valid_from}
                                         onChange={(e) => setFormData({ ...formData, valid_from: e.target.value })}
                                         required
-                                        color={formErrors.valid_from ? "failure" : undefined}
+                                        color={formErrors.valid_from ? 'failure' : undefined}
                                     />
                                     {formErrors.valid_from && (
-                                        <span className="text-xs text-red-500 mt-1 block">
+                                        <span className="mt-1 block text-xs text-red-500">
                                             {Array.isArray(formErrors.valid_from) ? formErrors.valid_from[0] : formErrors.valid_from}
                                         </span>
                                     )}
@@ -400,17 +381,17 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         value={formData.valid_to}
                                         onChange={(e) => setFormData({ ...formData, valid_to: e.target.value })}
                                         required
-                                        color={formErrors.valid_to ? "failure" : undefined}
+                                        color={formErrors.valid_to ? 'failure' : undefined}
                                     />
                                     {formErrors.valid_to && (
-                                        <span className="text-xs text-red-500 mt-1 block">
+                                        <span className="mt-1 block text-xs text-red-500">
                                             {Array.isArray(formErrors.valid_to) ? formErrors.valid_to[0] : formErrors.valid_to}
                                         </span>
                                     )}
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="usage_limit">Límite Total de Usos</Label>
                                     <TextInput
@@ -418,7 +399,7 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         type="number"
                                         min="1"
                                         placeholder="Vacío para ilimitado"
-                                        value={formData.usage_limit ?? ""}
+                                        value={formData.usage_limit ?? ''}
                                         onChange={(e) => setFormData({ ...formData, usage_limit: e.target.value ? Number(e.target.value) : null })}
                                     />
                                 </div>
@@ -429,8 +410,10 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                         type="number"
                                         min="1"
                                         placeholder="Vacío para ilimitado"
-                                        value={formData.usage_limit_per_customer ?? ""}
-                                        onChange={(e) => setFormData({ ...formData, usage_limit_per_customer: e.target.value ? Number(e.target.value) : null })}
+                                        value={formData.usage_limit_per_customer ?? ''}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, usage_limit_per_customer: e.target.value ? Number(e.target.value) : null })
+                                        }
                                     />
                                 </div>
                             </div>
@@ -443,7 +426,7 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                                 />
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
+                            <div className="flex justify-end gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
                                 <Button color="gray" onClick={() => setCreateModalOpen(false)}>
                                     Cancelar
                                 </Button>
@@ -462,9 +445,7 @@ const CouponIndexPage: FC<CouponIndexPageProps> = ({ user_id, title, host, user_
                     <ModalBody>
                         <div className="text-center">
                             <HiTrash className="mx-auto mb-4 h-14 w-14 text-red-500" />
-                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">
-                                ¿Eliminar Cupón?
-                            </h3>
+                            <h3 className="mb-2 text-lg font-bold text-gray-900 dark:text-white">¿Eliminar Cupón?</h3>
                             <p className="mb-5 text-sm text-gray-500">
                                 ¿Deseas eliminar el cupón <strong>"{couponToDelete?.code}"</strong>?
                             </p>

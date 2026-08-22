@@ -31,6 +31,21 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:8000';
 */
 const servidorPropio = new URL(baseURL).port === '8000';
 
+/*
+| Los subdominios de tienda no estan en el fichero hosts cuando el servidor lo levanta
+| Playwright, asi que se resuelven aqui. Lo comparten los tres proyectos.
+*/
+const opcionesDeArranque = servidorPropio
+    ? {
+          launchOptions: {
+              args: ['--host-resolver-rules=MAP *.owomarket.local 127.0.0.1, MAP owomarket.local 127.0.0.1'],
+          },
+      }
+    : {};
+
+/** Cookies del propietario, que deja `auth.setup.ts` y reutiliza el resto de la suite. */
+const ESTADO_SESION = 'test-results/.auth/tenant-owner.json';
+
 export default defineConfig({
     testDir: './tests/Frontend/E2E',
     timeout: 30 * 1000,
@@ -58,18 +73,35 @@ export default defineConfig({
             },
         },
     }),
+    /*
+    | El login va en un proyecto propio que corre primero y guarda las cookies. Sin esto
+    | cada spec de backoffice hacia su propio login, y el limite de N18 —5 por minuto
+    | contra la misma cuenta— ponia la suite intermitente al ejecutarla dos veces
+    | seguidas (comprobado). Ahora hay un solo login por pasada, y anadir specs de
+    | backoffice ya no cuesta intentos.
+    |
+    | `tenant-owner-login.spec.ts` queda FUERA de la sesion compartida: prueba el login
+    | en si, asi que tiene que empezar sin sesion.
+    */
     projects: [
         {
+            name: 'setup',
+            testMatch: /.*\.setup\.ts/,
+            use: { ...devices['Desktop Chrome'], ...opcionesDeArranque },
+        },
+        {
+            name: 'login',
+            testMatch: /tenant-owner-login\.spec\.ts/,
+            use: { ...devices['Desktop Chrome'], ...opcionesDeArranque },
+        },
+        {
             name: 'chromium',
+            testIgnore: [/.*\.setup\.ts/, /tenant-owner-login\.spec\.ts/],
+            dependencies: ['setup'],
             use: {
                 ...devices['Desktop Chrome'],
-                ...(servidorPropio && {
-                    launchOptions: {
-                        // Los subdominios de tienda no están en el fichero hosts cuando el
-                        // servidor lo levanta Playwright, así que se resuelven aquí.
-                        args: ['--host-resolver-rules=MAP *.owomarket.local 127.0.0.1, MAP owomarket.local 127.0.0.1'],
-                    },
-                }),
+                ...opcionesDeArranque,
+                storageState: ESTADO_SESION,
             },
         },
     ],

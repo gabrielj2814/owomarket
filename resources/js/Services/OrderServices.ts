@@ -1,7 +1,7 @@
 import { ErrorsFormOrder } from '@/types/ErrorsFormOrder';
 import { FormOrder } from '@/types/FormOrder';
 import { Order, OrderMetrics, OrderStatusType, PaymentStatusType } from '@/types/models/Order';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data, PaginatedPayload } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -14,13 +14,13 @@ const axiosOrder = axios.create({
     },
 });
 
-export interface PaginatedOrdersData {
-    data: Order[];
-    total: number;
-    current_page: number;
-    per_page: number;
-    last_page: number;
-}
+/**
+ * Hallazgo N29: esto declaraba los campos de paginación sueltos junto a `data`, pero
+ * `/api-tenant/order/filter` devuelve `{ data, pagination }` — comprobado contra el
+ * endpoint real, no leyendo el código. Se mantiene el alias por compatibilidad con quien
+ * lo importe, apuntando ya a la forma correcta.
+ */
+export type PaginatedOrdersData = PaginatedPayload<Order>;
 
 export interface FilterOrdersParams {
     search?: string | null;
@@ -36,7 +36,7 @@ export interface FilterOrdersParams {
 }
 
 const OrderServices = {
-    filtrar: async (params: FilterOrdersParams = {}): Promise<ApiResponse<PaginatedOrdersData>> => {
+    filtrar: async (params: FilterOrdersParams = {}): Promise<Data<PaginatedOrdersData>> => {
         try {
             const body = {
                 search: params.search ?? null,
@@ -51,7 +51,7 @@ const OrderServices = {
                 sort_direction: params.sort_direction ?? 'desc',
             };
 
-            const response = await axiosOrder.post<ApiResponse<PaginatedOrdersData>>('filter', body);
+            const response = await axiosOrder.post<Data<PaginatedOrdersData>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -61,19 +61,16 @@ const OrderServices = {
                     message: 'Error de conexión con el servidor',
                     data: {
                         data: [],
-                        total: 0,
-                        current_page: 1,
-                        per_page: 15,
-                        last_page: 1,
+                        pagination: { total: 0, current_page: 1, per_page: 15, last_page: 1 },
                     },
                 }
             );
         }
     },
 
-    getMetrics: async (): Promise<ApiResponse<OrderMetrics>> => {
+    getMetrics: async (): Promise<Data<OrderMetrics>> => {
         try {
-            const response = await axiosOrder.get<ApiResponse<OrderMetrics>>('metrics');
+            const response = await axiosOrder.get<Data<OrderMetrics>>('metrics');
             return response.data;
         } catch (error: any) {
             return (
@@ -94,9 +91,9 @@ const OrderServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<Order>> => {
+    consultById: async (id: string): Promise<Data<Order>> => {
         try {
-            const response = await axiosOrder.get<ApiResponse<Order>>(`${id}`);
+            const response = await axiosOrder.get<Data<Order>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -110,9 +107,9 @@ const OrderServices = {
         }
     },
 
-    consultByOrderNumber: async (orderNumber: string): Promise<ApiResponse<Order>> => {
+    consultByOrderNumber: async (orderNumber: string): Promise<Data<Order>> => {
         try {
-            const response = await axiosOrder.get<ApiResponse<Order>>(`number/${orderNumber}`);
+            const response = await axiosOrder.get<Data<Order>>(`number/${orderNumber}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -126,9 +123,9 @@ const OrderServices = {
         }
     },
 
-    create: async (data: FormOrder): Promise<ApiResponse<Order, ErrorsFormOrder>> => {
+    create: async (data: FormOrder): Promise<Data<Order, ErrorsFormOrder>> => {
         try {
-            const response = await axiosOrder.post<ApiResponse<Order, ErrorsFormOrder>>('create', data);
+            const response = await axiosOrder.post<Data<Order, ErrorsFormOrder>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -146,15 +143,15 @@ const OrderServices = {
         id: string,
         status: OrderStatusType | string,
         shippingMethod?: string | null,
-        reason?: string | null
-    ): Promise<ApiResponse<Order, ErrorsFormOrder>> => {
+        reason?: string | null,
+    ): Promise<Data<Order, ErrorsFormOrder>> => {
         try {
             const body = {
                 status,
                 shipping_method: shippingMethod ?? null,
                 reason: reason ?? null,
             };
-            const response = await axiosOrder.post<ApiResponse<Order, ErrorsFormOrder>>(`${id}/status`, body);
+            const response = await axiosOrder.post<Data<Order, ErrorsFormOrder>>(`${id}/status`, body);
             return response.data;
         } catch (error: any) {
             return (
@@ -168,10 +165,10 @@ const OrderServices = {
         }
     },
 
-    cancel: async (id: string, reason?: string | null): Promise<ApiResponse<Order>> => {
+    cancel: async (id: string, reason?: string | null): Promise<Data<Order>> => {
         try {
             const body = { reason: reason ?? null };
-            const response = await axiosOrder.post<ApiResponse<Order>>(`${id}/cancel`, body);
+            const response = await axiosOrder.post<Data<Order>>(`${id}/cancel`, body);
             return response.data;
         } catch (error: any) {
             return (
@@ -185,13 +182,10 @@ const OrderServices = {
         }
     },
 
-    updatePaymentStatus: async (
-        id: string,
-        paymentStatus: PaymentStatusType | string
-    ): Promise<ApiResponse<Order, ErrorsFormOrder>> => {
+    updatePaymentStatus: async (id: string, paymentStatus: PaymentStatusType | string): Promise<Data<Order, ErrorsFormOrder>> => {
         try {
             const body = { payment_status: paymentStatus };
-            const response = await axiosOrder.post<ApiResponse<Order, ErrorsFormOrder>>(`${id}/payment-status`, body);
+            const response = await axiosOrder.post<Data<Order, ErrorsFormOrder>>(`${id}/payment-status`, body);
             return response.data;
         } catch (error: any) {
             return (

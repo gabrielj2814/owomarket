@@ -1,7 +1,7 @@
 import { ErrorsFormProduct } from '@/types/ErrorsFormProduct';
 import { FormProduct } from '@/types/FormProduct';
 import { Product } from '@/types/models/Product';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -39,9 +39,9 @@ export interface UploadMediaResult {
 }
 
 const ProductServices = {
-    filtrar: async (params: ProductFilterParams = {}): Promise<ApiResponse<Product[]>> => {
+    filtrar: async (params: ProductFilterParams = {}): Promise<Data<Product[]>> => {
         try {
-            const response = await axiosProduct.post<ApiResponse<Product[]>>('filter', params);
+            const response = await axiosProduct.post<Data<Product[]>>('filter', params);
             return response.data;
         } catch (error: any) {
             return (
@@ -55,9 +55,9 @@ const ProductServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<Product>> => {
+    consultById: async (id: string): Promise<Data<Product>> => {
         try {
-            const response = await axiosProduct.get<ApiResponse<Product>>(`${id}`);
+            const response = await axiosProduct.get<Data<Product>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -71,9 +71,9 @@ const ProductServices = {
         }
     },
 
-    create: async (data: FormProduct): Promise<ApiResponse<Product, ErrorsFormProduct>> => {
+    create: async (data: FormProduct): Promise<Data<Product, ErrorsFormProduct>> => {
         try {
-            const response = await axiosProduct.post<ApiResponse<Product, ErrorsFormProduct>>('create', data);
+            const response = await axiosProduct.post<Data<Product, ErrorsFormProduct>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -87,9 +87,9 @@ const ProductServices = {
         }
     },
 
-    update: async (id: string, data: FormProduct): Promise<ApiResponse<Product, ErrorsFormProduct>> => {
+    update: async (id: string, data: FormProduct): Promise<Data<Product, ErrorsFormProduct>> => {
         try {
-            const response = await axiosProduct.put<ApiResponse<Product, ErrorsFormProduct>>(`${id}`, data);
+            const response = await axiosProduct.put<Data<Product, ErrorsFormProduct>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -103,9 +103,9 @@ const ProductServices = {
         }
     },
 
-    delete: async (id: string): Promise<ApiResponse<null>> => {
+    delete: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosProduct.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosProduct.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -119,9 +119,9 @@ const ProductServices = {
         }
     },
 
-    toggleVisibility: async (id: string, isVisible?: boolean): Promise<ApiResponse<null>> => {
+    toggleVisibility: async (id: string, isVisible?: boolean): Promise<Data<null>> => {
         try {
-            const response = await axiosProduct.patch<ApiResponse<null>>(`${id}/toggle-visibility`, {
+            const response = await axiosProduct.patch<Data<null>>(`${id}/toggle-visibility`, {
                 is_visible: isVisible,
             });
             return response.data;
@@ -137,12 +137,9 @@ const ProductServices = {
         }
     },
 
-    toggleMarketplacePublication: async (
-        id: string,
-        isPublishedCentral?: boolean
-    ): Promise<ApiResponse<Product>> => {
+    toggleMarketplacePublication: async (id: string, isPublishedCentral?: boolean): Promise<Data<Product>> => {
         try {
-            const response = await axiosProduct.post<ApiResponse<Product>>(`${id}/toggle-marketplace`, {
+            const response = await axiosProduct.post<Data<Product>>(`${id}/toggle-marketplace`, {
                 is_published_central: isPublishedCentral,
             });
             return response.data;
@@ -158,9 +155,9 @@ const ProductServices = {
         }
     },
 
-    updateStock: async (id: string, quantity: number): Promise<ApiResponse<null>> => {
+    updateStock: async (id: string, quantity: number): Promise<Data<null>> => {
         try {
-            const response = await axiosProduct.patch<ApiResponse<null>>(`${id}/stock`, {
+            const response = await axiosProduct.patch<Data<null>>(`${id}/stock`, {
                 quantity,
             });
             return response.data;
@@ -176,7 +173,7 @@ const ProductServices = {
         }
     },
 
-    uploadImage: async (file: File, altText: string = ''): Promise<ApiResponse<UploadMediaResult>> => {
+    uploadImage: async (file: File, altText: string = ''): Promise<Data<UploadMediaResult>> => {
         try {
             const formData = new FormData();
             formData.append('file', file);
@@ -184,16 +181,12 @@ const ProductServices = {
                 formData.append('alt_text', altText);
             }
 
-            const response = await axios.post<ApiResponse<UploadMediaResult>>(
-                '/api-tenant/product/media/upload',
-                formData,
-                {
-                    headers: {
-                        'Content-Type': 'multipart/form-data',
-                        'X-CSRF-TOKEN': getCSRFToken(),
-                    },
-                }
-            );
+            const response = await axios.post<Data<UploadMediaResult>>('/api-tenant/product/media/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    'X-CSRF-TOKEN': getCSRFToken(),
+                },
+            });
             return response.data;
         } catch (error: any) {
             return (
@@ -207,9 +200,9 @@ const ProductServices = {
         }
     },
 
-    deleteImage: async (imagePath: string): Promise<ApiResponse<null>> => {
+    deleteImage: async (imagePath: string): Promise<Data<null>> => {
         try {
-            const response = await axiosProduct.delete<ApiResponse<null>>('media/delete', {
+            const response = await axiosProduct.delete<Data<null>>('media/delete', {
                 data: { image_path: imagePath },
             });
             return response.data;

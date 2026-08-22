@@ -1,9 +1,9 @@
-import Dashboard from "@/components/layouts/Dashboard";
-import CustomerServices from "@/Services/CustomerServices";
-import { ErrorsFormCustomer } from "@/types/ErrorsFormCustomer";
-import { FormCustomer } from "@/types/FormCustomer";
-import { Customer, CustomerMetrics } from "@/types/models/Customer";
-import { Head, Link } from "@inertiajs/react";
+import Dashboard from '@/components/layouts/Dashboard';
+import CustomerServices from '@/Services/CustomerServices';
+import { ErrorsFormCustomer } from '@/types/ErrorsFormCustomer';
+import { FormCustomer } from '@/types/FormCustomer';
+import { Customer, CustomerMetrics } from '@/types/models/Customer';
+import { Head, Link } from '@inertiajs/react';
 import {
     Badge,
     Breadcrumb,
@@ -26,8 +26,8 @@ import {
     TableHeadCell,
     TableRow,
     TextInput,
-} from "flowbite-react";
-import { FC, useEffect, useState } from "react";
+} from 'flowbite-react';
+import { FC, useEffect, useState } from 'react';
 import {
     HiCalendar,
     HiCheckCircle,
@@ -43,7 +43,7 @@ import {
     HiTrash,
     HiUsers,
     HiXCircle,
-} from "react-icons/hi";
+} from 'react-icons/hi';
 
 interface CustomerIndexPageProps {
     user_id: string;
@@ -53,36 +53,31 @@ interface CustomerIndexPageProps {
 }
 
 const emptyCustomerForm: FormCustomer = {
-    name: "",
-    email: "",
-    phone: "",
-    birth_date: "",
-    gender: "",
+    name: '',
+    email: '',
+    phone: '',
+    birth_date: '',
+    gender: '',
     is_active: true,
     accepts_marketing: false,
     addresses: [
         {
-            first_name: "",
-            last_name: "",
-            address_line_1: "",
-            address_line_2: "",
-            city: "",
-            state: "",
-            postal_code: "",
-            country: "Chile",
-            type: "shipping",
-            phone: "",
+            first_name: '',
+            last_name: '',
+            address_line_1: '',
+            address_line_2: '',
+            city: '',
+            state: '',
+            postal_code: '',
+            country: 'Chile',
+            type: 'shipping',
+            phone: '',
             is_default: true,
         },
     ],
 };
 
-const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
-    user_id,
-    title,
-    host,
-    user_name,
-}) => {
+const CustomerIndexPage: FC<CustomerIndexPageProps> = ({ user_id, title, host, user_name }) => {
     // Data States
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [metrics, setMetrics] = useState<CustomerMetrics>({
@@ -95,10 +90,10 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
     const [loadingAction, setLoadingAction] = useState<boolean>(false);
 
     // Filters & Pagination
-    const [search, setSearch] = useState<string>("");
-    const [statusFilter, setStatusFilter] = useState<string>("all");
-    const [marketingFilter, setMarketingFilter] = useState<string>("all");
-    const [genderFilter, setGenderFilter] = useState<string>("all");
+    const [search, setSearch] = useState<string>('');
+    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [marketingFilter, setMarketingFilter] = useState<string>('all');
+    const [genderFilter, setGenderFilter] = useState<string>('all');
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const [totalItems, setTotalItems] = useState<number>(0);
@@ -116,39 +111,32 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
     const [includeAddress, setIncludeAddress] = useState<boolean>(false);
 
     // Notification toast
-    const [alertMessage, setAlertMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+    const [alertMessage, setAlertMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-    const showAlert = (type: "success" | "error", text: string) => {
+    const showAlert = (type: 'success' | 'error', text: string) => {
         setAlertMessage({ type, text });
         setTimeout(() => setAlertMessage(null), 5000);
     };
 
     const fetchMetrics = async () => {
         const res = await CustomerServices.getMetrics();
-        if (res?.data?.data) {
-            setMetrics(res.data.data);
+        if (res.data) {
+            setMetrics(res.data);
         }
     };
 
     const fetchCustomers = async () => {
         setLoading(true);
-        const isActiveParam = statusFilter === "all" ? null : statusFilter === "active";
-        const acceptsMarketingParam = marketingFilter === "all" ? null : marketingFilter === "subscribed";
-        const genderParam = genderFilter === "all" ? null : genderFilter;
+        const isActiveParam = statusFilter === 'all' ? null : statusFilter === 'active';
+        const acceptsMarketingParam = marketingFilter === 'all' ? null : marketingFilter === 'subscribed';
+        const genderParam = genderFilter === 'all' ? null : genderFilter;
 
-        const res = await CustomerServices.filtrar(
-            search || null,
-            isActiveParam,
-            acceptsMarketingParam,
-            genderParam,
-            perPage,
-            currentPage
-        );
+        const res = await CustomerServices.filtrar(search || null, isActiveParam, acceptsMarketingParam, genderParam, perPage, currentPage);
 
-        if (res?.data?.data) {
-            setCustomers(res.data.data.data || []);
-            setTotalPages(res.data.data.pagination?.last_page || 1);
-            setTotalItems(res.data.data.pagination?.total || 0);
+        if (res.data) {
+            setCustomers(res.data.data || []);
+            setTotalPages(res.data.pagination?.last_page || 1);
+            setTotalItems(res.data.pagination?.total || 0);
         }
         setLoading(false);
     };
@@ -182,16 +170,16 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
         const res = await CustomerServices.create(payload);
         setLoadingAction(false);
 
-        if (res?.data?.status === "success" || res?.status === 201) {
-            showAlert("success", "Cliente registrado exitosamente.");
+        if (res.status === 'success') {
+            showAlert('success', 'Cliente registrado exitosamente.');
             setShowCreateModal(false);
             fetchCustomers();
             fetchMetrics();
         } else {
-            if (res?.data?.errors) {
-                setFormErrors(res.data.errors as ErrorsFormCustomer);
+            if (res.errors) {
+                setFormErrors(res.errors as ErrorsFormCustomer);
             }
-            showAlert("error", res?.data?.message || "Error al registrar el cliente.");
+            showAlert('error', res.message || 'Error al registrar el cliente.');
         }
     };
 
@@ -201,9 +189,9 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
         setFormData({
             name: customer.name,
             email: customer.email,
-            phone: customer.phone || "",
-            birth_date: customer.birth_date || "",
-            gender: customer.gender || "",
+            phone: customer.phone || '',
+            birth_date: customer.birth_date || '',
+            gender: customer.gender || '',
             is_active: customer.is_active,
             accepts_marketing: customer.accepts_marketing,
         });
@@ -221,16 +209,16 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
         const res = await CustomerServices.update(selectedCustomer.id, formData);
         setLoadingAction(false);
 
-        if (res?.data?.status === "success" || res?.status === 200) {
-            showAlert("success", "Cliente actualizado exitosamente.");
+        if (res.status === 'success') {
+            showAlert('success', 'Cliente actualizado exitosamente.');
             setShowEditModal(false);
             fetchCustomers();
             fetchMetrics();
         } else {
-            if (res?.data?.errors) {
-                setFormErrors(res.data.errors as ErrorsFormCustomer);
+            if (res.errors) {
+                setFormErrors(res.errors as ErrorsFormCustomer);
             }
-            showAlert("error", res?.data?.message || "Error al actualizar el cliente.");
+            showAlert('error', res.message || 'Error al actualizar el cliente.');
         }
     };
 
@@ -247,22 +235,22 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
         const res = await CustomerServices.delete(selectedCustomer.id);
         setLoadingAction(false);
 
-        if (res?.data?.status === "success" || res?.status === 200) {
-            showAlert("success", "Cliente eliminado correctamente.");
+        if (res.status === 'success') {
+            showAlert('success', 'Cliente eliminado correctamente.');
             setShowDeleteModal(false);
             fetchCustomers();
             fetchMetrics();
         } else {
-            showAlert("error", res?.data?.message || "Error al eliminar el cliente.");
+            showAlert('error', res.message || 'Error al eliminar el cliente.');
         }
     };
 
     const getInitials = (name: string) => {
         return name
-            .split(" ")
+            .split(' ')
             .map((n) => n[0])
             .slice(0, 2)
-            .join("")
+            .join('')
             .toUpperCase();
     };
 
@@ -270,28 +258,25 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
         <Dashboard user_uuid={user_id}>
             <Head title={title} />
 
-            <div className="p-4 sm:p-6 space-y-6">
+            <div className="space-y-6 p-4 sm:p-6">
                 {/* Alert Toast Notification */}
                 {alertMessage && (
                     <div
-                        className={`p-4 rounded-xl shadow-lg border flex items-center justify-between text-sm transition-all duration-300 ${
-                            alertMessage.type === "success"
-                                ? "bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800"
-                                : "bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950 dark:text-rose-300 dark:border-rose-800"
+                        className={`flex items-center justify-between rounded-xl border p-4 text-sm shadow-lg transition-all duration-300 ${
+                            alertMessage.type === 'success'
+                                ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-300'
+                                : 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-300'
                         }`}
                     >
                         <span className="font-medium">{alertMessage.text}</span>
-                        <button
-                            onClick={() => setAlertMessage(null)}
-                            className="font-bold text-lg leading-none hover:opacity-75"
-                        >
+                        <button onClick={() => setAlertMessage(null)} className="text-lg leading-none font-bold hover:opacity-75">
                             ×
                         </button>
                     </div>
                 )}
 
                 {/* Header & Breadcrumb */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                         <Breadcrumb className="mb-2">
                             <BreadcrumbItem href="#" icon={HiHome}>
@@ -299,10 +284,8 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                             </BreadcrumbItem>
                             <BreadcrumbItem>Clientes</BreadcrumbItem>
                         </Breadcrumb>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
-                            Directorio de Clientes
-                        </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-3xl dark:text-white">Directorio de Clientes</h1>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Gestiona tu base de clientes, historial de compras, libretas de direcciones y marketing.
                         </p>
                     </div>
@@ -319,11 +302,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                             <HiRefresh className="mr-2 h-4 w-4" />
                             Actualizar
                         </Button>
-                        <Button
-                            color="purple"
-                            onClick={handleOpenCreateModal}
-                            className="shadow-md font-semibold"
-                        >
+                        <Button color="purple" onClick={handleOpenCreateModal} className="font-semibold shadow-md">
                             <HiPlus className="mr-2 h-4 w-4" />
                             Nuevo Cliente
                         </Button>
@@ -331,71 +310,57 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                 </div>
 
                 {/* KPI Metrics */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Card className="shadow-sm border-l-4 border-l-blue-500 hover:shadow-md transition-shadow">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    <Card className="border-l-4 border-l-blue-500 shadow-sm transition-shadow hover:shadow-md">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                    Total Clientes
-                                </p>
-                                <h3 className="text-2xl font-black text-gray-900 dark:text-white mt-1">
-                                    {metrics.total_customers}
-                                </h3>
-                                <p className="text-xs text-gray-400 mt-1">Registrados en la base</p>
+                                <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Total Clientes</p>
+                                <h3 className="mt-1 text-2xl font-black text-gray-900 dark:text-white">{metrics.total_customers}</h3>
+                                <p className="mt-1 text-xs text-gray-400">Registrados en la base</p>
                             </div>
-                            <div className="p-3 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl">
-                                <HiUsers className="w-6 h-6" />
+                            <div className="rounded-2xl bg-blue-50 p-3 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
+                                <HiUsers className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="shadow-sm border-l-4 border-l-emerald-500 hover:shadow-md transition-shadow">
+                    <Card className="border-l-4 border-l-emerald-500 shadow-sm transition-shadow hover:shadow-md">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                    Clientes Activos
-                                </p>
-                                <h3 className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">
-                                    {metrics.active_customers}
-                                </h3>
-                                <p className="text-xs text-emerald-600/70 mt-1">Habilitados para compras</p>
+                                <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Clientes Activos</p>
+                                <h3 className="mt-1 text-2xl font-black text-emerald-600 dark:text-emerald-400">{metrics.active_customers}</h3>
+                                <p className="mt-1 text-xs text-emerald-600/70">Habilitados para compras</p>
                             </div>
-                            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 rounded-2xl">
-                                <HiCheckCircle className="w-6 h-6" />
+                            <div className="rounded-2xl bg-emerald-50 p-3 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
+                                <HiCheckCircle className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="shadow-sm border-l-4 border-l-purple-500 hover:shadow-md transition-shadow">
+                    <Card className="border-l-4 border-l-purple-500 shadow-sm transition-shadow hover:shadow-md">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
                                     Suscritos a Marketing
                                 </p>
-                                <h3 className="text-2xl font-black text-purple-600 dark:text-purple-400 mt-1">
-                                    {metrics.marketing_subscribers}
-                                </h3>
-                                <p className="text-xs text-purple-500 mt-1">Aceptan promociones</p>
+                                <h3 className="mt-1 text-2xl font-black text-purple-600 dark:text-purple-400">{metrics.marketing_subscribers}</h3>
+                                <p className="mt-1 text-xs text-purple-500">Aceptan promociones</p>
                             </div>
-                            <div className="p-3 bg-purple-50 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 rounded-2xl">
-                                <HiSpeakerphone className="w-6 h-6" />
+                            <div className="rounded-2xl bg-purple-50 p-3 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
+                                <HiSpeakerphone className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="shadow-sm border-l-4 border-l-amber-500 hover:shadow-md transition-shadow">
+                    <Card className="border-l-4 border-l-amber-500 shadow-sm transition-shadow hover:shadow-md">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-                                    Nuevos Este Mes
-                                </p>
-                                <h3 className="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">
-                                    {metrics.new_this_month}
-                                </h3>
-                                <p className="text-xs text-amber-500 mt-1">Registros recientes</p>
+                                <p className="text-xs font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">Nuevos Este Mes</p>
+                                <h3 className="mt-1 text-2xl font-black text-amber-600 dark:text-amber-400">{metrics.new_this_month}</h3>
+                                <p className="mt-1 text-xs text-amber-500">Registros recientes</p>
                             </div>
-                            <div className="p-3 bg-amber-50 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 rounded-2xl">
-                                <HiCalendar className="w-6 h-6" />
+                            <div className="rounded-2xl bg-amber-50 p-3 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
+                                <HiCalendar className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
@@ -403,7 +368,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
 
                 {/* Filter and Search Bar */}
                 <Card className="shadow-sm">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
                         <div className="lg:col-span-2">
                             <TextInput
                                 id="search-customer"
@@ -470,10 +435,10 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                 </Card>
 
                 {/* Customers Table */}
-                <Card className="shadow-sm overflow-hidden p-0">
+                <Card className="overflow-hidden p-0 shadow-sm">
                     <div className="overflow-x-auto">
                         <Table hoverable>
-                            <TableHead className="bg-gray-50 dark:bg-gray-800 text-xs uppercase font-bold text-gray-500 dark:text-gray-400">
+                            <TableHead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase dark:bg-gray-800 dark:text-gray-400">
                                 <TableHeadCell>Cliente</TableHeadCell>
                                 <TableHeadCell>Contacto</TableHeadCell>
                                 <TableHeadCell>Direcciones</TableHeadCell>
@@ -485,17 +450,17 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                             <TableBody className="divide-y divide-gray-200 dark:divide-gray-700">
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-12">
+                                        <TableCell colSpan={7} className="py-12 text-center">
                                             <Spinner size="xl" />
-                                            <p className="text-sm text-gray-500 mt-2">Cargando directorio de clientes...</p>
+                                            <p className="mt-2 text-sm text-gray-500">Cargando directorio de clientes...</p>
                                         </TableCell>
                                     </TableRow>
                                 ) : customers.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={7} className="text-center py-12">
-                                            <div className="max-w-xs mx-auto text-center space-y-3">
-                                                <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-full inline-block text-gray-400">
-                                                    <HiUsers className="w-8 h-8" />
+                                        <TableCell colSpan={7} className="py-12 text-center">
+                                            <div className="mx-auto max-w-xs space-y-3 text-center">
+                                                <div className="inline-block rounded-full bg-gray-100 p-4 text-gray-400 dark:bg-gray-800">
+                                                    <HiUsers className="h-8 w-8" />
                                                 </div>
                                                 <h4 className="text-base font-semibold text-gray-700 dark:text-gray-200">
                                                     No se encontraron clientes
@@ -503,12 +468,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                                 <p className="text-xs text-gray-400">
                                                     Prueba con otros términos de búsqueda o registra un nuevo cliente.
                                                 </p>
-                                                <Button
-                                                    size="xs"
-                                                    color="purple"
-                                                    onClick={handleOpenCreateModal}
-                                                    className="mx-auto font-medium"
-                                                >
+                                                <Button size="xs" color="purple" onClick={handleOpenCreateModal} className="mx-auto font-medium">
                                                     <HiPlus className="mr-1 h-3.5 w-3.5" />
                                                     Registrar Cliente
                                                 </Button>
@@ -519,22 +479,22 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                     customers.map((customer) => (
                                         <TableRow
                                             key={customer.id}
-                                            className="bg-white dark:bg-gray-800 hover:bg-gray-50/70 dark:hover:bg-gray-750 transition-colors"
+                                            className="dark:hover:bg-gray-750 bg-white transition-colors hover:bg-gray-50/70 dark:bg-gray-800"
                                         >
                                             <TableCell className="font-medium text-gray-900 dark:text-white">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 text-white flex items-center justify-center font-bold text-xs shadow-sm flex-shrink-0">
+                                                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 to-indigo-500 text-xs font-bold text-white shadow-sm">
                                                         {getInitials(customer.name)}
                                                     </div>
                                                     <div>
                                                         <Link
                                                             href={`/customer/backoffice/${user_id}/show/${customer.id}`}
-                                                            className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline"
+                                                            className="text-sm font-semibold text-indigo-600 hover:underline dark:text-indigo-400"
                                                         >
                                                             {customer.name}
                                                         </Link>
-                                                        <div className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
-                                                            <HiMail className="w-3.5 h-3.5" />
+                                                        <div className="mt-0.5 flex items-center gap-1 text-xs text-gray-400">
+                                                            <HiMail className="h-3.5 w-3.5" />
                                                             {customer.email}
                                                         </div>
                                                     </div>
@@ -545,18 +505,14 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                                 <div className="text-xs text-gray-600 dark:text-gray-300">
                                                     {customer.phone ? (
                                                         <span className="flex items-center gap-1">
-                                                            <HiPhone className="w-3.5 h-3.5 text-gray-400" />
+                                                            <HiPhone className="h-3.5 w-3.5 text-gray-400" />
                                                             {customer.phone}
                                                         </span>
                                                     ) : (
                                                         <span className="text-gray-400 italic">Sin teléfono</span>
                                                     )}
                                                 </div>
-                                                {customer.birth_date && (
-                                                    <div className="text-xs text-gray-400 mt-1">
-                                                        🎂 {customer.birth_date}
-                                                    </div>
-                                                )}
+                                                {customer.birth_date && <div className="mt-1 text-xs text-gray-400">🎂 {customer.birth_date}</div>}
                                             </TableCell>
 
                                             <TableCell>
@@ -590,33 +546,31 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                             </TableCell>
 
                                             <TableCell className="text-xs text-gray-500 dark:text-gray-400">
-                                                {customer.created_at
-                                                    ? new Date(customer.created_at).toLocaleDateString()
-                                                    : "-"}
+                                                {customer.created_at ? new Date(customer.created_at).toLocaleDateString() : '-'}
                                             </TableCell>
 
                                             <TableCell className="text-right">
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <Link
                                                         href={`/customer/backoffice/${user_id}/show/${customer.id}`}
-                                                        className="p-1.5 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                                                        className="rounded-lg p-1.5 text-indigo-600 transition-colors hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
                                                         title="Ver Ficha 360°"
                                                     >
-                                                        <HiEye className="w-4 h-4" />
+                                                        <HiEye className="h-4 w-4" />
                                                     </Link>
                                                     <button
                                                         onClick={() => handleOpenEditModal(customer)}
-                                                        className="p-1.5 text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30 rounded-lg transition-colors"
+                                                        className="rounded-lg p-1.5 text-amber-600 transition-colors hover:bg-amber-50 dark:hover:bg-amber-900/30"
                                                         title="Editar Datos"
                                                     >
-                                                        <HiPencil className="w-4 h-4" />
+                                                        <HiPencil className="h-4 w-4" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleOpenDeleteModal(customer)}
-                                                        className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors"
+                                                        className="rounded-lg p-1.5 text-rose-600 transition-colors hover:bg-rose-50 dark:hover:bg-rose-900/30"
                                                         title="Eliminar Cliente"
                                                     >
-                                                        <HiTrash className="w-4 h-4" />
+                                                        <HiTrash className="h-4 w-4" />
                                                     </button>
                                                 </div>
                                             </TableCell>
@@ -629,7 +583,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
 
                     {/* Pagination */}
                     {!loading && totalPages > 1 && (
-                        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex flex-col items-center justify-between gap-4 border-t border-gray-200 p-4 sm:flex-row dark:border-gray-700">
                             <span className="text-xs text-gray-500 dark:text-gray-400">
                                 Mostrando página {currentPage} de {totalPages} ({totalItems} clientes en total)
                             </span>
@@ -646,16 +600,11 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                 </Card>
 
                 {/* MODAL: Crear Nuevo Cliente */}
-                <Modal
-                    show={showCreateModal}
-                    onClose={() => setShowCreateModal(false)}
-                    size="2xl"
-                    popup={false}
-                >
+                <Modal show={showCreateModal} onClose={() => setShowCreateModal(false)} size="2xl" popup={false}>
                     <ModalHeader>Registrar Nuevo Cliente</ModalHeader>
                     <form onSubmit={handleCreateSubmit}>
-                        <ModalBody className="space-y-4 max-h-[75vh] overflow-y-auto">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <ModalBody className="max-h-[75vh] space-y-4 overflow-y-auto">
+                            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="sm:col-span-2">
                                     <Label htmlFor="create-name">Nombre Completo *</Label>
                                     <TextInput
@@ -665,11 +614,9 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         required
                                         sizing="sm"
-                                        color={formErrors.name ? "failure" : undefined}
+                                        color={formErrors.name ? 'failure' : undefined}
                                     />
-                                    {formErrors.name && (
-                                        <p className="text-xs text-rose-500 mt-1">{formErrors.name}</p>
-                                    )}
+                                    {formErrors.name && <p className="mt-1 text-xs text-rose-500">{formErrors.name}</p>}
                                 </div>
 
                                 <div>
@@ -682,11 +629,9 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         required
                                         sizing="sm"
-                                        color={formErrors.email ? "failure" : undefined}
+                                        color={formErrors.email ? 'failure' : undefined}
                                     />
-                                    {formErrors.email && (
-                                        <p className="text-xs text-rose-500 mt-1">{formErrors.email}</p>
-                                    )}
+                                    {formErrors.email && <p className="mt-1 text-xs text-rose-500">{formErrors.email}</p>}
                                 </div>
 
                                 <div>
@@ -727,7 +672,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4 pt-2 border-t dark:border-gray-700">
+                            <div className="flex flex-col gap-4 border-t pt-2 sm:flex-row dark:border-gray-700">
                                 <div className="flex items-center gap-2">
                                     <Checkbox
                                         id="create-active"
@@ -743,9 +688,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                     <Checkbox
                                         id="create-marketing"
                                         checked={formData.accepts_marketing}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, accepts_marketing: e.target.checked })
-                                        }
+                                        onChange={(e) => setFormData({ ...formData, accepts_marketing: e.target.checked })}
                                     />
                                     <Label htmlFor="create-marketing" className="cursor-pointer">
                                         Acepta Comunicaciones de Marketing
@@ -754,7 +697,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                             </div>
 
                             {/* Optional Initial Address */}
-                            <div className="pt-3 border-t dark:border-gray-700 space-y-3">
+                            <div className="space-y-3 border-t pt-3 dark:border-gray-700">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <Checkbox
@@ -762,14 +705,14 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                             checked={includeAddress}
                                             onChange={(e) => setIncludeAddress(e.target.checked)}
                                         />
-                                        <Label htmlFor="include-address" className="cursor-pointer font-bold text-sm">
+                                        <Label htmlFor="include-address" className="cursor-pointer text-sm font-bold">
                                             Agregar Dirección Inicial
                                         </Label>
                                     </div>
                                 </div>
 
                                 {includeAddress && formData.addresses && formData.addresses[0] && (
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-200 dark:border-gray-700">
+                                    <div className="grid grid-cols-1 gap-3 rounded-xl border border-gray-200 bg-gray-50 p-3 sm:grid-cols-2 dark:border-gray-700 dark:bg-gray-800/60">
                                         <div>
                                             <Label htmlFor="addr-first-name">Nombre Destinatario</Label>
                                             <TextInput
@@ -878,20 +821,11 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                             </div>
                         </ModalBody>
                         <ModalFooter>
-                            <Button
-                                type="submit"
-                                color="purple"
-                                disabled={loadingAction}
-                                className="font-semibold"
-                            >
+                            <Button type="submit" color="purple" disabled={loadingAction} className="font-semibold">
                                 {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                                 Guardar Cliente
                             </Button>
-                            <Button
-                                color="gray"
-                                onClick={() => setShowCreateModal(false)}
-                                disabled={loadingAction}
-                            >
+                            <Button color="gray" onClick={() => setShowCreateModal(false)} disabled={loadingAction}>
                                 Cancelar
                             </Button>
                         </ModalFooter>
@@ -899,12 +833,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                 </Modal>
 
                 {/* MODAL: Editar Cliente */}
-                <Modal
-                    show={showEditModal}
-                    onClose={() => setShowEditModal(false)}
-                    size="lg"
-                    popup={false}
-                >
+                <Modal show={showEditModal} onClose={() => setShowEditModal(false)} size="lg" popup={false}>
                     <ModalHeader>Editar Datos del Cliente</ModalHeader>
                     <form onSubmit={handleEditSubmit}>
                         <ModalBody className="space-y-4">
@@ -916,11 +845,9 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     required
                                     sizing="sm"
-                                    color={formErrors.name ? "failure" : undefined}
+                                    color={formErrors.name ? 'failure' : undefined}
                                 />
-                                {formErrors.name && (
-                                    <p className="text-xs text-rose-500 mt-1">{formErrors.name}</p>
-                                )}
+                                {formErrors.name && <p className="mt-1 text-xs text-rose-500">{formErrors.name}</p>}
                             </div>
 
                             <div>
@@ -932,14 +859,12 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     required
                                     sizing="sm"
-                                    color={formErrors.email ? "failure" : undefined}
+                                    color={formErrors.email ? 'failure' : undefined}
                                 />
-                                {formErrors.email && (
-                                    <p className="text-xs text-rose-500 mt-1">{formErrors.email}</p>
-                                )}
+                                {formErrors.email && <p className="mt-1 text-xs text-rose-500">{formErrors.email}</p>}
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="edit-phone">Teléfono</Label>
                                     <TextInput
@@ -966,7 +891,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-4 pt-2 border-t dark:border-gray-700">
+                            <div className="flex items-center gap-4 border-t pt-2 dark:border-gray-700">
                                 <div className="flex items-center gap-2">
                                     <Checkbox
                                         id="edit-active"
@@ -982,9 +907,7 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                                     <Checkbox
                                         id="edit-marketing"
                                         checked={formData.accepts_marketing}
-                                        onChange={(e) =>
-                                            setFormData({ ...formData, accepts_marketing: e.target.checked })
-                                        }
+                                        onChange={(e) => setFormData({ ...formData, accepts_marketing: e.target.checked })}
                                     />
                                     <Label htmlFor="edit-marketing" className="cursor-pointer">
                                         Marketing Permitido
@@ -993,20 +916,11 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                             </div>
                         </ModalBody>
                         <ModalFooter>
-                            <Button
-                                type="submit"
-                                color="purple"
-                                disabled={loadingAction}
-                                className="font-semibold"
-                            >
+                            <Button type="submit" color="purple" disabled={loadingAction} className="font-semibold">
                                 {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                                 Actualizar Cliente
                             </Button>
-                            <Button
-                                color="gray"
-                                onClick={() => setShowEditModal(false)}
-                                disabled={loadingAction}
-                            >
+                            <Button color="gray" onClick={() => setShowEditModal(false)} disabled={loadingAction}>
                                 Cancelar
                             </Button>
                         </ModalFooter>
@@ -1014,42 +928,24 @@ const CustomerIndexPage: FC<CustomerIndexPageProps> = ({
                 </Modal>
 
                 {/* MODAL: Eliminar Cliente */}
-                <Modal
-                    show={showDeleteModal}
-                    onClose={() => setShowDeleteModal(false)}
-                    size="md"
-                    popup
-                >
+                <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)} size="md" popup>
                     <ModalHeader />
                     <ModalBody>
-                        <div className="text-center space-y-3">
+                        <div className="space-y-3 text-center">
                             <HiXCircle className="mx-auto mb-4 h-14 w-14 text-rose-500" />
-                            <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">
-                                ¿Eliminar este cliente?
-                            </h3>
+                            <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-gray-200">¿Eliminar este cliente?</h3>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                Se eliminará a{" "}
-                                <span className="font-bold text-gray-700 dark:text-gray-300">
-                                    {selectedCustomer?.name}
-                                </span>{" "}
-                                del directorio. Esta acción puede deshacerse recuperando el registro.
+                                Se eliminará a <span className="font-bold text-gray-700 dark:text-gray-300">{selectedCustomer?.name}</span> del
+                                directorio. Esta acción puede deshacerse recuperando el registro.
                             </p>
                         </div>
                     </ModalBody>
                     <ModalFooter className="justify-center">
-                        <Button
-                            color="failure"
-                            onClick={handleDeleteConfirm}
-                            disabled={loadingAction}
-                        >
+                        <Button color="failure" onClick={handleDeleteConfirm} disabled={loadingAction}>
                             {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                             Sí, Eliminar
                         </Button>
-                        <Button
-                            color="gray"
-                            onClick={() => setShowDeleteModal(false)}
-                            disabled={loadingAction}
-                        >
+                        <Button color="gray" onClick={() => setShowDeleteModal(false)} disabled={loadingAction}>
                             Cancelar
                         </Button>
                     </ModalFooter>

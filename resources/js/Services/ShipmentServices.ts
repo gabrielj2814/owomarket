@@ -1,7 +1,7 @@
 import { ErrorsFormCreateShipment, ErrorsFormUpdateTracking } from '@/types/ErrorsFormShipment';
 import { FilterShipmentsParams, FormCreateShipment, FormUpdateTracking } from '@/types/FormShipment';
 import { Shipment, ShipmentMetrics } from '@/types/models/Shipment';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -23,7 +23,7 @@ export interface PaginatedShipmentsData {
 }
 
 const ShipmentServices = {
-    filtrar: async (params: FilterShipmentsParams = {}): Promise<ApiResponse<PaginatedShipmentsData>> => {
+    filtrar: async (params: FilterShipmentsParams = {}): Promise<Data<PaginatedShipmentsData>> => {
         try {
             const body = {
                 search: params.search ?? null,
@@ -38,7 +38,7 @@ const ShipmentServices = {
                 sort_direction: params.sort_direction ?? 'desc',
             };
 
-            const response = await axiosShipment.post<ApiResponse<PaginatedShipmentsData>>('filter', body);
+            const response = await axiosShipment.post<Data<PaginatedShipmentsData>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -58,9 +58,9 @@ const ShipmentServices = {
         }
     },
 
-    getMetrics: async (): Promise<ApiResponse<ShipmentMetrics>> => {
+    getMetrics: async (): Promise<Data<ShipmentMetrics>> => {
         try {
-            const response = await axiosShipment.get<ApiResponse<ShipmentMetrics>>('metrics');
+            const response = await axiosShipment.get<Data<ShipmentMetrics>>('metrics');
             return response.data;
         } catch (error: any) {
             return (
@@ -80,9 +80,9 @@ const ShipmentServices = {
         }
     },
 
-    create: async (data: FormCreateShipment): Promise<ApiResponse<Shipment, ErrorsFormCreateShipment>> => {
+    create: async (data: FormCreateShipment): Promise<Data<Shipment, ErrorsFormCreateShipment>> => {
         try {
-            const response = await axiosShipment.post<ApiResponse<Shipment, ErrorsFormCreateShipment>>('create', data);
+            const response = await axiosShipment.post<Data<Shipment, ErrorsFormCreateShipment>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -96,9 +96,9 @@ const ShipmentServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<Shipment>> => {
+    consultById: async (id: string): Promise<Data<Shipment>> => {
         try {
-            const response = await axiosShipment.get<ApiResponse<Shipment>>(`${id}`);
+            const response = await axiosShipment.get<Data<Shipment>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -112,9 +112,9 @@ const ShipmentServices = {
         }
     },
 
-    consultByOrderId: async (orderId: string): Promise<ApiResponse<Shipment[]>> => {
+    consultByOrderId: async (orderId: string): Promise<Data<Shipment[]>> => {
         try {
-            const response = await axiosShipment.get<ApiResponse<Shipment[]>>(`order/${orderId}`);
+            const response = await axiosShipment.get<Data<Shipment[]>>(`order/${orderId}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -128,15 +128,9 @@ const ShipmentServices = {
         }
     },
 
-    updateTracking: async (
-        id: string,
-        data: FormUpdateTracking
-    ): Promise<ApiResponse<Shipment, ErrorsFormUpdateTracking>> => {
+    updateTracking: async (id: string, data: FormUpdateTracking): Promise<Data<Shipment, ErrorsFormUpdateTracking>> => {
         try {
-            const response = await axiosShipment.post<ApiResponse<Shipment, ErrorsFormUpdateTracking>>(
-                `${id}/tracking`,
-                data
-            );
+            const response = await axiosShipment.post<Data<Shipment, ErrorsFormUpdateTracking>>(`${id}/tracking`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -150,9 +144,9 @@ const ShipmentServices = {
         }
     },
 
-    markAsDelivered: async (id: string, deliveredAt?: string): Promise<ApiResponse<Shipment>> => {
+    markAsDelivered: async (id: string, deliveredAt?: string): Promise<Data<Shipment>> => {
         try {
-            const response = await axiosShipment.post<ApiResponse<Shipment>>(`${id}/deliver`, {
+            const response = await axiosShipment.post<Data<Shipment>>(`${id}/deliver`, {
                 delivered_at: deliveredAt ?? null,
             });
             return response.data;

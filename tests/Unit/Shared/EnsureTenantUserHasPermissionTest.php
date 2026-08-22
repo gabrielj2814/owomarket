@@ -73,3 +73,40 @@ test('sin sesión responde 401 y no 403', function () {
     // no «no tienes permiso»: son problemas distintos y llevan a arreglos distintos.
     expect(pasaPor('DELETE', null, 'manage_catalog')->getStatusCode())->toBe(401);
 });
+
+/*
+| Esta API lista con POST: los doce `/{modulo}/filter` mandan los criterios en el cuerpo.
+| Mirar solo el verbo dejaba a un `staff` sin poder ver ni un listado, asi que la regla de
+| «las lecturas pasan siempre» no servia de nada. Se detecto comprobando en un navegador
+| que el backoffice se quedaba vacio.
+*/
+test('un listado por POST cuenta como lectura', function () {
+    $request = Request::create('/api-tenant/customer/filter', 'POST');
+    $request->headers->set('Accept', 'application/json');
+    $request->setUserResolver(fn () => usuarioDeTienda('staff'));
+    $request->setRouteResolver(fn () => new Illuminate\Routing\Route('POST', 'api-tenant/customer/filter', []));
+
+    $respuesta = (new EnsureTenantUserHasPermission)->handle(
+        $request,
+        fn () => new Response('ok', 200),
+        'manage_customers'
+    );
+
+    expect($respuesta->getStatusCode())->toBe(200);
+});
+
+test('un POST que sí escribe sigue exigiendo permiso', function () {
+    // El contraste importa: la excepcion es para `filter` y `calculate`, no para todo POST.
+    $request = Request::create('/api-tenant/customer/create', 'POST');
+    $request->headers->set('Accept', 'application/json');
+    $request->setUserResolver(fn () => usuarioDeTienda('staff'));
+    $request->setRouteResolver(fn () => new Illuminate\Routing\Route('POST', 'api-tenant/customer/create', []));
+
+    $respuesta = (new EnsureTenantUserHasPermission)->handle(
+        $request,
+        fn () => new Response('ok', 200),
+        'manage_customers'
+    );
+
+    expect($respuesta->getStatusCode())->toBe(403);
+});

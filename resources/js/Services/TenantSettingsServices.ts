@@ -1,7 +1,7 @@
 import { ErrorsFormUpdateStoreSettings } from '@/types/ErrorsFormTenantSettings';
 import { FormSaveSettingItem, FormUpdateStoreSettings } from '@/types/FormTenantSettings';
 import { StoreSettingsResponse, TenantSettingItem } from '@/types/models/TenantSettings';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -15,9 +15,9 @@ const axiosSettings = axios.create({
 });
 
 const TenantSettingsServices = {
-    getStoreSettings: async (): Promise<ApiResponse<StoreSettingsResponse>> => {
+    getStoreSettings: async (): Promise<Data<StoreSettingsResponse>> => {
         try {
-            const response = await axiosSettings.get<ApiResponse<StoreSettingsResponse>>('');
+            const response = await axiosSettings.get<Data<StoreSettingsResponse>>('');
             return response.data;
         } catch (error: any) {
             return (
@@ -72,14 +72,9 @@ const TenantSettingsServices = {
         }
     },
 
-    updateStoreSettings: async (
-        data: FormUpdateStoreSettings
-    ): Promise<ApiResponse<StoreSettingsResponse, ErrorsFormUpdateStoreSettings>> => {
+    updateStoreSettings: async (data: FormUpdateStoreSettings): Promise<Data<StoreSettingsResponse, ErrorsFormUpdateStoreSettings>> => {
         try {
-            const response = await axiosSettings.put<ApiResponse<StoreSettingsResponse, ErrorsFormUpdateStoreSettings>>(
-                '',
-                data
-            );
+            const response = await axiosSettings.put<Data<StoreSettingsResponse, ErrorsFormUpdateStoreSettings>>('', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -93,9 +88,9 @@ const TenantSettingsServices = {
         }
     },
 
-    getByGroup: async (group: string): Promise<ApiResponse<TenantSettingItem[]>> => {
+    getByGroup: async (group: string): Promise<Data<TenantSettingItem[]>> => {
         try {
-            const response = await axiosSettings.get<ApiResponse<TenantSettingItem[]>>(`group/${group}`);
+            const response = await axiosSettings.get<Data<TenantSettingItem[]>>(`group/${group}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -109,9 +104,9 @@ const TenantSettingsServices = {
         }
     },
 
-    getByKey: async (key: string): Promise<ApiResponse<TenantSettingItem>> => {
+    getByKey: async (key: string): Promise<Data<TenantSettingItem>> => {
         try {
-            const response = await axiosSettings.get<ApiResponse<TenantSettingItem>>(`item/${key}`);
+            const response = await axiosSettings.get<Data<TenantSettingItem>>(`item/${key}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -125,9 +120,9 @@ const TenantSettingsServices = {
         }
     },
 
-    saveItem: async (data: FormSaveSettingItem): Promise<ApiResponse<TenantSettingItem>> => {
+    saveItem: async (data: FormSaveSettingItem): Promise<Data<TenantSettingItem>> => {
         try {
-            const response = await axiosSettings.post<ApiResponse<TenantSettingItem>>('item', data);
+            const response = await axiosSettings.post<Data<TenantSettingItem>>('item', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -141,9 +136,9 @@ const TenantSettingsServices = {
         }
     },
 
-    deleteItem: async (key: string): Promise<ApiResponse<null>> => {
+    deleteItem: async (key: string): Promise<Data<null>> => {
         try {
-            const response = await axiosSettings.delete<ApiResponse<null>>(`item/${key}`);
+            const response = await axiosSettings.delete<Data<null>>(`item/${key}`);
             return response.data;
         } catch (error: any) {
             return (

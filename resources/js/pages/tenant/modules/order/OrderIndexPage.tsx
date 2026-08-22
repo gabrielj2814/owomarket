@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import Dashboard from '@/components/layouts/Dashboard';
 import CustomerServices from '@/Services/CustomerServices';
 import OrderServices, { FilterOrdersParams } from '@/Services/OrderServices';
@@ -36,8 +35,8 @@ import {
     TextInput,
     Textarea,
 } from 'flowbite-react';
+import React, { useEffect, useState } from 'react';
 import {
-    HiCheck,
     HiClock,
     HiCurrencyDollar,
     HiDocumentReport,
@@ -50,7 +49,6 @@ import {
     HiShoppingCart,
     HiTrash,
     HiTruck,
-    HiX,
 } from 'react-icons/hi';
 
 interface OrderIndexPageProps {
@@ -172,14 +170,15 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
             };
 
             const response = await OrderServices.filtrar(params);
-            if (response.data && response.data.code === 200 && response.data.data) {
-                setOrders(response.data.data.data);
-                setPagination({
-                    total: response.data.data.total,
-                    current_page: response.data.data.current_page,
-                    per_page: response.data.data.per_page,
-                    last_page: response.data.data.last_page,
-                });
+
+            // Hallazgo N29: esto leia `response.code` y `response.data`,
+            // como si el servicio devolviera la respuesta de axios entera. Devuelve el
+            // CUERPO, asi que `response.data` ya es el payload y `response.code` era
+            // siempre undefined: la condicion nunca se cumplia y **la lista de pedidos no
+            // se llenaba nunca**. Lo tapaba el tipo mentiroso del servicio.
+            if (response.code === 200 && response.data) {
+                setOrders(response.data.data);
+                setPagination(response.data.pagination);
             }
         } catch (e) {
             showToast('error', 'Error al cargar las órdenes.');
@@ -191,8 +190,8 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
     const fetchMetrics = async () => {
         try {
             const response = await OrderServices.getMetrics();
-            if (response.data && response.data.code === 200 && response.data.data) {
-                setMetrics(response.data.data);
+            if (response.data && response.code === 200 && response.data) {
+                setMetrics(response.data);
             }
         } catch (e) {
             console.error('Error al cargar métricas', e);
@@ -242,15 +241,15 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                 ProductServices.filtrar({ is_visible: true, per_page: 100 }),
             ]);
 
-            if (custRes.data && custRes.data.code === 200 && custRes.data.data?.data) {
-                setAvailableCustomers(custRes.data.data.data);
-                if (custRes.data.data.data.length > 0) {
-                    setFormOrder((prev) => ({ ...prev, customer_id: custRes.data.data!.data[0].id }));
+            if (custRes.code === 200 && custRes.data) {
+                setAvailableCustomers(custRes.data.data);
+                if (custRes.data.data.length > 0) {
+                    setFormOrder((prev) => ({ ...prev, customer_id: custRes.data!.data[0].id }));
                 }
             }
 
-            if (prodRes.data && prodRes.data.code === 200 && prodRes.data.data) {
-                setAvailableProducts(prodRes.data.data);
+            if (prodRes.data && prodRes.code === 200 && prodRes.data) {
+                setAvailableProducts(prodRes.data);
             }
         } catch (e) {
             showToast('error', 'Error al cargar clientes y productos.');
@@ -319,16 +318,16 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
 
         try {
             const response = await OrderServices.create(formOrder);
-            if (response.data && (response.data.code === 201 || response.data.status === 'success')) {
+            if (response.data && (response.code === 201 || response.status === 'success')) {
                 showToast('success', '¡Orden de venta registrada con éxito!');
                 setIsCreateModalOpen(false);
                 fetchOrders(1);
                 fetchMetrics();
             } else {
-                if (response.data && response.data.errors) {
-                    setFormErrors(response.data.errors);
+                if (response.data && response.errors) {
+                    setFormErrors(response.errors);
                 }
-                showToast('error', response.data?.message || 'Error al registrar la orden.');
+                showToast('error', response.message || 'Error al registrar la orden.');
             }
         } catch (e: any) {
             showToast('error', 'Error de conexión con el servidor.');
@@ -359,17 +358,17 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                     selectedOrder.id,
                     nextStatus,
                     nextStatus === 'shipped' ? shippingMethodInput : null,
-                    cancelReasonInput
+                    cancelReasonInput,
                 );
             }
 
-            if (response.data && (response.data.code === 200 || response.data.status === 'success')) {
+            if (response.data && (response.code === 200 || response.status === 'success')) {
                 showToast('success', `Estado actualizado a "${statusLabels[nextStatus as OrderStatusType]}".`);
                 setIsStatusModalOpen(false);
                 fetchOrders(pagination.current_page);
                 fetchMetrics();
             } else {
-                showToast('error', response.data?.message || 'Error al actualizar estado.');
+                showToast('error', response.message || 'Error al actualizar estado.');
             }
         } catch (e) {
             showToast('error', 'Error al procesar la transición de estado.');
@@ -384,12 +383,12 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
         setLoadingAction(true);
         try {
             const response = await OrderServices.updatePaymentStatus(order.id, 'paid');
-            if (response.data && (response.data.code === 200 || response.data.status === 'success')) {
+            if (response.data && (response.code === 200 || response.status === 'success')) {
                 showToast('success', `Pago confirmado para la orden ${order.order_number}.`);
                 fetchOrders(pagination.current_page);
                 fetchMetrics();
             } else {
-                showToast('error', response.data?.message || 'Error al actualizar pago.');
+                showToast('error', response.message || 'Error al actualizar pago.');
             }
         } catch (e) {
             showToast('error', 'Error de comunicación.');
@@ -401,20 +400,18 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
     return (
         <Dashboard user_uuid={user_id}>
             <Head title={title} />
-            <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+            <div className="mx-auto max-w-7xl space-y-6 p-4 sm:p-6">
                 {/* Toast notification */}
                 {toastMessage && (
                     <div
-                        className={`fixed top-5 right-5 z-50 flex items-center p-4 mb-4 text-sm rounded-lg shadow-lg ${
+                        className={`fixed top-5 right-5 z-50 mb-4 flex items-center rounded-lg p-4 text-sm shadow-lg ${
                             toastMessage.type === 'success'
-                                ? 'text-green-800 bg-green-100 dark:bg-green-800 dark:text-green-200 border border-green-300'
-                                : 'text-red-800 bg-red-100 dark:bg-red-800 dark:text-red-200 border border-red-300'
+                                ? 'border border-green-300 bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200'
+                                : 'border border-red-300 bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200'
                         }`}
                         role="alert"
                     >
-                        <span className="font-medium mr-2">
-                            {toastMessage.type === 'success' ? 'Éxito:' : 'Error:'}
-                        </span>
+                        <span className="mr-2 font-medium">{toastMessage.type === 'success' ? 'Éxito:' : 'Error:'}</span>
                         {toastMessage.text}
                     </div>
                 )}
@@ -424,19 +421,17 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                     <BreadcrumbItem href={`/tenant/backoffice/${user_id}/dashboard`} icon={HiHome}>
                         Dashboard
                     </BreadcrumbItem>
-                    <BreadcrumbItem>
-                        Pedidos & Ventas
-                    </BreadcrumbItem>
+                    <BreadcrumbItem>Pedidos & Ventas</BreadcrumbItem>
                 </Breadcrumb>
 
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">
+                        <h1 className="flex items-center gap-2 text-2xl font-extrabold text-gray-900 sm:text-3xl dark:text-white">
                             <HiShoppingCart className="text-blue-600 dark:text-blue-400" />
                             Gestión de Pedidos y Ventas
                         </h1>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                             Control de pipeline de pedidos, despachos, cobros y facturación de clientes.
                         </p>
                     </div>
@@ -453,11 +448,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                             <HiRefresh className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
                             Actualizar
                         </Button>
-                        <Button
-                            color="blue"
-                            size="sm"
-                            onClick={handleOpenCreateModal}
-                        >
+                        <Button color="blue" size="sm" onClick={handleOpenCreateModal}>
                             <HiPlus className="mr-2 h-4 w-4" />
                             Nuevo Pedido Manual
                         </Button>
@@ -465,82 +456,68 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                 </div>
 
                 {/* KPI Metrics Cards */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <Card className="bg-gradient-to-br from-blue-50 to-white dark:from-gray-800 dark:to-gray-900 border-blue-100 dark:border-gray-700">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                    <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">
-                                    Ventas Totales
-                                </p>
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                                <p className="text-xs font-semibold tracking-wider text-blue-600 uppercase dark:text-blue-400">Ventas Totales</p>
+                                <h3 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
                                     ${metrics.total_sales_amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                 </h3>
                             </div>
-                            <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-xl text-blue-600 dark:text-blue-400">
+                            <div className="rounded-xl bg-blue-100 p-3 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">
                                 <HiCurrencyDollar className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-indigo-50 to-white dark:from-gray-800 dark:to-gray-900 border-indigo-100 dark:border-gray-700">
+                    <Card className="border-indigo-100 bg-gradient-to-br from-indigo-50 to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
-                                    Total Órdenes
-                                </p>
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                                    {metrics.total_orders}
-                                </h3>
+                                <p className="text-xs font-semibold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">Total Órdenes</p>
+                                <h3 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{metrics.total_orders}</h3>
                             </div>
-                            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl text-indigo-600 dark:text-indigo-400">
+                            <div className="rounded-xl bg-indigo-100 p-3 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400">
                                 <HiShoppingCart className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-amber-50 to-white dark:from-gray-800 dark:to-gray-900 border-amber-100 dark:border-gray-700">
+                    <Card className="border-amber-100 bg-gradient-to-br from-amber-50 to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
-                                    Pendientes
-                                </p>
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                                    {metrics.pending_orders}
-                                </h3>
+                                <p className="text-xs font-semibold tracking-wider text-amber-600 uppercase dark:text-amber-400">Pendientes</p>
+                                <h3 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{metrics.pending_orders}</h3>
                             </div>
-                            <div className="p-3 bg-amber-100 dark:bg-amber-900/40 rounded-xl text-amber-600 dark:text-amber-400">
+                            <div className="rounded-xl bg-amber-100 p-3 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400">
                                 <HiClock className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-purple-50 to-white dark:from-gray-800 dark:to-gray-900 border-purple-100 dark:border-gray-700">
+                    <Card className="border-purple-100 bg-gradient-to-br from-purple-50 to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold text-purple-600 dark:text-purple-400 uppercase tracking-wider">
-                                    En Proceso
-                                </p>
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-                                    {metrics.processing_orders}
-                                </h3>
+                                <p className="text-xs font-semibold tracking-wider text-purple-600 uppercase dark:text-purple-400">En Proceso</p>
+                                <h3 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">{metrics.processing_orders}</h3>
                             </div>
-                            <div className="p-3 bg-purple-100 dark:bg-purple-900/40 rounded-xl text-purple-600 dark:text-purple-400">
+                            <div className="rounded-xl bg-purple-100 p-3 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">
                                 <HiTruck className="h-6 w-6" />
                             </div>
                         </div>
                     </Card>
 
-                    <Card className="bg-gradient-to-br from-emerald-50 to-white dark:from-gray-800 dark:to-gray-900 border-emerald-100 dark:border-gray-700">
+                    <Card className="border-emerald-100 bg-gradient-to-br from-emerald-50 to-white dark:border-gray-700 dark:from-gray-800 dark:to-gray-900">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                <p className="text-xs font-semibold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
                                     Ticket Promedio
                                 </p>
-                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                                <h3 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
                                     ${metrics.average_order_value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                                 </h3>
                             </div>
-                            <div className="p-3 bg-emerald-100 dark:bg-emerald-900/40 rounded-xl text-emerald-600 dark:text-emerald-400">
+                            <div className="rounded-xl bg-emerald-100 p-3 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400">
                                 <HiDocumentReport className="h-6 w-6" />
                             </div>
                         </div>
@@ -551,7 +528,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                 <Card className="shadow-sm">
                     <div className="space-y-4">
                         {/* Status Pipeline Tabs */}
-                        <div className="flex overflow-x-auto gap-2 pb-2 border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex gap-2 overflow-x-auto border-b border-gray-200 pb-2 dark:border-gray-700">
                             {[
                                 { id: 'all', label: 'Todas las Órdenes' },
                                 { id: 'pending', label: 'Pendientes' },
@@ -564,10 +541,10 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                 <button
                                     key={tab.id}
                                     onClick={() => setStatusFilter(tab.id)}
-                                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
+                                    className={`rounded-lg px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all ${
                                         statusFilter === tab.id
                                             ? 'bg-blue-600 text-white shadow-sm'
-                                            : 'bg-gray-100 hover:bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                                     }`}
                                 >
                                     {tab.label}
@@ -576,7 +553,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                         </div>
 
                         {/* Search & Extra Filters */}
-                        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-4">
                             <div className="relative">
                                 <TextInput
                                     icon={HiSearch}
@@ -588,11 +565,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                             </div>
 
                             <div>
-                                <Select
-                                    value={paymentStatusFilter}
-                                    onChange={(e) => setPaymentStatusFilter(e.target.value)}
-                                    sizing="sm"
-                                >
+                                <Select value={paymentStatusFilter} onChange={(e) => setPaymentStatusFilter(e.target.value)} sizing="sm">
                                     <option value="all">Estado Pago: Todos</option>
                                     <option value="pending">Pago: Pendiente</option>
                                     <option value="paid">Pago: Pagado</option>
@@ -602,21 +575,11 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                             </div>
 
                             <div className="flex gap-2">
-                                <TextInput
-                                    type="date"
-                                    value={startDate}
-                                    onChange={(e) => setStartDate(e.target.value)}
-                                    sizing="sm"
-                                />
-                                <TextInput
-                                    type="date"
-                                    value={endDate}
-                                    onChange={(e) => setEndDate(e.target.value)}
-                                    sizing="sm"
-                                />
+                                <TextInput type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} sizing="sm" />
+                                <TextInput type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} sizing="sm" />
                             </div>
 
-                            <div className="flex gap-2 justify-end">
+                            <div className="flex justify-end gap-2">
                                 <Button type="submit" size="sm" color="blue">
                                     <HiFilter className="mr-1 h-4 w-4" />
                                     Filtrar
@@ -630,27 +593,20 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                 </Card>
 
                 {/* Orders Table */}
-                <Card className="shadow-sm overflow-hidden">
+                <Card className="overflow-hidden shadow-sm">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-16">
                             <Spinner size="xl" />
                             <p className="mt-4 text-sm text-gray-500">Cargando pedidos...</p>
                         </div>
                     ) : orders.length === 0 ? (
-                        <div className="text-center py-16">
+                        <div className="py-16 text-center">
                             <HiShoppingCart className="mx-auto h-16 w-16 text-gray-300 dark:text-gray-600" />
-                            <h3 className="mt-3 text-lg font-semibold text-gray-900 dark:text-white">
-                                No se encontraron pedidos
-                            </h3>
+                            <h3 className="mt-3 text-lg font-semibold text-gray-900 dark:text-white">No se encontraron pedidos</h3>
                             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                 No hay órdenes que coincidan con los criterios de búsqueda actuales.
                             </p>
-                            <Button
-                                className="mt-4 mx-auto"
-                                size="sm"
-                                color="blue"
-                                onClick={handleOpenCreateModal}
-                            >
+                            <Button className="mx-auto mt-4" size="sm" color="blue" onClick={handleOpenCreateModal}>
                                 <HiPlus className="mr-2 h-4 w-4" />
                                 Crear Primera Orden
                             </Button>
@@ -658,7 +614,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                     ) : (
                         <div className="overflow-x-auto">
                             <Table hoverable>
-                                <TableHead className="bg-gray-50 dark:bg-gray-800 text-xs uppercase font-bold text-gray-700 dark:text-gray-300">
+                                <TableHead className="bg-gray-50 text-xs font-bold text-gray-700 uppercase dark:bg-gray-800 dark:text-gray-300">
                                     <TableHeadCell>Correlativo</TableHeadCell>
                                     <TableHeadCell>Cliente</TableHeadCell>
                                     <TableHeadCell>Ítems</TableHeadCell>
@@ -670,14 +626,11 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                 </TableHead>
                                 <TableBody className="divide-y">
                                     {orders.map((order) => (
-                                        <TableRow
-                                            key={order.id}
-                                            className="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                                        >
+                                        <TableRow key={order.id} className="bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700/50">
                                             <TableCell className="font-bold text-gray-900 dark:text-white">
                                                 <Link
                                                     href={`/order/backoffice/${user_id}/show/${order.id}`}
-                                                    className="text-blue-600 dark:text-blue-400 hover:underline font-mono"
+                                                    className="font-mono text-blue-600 hover:underline dark:text-blue-400"
                                                 >
                                                     {order.order_number}
                                                 </Link>
@@ -687,13 +640,11 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                                     {order.customer ? order.customer.name : 'Cliente ID: ' + order.customer_id.substring(0, 8)}
                                                 </div>
                                                 {order.customer?.email && (
-                                                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                                                        {order.customer.email}
-                                                    </div>
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400">{order.customer.email}</div>
                                                 )}
                                             </TableCell>
                                             <TableCell>
-                                                <span className="text-xs font-semibold bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                                                <span className="rounded bg-gray-100 px-2 py-1 text-xs font-semibold dark:bg-gray-700">
                                                     {order.items?.length || 0} {order.items?.length === 1 ? 'producto' : 'productos'}
                                                 </span>
                                             </TableCell>
@@ -701,18 +652,12 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                                 ${Number(order.total).toFixed(2)} {order.currency}
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    color={paymentStatusBadgeColorMap[order.payment_status] || 'gray'}
-                                                    className="inline-block"
-                                                >
+                                                <Badge color={paymentStatusBadgeColorMap[order.payment_status] || 'gray'} className="inline-block">
                                                     {paymentStatusLabels[order.payment_status] || order.payment_status}
                                                 </Badge>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge
-                                                    color={statusBadgeColorMap[order.status] || 'gray'}
-                                                    className="inline-block"
-                                                >
+                                                <Badge color={statusBadgeColorMap[order.status] || 'gray'} className="inline-block">
                                                     {statusLabels[order.status] || order.status}
                                                 </Badge>
                                             </TableCell>
@@ -739,44 +684,30 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                                         )}
                                                     >
                                                         <DropdownHeader>
-                                                            <span className="block text-xs font-semibold">
-                                                                Orden {order.order_number}
-                                                            </span>
+                                                            <span className="block text-xs font-semibold">Orden {order.order_number}</span>
                                                         </DropdownHeader>
                                                         {order.status === 'pending' && (
-                                                            <DropdownItem
-                                                                onClick={() => handleOpenStatusModal(order, 'confirmed')}
-                                                            >
+                                                            <DropdownItem onClick={() => handleOpenStatusModal(order, 'confirmed')}>
                                                                 Confirmar Pedido
                                                             </DropdownItem>
                                                         )}
                                                         {(order.status === 'confirmed' || order.status === 'pending') && (
-                                                            <DropdownItem
-                                                                onClick={() => handleOpenStatusModal(order, 'processing')}
-                                                            >
+                                                            <DropdownItem onClick={() => handleOpenStatusModal(order, 'processing')}>
                                                                 Iniciar Procesamiento
                                                             </DropdownItem>
                                                         )}
                                                         {order.status === 'processing' && (
-                                                            <DropdownItem
-                                                                onClick={() => handleOpenStatusModal(order, 'shipped')}
-                                                            >
+                                                            <DropdownItem onClick={() => handleOpenStatusModal(order, 'shipped')}>
                                                                 Marcar como Enviado
                                                             </DropdownItem>
                                                         )}
                                                         {order.status === 'shipped' && (
-                                                            <DropdownItem
-                                                                onClick={() => handleOpenStatusModal(order, 'delivered')}
-                                                            >
+                                                            <DropdownItem onClick={() => handleOpenStatusModal(order, 'delivered')}>
                                                                 Marcar como Entregado
                                                             </DropdownItem>
                                                         )}
                                                         {order.payment_status === 'pending' && (
-                                                            <DropdownItem
-                                                                onClick={() => handleMarkAsPaid(order)}
-                                                            >
-                                                                Marcar como Pagado
-                                                            </DropdownItem>
+                                                            <DropdownItem onClick={() => handleMarkAsPaid(order)}>Marcar como Pagado</DropdownItem>
                                                         )}
                                                         <DropdownDivider />
                                                         {order.status !== 'cancelled' && order.status !== 'delivered' && (
@@ -799,7 +730,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
 
                     {/* Pagination */}
                     {pagination.last_page > 1 && (
-                        <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center justify-between border-t border-gray-200 p-4 dark:border-gray-700">
                             <p className="text-xs text-gray-500">
                                 Mostrando página {pagination.current_page} de {pagination.last_page} ({pagination.total} pedidos totales)
                             </p>
@@ -815,11 +746,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
             </div>
 
             {/* Modal: Crear Nuevo Pedido Manual */}
-            <Modal
-                show={isCreateModalOpen}
-                onClose={() => setIsCreateModalOpen(false)}
-                size="4xl"
-            >
+            <Modal show={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} size="4xl">
                 <ModalHeader>Crear Nueva Orden de Venta</ModalHeader>
                 <ModalBody>
                     {isLoadingOptions ? (
@@ -828,15 +755,13 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                         </div>
                     ) : (
                         <form onSubmit={handleCreateOrderSubmit} className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                                 <div>
                                     <Label htmlFor="customer_id">Cliente (*)</Label>
                                     <Select
                                         id="customer_id"
                                         value={formOrder.customer_id}
-                                        onChange={(e) =>
-                                            setFormOrder({ ...formOrder, customer_id: e.target.value })
-                                        }
+                                        onChange={(e) => setFormOrder({ ...formOrder, customer_id: e.target.value })}
                                         required
                                     >
                                         <option value="">Seleccione un cliente...</option>
@@ -846,9 +771,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                             </option>
                                         ))}
                                     </Select>
-                                    {formErrors.customer_id && (
-                                        <p className="text-xs text-red-600 mt-1">{formErrors.customer_id[0]}</p>
-                                    )}
+                                    {formErrors.customer_id && <p className="mt-1 text-xs text-red-600">{formErrors.customer_id[0]}</p>}
                                 </div>
 
                                 <div>
@@ -856,9 +779,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                     <Select
                                         id="payment_method"
                                         value={formOrder.payment_method}
-                                        onChange={(e) =>
-                                            setFormOrder({ ...formOrder, payment_method: e.target.value })
-                                        }
+                                        onChange={(e) => setFormOrder({ ...formOrder, payment_method: e.target.value })}
                                         required
                                     >
                                         <option value="transfer">Transferencia Bancaria</option>
@@ -871,22 +792,18 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                             </div>
 
                             {/* Product Selector Section */}
-                            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl space-y-3">
-                                <Label className="font-bold text-gray-800 dark:text-gray-200">
-                                    Agregar Productos al Pedido
-                                </Label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1">
+                            <div className="space-y-3 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
+                                <Label className="font-bold text-gray-800 dark:text-gray-200">Agregar Productos al Pedido</Label>
+                                <div className="grid max-h-48 grid-cols-1 gap-2 overflow-y-auto p-1 sm:grid-cols-2 md:grid-cols-3">
                                     {availableProducts.map((prod) => (
                                         <button
                                             key={prod.id}
                                             type="button"
                                             onClick={() => addProductToOrder(prod)}
-                                            className="flex flex-col text-left p-2.5 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-blue-500 dark:hover:border-blue-400 transition"
+                                            className="flex flex-col rounded-lg border border-gray-200 bg-white p-2.5 text-left transition hover:border-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:hover:border-blue-400"
                                         >
-                                            <span className="text-xs font-bold text-gray-900 dark:text-white truncate">
-                                                {prod.name}
-                                            </span>
-                                            <span className="text-xs text-blue-600 dark:text-blue-400 font-semibold mt-1">
+                                            <span className="truncate text-xs font-bold text-gray-900 dark:text-white">{prod.name}</span>
+                                            <span className="mt-1 text-xs font-semibold text-blue-600 dark:text-blue-400">
                                                 ${Number(prod.price).toFixed(2)} USD
                                             </span>
                                         </button>
@@ -896,7 +813,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
 
                             {/* Added Items List */}
                             <div>
-                                <Label className="font-bold mb-2 block">Ítems Seleccionados</Label>
+                                <Label className="mb-2 block font-bold">Ítems Seleccionados</Label>
                                 {formOrder.items.length === 0 ? (
                                     <p className="text-xs text-gray-500 italic">No ha agregado productos aún.</p>
                                 ) : (
@@ -904,37 +821,33 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                         {formOrder.items.map((item, idx) => (
                                             <div
                                                 key={idx}
-                                                className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 border rounded-lg"
+                                                className="flex items-center justify-between rounded-lg border bg-white p-3 dark:bg-gray-800"
                                             >
                                                 <div className="flex-1">
-                                                    <p className="text-sm font-bold text-gray-800 dark:text-white">
-                                                        {item.product_name}
-                                                    </p>
+                                                    <p className="text-sm font-bold text-gray-800 dark:text-white">{item.product_name}</p>
                                                     <p className="text-xs text-gray-500">
                                                         SKU: {item.sku} | ${item.price.toFixed(2)} c/u
                                                     </p>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex items-center border rounded">
+                                                    <div className="flex items-center rounded border">
                                                         <button
                                                             type="button"
-                                                            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold"
+                                                            className="bg-gray-100 px-2 py-1 text-xs font-bold hover:bg-gray-200"
                                                             onClick={() => updateItemQuantity(idx, item.quantity - 1)}
                                                         >
                                                             -
                                                         </button>
-                                                        <span className="px-3 py-1 text-xs font-semibold">
-                                                            {item.quantity}
-                                                        </span>
+                                                        <span className="px-3 py-1 text-xs font-semibold">{item.quantity}</span>
                                                         <button
                                                             type="button"
-                                                            className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-xs font-bold"
+                                                            className="bg-gray-100 px-2 py-1 text-xs font-bold hover:bg-gray-200"
                                                             onClick={() => updateItemQuantity(idx, item.quantity + 1)}
                                                         >
                                                             +
                                                         </button>
                                                     </div>
-                                                    <span className="text-sm font-bold w-20 text-right">
+                                                    <span className="w-20 text-right text-sm font-bold">
                                                         ${(item.price * item.quantity).toFixed(2)}
                                                     </span>
                                                     <button
@@ -952,7 +865,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                             </div>
 
                             {/* Taxes, Shipping, Discount & Totals Summary */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                            <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-2">
                                 <div className="space-y-3">
                                     <div>
                                         <Label htmlFor="shipping_amount">Costo de Envío ($)</Label>
@@ -1004,7 +917,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                     </div>
                                 </div>
 
-                                <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl space-y-2 flex flex-col justify-center">
+                                <div className="flex flex-col justify-center space-y-2 rounded-xl bg-gray-50 p-4 dark:bg-gray-800">
                                     <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                                         <span>Subtotal Ítems:</span>
                                         <span className="font-semibold">${calculateSubtotal().toFixed(2)}</span>
@@ -1021,11 +934,9 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                         <span>Descuento:</span>
                                         <span className="font-semibold">-${(Number(formOrder.discount_amount) || 0).toFixed(2)}</span>
                                     </div>
-                                    <div className="border-t pt-2 mt-2 flex justify-between text-lg font-extrabold text-gray-900 dark:text-white">
+                                    <div className="mt-2 flex justify-between border-t pt-2 text-lg font-extrabold text-gray-900 dark:text-white">
                                         <span>Total Final:</span>
-                                        <span className="text-blue-600 dark:text-blue-400">
-                                            ${calculateTotal().toFixed(2)} USD
-                                        </span>
+                                        <span className="text-blue-600 dark:text-blue-400">${calculateTotal().toFixed(2)} USD</span>
                                     </div>
                                 </div>
                             </div>
@@ -1045,11 +956,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                                 <Button color="gray" onClick={() => setIsCreateModalOpen(false)}>
                                     Cancelar
                                 </Button>
-                                <Button
-                                    type="submit"
-                                    color="blue"
-                                    disabled={loadingAction}
-                                >
+                                <Button type="submit" color="blue" disabled={loadingAction}>
                                     {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                                     Crear Orden
                                 </Button>
@@ -1060,23 +967,16 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
             </Modal>
 
             {/* Modal: Cambiar Estado / Anular Orden */}
-            <Modal
-                show={isStatusModalOpen}
-                onClose={() => setIsStatusModalOpen(false)}
-                size="md"
-            >
-                <ModalHeader>
-                    {nextStatus === 'cancelled' ? 'Anular Orden de Venta' : 'Actualizar Estado del Pedido'}
-                </ModalHeader>
+            <Modal show={isStatusModalOpen} onClose={() => setIsStatusModalOpen(false)} size="md">
+                <ModalHeader>{nextStatus === 'cancelled' ? 'Anular Orden de Venta' : 'Actualizar Estado del Pedido'}</ModalHeader>
                 <ModalBody className="space-y-4">
                     <p className="text-sm text-gray-600 dark:text-gray-300">
                         ¿Desea cambiar el estado de la orden{' '}
-                        <strong className="text-gray-900 dark:text-white font-mono">
-                            {selectedOrder?.order_number}
-                        </strong>{' '}
-                        a <Badge color={statusBadgeColorMap[nextStatus as OrderStatusType] || 'info'} className="inline-block mx-1">
+                        <strong className="font-mono text-gray-900 dark:text-white">{selectedOrder?.order_number}</strong> a{' '}
+                        <Badge color={statusBadgeColorMap[nextStatus as OrderStatusType] || 'info'} className="mx-1 inline-block">
                             {statusLabels[nextStatus as OrderStatusType] || nextStatus}
-                        </Badge>?
+                        </Badge>
+                        ?
                     </p>
 
                     {nextStatus === 'shipped' && (
@@ -1109,11 +1009,7 @@ export default function OrderIndexPage({ title, user_id, host, user_name }: Orde
                     <Button color="gray" onClick={() => setIsStatusModalOpen(false)}>
                         Cancelar
                     </Button>
-                    <Button
-                        color={nextStatus === 'cancelled' ? 'failure' : 'blue'}
-                        onClick={handleExecuteStatusTransition}
-                        disabled={loadingAction}
-                    >
+                    <Button color={nextStatus === 'cancelled' ? 'failure' : 'blue'} onClick={handleExecuteStatusTransition} disabled={loadingAction}>
                         {loadingAction ? <Spinner size="sm" className="mr-2" /> : null}
                         Confirmar Cambio
                     </Button>

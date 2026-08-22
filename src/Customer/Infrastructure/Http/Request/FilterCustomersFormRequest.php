@@ -32,8 +32,8 @@ final class FilterCustomersFormRequest extends FormRequest
     {
         return new FilterCustomersCriteria(
             search: $this->input('search'),
-            is_active: $this->has('is_active') ? $this->boolean('is_active') : null,
-            accepts_marketing: $this->has('accepts_marketing') ? $this->boolean('accepts_marketing') : null,
+            is_active: $this->input('is_active') === null ? null : $this->boolean('is_active'),
+            accepts_marketing: $this->input('accepts_marketing') === null ? null : $this->boolean('accepts_marketing'),
             gender: $this->input('gender'),
             sort_by: (string) $this->input('sort_by', 'created_at'),
             sort_direction: (string) $this->input('sort_direction', 'desc'),

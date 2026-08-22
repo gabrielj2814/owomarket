@@ -1,7 +1,7 @@
 import { ErrorsFormCustomer } from '@/types/ErrorsFormCustomer';
 import { FormCustomer, FormCustomerAddress } from '@/types/FormCustomer';
 import { Customer, CustomerMetrics } from '@/types/models/Customer';
-import { ApiResponse } from '@/types/ResponseApi';
+import { Data } from '@/types/ResponseApi';
 import getCSRFToken from '@/utils/getCSRFToken';
 import axios from 'axios';
 
@@ -33,8 +33,8 @@ const CustomerServices = {
         perPage: number = 15,
         page: number = 1,
         sortBy: string = 'created_at',
-        sortDirection: string = 'desc'
-    ): Promise<ApiResponse<PaginatedCustomersData>> => {
+        sortDirection: string = 'desc',
+    ): Promise<Data<PaginatedCustomersData>> => {
         try {
             const body = {
                 search,
@@ -47,7 +47,7 @@ const CustomerServices = {
                 sort_direction: sortDirection,
             };
 
-            const response = await axiosCustomer.post<ApiResponse<PaginatedCustomersData>>('filter', body);
+            const response = await axiosCustomer.post<Data<PaginatedCustomersData>>('filter', body);
             return response.data;
         } catch (error: any) {
             return (
@@ -64,9 +64,9 @@ const CustomerServices = {
         }
     },
 
-    getMetrics: async (): Promise<ApiResponse<CustomerMetrics>> => {
+    getMetrics: async (): Promise<Data<CustomerMetrics>> => {
         try {
-            const response = await axiosCustomer.get<ApiResponse<CustomerMetrics>>('metrics');
+            const response = await axiosCustomer.get<Data<CustomerMetrics>>('metrics');
             return response.data;
         } catch (error: any) {
             return (
@@ -85,9 +85,9 @@ const CustomerServices = {
         }
     },
 
-    consultById: async (id: string): Promise<ApiResponse<Customer>> => {
+    consultById: async (id: string): Promise<Data<Customer>> => {
         try {
-            const response = await axiosCustomer.get<ApiResponse<Customer>>(`${id}`);
+            const response = await axiosCustomer.get<Data<Customer>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -101,9 +101,9 @@ const CustomerServices = {
         }
     },
 
-    create: async (data: FormCustomer): Promise<ApiResponse<Customer, ErrorsFormCustomer>> => {
+    create: async (data: FormCustomer): Promise<Data<Customer, ErrorsFormCustomer>> => {
         try {
-            const response = await axiosCustomer.post<ApiResponse<Customer, ErrorsFormCustomer>>('create', data);
+            const response = await axiosCustomer.post<Data<Customer, ErrorsFormCustomer>>('create', data);
             return response.data;
         } catch (error: any) {
             return (
@@ -117,9 +117,9 @@ const CustomerServices = {
         }
     },
 
-    update: async (id: string, data: Partial<FormCustomer>): Promise<ApiResponse<Customer, ErrorsFormCustomer>> => {
+    update: async (id: string, data: Partial<FormCustomer>): Promise<Data<Customer, ErrorsFormCustomer>> => {
         try {
-            const response = await axiosCustomer.put<ApiResponse<Customer, ErrorsFormCustomer>>(`${id}`, data);
+            const response = await axiosCustomer.put<Data<Customer, ErrorsFormCustomer>>(`${id}`, data);
             return response.data;
         } catch (error: any) {
             return (
@@ -133,9 +133,9 @@ const CustomerServices = {
         }
     },
 
-    delete: async (id: string): Promise<ApiResponse<null>> => {
+    delete: async (id: string): Promise<Data<null>> => {
         try {
-            const response = await axiosCustomer.delete<ApiResponse<null>>(`${id}`);
+            const response = await axiosCustomer.delete<Data<null>>(`${id}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -149,9 +149,9 @@ const CustomerServices = {
         }
     },
 
-    addAddress: async (customerId: string, address: FormCustomerAddress): Promise<ApiResponse<Customer, ErrorsFormCustomer>> => {
+    addAddress: async (customerId: string, address: FormCustomerAddress): Promise<Data<Customer, ErrorsFormCustomer>> => {
         try {
-            const response = await axiosCustomer.post<ApiResponse<Customer, ErrorsFormCustomer>>(`${customerId}/address`, address);
+            const response = await axiosCustomer.post<Data<Customer, ErrorsFormCustomer>>(`${customerId}/address`, address);
             return response.data;
         } catch (error: any) {
             return (
@@ -165,9 +165,9 @@ const CustomerServices = {
         }
     },
 
-    deleteAddress: async (customerId: string, addressId: string): Promise<ApiResponse<Customer>> => {
+    deleteAddress: async (customerId: string, addressId: string): Promise<Data<Customer>> => {
         try {
-            const response = await axiosCustomer.delete<ApiResponse<Customer>>(`${customerId}/address/${addressId}`);
+            const response = await axiosCustomer.delete<Data<Customer>>(`${customerId}/address/${addressId}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -181,9 +181,9 @@ const CustomerServices = {
         }
     },
 
-    setDefaultAddress: async (customerId: string, addressId: string): Promise<ApiResponse<Customer>> => {
+    setDefaultAddress: async (customerId: string, addressId: string): Promise<Data<Customer>> => {
         try {
-            const response = await axiosCustomer.post<ApiResponse<Customer>>(`${customerId}/address/${addressId}/default`);
+            const response = await axiosCustomer.post<Data<Customer>>(`${customerId}/address/${addressId}/default`);
             return response.data;
         } catch (error: any) {
             return (
