@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -21,6 +22,8 @@ export const CustomerOrdersPage: React.FC = () => {
 
     const [orders, setOrders] = useState<CustomerOrderData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -36,7 +39,7 @@ export const CustomerOrdersPage: React.FC = () => {
                     setOrders(res.data);
                 }
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     };
 
@@ -89,6 +92,8 @@ export const CustomerOrdersPage: React.FC = () => {
             title="Mis Pedidos & Tracking"
             description="Revisa el historial de compras realizadas en las distintas tiendas y rastrea tus envíos en vivo."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mis Pedidos - OwOMarket" />
 
             {/* Filter Tabs & Search Bar */}

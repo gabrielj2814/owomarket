@@ -51,6 +51,10 @@ beforeEach(function () {
         }
     }
 
+    if (! Schema::hasColumn('orders', 'coupon_code')) {
+        (require base_path('database/migrations/tenant/2026_08_19_000011_add_coupon_code_to_orders_table.php'))->up();
+    }
+
     $tenantId = 't_cancel_'.bin2hex(random_bytes(3));
     $this->tenant = ModelsTenant::create([
         'id' => $tenantId,

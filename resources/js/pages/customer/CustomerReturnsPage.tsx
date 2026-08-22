@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -20,6 +21,8 @@ export const CustomerReturnsPage: React.FC = () => {
     const [returns, setReturns] = useState<CustomerReturnRequestData[]>([]);
     const [orders, setOrders] = useState<CustomerOrderData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -40,7 +43,7 @@ export const CustomerReturnsPage: React.FC = () => {
                 if (returnsRes?.data) setReturns(returnsRes.data);
                 if (ordersRes?.data) setOrders(ordersRes.data);
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     };
 
@@ -97,6 +100,8 @@ export const CustomerReturnsPage: React.FC = () => {
             title="Devoluciones & Garantías (RMA)"
             description="Gestiona reclamos, cambios por garantía y solicitudes de reembolso de tus compras."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Devoluciones - OwOMarket" />
 
             <div className="flex items-center justify-between mb-6">

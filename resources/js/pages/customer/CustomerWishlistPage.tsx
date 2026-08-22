@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -17,6 +18,8 @@ export const CustomerWishlistPage: React.FC = () => {
     const { addItem, setIsDrawerOpen } = useCentralCart();
     const [wishlist, setWishlist] = useState<CustomerWishlistItemData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     const loadWishlist = () => {
         if (!customer?.id) return;
@@ -27,7 +30,7 @@ export const CustomerWishlistPage: React.FC = () => {
                     setWishlist(res.data);
                 }
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     };
 
@@ -70,6 +73,8 @@ export const CustomerWishlistPage: React.FC = () => {
             title="Mis Favoritos (Wishlist)"
             description="Guarda los artículos que más te gusten para comprarlos más adelante en un solo clic."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mis Favoritos - OwOMarket" />
 
             <div className="flex items-center justify-between mb-6">

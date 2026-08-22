@@ -138,7 +138,14 @@ final class CreateStorefrontOrderPOSTController extends Controller
                 $couponCode = trim((string) $request->input('coupon_code', ''));
 
                 if ($couponCode !== '') {
-                    $validation = $this->validateCoupon->execute($couponCode, $calculatedSubtotal);
+                    // El `customer_id` va para poder aplicar `usage_limit_per_customer`
+                    // (hallazgo N27); sin el, ese limite no se comprueba.
+                    $validation = $this->validateCoupon->execute(
+                        $couponCode,
+                        $calculatedSubtotal,
+                        'now',
+                        (string) $customer->id
+                    );
 
                     // Se rechaza el pedido en vez de cobrarlo sin descuento en silencio: el
                     // comprador pulso «pagar» contando con ese precio y tiene que enterarse.
@@ -191,6 +198,15 @@ final class CreateStorefrontOrderPOSTController extends Controller
                 $orderId = $order->id()->value();
                 $orderNum = $order->orderNumber()->value();
                 $orderTotal = $order->total()->amount();
+
+                // Hallazgo N27: el cupon usado se guarda en su columna, no solo en el
+                // `metadata`, para poder contar usos por cliente con un indice en vez de
+                // rebuscar en JSON. Va por el query builder y no por el DTO a proposito:
+                // meterlo por el agregado `Order` obligaria a atravesar DTO, entidad y
+                // repositorio para un dato que solo usa la validacion de cupones.
+                if ($couponCode !== '') {
+                    DB::table('orders')->where('id', $orderId)->update(['coupon_code' => $couponCode]);
+                }
 
                 // 6. Record Payment in payments table.
                 //    Ya no lleva `catch (\Throwable)` vacío: si el pago no se puede

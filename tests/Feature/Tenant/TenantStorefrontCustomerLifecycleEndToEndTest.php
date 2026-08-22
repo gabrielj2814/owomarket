@@ -72,6 +72,9 @@ beforeEach(function () {
     if (! Schema::hasTable('orders')) {
         (require base_path('database/migrations/tenant/2025_10_28_144320_create_orders.php'))->up();
     }
+    if (! Schema::hasColumn('orders', 'coupon_code')) {
+        (require base_path('database/migrations/tenant/2026_08_19_000011_add_coupon_code_to_orders_table.php'))->up();
+    }
     if (! Schema::hasTable('order_items')) {
         (require base_path('database/migrations/tenant/2025_10_28_144403_create_order_items.php'))->up();
     }

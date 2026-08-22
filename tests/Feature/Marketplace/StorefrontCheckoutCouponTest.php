@@ -50,6 +50,10 @@ beforeEach(function () {
         }
     }
 
+    if (! Schema::hasColumn('orders', 'coupon_code')) {
+        (require base_path('database/migrations/tenant/2026_08_19_000011_add_coupon_code_to_orders_table.php'))->up();
+    }
+
     $tenantId = 't_cup_'.bin2hex(random_bytes(3));
     $this->tenant = ModelsTenant::create([
         'id' => $tenantId,
@@ -184,4 +188,24 @@ test('un pedido sin cupón sigue funcionando', function () {
     ($this->checkout)()->assertStatus(201);
 
     expect((float) DB::table('orders')->value('discount_amount'))->toBe(0.00);
+});
+
+// N27: `usage_limit_per_customer` existía en la tabla desde el principio y no lo miraba
+// nadie: `validateUsability()` sólo comprueba el límite global, así que un cupón de «uno
+// por cliente» se podía usar N veces. No se podía comprobar porque `orders` no guardaba
+// qué cupón se había usado.
+test('un cupón de un uso por cliente no se puede usar dos veces', function () {
+    crearCupon([
+        'code' => 'UNOPORCLIENTE',
+        'valid_from' => now()->subMonth()->toDateString(),
+        'valid_to' => now()->addMonth()->toDateString(),
+        'usage_limit_per_customer' => 1,
+    ]);
+
+    ($this->checkout)('UNOPORCLIENTE')->assertStatus(201);
+    expect(DB::table('orders')->where('coupon_code', 'UNOPORCLIENTE')->count())->toBe(1);
+
+    // Mismo cliente (mismo email), segundo pedido: rechazado.
+    ($this->checkout)('UNOPORCLIENTE')->assertStatus(422);
+    expect(DB::table('orders')->where('coupon_code', 'UNOPORCLIENTE')->count())->toBe(1);
 });

@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -14,6 +15,8 @@ export const CustomerCouponsPage: React.FC = () => {
     const { customer } = useCustomerAuth();
     const [coupons, setCoupons] = useState<CustomerCouponData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
         CustomerPortalServices.getCoupons(customer?.id)
@@ -22,7 +25,7 @@ export const CustomerCouponsPage: React.FC = () => {
                     setCoupons(res.data);
                 }
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     }, [customer?.id]);
 
@@ -36,6 +39,8 @@ export const CustomerCouponsPage: React.FC = () => {
             title="Mis Cupones & Descuentos"
             description="Aprovecha los cupones activos y beneficios exclusivos para compras en OwOMarket."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mis Cupones - OwOMarket" />
 
             <div className="flex items-center justify-between mb-6">

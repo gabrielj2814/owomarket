@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -15,6 +16,8 @@ export const CustomerInvoicesPage: React.FC = () => {
     const { customer } = useCustomerAuth();
     const [invoices, setInvoices] = useState<CustomerInvoiceData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
         if (!customer?.id) return;
@@ -25,7 +28,7 @@ export const CustomerInvoicesPage: React.FC = () => {
                     setInvoices(res.data);
                 }
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     }, [customer?.id]);
 
@@ -34,6 +37,8 @@ export const CustomerInvoicesPage: React.FC = () => {
             title="Mis Facturas Electrónicas PDF"
             description="Descarga comprobantes fiscales y facturas digitales con montos en USD y Bolívares a tasa oficial BCV."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mis Facturas - OwOMarket" />
 
             <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80">

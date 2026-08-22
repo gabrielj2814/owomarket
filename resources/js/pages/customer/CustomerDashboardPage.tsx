@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -26,6 +27,8 @@ export const CustomerDashboardPage: React.FC = () => {
     const [coupons, setCoupons] = useState<CustomerCouponData[]>([]);
     const [wishlist, setWishlist] = useState<CustomerWishlistItemData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
         if (!customer?.id) return;
@@ -40,7 +43,7 @@ export const CustomerDashboardPage: React.FC = () => {
                 if (couponsRes?.data) setCoupons(couponsRes.data);
                 if (wishlistRes?.data) setWishlist(wishlistRes.data);
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     }, [customer?.id]);
 
@@ -51,6 +54,8 @@ export const CustomerDashboardPage: React.FC = () => {
             title="Panel de Control"
             description="Visualiza el estado de tus pedidos en curso, facturas y promociones disponibles."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mi Cuenta - Resumen" />
 
             {/* Quick Metrics Grid */}

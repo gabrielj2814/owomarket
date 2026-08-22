@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -28,6 +29,8 @@ export const CustomerOrderDetailPage: React.FC = () => {
     const [order, setOrder] = useState<CustomerOrderData | null>(null);
     const [tracking, setTracking] = useState<OrderTrackingData | null>(null);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
         if (!customer?.id || !orderId) return;
@@ -40,13 +43,15 @@ export const CustomerOrderDetailPage: React.FC = () => {
                 if (orderRes?.data) setOrder(orderRes.data);
                 if (trackingRes?.data) setTracking(trackingRes.data);
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     }, [customer?.id, orderId]);
 
     if (loading) {
         return (
             <CustomerAccountLayout title="Detalle de la Orden">
+            {loadError && <PortalLoadError />}
+
                 <div className="text-center py-20 text-gray-400">
                     <p className="text-sm font-medium">Cargando información del pedido y tracking...</p>
                 </div>

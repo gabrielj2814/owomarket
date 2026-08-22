@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -16,6 +17,8 @@ export const CustomerAddressesPage: React.FC = () => {
     const { customer } = useCustomerAuth();
     const [addresses, setAddresses] = useState<CustomerAddressData[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -39,7 +42,7 @@ export const CustomerAddressesPage: React.FC = () => {
                     setAddresses(res.data.customer.addresses);
                 }
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     };
 
@@ -130,6 +133,8 @@ export const CustomerAddressesPage: React.FC = () => {
             title="Libreta de Direcciones"
             description="Administra los lugares de entrega de tus compras para agilizar el proceso de compra."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mis Direcciones - OwOMarket" />
 
             <div className="flex items-center justify-between mb-6">

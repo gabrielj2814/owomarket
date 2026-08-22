@@ -1,10 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import CustomerAuthServices, {
-    CentralCustomerData,
-    LoginCustomerPayload,
-    RegisterCustomerPayload,
-} from '@/Services/CustomerAuthServices';
 import { useIsCentralDomain } from '@/hooks/useIsCentralDomain';
+import CustomerAuthServices, { CentralCustomerData, LoginCustomerPayload, RegisterCustomerPayload } from '@/Services/CustomerAuthServices';
+import CustomerPortalServices from '@/Services/CustomerPortalServices';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 
 export interface CustomerAddress {
     id: string;
@@ -57,22 +54,25 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
     const refreshSession = async () => {
         setLoading(true);
         try {
-            // 1. Check cached central customer in localStorage
-            const cachedCustomer = localStorage.getItem('owo_central_customer');
-            const cachedAddresses = localStorage.getItem('owo_customer_addresses');
+            // 1. Recuperar la identidad guardada.
+            //
+            // Hallazgo B4: aqui se cacheaba el PERFIL ENTERO en `localStorage` —nombre,
+            // email, telefono, documento y direcciones—, al alcance de cualquier XSS. El
+            // backend dejo de confiar en ese cache en la Fase 0.3-D, asi que ya solo era
+            // exposicion sin contrapartida.
+            //
+            // Ahora solo se guarda el **id**, que es lo unico que hace falta para saber a
+            // quien rehacerle la sesion. Los datos personales los da el servidor.
+            const cachedId = localStorage.getItem('owo_central_customer_id');
 
-            if (cachedCustomer) {
-                try {
-                    const parsedCust = JSON.parse(cachedCustomer);
-                    setCustomer(parsedCust);
-                    setCentralCustomer(parsedCust);
-                } catch {}
-            }
+            if (cachedId) {
+                const perfil = await CustomerPortalServices.getProfile(cachedId).catch(() => null);
 
-            if (cachedAddresses) {
-                try {
-                    setAddresses(JSON.parse(cachedAddresses));
-                } catch {}
+                if (perfil?.data) {
+                    setCustomer(perfil.data);
+                    setCentralCustomer(perfil.data);
+                    setAddresses(perfil.data.addresses ?? []);
+                }
             }
 
             // 2. En el storefront de una tienda, contrastar con la sesion real.
@@ -115,24 +115,21 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
      * Devuelve `false` si no hay con que rehacerlo, que es la senal para limpiar.
      */
     const tryRestoreTenantSession = async (): Promise<boolean> => {
-        const cached = localStorage.getItem('owo_central_customer');
-        if (!cached) return false;
+        const cachedId = localStorage.getItem('owo_central_customer_id');
+        if (!cachedId) return false;
 
         try {
-            const parsed = JSON.parse(cached);
-            if (!parsed?.id) return false;
-
-            const ssoRes = await CustomerAuthServices.generateSsoToken(parsed.id);
+            const ssoRes = await CustomerAuthServices.generateSsoToken(cachedId);
             if (ssoRes.code !== 200 || !ssoRes.data?.token) return false;
 
             const consumeRes = await CustomerAuthServices.consumeSsoToken(ssoRes.data.token);
             if (consumeRes.code !== 200 || !consumeRes.data) return false;
 
             setCustomer(consumeRes.data.customer);
-            setCentralCustomer(consumeRes.data.central_customer || parsed);
+            setCentralCustomer(consumeRes.data.central_customer ?? null);
             if (consumeRes.data.addresses) {
                 setAddresses(consumeRes.data.addresses);
-                localStorage.setItem('owo_customer_addresses', JSON.stringify(consumeRes.data.addresses));
+                // Hallazgo B4: las direcciones ya no se cachean; las da el servidor.
             }
 
             return true;
@@ -143,8 +140,7 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     /** Deja el estado y el cache como los de un visitante anonimo. */
     const clearCachedSession = () => {
-        localStorage.removeItem('owo_central_customer');
-        localStorage.removeItem('owo_customer_addresses');
+        localStorage.removeItem('owo_central_customer_id');
         setCustomer(null);
         setCentralCustomer(null);
         setAddresses([]);
@@ -171,11 +167,11 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
             if (isCentral) {
                 setCustomer(centralCust);
                 setCentralCustomer(centralCust);
-                localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
+                localStorage.setItem('owo_central_customer_id', centralCust.id);
 
                 if (centralCust.addresses && Array.isArray(centralCust.addresses)) {
                     setAddresses(centralCust.addresses);
-                    localStorage.setItem('owo_customer_addresses', JSON.stringify(centralCust.addresses));
+                    // Hallazgo B4: las direcciones ya no se cachean; las da el servidor.
                 }
 
                 closeAuthModal();
@@ -192,9 +188,9 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
                         setCentralCustomer(consumeRes.data.central_customer || centralCust);
                         if (consumeRes.data.addresses) {
                             setAddresses(consumeRes.data.addresses);
-                            localStorage.setItem('owo_customer_addresses', JSON.stringify(consumeRes.data.addresses));
+                            // Hallazgo B4: las direcciones ya no se cachean; las da el servidor.
                         }
-                        localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
+                        localStorage.setItem('owo_central_customer_id', centralCust.id);
                         closeAuthModal();
                         return { success: true, message: '¡Bienvenido de nuevo!' };
                     }
@@ -206,10 +202,10 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
             // Graceful fallback
             setCustomer(centralCust);
             setCentralCustomer(centralCust);
-            localStorage.setItem('owo_central_customer', JSON.stringify(centralCust));
+            localStorage.setItem('owo_central_customer_id', centralCust.id);
             if (centralCust.addresses) {
                 setAddresses(centralCust.addresses);
-                localStorage.setItem('owo_customer_addresses', JSON.stringify(centralCust.addresses));
+                // Hallazgo B4: las direcciones ya no se cachean; las da el servidor.
             }
 
             closeAuthModal();
@@ -257,6 +253,9 @@ export const CustomerAuthProvider: React.FC<{ children: React.ReactNode }> = ({ 
             setCustomer(null);
             setCentralCustomer(null);
             setAddresses([]);
+            localStorage.removeItem('owo_central_customer_id');
+            // Se limpian tambien las claves viejas: quien tenga el perfil cacheado de una
+            // version anterior deja de tenerlo en cuanto cierre sesion (hallazgo B4).
             localStorage.removeItem('owo_central_customer');
             localStorage.removeItem('owo_customer_addresses');
         }

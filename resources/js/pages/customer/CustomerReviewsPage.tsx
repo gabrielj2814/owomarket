@@ -1,3 +1,4 @@
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -14,6 +15,8 @@ export const CustomerReviewsPage: React.FC = () => {
     const [pending, setPending] = useState<any[]>([]);
     const [reviewed, setReviewed] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
+    const [loadError, setLoadError] = useState(false);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -33,7 +36,7 @@ export const CustomerReviewsPage: React.FC = () => {
                     setReviewed(res.data.reviewed || []);
                 }
             })
-            .catch(() => {})
+            .catch(() => setLoadError(true))
             .finally(() => setLoading(false));
     };
 
@@ -78,6 +81,8 @@ export const CustomerReviewsPage: React.FC = () => {
             title="Mis Reseñas & Calificaciones"
             description="Comparte tu opinión sobre los productos comprados para ayudar a la comunidad de compradores."
         >
+            {loadError && <PortalLoadError />}
+
             <Head title="Mis Reseñas - OwOMarket" />
 
             {/* Pending Reviews */}
