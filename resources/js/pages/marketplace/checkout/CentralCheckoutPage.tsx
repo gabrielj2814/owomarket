@@ -4,6 +4,7 @@ import CentralLayout from '@/components/layouts/CentralLayout';
 import { useCentralCart } from '@/contexts/CentralCartContext';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import CentralMarketplaceServices, {
+    CentralOrderQuote,
     CreateCentralOrderPayload,
 } from '@/Services/CentralMarketplaceServices';
 import {
@@ -79,6 +80,8 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
     const storeGroups = getItemsByStore();
     const subtotal = getSubtotal();
+
+
     const totalCount = getItemCount();
 
     // Customer Form
@@ -91,6 +94,37 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
     const [address, setAddress] = useState('');
     const [city, setCity] = useState('');
     const [state, setState] = useState('');
+
+    /**
+     * Hallazgos N34 y N28: la pantalla mostraba el **subtotal puro como total**, sin envío
+     * ni impuestos, así que el importe que el comprador transfería no coincidía con el que
+     * se registraba. El presupuesto lo calcula el servidor —cada tienda con sus propias
+     * tarifas y cupones— y aquí sólo se muestra.
+     */
+    const [quote, setQuote] = useState<CentralOrderQuote | null>(null);
+    // Hallazgo N28: un codigo por tienda. Los cupones viven en la base de cada inquilino,
+    // asi que un codigo solo puede descontar las lineas de la tienda que lo emitio.
+    const [coupons, setCoupons] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+        if (items.length === 0) return;
+
+        void CentralMarketplaceServices.quote({
+            items: items.map(i => ({
+                tenant_id: i.tenant_id,
+                product_id: i.product_id,
+                quantity: i.quantity,
+            })),
+            shipping_address: { city, state },
+            coupons,
+        }).then(res => {
+            if (res.code === 200 && res.data) setQuote(res.data);
+        });
+        // Se recalcula si cambia el carrito o el destino: el envío depende de ambos.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [items, city, state, coupons]);
+
+    const totalAPagar = quote?.total ?? subtotal;
     const [notes, setNotes] = useState('');
 
     // Payment method
@@ -123,7 +157,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
             : `ck-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`
     );
 
-    const totalBs = bcvRate !== null ? (subtotal * bcvRate).toFixed(2) : null;
+    const totalBs = bcvRate !== null ? (totalAPagar * bcvRate).toFixed(2) : null;
 
     const handleSubmitOrder = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -187,6 +221,9 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                       },
             currency: 'USD',
             idempotency_key: idempotencyKeyRef.current,
+            // Hallazgo N28: los cupones son de tienda, uno por tienda como maximo. El
+            // servidor los revalida y los consume; esto solo dice cual se intento aplicar.
+            coupons: coupons,
             items: items.map(i => ({
                 tenant_id: i.tenant_id,
                 product_id: i.product_id,
@@ -537,7 +574,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                         <span className="font-bold text-yellow-600 dark:text-yellow-400">Datos Oficiales Binance Pay:</span>
                                         <div className="p-3 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 font-mono text-[11px] space-y-1">
                                             <div><strong>Binance Pay ID:</strong> 88992211 (OwOMarket Central)</div>
-                                            <div><strong>Monto en USDT:</strong> ${subtotal.toFixed(2)} USDT</div>
+                                            <div><strong>Monto en USDT:</strong> ${totalAPagar.toFixed(2)} USDT</div>
                                         </div>
                                     </div>
 
@@ -616,12 +653,37 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                     <span>Subtotal ({totalCount} items):</span>
                                     <span className="font-bold text-gray-900 dark:text-white">${subtotal.toFixed(2)} USD</span>
                                 </div>
+                                {quote && quote.shipping > 0 && (
+                                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                                        <span>Envío:</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">
+                                            ${quote.shipping.toFixed(2)} USD
+                                        </span>
+                                    </div>
+                                )}
+
+                                {quote && quote.tax > 0 && (
+                                    <div className="flex justify-between text-gray-600 dark:text-gray-400">
+                                        <span>Impuestos:</span>
+                                        <span className="font-bold text-gray-900 dark:text-white">
+                                            ${quote.tax.toFixed(2)} USD
+                                        </span>
+                                    </div>
+                                )}
+
+                                {quote && quote.discount > 0 && (
+                                    <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                                        <span>Descuento:</span>
+                                        <span className="font-bold">−${quote.discount.toFixed(2)} USD</span>
+                                    </div>
+                                )}
+
                                 <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
                                     <span className="text-xs font-bold text-gray-900 dark:text-white block uppercase tracking-wider mb-1">
                                         Total a Pagar:
                                     </span>
                                     <CurrencyPriceDisplay
-                                        priceUsd={subtotal}
+                                        priceUsd={totalAPagar}
                                         exchangeRate={bcvRate ?? undefined}
                                         size="lg"
                                         showVes={true}

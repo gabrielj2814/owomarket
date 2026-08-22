@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Src\CentralMarketplace\Application\Service\CentralOrderProrator;
 use Src\CentralMarketplace\Infrastructure\Eloquent\Models\CentralOrderDispatch;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
+use Src\Marketplace\Application\Service\CouponRedeemer;
 use Src\Marketplace\Application\Service\StockReserver;
 use Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase;
 use Src\Order\Application\DTOs\CreateOrderData;
@@ -25,7 +26,8 @@ final class DispatchCentralOrderToTenantsUseCase
         private readonly CreateOrderUseCase $createOrderUseCase,
         private readonly CalculateAndRecordOrderCommissionUseCase $recordCommissionUseCase,
         private readonly CentralOrderProrator $prorator,
-        private readonly StockReserver $stockReserver
+        private readonly StockReserver $stockReserver,
+        private readonly CouponRedeemer $couponRedeemer
     ) {}
 
     /**
@@ -64,11 +66,33 @@ final class DispatchCentralOrderToTenantsUseCase
             );
         }
 
-        $prorated = $this->prorator->split(
-            $subtotalsByTenant,
-            (float) ($centralOrder->shipping_amount ?? 0.0),
-            (float) ($centralOrder->discount_amount ?? 0.0)
-        );
+        // Hallazgos N34 y N28: desde que cada tienda calcula su propio envio, impuestos y
+        // cupon, el pedido central guarda ese desglose y aqui se reparte EXACTAMENTE lo
+        // que calculo cada una. Prorratear un total global repartia mal: si la tienda A
+        // cobra envio caro y la B lo tiene gratis, el prorrateo por subtotal le cargaba
+        // parte del envio de A a la B.
+        //
+        // El prorrateo se conserva como respaldo para los pedidos creados antes de este
+        // cambio, que no llevan desglose (hallazgo D1).
+        $desglose = $centralOrder->metadata['charges_by_tenant'] ?? null;
+
+        if (is_array($desglose) && $desglose !== []) {
+            $prorated = [];
+            foreach ($subtotalsByTenant as $tid => $_) {
+                $prorated[$tid] = [
+                    'shipping' => (float) ($desglose[$tid]['shipping'] ?? 0.0),
+                    'discount' => (float) ($desglose[$tid]['discount'] ?? 0.0),
+                    'tax' => (float) ($desglose[$tid]['tax'] ?? 0.0),
+                    'coupon_code' => $desglose[$tid]['coupon_code'] ?? null,
+                ];
+            }
+        } else {
+            $prorated = $this->prorator->split(
+                $subtotalsByTenant,
+                (float) ($centralOrder->shipping_amount ?? 0.0),
+                (float) ($centralOrder->discount_amount ?? 0.0)
+            );
+        }
 
         foreach ($itemsByTenant as $tenantId => $tenantItems) {
             $tenantId = (string) $tenantId;
@@ -104,9 +128,11 @@ final class DispatchCentralOrderToTenantsUseCase
 
                 $shipping = $prorated[$tenantId]['shipping'] ?? 0.0;
                 $discount = $prorated[$tenantId]['discount'] ?? 0.0;
+                $tax = $prorated[$tenantId]['tax'] ?? 0.0;
+                $couponCode = $prorated[$tenantId]['coupon_code'] ?? null;
 
                 DB::transaction(function () use (
-                    $centralOrder, $tenantItems, $shipping, $discount,
+                    $centralOrder, $tenantItems, $shipping, $discount, $tax, $couponCode,
                     &$tenantOrderId, &$tenantOrderNumber, &$tenantOrderTotal
                 ) {
                     $customer = $this->resolveTenantCustomer($centralOrder);
@@ -142,13 +168,23 @@ final class DispatchCentralOrderToTenantsUseCase
                         );
                     }
 
+                    // Hallazgo N28: el cupon de la tienda se consume aqui, dentro de la
+                    // transaccion del despacho y con la tenancy inicializada — los cupones
+                    // viven en la base del inquilino. Si el despacho falla, el uso no queda
+                    // gastado, igual que en el checkout del storefront (hallazgo C6).
+                    if ($couponCode !== null && $couponCode !== '') {
+                        $this->couponRedeemer->redeem($couponCode);
+                    }
+
                     $tenantOrderNumber = 'ORD-'.date('Ymd').'-'.strtoupper(Str::random(6));
 
                     $dto = new CreateOrderData(
                         customerId: (string) $customer->id,
                         paymentMethod: $centralOrder->payment_method,
                         items: $orderItemsDto,
-                        taxAmount: 0.0,
+                        // Hallazgo N34: el impuesto lo calculo la propia tienda con sus
+                        // tarifas; antes iba fijo a 0.0.
+                        taxAmount: $tax,
                         // Hallazgo D1: parte proporcional, ya no 0.0.
                         shippingAmount: $shipping,
                         discountAmount: $discount,

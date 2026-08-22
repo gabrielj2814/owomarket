@@ -1,11 +1,5 @@
-import {
-    isStoredCentralCartItem,
-    readStoredArray,
-    versionedCartKey,
-} from '@/utils/cartStorage';
-import CentralMarketplaceServices, {
-    CentralRevalidatedCartLine,
-} from '@/Services/CentralMarketplaceServices';
+import CentralMarketplaceServices, { CentralRevalidatedCartLine } from '@/Services/CentralMarketplaceServices';
+import { isStoredCentralCartItem, readStoredArray, versionedCartKey } from '@/utils/cartStorage';
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
 export interface CentralCartItem {
@@ -56,9 +50,7 @@ const CentralCartContext = createContext<CentralCartContextType | undefined>(und
 const STORAGE_KEY = versionedCartKey('owomarket_central_cart');
 
 export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [items, setItems] = useState<CentralCartItem[]>(() =>
-        readStoredArray<CentralCartItem>(STORAGE_KEY, isStoredCentralCartItem)
-    );
+    const [items, setItems] = useState<CentralCartItem[]>(() => readStoredArray<CentralCartItem>(STORAGE_KEY, isStoredCentralCartItem));
 
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [revalidationNotices, setRevalidationNotices] = useState<string[]>([]);
@@ -76,23 +68,21 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
         if (items.length === 0) return;
 
         const res = await CentralMarketplaceServices.revalidateCart(
-            items.map(i => ({
+            items.map((i) => ({
                 tenant_id: i.tenant_id,
                 product_id: i.product_id,
                 quantity: i.quantity,
                 price: i.price,
-            }))
+            })),
         );
 
         if (res.code !== 200 || !res.data) return;
 
         const avisos: string[] = [];
-        const porClave = new Map<string, CentralRevalidatedCartLine>(
-            res.data.lines.map(l => [`${l.tenant_id}_${l.product_id}`, l] as const)
-        );
+        const porClave = new Map<string, CentralRevalidatedCartLine>(res.data.lines.map((l) => [`${l.tenant_id}_${l.product_id}`, l] as const));
 
-        setItems(prev =>
-            prev.flatMap(item => {
+        setItems((prev) =>
+            prev.flatMap((item) => {
                 const line = porClave.get(`${item.tenant_id}_${item.product_id}`);
                 if (!line) return [item];
 
@@ -104,7 +94,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 if (line.price_changed && typeof line.price === 'number') {
                     const subio = line.price > item.price;
                     avisos.push(
-                        `El precio de «${item.product_name}» ${subio ? 'subió' : 'bajó'} de $${item.price.toFixed(2)} a $${line.price.toFixed(2)}.`
+                        `El precio de «${item.product_name}» ${subio ? 'subió' : 'bajó'} de $${item.price.toFixed(2)} a $${line.price.toFixed(2)}.`,
                     );
                 }
 
@@ -119,7 +109,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
                         quantity: typeof line.quantity === 'number' ? line.quantity : item.quantity,
                     },
                 ];
-            })
+            }),
         );
 
         setRevalidationNotices(avisos);
@@ -136,12 +126,12 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
     }, [items]);
 
     const addItem = (item: Omit<CentralCartItem, 'id'>) => {
-        setItems(prevItems => {
+        setItems((prevItems) => {
             const existingIndex = prevItems.findIndex(
-                i =>
+                (i) =>
                     i.tenant_id === item.tenant_id &&
                     i.product_id === item.product_id &&
-                    JSON.stringify(i.attributes || {}) === JSON.stringify(item.attributes || {})
+                    JSON.stringify(i.attributes || {}) === JSON.stringify(item.attributes || {}),
             );
 
             if (existingIndex > -1) {
@@ -151,9 +141,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
                 // como la referencia del item no cambiaba, los hijos memoizados no se
                 // volvian a renderizar.
                 return prevItems.map((existing, index) =>
-                    index === existingIndex
-                        ? { ...existing, quantity: existing.quantity + item.quantity }
-                        : existing
+                    index === existingIndex ? { ...existing, quantity: existing.quantity + item.quantity } : existing,
                 );
             }
 
@@ -168,7 +156,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
 
     const removeItem = (itemId: string) => {
-        setItems(prev => prev.filter(i => i.id !== itemId));
+        setItems((prev) => prev.filter((i) => i.id !== itemId));
     };
 
     const updateQuantity = (itemId: string, quantity: number) => {
@@ -177,9 +165,7 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
             return;
         }
 
-        setItems(prev =>
-            prev.map(i => (i.id === itemId ? { ...i, quantity } : i))
-        );
+        setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, quantity } : i)));
     };
 
     const clearCart = () => {
@@ -187,13 +173,13 @@ export const CentralCartProvider: React.FC<{ children: React.ReactNode }> = ({ c
     };
 
     const clearStoreItems = (tenantId: string) => {
-        setItems(prev => prev.filter(i => i.tenant_id !== tenantId));
+        setItems((prev) => prev.filter((i) => i.tenant_id !== tenantId));
     };
 
     const getItemsByStore = (): StoreCartGroup[] => {
         const groups: Record<string, StoreCartGroup> = {};
 
-        items.forEach(item => {
+        items.forEach((item) => {
             if (!groups[item.tenant_id]) {
                 groups[item.tenant_id] = {
                     tenant_id: item.tenant_id,

@@ -47,6 +47,19 @@ beforeEach(function () {
     if (! Schema::hasTable('product_variants')) {
         (require base_path('database/migrations/tenant/2025_10_28_143954_create_product_variants.php'))->up();
     }
+    // N34/N28: la tienda necesita sus tarifas de envio, sus impuestos y sus cupones.
+    if (! Schema::hasTable('shipping_zones')) {
+        (require base_path('database/migrations/tenant/2025_10_28_145209_create_shipping_zones.php'))->up();
+    }
+    if (! Schema::hasTable('shipping_rates')) {
+        (require base_path('database/migrations/tenant/2025_10_28_145238_create_shipping_rates.php'))->up();
+    }
+    if (! Schema::hasTable('tax_rates')) {
+        (require base_path('database/migrations/tenant/2025_10_28_145148_create_tax_rates.php'))->up();
+    }
+    if (! Schema::hasTable('coupons')) {
+        (require base_path('database/migrations/tenant/2025_10_28_144655_create_coupons.php'))->up();
+    }
     if (! Schema::hasTable('orders')) {
         (require base_path('database/migrations/tenant/2025_10_28_144320_create_orders.php'))->up();
     }
@@ -237,7 +250,10 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     $masterOrder = CentralOrder::with('items')->find($centralOrderId);
     expect($masterOrder)->not->toBeNull();
     expect($masterOrder->subtotal)->toBe(200.00);
-    expect($masterOrder->total)->toBe(210.00); // 200 + 10 shipping
+    // Hallazgo N34: `shipping_amount` ya NO se toma del navegador. Cada tienda calcula
+    // el suyo con sus propias tarifas, y estas tiendas de prueba no tienen ninguna
+    // configurada, asi que el envio es 0 y el total es el subtotal.
+    expect($masterOrder->total)->toBe(200.00);
     expect($masterOrder->items->count())->toBe(2);
 
     // 3. Verify Local Orders in Tenant A and Tenant B
@@ -250,15 +266,15 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     // Verify Tenant A local order in DB
     // Hallazgo D1: el envío de $10 se reparte entre las dos tiendas (mitad y
     // mitad, porque aportan $100 cada una), en vez de perderse. Antes cada
-    // pedido de tienda quedaba en $100 y la suma no cuadraba con los $210 que
+    // pedido de tienda quedaba en $100 y la suma no cuadraba con lo que
     // pagó el cliente.
     tenancy()->initialize($this->tenantA);
     $localOrderA = DB::table('orders')->where('id', $itemA->tenant_order_id)->first();
     expect($localOrderA)->not->toBeNull();
-    expect((float) $localOrderA->total)->toBe(105.00);
+    expect((float) $localOrderA->total)->toBe(100.00);
     $paymentA = DB::table('payments')->where('order_id', $itemA->tenant_order_id)->first();
     expect($paymentA)->not->toBeNull();
-    expect((float) $paymentA->amount)->toBe(105.00);
+    expect((float) $paymentA->amount)->toBe(100.00);
     expect($paymentA->payment_gateway)->toBe('pago_movil');
     tenancy()->end();
 
@@ -266,10 +282,10 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     tenancy()->initialize($this->tenantB);
     $localOrderB = DB::table('orders')->where('id', $itemB->tenant_order_id)->first();
     expect($localOrderB)->not->toBeNull();
-    expect((float) $localOrderB->total)->toBe(105.00);
+    expect((float) $localOrderB->total)->toBe(100.00);
     $paymentB = DB::table('payments')->where('order_id', $itemB->tenant_order_id)->first();
     expect($paymentB)->not->toBeNull();
-    expect((float) $paymentB->amount)->toBe(105.00);
+    expect((float) $paymentB->amount)->toBe(100.00);
     tenancy()->end();
 
     // La suma de los pedidos de tienda cuadra ahora con el total central.
@@ -291,7 +307,7 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     expect($commA)->not->toBeNull();
     expect($commA->commission_rate)->toBe(3.50); // Pro plan
     expect($commA->commission_amount)->toBe(3.50); // 100 * 3.5%
-    expect((float) $commA->order_total)->toBe(100.00); // base, no los $105 cobrados
+    expect((float) $commA->order_total)->toBe(100.00); // mercancia neta de descuento
 
     $commB = $commissions->firstWhere('tenant_id', $this->tenantB->id);
     expect($commB)->not->toBeNull();
@@ -303,7 +319,7 @@ test('Multi-Store Central Checkout creates unified master order and automaticall
     $confResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
         ->assertJsonPath('data.stores_count', 2)
-        ->assertJsonPath('data.total', 210);
+        ->assertJsonPath('data.total', 200);
 
     $breakdowns = $confResponse->json('data.stores_breakdown');
     expect(count($breakdowns))->toBe(2);
@@ -372,24 +388,69 @@ test('El checkout central rechaza productos despublicados del catálogo', functi
     expect(CentralOrder::count())->toBe(0);
 });
 
-test('El envío y el descuento se prorratean entre las tiendas (hallazgo D1)', function () {
-    // Escenario numérico textual de la auditoría, adaptado a los productos del
-    // test: A aporta $60 (no divisible con el balón de $50, así que se usa
-    // 1 balón = $50) y B aporta $100. Envío $10, cupón −$30.
+/**
+ * Hallazgos N34 y N28, que reemplazan al escenario original de D1.
+ *
+ * D1 comprobaba que el envío y el descuento **globales** se prorratearan entre las tiendas
+ * en vez de perderse. Desde el 22/08/2026 ya no hay envío ni descuento globales: cada
+ * tienda calcula el suyo con sus propias tarifas y sus propios cupones, y el pedido central
+ * suma. La preocupación de D1 sigue viva —que ni un céntimo se pierda ni se invente— y es
+ * lo que se comprueba abajo.
+ *
+ * El prorrateo se conserva en el código como respaldo para los pedidos creados antes del
+ * cambio, que no llevan desglose por tienda.
+ */
+test('cada tienda aporta su propio envío, impuesto y cupón al pedido central (N34, N28)', function () {
+    // Tarifa de envío de $8 y un cupón del 10%.
     //
-    // Subtotal = 150, total central = 150 + 10 - 30 = $130.
-    // Pesos: A = 50/150 = 1/3, B = 100/150 = 2/3.
-    // Envío:     A = $3,33   B = $6,67   (suma exacta $10)
-    // Descuento: A = $10,00  B = $20,00  (suma exacta $30)
-    // Total A = 50 + 3,33 - 10 = $43,33
-    // Total B = 100 + 6,67 - 20 = $86,67
-    // Suma = $130 ✓
+    // La suite corre con `DatabaseTenancyBootstrapper` desactivado, así que **todas las
+    // tiendas comparten la misma base SQLite** y ambas ven la misma tarifa. En producción
+    // cada una tiene la suya. Lo que sí se puede comprobar aquí, y es lo que importa, es
+    // que el envío sale de las tarifas de la tienda y NO del navegador, y que el cupón
+    // sólo descuenta a la tienda cuyo código se envió.
+    tenancy()->initialize($this->tenantA);
+
+    $zoneId = (string) Str::uuid();
+    DB::table('shipping_zones')->insert([
+        'id' => $zoneId,
+        'name' => 'Nacional',
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    DB::table('shipping_rates')->insert([
+        'id' => (string) Str::uuid(),
+        'shipping_zone_id' => $zoneId,
+        'name' => 'Estándar',
+        'type' => 'flat',
+        'cost' => 8.00,
+        'is_active' => true,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    DB::table('coupons')->insert([
+        'id' => (string) Str::uuid(),
+        'code' => 'DIEZ',
+        'type' => 'percentage',
+        'value' => 10.00,
+        'valid_from' => now()->subMonth()->toDateString(),
+        'valid_to' => now()->addMonth()->toDateString(),
+        'is_active' => true,
+        'used_count' => 0,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+
+    tenancy()->end();
+
     $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
-        'customer' => ['name' => 'Cliente Prorrateo', 'email' => 'prorrateo@example.com'],
+        'customer' => ['name' => 'Cliente Cargos', 'email' => 'cargos@example.com'],
         'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
         'payment_method' => 'pago_movil',
-        'shipping_amount' => 10.00,
-        'discount_amount' => 30.00,
+        // El navegador ya no decide estos importes; se ignoran a propósito.
+        'shipping_amount' => 999.00,
+        'discount_amount' => 999.00,
+        'coupons' => [$this->tenantA->id => 'DIEZ'],
         'items' => [
             ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
             ['tenant_id' => $this->tenantB->id, 'product_id' => $this->productB->id, 'quantity' => 1],
@@ -398,37 +459,41 @@ test('El envío y el descuento se prorratean entre las tiendas (hallazgo D1)', f
 
     $response->assertStatus(201);
 
+    // A = $50 + $8 de envío − $5 de cupón = $53. B = $100 + $8 = $108.
+    // Total = 150 + 16 − 5 = $161. Y los $999 del navegador se ignoran por completo.
     $order = CentralOrder::with('items')->find($response->json('data.order_id'));
-    expect($order->subtotal)->toBe(150.00);
-    expect($order->total)->toBe(130.00);
+    expect($order->subtotal)->toBe(150.00)
+        ->and((float) $order->shipping_amount)->toBe(16.00)
+        ->and((float) $order->discount_amount)->toBe(5.00)
+        ->and($order->total)->toBe(161.00);
 
     $itemA = $order->items->firstWhere('tenant_id', $this->tenantA->id);
     $itemB = $order->items->firstWhere('tenant_id', $this->tenantB->id);
 
     tenancy()->initialize($this->tenantA);
     $localA = DB::table('orders')->where('id', $itemA->tenant_order_id)->first();
-    expect((float) $localA->shipping_amount)->toBe(3.33);
-    expect((float) $localA->discount_amount)->toBe(10.00);
-    expect((float) $localA->total)->toBe(43.33);
+    // El envío y el descuento de A son SUYOS, no una parte prorrateada de un total.
+    expect((float) $localA->shipping_amount)->toBe(8.00)
+        ->and((float) $localA->discount_amount)->toBe(5.00)
+        ->and((float) $localA->total)->toBe(53.00);
+    // Y el cupón quedó consumido (hallazgo N28).
+    expect((int) DB::table('coupons')->where('code', 'DIEZ')->value('used_count'))->toBe(1);
     tenancy()->end();
 
     tenancy()->initialize($this->tenantB);
     $localB = DB::table('orders')->where('id', $itemB->tenant_order_id)->first();
-    expect((float) $localB->shipping_amount)->toBe(6.67);
-    expect((float) $localB->discount_amount)->toBe(20.00);
-    expect((float) $localB->total)->toBe(86.67);
+    // A B no se le carga NADA del descuento de A: el cupón es de quien lo emitió.
+    expect((float) $localB->discount_amount)->toBe(0.00)
+        ->and((float) $localB->total)->toBe(108.00);
     tenancy()->end();
 
-    // Lo esencial: la suma de los pedidos de tienda es EXACTAMENTE lo que pagó
-    // el cliente. Ni un céntimo perdido ni inventado por el redondeo.
-    expect(round((float) $localA->total + (float) $localB->total, 2))->toBe(130.00);
+    // Lo esencial de D1 sigue en pie: la suma de los pedidos de tienda es EXACTAMENTE lo
+    // que pagó el cliente.
+    expect(round((float) $localA->total + (float) $localB->total, 2))->toBe(161.00);
 
-    // Y la comisión se cobra sobre la mercancía neta de descuento (sin envío):
-    // A → 50 - 10 = $40 ; B → 100 - 20 = $80.
+    // Y la comisión, sobre la mercancía neta de descuento y sin envío: A → 50 − 5 = $45.
     $commA = PlatformCommission::where('order_id', $itemA->tenant_order_id)->first();
-    $commB = PlatformCommission::where('order_id', $itemB->tenant_order_id)->first();
-    expect((float) $commA->order_total)->toBe(40.00);
-    expect((float) $commB->order_total)->toBe(80.00);
+    expect((float) $commA->order_total)->toBe(45.00);
 });
 
 test('Reenviar el checkout con la misma clave de idempotencia no duplica el pedido (hallazgo C2)', function () {
@@ -556,4 +621,48 @@ test('el checkout central rechaza el pedido si una tienda no tiene existencias',
     tenancy()->initialize($this->tenantA);
     expect(Product::find($this->productA->id)->quantity)->toBe(1);
     tenancy()->end();
+});
+
+// N34: la pantalla mostraba el subtotal puro como total. El presupuesto devuelve lo mismo
+// que calculará el servidor al crear el pedido, para que no tenga que inventarlo.
+test('el presupuesto del checkout central devuelve el total real', function () {
+    tenancy()->initialize($this->tenantA);
+    $zoneId = (string) Str::uuid();
+    DB::table('shipping_zones')->insert([
+        'id' => $zoneId, 'name' => 'Nacional', 'is_active' => true,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    DB::table('shipping_rates')->insert([
+        'id' => (string) Str::uuid(), 'shipping_zone_id' => $zoneId, 'name' => 'Estándar',
+        'type' => 'flat', 'cost' => 8.00, 'is_active' => true,
+        'created_at' => now(), 'updated_at' => now(),
+    ]);
+    tenancy()->end();
+
+    $this->postJson('/api/central/marketplace/checkout/quote', [
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+        'shipping_address' => ['city' => 'Caracas'],
+    ])
+        ->assertStatus(200)
+        ->assertJsonPath('data.subtotal', 50)
+        ->assertJsonPath('data.shipping', 8)
+        ->assertJsonPath('data.total', 58);
+});
+
+test('el presupuesto informa de un cupón inválido sin romperse', function () {
+    $response = $this->postJson('/api/central/marketplace/checkout/quote', [
+        'items' => [
+            ['tenant_id' => $this->tenantA->id, 'product_id' => $this->productA->id, 'quantity' => 1],
+        ],
+        'shipping_address' => ['city' => 'Caracas'],
+        'coupons' => [$this->tenantA->id => 'NOEXISTE'],
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.discount', 0)
+        ->assertJsonPath("data.by_tenant.{$this->tenantA->id}.coupon_code", null);
+
+    expect($response->json("data.by_tenant.{$this->tenantA->id}.coupon_error"))->not->toBeNull();
 });

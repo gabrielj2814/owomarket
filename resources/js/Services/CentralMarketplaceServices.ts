@@ -21,6 +21,8 @@ export interface CentralCheckoutItemPayload {
 }
 
 export interface CreateCentralOrderPayload {
+    /** Hallazgo N28: un código de cupón por tienda; los cupones son de tienda. */
+    coupons?: Record<string, string>;
     customer: {
         id?: string;
         central_uuid?: string;
@@ -197,12 +199,29 @@ export interface CentralRevalidateCartResponse {
     has_changes: boolean;
 }
 
+export interface CentralOrderQuote {
+    by_tenant: Record<
+        string,
+        {
+            subtotal: number;
+            shipping: number;
+            tax: number;
+            discount: number;
+            coupon_code: string | null;
+            coupon_error: string | null;
+        }
+    >;
+    subtotal: number;
+    shipping: number;
+    tax: number;
+    discount: number;
+    total: number;
+}
+
 const CentralMarketplaceServices = {
     getHomeData: async (): Promise<Data<MarketplaceHomeData>> => {
         try {
-            const response = await axiosCentral.get<Data<MarketplaceHomeData>>(
-                '/api/central/marketplace/home-data'
-            );
+            const response = await axiosCentral.get<Data<MarketplaceHomeData>>('/api/central/marketplace/home-data');
             return response.data;
         } catch (error: any) {
             return (
@@ -222,14 +241,9 @@ const CentralMarketplaceServices = {
         }
     },
 
-    getProducts: async (
-        params: MarketplaceProductFilterParams = {}
-    ): Promise<Data<CentralProductsListResponse>> => {
+    getProducts: async (params: MarketplaceProductFilterParams = {}): Promise<Data<CentralProductsListResponse>> => {
         try {
-            const response = await axiosCentral.get<Data<CentralProductsListResponse>>(
-                '/api/central/marketplace/products',
-                { params }
-            );
+            const response = await axiosCentral.get<Data<CentralProductsListResponse>>('/api/central/marketplace/products', { params });
             return response.data;
         } catch (error: any) {
             return (
@@ -244,13 +258,9 @@ const CentralMarketplaceServices = {
         }
     },
 
-    getProductDetail: async (
-        slugOrId: string
-    ): Promise<Data<CentralProductDetailResponse>> => {
+    getProductDetail: async (slugOrId: string): Promise<Data<CentralProductDetailResponse>> => {
         try {
-            const response = await axiosCentral.get<Data<CentralProductDetailResponse>>(
-                `/api/central/marketplace/product/${slugOrId}`
-            );
+            const response = await axiosCentral.get<Data<CentralProductDetailResponse>>(`/api/central/marketplace/product/${slugOrId}`);
             return response.data;
         } catch (error: any) {
             return (
@@ -267,9 +277,7 @@ const CentralMarketplaceServices = {
 
     getStores: async (): Promise<Data<TenantStoreItem[]>> => {
         try {
-            const response = await axiosCentral.get<Data<TenantStoreItem[]>>(
-                '/api/central/marketplace/stores'
-            );
+            const response = await axiosCentral.get<Data<TenantStoreItem[]>>('/api/central/marketplace/stores');
             return response.data;
         } catch (error: any) {
             return (
@@ -289,13 +297,10 @@ const CentralMarketplaceServices = {
      * central, que seguia con precios y stock congelados en `localStorage`.
      */
     revalidateCart: async (
-        items: Array<{ tenant_id: string; product_id: string; quantity: number; price?: number }>
+        items: Array<{ tenant_id: string; product_id: string; quantity: number; price?: number }>,
     ): Promise<Data<CentralRevalidateCartResponse>> => {
         try {
-            const response = await axiosCentral.post<Data<CentralRevalidateCartResponse>>(
-                'cart/revalidate',
-                { items }
-            );
+            const response = await axiosCentral.post<Data<CentralRevalidateCartResponse>>('cart/revalidate', { items });
             return response.data;
         } catch (error: any) {
             return (
@@ -309,13 +314,38 @@ const CentralMarketplaceServices = {
         }
     },
 
+    /**
+     * Hallazgos N34 y N28: el checkout central mostraba el subtotal puro como total.
+     * Devuelve lo mismo que calculara el servidor al crear el pedido.
+     */
+    quote: async (payload: {
+        items: Array<{ tenant_id: string; product_id: string; quantity: number }>;
+        shipping_address?: Record<string, unknown>;
+        coupons?: Record<string, string>;
+    }): Promise<Data<CentralOrderQuote>> => {
+        try {
+            const response = await axiosCentral.post<Data<CentralOrderQuote>>('checkout/quote', payload);
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'No se pudo calcular el total',
+                    data: null as any,
+                }
+            );
+        }
+    },
+
     createUnifiedOrder: async (
-        payload: CreateCentralOrderPayload
+        payload: CreateCentralOrderPayload,
     ): Promise<Data<{ order_id: string; order_number: string; total: number; redirect_url: string }>> => {
         try {
-            const response = await axiosCentral.post<
-                Data<{ order_id: string; order_number: string; total: number; redirect_url: string }>
-            >('/api/central/marketplace/checkout/create-order', payload);
+            const response = await axiosCentral.post<Data<{ order_id: string; order_number: string; total: number; redirect_url: string }>>(
+                '/api/central/marketplace/checkout/create-order',
+                payload,
+            );
             return response.data;
         } catch (error: any) {
             return (
@@ -330,12 +360,10 @@ const CentralMarketplaceServices = {
         }
     },
 
-    getOrderConfirmation: async (
-        orderIdOrNumber: string
-    ): Promise<Data<CentralOrderConfirmationResponse>> => {
+    getOrderConfirmation: async (orderIdOrNumber: string): Promise<Data<CentralOrderConfirmationResponse>> => {
         try {
             const response = await axiosCentral.get<Data<CentralOrderConfirmationResponse>>(
-                `/api/central/marketplace/order/${orderIdOrNumber}/confirmation`
+                `/api/central/marketplace/order/${orderIdOrNumber}/confirmation`,
             );
             return response.data;
         } catch (error: any) {
