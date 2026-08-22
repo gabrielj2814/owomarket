@@ -1082,6 +1082,17 @@ Viola la regla 1 de frontend del proyecto. Sin `X-CSRF-TOKEN` como el resto, sin
 No estaban en la auditoría original; se descubrieron al implementar los arreglos.
 Cada uno está documentado en la sección «Trabajo de seguimiento» del plan citado.
 
+**Estado al 21/08/2026: 12 cerrados · 19 abiertos.** Repasados uno a uno contra el código,
+no contra las notas de cada fase. Los abiertos se agrupan en cinco frentes:
+
+| Frente | Hallazgos | Por qué importa |
+| :--- | :--- | :--- |
+| **Stock que nadie repone ni reserva** | N13, N14 | Un pedido cancelado no devuelve inventario, y el checkout central no lo descuenta siquiera |
+| **Cuándo nace y cómo se anula una comisión** | N15, N16 | La comisión nace al despachar y no al cobrar; revertir una ya liquidada sólo deja una marca |
+| **Nada se reintenta ni avisa** | N17, N20, N25 | Despachos fallidos, sincronizaciones del catálogo y fallos del BCV se quedan donde caen |
+| **Puertas sin cerrar** | N18, N19, N22, N23 | Sin límite de tasa, sin roles dentro de la tienda, sin forma de crear el primer superadmin, y `$domain->id` devolviendo `0` |
+| **Deuda del checkout y del frontend** | N12, N21, N24, N27, N28, N29, N30, N31 | Cupones y carrito del marketplace central, tipos de los servicios, y el formulario de reseñas roto desde siempre |
+
 | # | Hallazgo | Origen | Estado |
 | :--- | :--- | :--- | :--- |
 | N1 | El login del cliente central nunca creaba sesión: devolvía un token de 64 caracteres que no se persistía ni verificaba en ningún sitio | Fase 0.3-D | ✅ Cerrado |
@@ -1096,25 +1107,25 @@ Cada uno está documentado en la sección «Trabajo de seguimiento» del plan ci
 | N10 | No existía ningún lugar donde el comerciante configurara sus datos de cobro | Fase 0.5 | ✅ Cerrado (grupo de settings `payment`) |
 | N11 | El tipo `StorefrontPaymentMethod` sólo declaraba 4 campos, lo que obligaba a `(method as any)` y hacía invisible G1 para TypeScript | Fase 0.5 | ✅ Cerrado |
 | N12 | **El formulario de reseñas del storefront lleva roto desde siempre:** exige `customer_id` y `TenantProductDetailPage.tsx` nunca lo envía (422 garantizado) | Fase 0.4 | ⬜ Abierto |
-| N13 | `StockReserver::release()` existe pero nadie lo llama: **nadie repone stock al cancelar un pedido**. Falta decidir en qué estados corresponde (decisión de producto) | Fase 1.3 | ⬜ Abierto |
+| N13 | `StockReserver::release()` existe pero nadie lo llama: **nadie repone stock al cancelar un pedido**. Falta decidir en qué estados corresponde (decisión de producto) | Fase 1.3 | ⬜ Abierto — reverificado: la Fase 3.2 no lo tocó, `release()` sólo se invoca desde un test |
 | N14 | **El checkout central no reserva stock en absoluto:** `DispatchCentralOrderToTenantsUseCase` crea pedidos de tienda sin tocar el inventario | Fase 1.3 | ⬜ Abierto |
 | N15 | La comisión sigue naciendo al despachar y no al cobrar. Es la raíz de D2: mientras no cambie, dependemos de que alguien cancele el pedido para anularla | Fase 1.2 | ⬜ Abierto |
 | N16 | No existen notas de crédito: revertir una comisión ya liquidada sólo deja una marca `requires_manual_adjustment` | Fase 1.2 | ⬜ Abierto |
 | N17 | Los despachos fallidos quedan en `status = 'failed'` y nada los reintenta; el despacho sigue siendo síncrono | Fase 1.1 | ⬜ Abierto |
 | N18 | Ningún endpoint tiene límite de tasa. Al pasar `api-tenant` de `api` a `web` se perdió incluso la posibilidad de `throttleApi()` (aunque nunca estuvo activo) | Fase 0.3-E | ⬜ Abierto |
-| N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto |
+| N19 | Dentro de una tienda no hay control de rol: un `staff` puede borrar el catálogo o anular facturas igual que el `owner` | Fase 0.3-E | ⬜ Abierto — reverificado: `/api-tenant/*` lleva `web` + tenancy + `auth`, sin ningún alias de rol |
 | N20 | El `error` que registra el fallback prolongado del BCV **no llega a nadie**: no hay notificación ni integración con un servicio de alertas, sólo un nivel de log más alto | Fase 1.4 | ⬜ Abierto |
 | N21 | `src/ExchangeRate/Infrastructure/Providers/ExchangeRateServiceProvider.php` es un duplicado muerto: no está en `bootstrap/providers.php` y le faltan los `use` de `BcvScraperInterface` y `BcvWebScraper`, así que sus `::class` resuelven a FQCN inexistentes | Fase 1.4 | ⬜ Abierto |
 | N22 | **Producción se queda sin forma de crear el primer superadmin**: era `RootUserSeeder`, ahora vetado fuera de desarrollo. No rompe los despliegues existentes, pero una instalación nueva no tiene por dónde arrancar. Hace falta un `admin:create-super` — anotado como **pendiente P1** | Fase 2.1 | ⬜ Abierto |
-| N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ⬜ Abierto |
-| N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ⬜ Abierto |
-| N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ⬜ Abierto |
-| N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ⬜ Abierto |
-| N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto |
+| N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ⬜ Abierto |
 | N24 | No hay comando para **re-sincronizar el catálogo central**. Tras la Fase 2.2 los productos sólo se re-sincronizan al volver a guardarse, así que reparar el catálogo existente pide un `tinker` a mano. Merece un `catalog:resync {--tenant=}` | Fase 2.2 | ⬜ Abierto |
 | N25 | La sincronización con el catálogo central es **síncrona**: escribe en la base central dentro de la misma petición, incluida la transacción del checkout. Si el marketplace no responde, la fila queda desincronizada y sólo queda el log. Lo natural es un job en cola con reintentos | Fase 2.2 | ⬜ Abierto |
 | N26 | El `metadata` de `central_products` se sobrescribía con el del producto de la tienda en cada sincronización, **borrando el historial de moderación y la comisión personalizada**. Pasaba desapercibido porque la sincronización casi nunca corría | Fase 2.2 | ✅ Cerrado |
-| N23 | **`domains.id` es una columna `uuid` pero el modelo `Stancl\Tenancy\Database\Models\Domain` usa los valores por defecto de Eloquent (`$incrementing = true`, `$keyType = 'int'`), así que Eloquent castea la clave a int: `$domain->id` devuelve SIEMPRE `0`.** Con la mayoría de UUID el fallo es silencioso; cuando el UUID empieza por dígitos seguidos de `e` (≈6% de los casos) PHP lo lee como notación científica, emite un warning que Laravel convierte en excepción y **la petición devuelve 500**. Es la causa del test intermitente `AdminPhaseTwoOperationsTest` | Diagnosticado tras la Fase 2.1 | ⬜ Abierto |
+| N27 | `usage_limit_per_customer` **no se aplica en ningún sitio**: `validateUsability()` sólo comprueba el límite global, y `orders` no guarda el cupón usado, así que no hay con qué contarlo. La Fase 3.1 escribe `coupon_code` en el `metadata` del pedido para que el dato exista, pero hace falta una columna indexada | Fase 3.1 | ⬜ Abierto |
+| N28 | **El checkout central no aplica cupones en absoluto.** `CreateUnifiedCentralOrderUseCase` recibe un descuento que nadie valida ni consume | Fase 3.1 | ⬜ Abierto |
+| N29 | El resto de servicios del frontend arrastran el mismo error de tipos que G2: devuelven `response.data` declarando `ApiResponse<T>` en vez de `Data<T>`, y los consumidores lo compensan a mano con castings a `any`. Es la misma trampa esperando a la siguiente página | Fase 3.1 | ⬜ Abierto — medido: **119 firmas en 16 servicios**. La Fase 3.1 sólo corrigió `CouponServices.validate`; `StorefrontServices` ya estaba bien |
+| N30 | **El checkout no revalida el carrito al enviar**, sólo al abrir el carrito. El servidor resuelve los precios de todos modos (Fase 0.4), así que no se cobra mal, pero el comprador puede pagar viendo un total viejo | Fase 3.2 | ⬜ Abierto |
+| N31 | **El carrito central no se revalida.** La Fase 3.2 cubre el storefront de cada tienda; `CentralCartContext` sigue con precios congelados y necesita su propio endpoint contra `central_products` | Fase 3.2 | ⬜ Abierto |
 
 ---
 
