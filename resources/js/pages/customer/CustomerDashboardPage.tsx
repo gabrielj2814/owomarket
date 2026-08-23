@@ -35,7 +35,7 @@ export const CustomerDashboardPage: React.FC = () => {
 
         Promise.all([
             CustomerPortalServices.getOrders(customer.id, { limit: 5 }),
-            CustomerPortalServices.getCoupons(customer.id),
+            CustomerPortalServices.getCoupons(),
             CustomerPortalServices.getWishlist(customer.id),
         ])
             .then(([ordersRes, couponsRes, wishlistRes]) => {

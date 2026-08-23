@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
+use Src\Coupon\Application\UseCase\ValidateCouponUseCase;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
@@ -114,17 +115,26 @@ test('POST /api/central/customer/returns and GET /api/central/customer/returns m
         ->assertJsonPath('data.0.product_name', 'Teclado Mecánico RGB');
 });
 
-test('GET /api/central/customer/coupons returns promotional coupons', function () {
+/*
+ * Hallazgo C1. Este test exigia que el primer cupon fuese 'OWOPASS10' — uno de los tres
+ * inventados que el portal anunciaba y el checkout rechazaba. Consagraba la promesa falsa,
+ * igual que el test de A3 consagraba la enumeracion de correos.
+ *
+ * Ahora exige lo que de verdad importa: que todo codigo anunciado se pueda canjear.
+ */
+test('el portal solo anuncia cupones que el checkout acepta (C1)', function () {
     $response = $this->getJson('/api/central/customer/coupons');
 
-    $response->assertStatus(200)
-        ->assertJson([
-            'code' => 200,
-            'status' => 'success',
-        ]);
+    $response->assertStatus(200)->assertJson(['code' => 200, 'status' => 'success']);
 
-    expect($response->json('data'))->not->toBeEmpty();
-    expect($response->json('data.0.code'))->toBe('OWOPASS10');
+    $validador = app(ValidateCouponUseCase::class);
+
+    $rechazados = collect($response->json('data'))
+        ->reject(fn ($cupon) => $validador->execute((string) $cupon['code'], 100000.0)->isValid)
+        ->pluck('code')
+        ->all();
+
+    expect($rechazados)->toBe([], 'El portal anuncia codigos que el checkout rechaza: '.implode(', ', $rechazados));
 });
 
 test('POST /api/central/customer/wishlist/toggle and GET /api/central/customer/wishlist manage favorites', function () {

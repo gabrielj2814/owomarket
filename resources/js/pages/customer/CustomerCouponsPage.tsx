@@ -19,7 +19,7 @@ export const CustomerCouponsPage: React.FC = () => {
     const [loadError, setLoadError] = useState(false);
 
     useEffect(() => {
-        CustomerPortalServices.getCoupons(customer?.id)
+        CustomerPortalServices.getCoupons()
             .then(res => {
                 if (res?.data) {
                     setCoupons(res.data);
@@ -29,9 +29,14 @@ export const CustomerCouponsPage: React.FC = () => {
             .finally(() => setLoading(false));
     }, [customer?.id]);
 
+    // Hallazgo C2: era un alert(), que bloquea el hilo y hay que descartar a mano para
+    // seguir. Un aviso que se desvanece encaja mejor en «he copiado algo».
+    const [copiado, setCopiado] = useState<string | null>(null);
+
     const copyCode = (code: string) => {
-        navigator.clipboard.writeText(code);
-        alert(`¡Cupón ${code} copiado al portapapeles! Aplícalo en el carrito de compras.`);
+        void navigator.clipboard.writeText(code);
+        setCopiado(code);
+        setTimeout(() => setCopiado(prev => (prev === code ? null : prev)), 2500);
     };
 
     return (
@@ -49,6 +54,28 @@ export const CustomerCouponsPage: React.FC = () => {
                     Cupones Disponibles ({coupons.length})
                 </h3>
             </div>
+
+            {copiado && (
+                <div role="status" className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold">
+                    Cupón {copiado} copiado. Aplícalo en el carrito de compras.
+                </div>
+            )}
+
+            {/*
+              * Hallazgo C1: hasta ahora esta lista nunca llegaba vacía porque el servidor
+              * devolvía tres promociones inventadas que el checkout rechazaba. Al quitarlas
+              * puede quedar vacía de verdad, y sin este bloque se veía «Cupones Disponibles
+              * (0)» sobre un hueco en blanco, que parece una página rota.
+              */}
+            {!loading && !loadError && coupons.length === 0 && (
+                <div className="p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 text-center">
+                    <HiOutlineTicket className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
+                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-1">No hay cupones disponibles</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Cuando haya promociones activas aparecerán aquí.
+                    </p>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {coupons.map(coupon => (

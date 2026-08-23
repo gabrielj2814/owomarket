@@ -235,10 +235,11 @@ export const CustomerPortalServices = {
     },
 
     // Cupones
-    async getCoupons(customerId?: string) {
-        const res = await axios.get(`/api/central/customer/coupons`, {
-            params: { customer_id: customerId },
-        });
+    // Hallazgo C1: el catalogo de cupones es publico y el servidor ya no lee ningun
+    // customer_id. Mandarlo era ruido que hacia parecer que la respuesta dependia de quien
+    // pregunta.
+    async getCoupons() {
+        const res = await axios.get(`/api/central/customer/coupons`);
         return res.data;
     },
 
