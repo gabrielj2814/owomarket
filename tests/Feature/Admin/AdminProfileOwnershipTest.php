@@ -38,7 +38,7 @@ test('un propietario de tienda no puede leer el perfil de un superadministrador'
     $superAdmin = usuarioCentralDeTipo('super_admin', 'Super Admin');
     $propietario = usuarioCentralDeTipo('tenant_owner', 'Propietario Curioso');
 
-    $respuesta = $this->withoutExceptionHandling()->actingAs($propietario)
+    $respuesta = $this->actingAs($propietario)
         ->get('/admin/backoffice/'.$superAdmin->id.'/profile');
 
     expect($respuesta->status())->toBeIn([403, 404]);

@@ -235,7 +235,11 @@ class TenantRepository implements TenantRepositoryInterface
         tenancy()->initialize($tenantDB);
         $databaseName = $tenantDB->tenancy_db_name;
         tenancy()->end();
-        DB::connection('central')->statement("DROP DATABASE IF EXISTS `{$databaseName}`");
+        // Hallazgo P3: esto fijaba 'central' a mano. Se lee del mismo config que el resto
+        // para que no haya dos respuestas a «cual es la conexion central» — sobre todo en
+        // una sentencia que BORRA una base de datos entera.
+        $conexionCentral = config('tenancy.database.central_connection') ?: 'central';
+        DB::connection($conexionCentral)->statement("DROP DATABASE IF EXISTS `{$databaseName}`");
 
         return $tenant;
     }

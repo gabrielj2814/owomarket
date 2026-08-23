@@ -9,6 +9,7 @@ use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Support\Facades\Route;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureSupportRequesterIsAuthenticated;
+use Src\Shared\Infrastructure\Http\Middleware\EnsureRouteUserIsSelf;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureTenantUserHasPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserHasStaffPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserIsSuperAdmin;
@@ -118,6 +119,9 @@ return Application::configure(basePath: dirname(__DIR__))
         |                    acepta parámetros: staff:manage_payouts,manage_plans (lógica OR).
         |                    El super administrador siempre pasa.
         |   'tenant_owner' → propietarios de tienda ('tenant_owner' u 'owner') y super admin.
+        |   'own_user'     → el uuid que viaja en la URL tiene que ser el de quien pide
+        |                    (hallazgos P1 y P2). Acepta el nombre del segmento como
+        |                    parametro: own_user:user_uuid es el valor por defecto.
         |   'tenant_can'   → permisos DENTRO de una tienda (hallazgo N19). Acepta
         |                    parametros: tenant_can:manage_catalog,manage_orders (OR).
         |                    Las lecturas pasan siempre; solo exige permiso al escribir.
@@ -133,6 +137,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => EnsureUserHasStaffPermission::class,
             'tenant_owner' => EnsureUserIsTenantOwner::class,
             'tenant_can' => EnsureTenantUserHasPermission::class,
+            'own_user' => EnsureRouteUserIsSelf::class,
             'internal' => InternalServiceMiddleware::class,
             'support_session' => EnsureSupportRequesterIsAuthenticated::class,
         ]);

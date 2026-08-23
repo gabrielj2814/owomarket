@@ -22,9 +22,11 @@ use Src\SupportTicket\Infrastructure\Http\Controller\ViewTenantOwnerSupportGETCo
 // Ahora se monta una sola vez, en la raiz, y la vista del propietario lleva su prefijo
 // aqui dentro — que ademas es donde se lee junto a la ruta que lo necesita.
 Route::prefix('tenant')->group(function () {
+    // Hallazgo P1: este controlador tambien lista los tickets del `{user_uuid}` de la URL,
+    // sin compararlo con la sesion. Es la misma puerta que la billetera, y se cierra igual.
     Route::get('/owner/backoffice/{user_uuid}/support', ViewTenantOwnerSupportGETController::class)
         ->name('central.backoffice.web.tenant.owner.support')
-        ->middleware('auth');
+        ->middleware(['auth', 'own_user']);
 });
 
 Route::get('/account/support', ViewCustomerSupportGETController::class)

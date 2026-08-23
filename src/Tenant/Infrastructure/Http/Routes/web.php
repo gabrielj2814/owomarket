@@ -18,37 +18,70 @@ use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantIndexGETController
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantRequestIndexGETController;
 use Src\Tenant\Infrastructure\Http\Controller\ViewModuleTenantSuspendedIndexGETController;
 
-// module tenant
-Route::get('/backoffice/{user_uuid}/module', [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index')->middleware('auth');
-Route::post('/backoffice/filter', [FiltrarTenantsPOSTController::class, 'index'])->middleware('auth');
-Route::get('/backoffice/{id}', [ConsultTenantByUuidGETController::class, 'index'])->middleware('auth');
-Route::patch('/backoffice/{id}/suspended', [SuspendedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
-Route::patch('/backoffice/{id}/active', [ActiveTenantByUuidPATCHController::class, 'index'])->middleware('auth');
-Route::patch('/backoffice/{id}/inactive', [InactiveTenantByUuidPATCHController::class, 'index'])->middleware('auth');
+/*
+|--------------------------------------------------------------------------
+| Gobernanza de tiendas — administración de la plataforma (hallazgo P0)
+|--------------------------------------------------------------------------
+|
+| Todo este bloque llevaba sólo 'auth'. Cualquiera con sesión en el hub central —un
+| propietario de tienda, sin ir más lejos— podía suspender, aprobar o rechazar la tienda de
+| otro comerciante, y leer el listado completo de tiendas de la plataforma.
+|
+| Y había algo peor: las tres rutas `/admin/api/tenants/{id}/…` estaban declaradas TAMBIÉN
+| aquí sin rol, mientras sus gemelas de `src/Admin/.../web.php` exigen `super_admin` o
+| `staff:manage_tenants`. El duplicado esquivaba al portero. Lo que quedaba abierto por ese
+| camino era emitir un token SSO de CUALQUIER tienda, y ese token se consume con
+| `Auth::login()`: entrar a la tienda ajena como su dueño.
+|
+| Se borran los tres duplicados. El frontend siempre llamó a las protegidas —ver
+| `AdminTenantDetail360Page.tsx:137,156,199`— así que las de aquí no las usaba nadie:
+| sólo estaban abiertas.
+*/
+Route::middleware(['auth', 'staff:manage_tenants'])->group(function () {
+    // Pantallas del módulo de tiendas
+    Route::get('/backoffice/{user_uuid}/module', [ViewModuleTenantIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.index');
+    Route::get('/backoffice/{user_uuid}/module/suspended', [ViewModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended');
+    Route::get('/backoffice/{user_uuid}/module/request', [ViewModuleTenantRequestIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.request');
+    Route::get('/backoffice/{user_uuid}/module/tenant/{id}/360', \Src\Tenant\Infrastructure\Http\Controller\ViewAdminTenantDetail360PageGETController::class)->name('central.backoffice.web.admin.module.tenant.360');
 
-// module tenant suspended/inactive
-Route::get('/backoffice/{user_uuid}/module/suspended', [ViewModuleTenantSuspendedIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.suspended')->middleware('auth');
+    // Consulta
+    Route::post('/backoffice/filter', [FiltrarTenantsPOSTController::class, 'index']);
+    Route::get('/backoffice/{id}', [ConsultTenantByUuidGETController::class, 'index']);
 
-// module tenant request
-Route::get('/backoffice/{user_uuid}/module/request', [ViewModuleTenantRequestIndexGETController::class, 'index'])->name('central.backoffice.web.admin.module.tenant.request')->middleware('auth');
-Route::patch('/backoffice/{id}/rejected', [RejectedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
-Route::patch('/backoffice/{id}/approved', [ApprovedTenantByUuidPATCHController::class, 'index'])->middleware('auth');
+    // Cambios de estado de una tienda
+    Route::patch('/backoffice/{id}/suspended', [SuspendedTenantByUuidPATCHController::class, 'index']);
+    Route::patch('/backoffice/{id}/active', [ActiveTenantByUuidPATCHController::class, 'index']);
+    Route::patch('/backoffice/{id}/inactive', [InactiveTenantByUuidPATCHController::class, 'index']);
 
-// Expediente 360° del Tenant & Gobernanza Super Admin
-Route::get('/backoffice/{user_uuid}/module/tenant/{id}/360', \Src\Tenant\Infrastructure\Http\Controller\ViewAdminTenantDetail360PageGETController::class)->name('central.backoffice.web.admin.module.tenant.360')->middleware('auth');
-Route::get('/admin/api/tenants/{id}/360-data', \Src\Tenant\Infrastructure\Http\Controller\GetAdminTenant360DataGETController::class)->middleware('auth');
-Route::post('/admin/api/tenants/{id}/sso-token', \Src\Tenant\Infrastructure\Http\Controller\AdminGenerateTenantSsoTokenPOSTController::class)->middleware('auth');
-Route::patch('/admin/api/tenants/{id}/governance-status', \Src\Tenant\Infrastructure\Http\Controller\UpdateTenantGovernanceStatusPATCHController::class)->middleware('auth');
+    // Resolución de solicitudes de alta
+    Route::patch('/backoffice/{id}/rejected', [RejectedTenantByUuidPATCHController::class, 'index']);
+    Route::patch('/backoffice/{id}/approved', [ApprovedTenantByUuidPATCHController::class, 'index']);
+});
 
 Route::get('/create/account', [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
 Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index']);
 
+/*
+|--------------------------------------------------------------------------
+| Pantallas del propietario de tienda (hallazgo P1)
+|--------------------------------------------------------------------------
+|
+| Llevaban solo 'auth', y sus controladores pasan el `{user_uuid}` de la URL al caso de uso
+| sin compararlo nunca con la sesion. Cambiar ese uuid en la barra de direcciones bastaba
+| para leer la billetera de otro propietario: ventas brutas, comisiones, saldo disponible y
+| el historial de liquidaciones con sus referencias de pago.
+|
+| El hallazgo A2 ya habia arreglado esto mismo en `/owner/api/*`, que derivan la identidad
+| de `auth()->id()`. La correccion no llego a las paginas, que sirven los mismos datos.
+|
+| `own_user` lo cierra en la ruta, donde se ve al leerla — y donde se vera si falta.
+*/
 // Rutas del Tenant Owner Central
 Route::get('/auth/sso-consume', \Src\Tenant\Infrastructure\Http\Controller\ConsumeTenantOwnerSsoTokenGETController::class)->name('central.tenant.sso-consume');
-Route::get('/owner/backoffice/{user_uuid}/dashboard', [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware('auth');
-Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerWalletGETController::class)->name('central.backoffice.web.tenant.owner.wallet')->middleware('auth');
-Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware('auth');
-Route::get('/owner/backoffice/{user_uuid}/billing', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerBillingGETController::class)->name('central.backoffice.web.tenant.owner.billing')->middleware('auth');
+Route::get('/owner/backoffice/{user_uuid}/dashboard', [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware(['auth', 'own_user']);
+Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerWalletGETController::class)->name('central.backoffice.web.tenant.owner.wallet')->middleware(['auth', 'own_user']);
+Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware(['auth', 'own_user']);
+Route::get('/owner/backoffice/{user_uuid}/billing', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerBillingGETController::class)->name('central.backoffice.web.tenant.owner.billing')->middleware(['auth', 'own_user']);
 
 Route::post('/owner/tenant', [CreateTenantPOSTController::class, 'index'])->middleware('auth');
 Route::delete('/owner/tenant', [DeleteTenantDELETEController::class, 'index'])->middleware('auth');

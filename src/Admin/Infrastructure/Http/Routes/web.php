@@ -52,9 +52,20 @@ Route::middleware(['auth', 'staff'])->group(function () {
 });
 
 // ---------------------------------------------------------------------------
-// Perfil propio del administrador — sólo requiere sesión iniciada
+// Perfil PROPIO del administrador
 // ---------------------------------------------------------------------------
-Route::middleware('auth')->group(function () {
+//
+// Hallazgo P2: el bloque ya decia «propio», pero nada lo obligaba. Los controladores
+// tomaban el `{user_uuid}` de la URL sin compararlo con la sesion, asi que cualquiera con
+// sesion en el hub central —un `tenant_owner`, sin ir mas lejos— podia leer el nombre, el
+// CORREO y el telefono de otro administrador, y cambiarle el nombre o el avatar.
+//
+// Comprobado contra la aplicacion real antes de arreglarlo: `PUT` ajeno devolvia 200 y el
+// nombre cambiaba.
+//
+// El arreglo del hallazgo A7 llego a `change-password` —que si resuelve con `auth()->id()`—
+// y se salto las otras tres del mismo bloque. `own_user` cierra las cuatro de una vez.
+Route::middleware(['auth', 'own_user'])->group(function () {
     Route::get('/backoffice/{user_uuid}/profile', [ViewAdminProfileGETController::class, 'index'])->name('central.backoffice.web.admin.profile');
     Route::put('/backoffice/{user_uuid}/profile', [UpdateAdminProfilePUTController::class, 'index']);
     Route::post('/backoffice/{user_uuid}/profile/avatar', [UploadAdminAvatarPOSTController::class, 'index']);

@@ -5,15 +5,23 @@
 > **Primera pasada, centrada en AUTORIZACIÓN.** Es donde este proyecto ha fallado
 > repetidamente, así que se empezó por ahí y no por el contenido de las páginas.
 >
-> **4 hallazgos abiertos: P0 🔴 · P1 🔴 · P2 🟠 · P3 🟠.**
-> **Los cuatro están demostrados**, no deducidos: tres con tests que se ejecutaron y P2
-> además contra la aplicación real corriendo en Laragon.
+> **4 hallazgos, los 4 CERRADOS el 22/08.** P0 🔴 · P1 🔴 · P2 🟠 · P3 🟠.
 >
-> **P0 permite tomar el control de cualquier tienda de la plataforma.** Es lo primero que
-> hay que cerrar.
+> Los cuatro se demostraron antes de arreglarlos —con tests, y P2 además contra la
+> aplicación real— y los mismos tests los verifican ahora en verde.
 >
-> **El árbol tiene 7 tests en rojo a propósito**, escritos como evidencia. Ninguno es una
-> regresión: los siete documentan agujeros que ya existían.
+> **646 tests pasan · 0 fallan.** Los que se escribieron como evidencia se quedan como
+> regresión.
+>
+> Contra la aplicación real, con sesión de un `tenant_owner` corriente:
+>
+> | Antes | Ahora |
+> | :--- | :--- |
+> | perfil ajeno (GET) → 200 | **403** |
+> | perfil ajeno (PUT) → 200, cambiaba el nombre | **403** |
+> | billetera ajena → 200 con el saldo | **403** |
+> | token SSO ajeno → 200 con enlace usable | **404**, la ruta ya no existe |
+> | su **propia** billetera → 200 | **200** — el acceso legítimo sigue igual |
 >
 > ### Leyenda
 > 🔴 crítico · 🟠 alto · 🟡 medio · ✅ cerrado · ⬜ abierto
@@ -51,18 +59,45 @@ Dos patrones distintos producen lo mismo:
    corrigieron la verificación de identidad en los endpoints de API. Los controladores de
    página de Inertia, que sirven los mismos datos, se quedaron sin ella.
 
-| # | Qué | Severidad | Demostrado |
+| # | Qué | Severidad | Estado |
 | :--- | :--- | :--- | :--- |
-| **P0** | Cualquiera con sesión central puede entrar como dueño de **cualquier tienda**, y suspenderla, aprobarla o rechazarla | 🔴 | ✅ test ejecutado |
-| **P1** | Un propietario puede leer la billetera, facturación y panel de otro | 🔴 | ✅ test ejecutado |
-| **P2** | El perfil de administrador se puede leer y **modificar** siendo otro | 🟠 | ✅ contra la app real |
-| **P3** | Cuatro modelos siguen fijando la conexión `central` a mano | 🟠 | ✅ rompe los tests que lo tocan |
+| **P0** | Cualquiera con sesión central podía entrar como dueño de **cualquier tienda**, y suspenderla, aprobarla o rechazarla | 🔴 | ✅ Cerrado |
+| **P1** | Un propietario podía leer la billetera, facturación y panel de otro | 🔴 | ✅ Cerrado |
+| **P2** | El perfil de administrador se podía leer y **modificar** siendo otro | 🟠 | ✅ Cerrado |
+| **P3** | Cuatro modelos fijaban la conexión `central` a mano | 🟠 | ✅ Cerrado |
+
+### Cómo se cerraron
+
+**P0** — se borraron los tres duplicados de `src/Tenant/.../web.php`; el frontend siempre
+llamó a las versiones protegidas, así que no los usaba nadie. Las diez rutas restantes del
+módulo pasan a `staff:manage_tenants`.
+
+**P1 y P2** eran la misma pregunta —«¿este uuid es el tuyo?»— así que los cierra un solo
+middleware nuevo, `own_user`
+([`EnsureRouteUserIsSelf`](../../src/Shared/Infrastructure/Http/Middleware/EnsureRouteUserIsSelf.php)),
+aplicado a las ocho rutas afectadas. Se declara en la ruta y no dentro de cada controlador
+justamente porque la corrección de A2, A3 y A7 se hizo controlador a controlador y por eso
+alcanzó a unos y se saltó a otros. En la ruta se ve al leerla — y se ve cuando falta.
+
+De paso apareció una novena con el mismo patrón que no estaba en el informe original:
+`/tenant/owner/backoffice/{user_uuid}/support`, que listaba los tickets del uuid de la URL.
+
+**P3** — los cuatro pasan a leer `tenancy.database.central_connection` como los otros 22.
+
+### Y un guardián para que no vuelva
+
+[`tests/Feature/Security/GovernanceRoutesAreGatedTest.php`](../../tests/Feature/Security/GovernanceRoutesAreGatedTest.php)
+recorre la tabla de rutas y falla si alguna que gobierna tiendas o perfiles se queda sin
+middleware de rol. No comprueba un caso concreto: comprueba la **regla**.
+
+Verificado que detecta la regresión quitando una puerta a propósito — se pone en rojo y
+nombra las rutas desprotegidas.
 
 ---
 
 ## P0. 🔴 Tomar el control de cualquier tienda de la plataforma
 
-> **Estado:** ⬜ ABIERTO — **demostrado con test**
+> **Estado:** ✅ CERRADO (22/08) — duplicados borrados; el resto del módulo bajo `staff:manage_tenants`
 
 **Dónde:** [`src/Tenant/Infrastructure/Http/Routes/web.php:20-42`](../../src/Tenant/Infrastructure/Http/Routes/web.php#L20)
 
@@ -124,7 +159,7 @@ sin middleware de rol. Es lo que habría detectado esto sin que nadie lo buscara
 
 ## P1. 🔴 Un propietario puede leer el dinero de otro
 
-> **Estado:** ⬜ ABIERTO — **demostrado con test**
+> **Estado:** ✅ CERRADO (22/08) — las cuatro páginas bajo `own_user`
 
 **Dónde:**
 [`src/Tenant/.../web.php:48-51`](../../src/Tenant/Infrastructure/Http/Routes/web.php#L48) y
@@ -169,7 +204,7 @@ controladores de página**, que sirven los mismos datos por otro camino.
 
 ## P2. 🟠 El perfil de administrador se puede leer y modificar siendo otro
 
-> **Estado:** ⬜ ABIERTO — **demostrado contra la aplicación real**
+> **Estado:** ✅ CERRADO (22/08) — el bloque entero bajo `own_user`
 
 **Dónde:** [`src/Admin/Infrastructure/Http/Routes/web.php:53-69`](../../src/Admin/Infrastructure/Http/Routes/web.php#L53)
 
@@ -218,7 +253,7 @@ personales y alteración de la identidad de otro usuario.
 
 ## P3. 🟠 Cuatro modelos siguen fijando la conexión `central` a mano
 
-> **Estado:** ⬜ ABIERTO — demostrado (es lo que hace intestables varias rutas)
+> **Estado:** ✅ CERRADO (22/08) — los cuatro leen el config como los otros 22
 
 Es la **tarea 4 de la auditoría anterior, que quedó incompleta**. Aquélla alineó
 `config/tenancy.php` y el `getConnectionName()` de `Tenant`, pero no vio estos cuatro, que
@@ -292,24 +327,21 @@ No es «añadir más tests». Son dos reglas concretas:
 
 ---
 
-## Estado del árbol al cerrar esta pasada
+## Estado del árbol
 
 ```
-637 pasan · 7 fallan
+646 pasan · 0 fallan
 ```
 
-Los siete en rojo son deliberados y documentan los agujeros de arriba:
+Los tests que se escribieron como evidencia se quedan, ahora en verde, como regresión:
 
-| Archivo | Rojos | Qué documentan |
-| :--- | ---: | :--- |
-| `tests/Feature/Tenant/TenantOwnerCentralHubTest.php` | 3 | P1 — billetera, facturación y panel ajenos devuelven 200 |
-| `tests/Feature/Tenant/TenantOwnerCentralHubTest.php` | 2 | P0 — token SSO ajeno y suspensión ajena devuelven 200 |
-| `tests/Feature/Admin/AdminProfileOwnershipTest.php` | 2 | P2 — hoy fallan por P3, no por el agujero; el agujero está probado contra la app real |
+| Archivo | Qué fija |
+| :--- | :--- |
+| `tests/Feature/Tenant/TenantOwnerCentralHubTest.php` | P1 y P0 — billetera, facturación, panel, token SSO y suspensión ajenos |
+| `tests/Feature/Admin/AdminProfileOwnershipTest.php` | P2 — lectura y modificación del perfil ajeno |
+| `tests/Feature/Security/GovernanceRoutesAreGatedTest.php` | La **regla**: ninguna ruta de gobernanza o perfil sin middleware de rol |
 
-Hay además un test nuevo **en verde**: `la ruta protegida de SSO sí exige super_admin`. Es
-el contraste que demuestra que P0 es un duplicado mal cerrado y no una función que falte.
-
-Se pondrán verdes al cerrar los hallazgos. Ninguno es una regresión.
+Los otros frentes siguen verdes: 16 vitest, 15 E2E, `tsc` en 0 y build correcto.
 
 ---
 
