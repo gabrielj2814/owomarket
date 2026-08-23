@@ -32,10 +32,12 @@ export const ResetPasswordPage: React.FC = () => {
         setSuccessMsg(null);
         setErrorMsg(null);
 
-        if (password.length < 8) {
-            setErrorMsg('La contraseña debe tener al menos 8 caracteres.');
-            return;
-        }
+        /*
+         * Hallazgo A4: aquí había un `password.length < 8` propio. Era el cuarto sitio que
+         * respondía a «qué es una contraseña válida», y el que se quedaba corto en cuanto
+         * la regla del servidor pidiera algo más que longitud. Se quita: la regla vive en
+         * Password::defaults() y el servidor devuelve 422 con el mensaje exacto.
+         */
 
         if (password !== confirmPassword) {
             setErrorMsg('Las contraseñas no coinciden.');

@@ -6,10 +6,6 @@ import React, { FC, useState } from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
 import { LuSend, LuStore  } from "react-icons/lu";
 
-interface PasswordValidationRules {
-  [key: string]: RegExp;
-}
-
 interface LoginTenantPageProps {
     domain: string;
 }
@@ -54,38 +50,6 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
      * @param maxLength Longitud máxima permitida
      * @returns boolean Indica si la contraseña es válida
      */
-    function validatePassword(
-        password: string,
-        minLength: number = 8,
-        maxLength: number = 72
-    ): boolean {
-        // Validar longitud mínima
-        if (password.length < minLength) {
-            return false;
-        }
-
-        // Validar longitud máxima (límite de BCrypt)
-        if (password.length > maxLength) {
-            return false;
-        }
-
-        // Reglas de complejidad de contraseña
-        const rules: PasswordValidationRules = {
-            'mayúscula': /[A-Z]/,                      // Al menos una letra mayúscula
-            'minúscula': /[a-z]/,                      // Al menos una letra minúscula
-            'número': /[0-9]/,                         // Al menos un número
-            'carácter especial': /[!@#$%^&*()\-_=+{};:,<.>]/ // Al menos un carácter especial
-        };
-
-        // Aplicar cada regla de validación
-        for (const [tipo, patron] of Object.entries(rules)) {
-            if (!patron.test(password)) {
-            return false;
-            }
-        }
-
-        return true;
-    }
 
     // ======= Handler =======
 
@@ -105,10 +69,16 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
             return
         }
 
-        if(!validatePassword(statuFormLogin.password)){
-            alert("La contraseña no cumple con los requisitos de seguridad");
-            return
-        }
+        /*
+         * Hallazgo A4: aqui se comprobaba el FORMATO de la contrasena antes de enviarla
+         * —8-72, mayuscula, minuscula, digito y simbolo—. Validar el formato de una
+         * contrasena que ya existe no protege nada: la contrasena ya esta creada. Lo unico
+         * que conseguia era dejar fuera a quien tuviera una antigua que no cumpliera las
+         * reglas de hoy, sin que el servidor comprobara esas reglas en ningun momento.
+         *
+         * Que es una contrasena valida se decide ahora en un solo sitio y solo al CREARLA:
+         * Password::defaults() en AppServiceProvider.
+         */
 
         setStatusLoader(true);
 

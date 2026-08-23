@@ -76,7 +76,7 @@ test('POST /api/central/customer/reset-password resets password using PIN', func
     $response = $this->postJson('/api/central/customer/reset-password', [
         'email' => $email,
         'pin_code' => '889900',
-        'password' => 'new_secure_pass_999',
+        'password' => 'New_secure_pass_999',
     ]);
 
     $response->assertStatus(200)
@@ -86,7 +86,7 @@ test('POST /api/central/customer/reset-password resets password using PIN', func
         ]);
 
     $customer->refresh();
-    expect(Hash::check('new_secure_pass_999', $customer->password))->toBeTrue();
+    expect(Hash::check('New_secure_pass_999', $customer->password))->toBeTrue();
 });
 
 test('PUT /api/central/customer/profile/{id} updates customer profile and addresses', function () {
@@ -178,4 +178,14 @@ test('Address endpoints (update, set default, delete) work correctly', function 
     $this->actingAs($stranger, 'central_customer')
         ->patchJson("/api/central/customer/profile/{$customer->id}/address/{$addr2->id}/default")
         ->assertStatus(403);
+});
+
+test('el reset rechaza una contrasena que no cumple la regla (A4)', function () {
+    // Misma definicion que el registro, por construccion: los dos usan Password::defaults().
+    // Antes el registro pedia min:6 y el reset min:8, y nadie comprobaba complejidad.
+    $this->postJson('/api/central/customer/reset-password', [
+        'email' => 'quien.sea@example.com',
+        'pin_code' => '123456',
+        'password' => 'abc123',
+    ])->assertStatus(422)->assertJsonValidationErrors('password');
 });

@@ -7,6 +7,7 @@ namespace Src\CentralCustomer\Infrastructure\Http\Controller;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 use Src\CentralCustomer\Application\UseCases\ResetCentralCustomerPasswordWithPinUseCase;
 
 final class ResetCustomerPasswordWithPinPOSTController
@@ -20,7 +21,8 @@ final class ResetCustomerPasswordWithPinPOSTController
         $validated = $request->validate([
             'email' => ['required', 'email'],
             'pin_code' => ['required', 'string', 'min:4', 'max:10'],
-            'password' => ['required', 'string', 'min:8'],
+            // A4: misma definicion que el registro, por construccion.
+            'password' => ['required', 'string', Password::defaults()],
         ]);
 
         try {

@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 use Laravel\Sanctum\Sanctum;
 use Src\Admin\Infrastructure\Services\AuthApiClient;
 use Src\Authentication\Application\Contracts\AuthServices;
@@ -31,6 +32,31 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+
+        /*
+        |----------------------------------------------------------------------
+        | Que es una contrasena valida (hallazgo A4)
+        |----------------------------------------------------------------------
+        |
+        | Habia cuatro respuestas distintas: el registro de cliente pedia min:6, el reset
+        | min:8, el formulario de reset comprobaba >= 8 por su cuenta, y los dos logins
+        | exigian en el navegador 8-72 con mayuscula, minuscula, digito y simbolo.
+        |
+        | La consecuencia practica: alguien se registraba con `abc123` —el servidor lo
+        | aceptaba— y despues el sistema le exigia otra cosa. Y como las reglas duras solo
+        | vivian en el navegador, el servidor no comprobaba complejidad EN NINGUN SITIO:
+        | eran un obstaculo para el usuario honesto y ninguno para quien enviara la
+        | peticion a mano.
+        |
+        | Esta es ahora la unica definicion. Registro y reset la usan via
+        | Password::defaults(), asi que coinciden por construccion y no por disciplina.
+        |
+        | Solo se aplica a contrasenas NUEVAS. Quien ya tenia una de seis caracteres sigue
+        | entrando: validar el formato de una contrasena que ya existe no protege nada y
+        | solo deja fuera a gente con contrasenas antiguas. Por eso se quito esa
+        | comprobacion de los dos formularios de login.
+        */
+        Password::defaults(fn () => Password::min(8)->mixedCase()->numbers()->symbols());
 
         /*
         |----------------------------------------------------------------------

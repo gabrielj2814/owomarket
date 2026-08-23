@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO — 23/08/2026
 >
-> **A1, A2, A3 y A6 CERRADOS. Quedan 2 abiertos: A4 🟠 · A5 🟡 (parcial).**
+> **A1, A2, A3, A4 y A6 CERRADOS. Queda 1 abierto: A5 🟡 (parcial).**
 >
 > A2 y A3 se cerraron juntos y primero — por delante de A1, que es más visible— porque se
 > componían: A3 entregaba la lista de correos con cuenta y A2 dejaba atacar cada uno sin
@@ -45,7 +45,7 @@ Dos patrones, y ninguno es «falta código»:
 | **A1** | ✅ La página de login de cliente publica en el endpoint de *staff*: un cliente nunca puede entrar por ahí | 🔴 | ✅ 401 vs 200 con las mismas credenciales |
 | **A2** | ✅ El PIN de recuperación no tiene límite de intentos | 🔴 | ✅ 42 intentos, ningún 429 |
 | **A3** | ✅ «Olvidé mi contraseña» revela si un correo existe | 🟠 | ✅ 200 vs 404 con mensaje explícito |
-| **A4** | Cuatro reglas de contraseña distintas: se puede crear una cuenta con la que el login se niega a intentar | 🟠 | ✅ lectura de las cuatro |
+| **A4** | ✅ Cuatro reglas de contraseña distintas: se puede crear una cuenta con la que el login se niega a intentar | 🟠 | ✅ lectura de las cuatro |
 | **A5** | 🟡 Parcial — quedan `LoginStaff` y `LoginTenantPage`; el tercero se borró con A1, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
 | **A6** | ✅ El alta de tiendas no tiene límite: cada una crea una base de datos MySQL dentro de la petición | 🔴 | ✅ lectura del pipeline de tenancy |
 
@@ -271,7 +271,7 @@ contrario: tal como estaba, blindaba la fuga.
 
 ## A4. 🟠 Cuatro reglas de contraseña distintas
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 | Dónde | Qué exige |
 | :--- | :--- |
@@ -298,6 +298,45 @@ Una sola definición, en el servidor, aplicada en registro y en reset. El client
 repetirla para dar aviso temprano, pero no debe ser quien decide — y desde luego el login
 no debería validar el formato de una contraseña que ya existe: eso sólo sirve para dejar
 fuera a gente con contraseñas antiguas.
+
+### ✅ Cómo se cerró
+
+Primero, el alcance encogió: la validación de cliente del login de comprador se fue con la
+página que borró A1. Quedaban cuatro sitios y ahora hay **uno**.
+
+`Password::defaults()` en [`AppServiceProvider`](../../app/Providers/AppServiceProvider.php)
+es la única definición: `min(8)->mixedCase()->numbers()->symbols()`. Es la regla que los dos
+logins ya exigían en el navegador, así que no sorprende a nadie que conozca el sistema — pero
+ahora **la comprueba el servidor**, que antes no la comprobaba en ningún momento. No se
+escribió ninguna regla propia: la trae Laravel.
+
+Registro y reset la usan los dos vía `Password::defaults()`, así que coinciden **por
+construcción y no por disciplina**. Eso es deliberado: la disciplina es exactamente lo que
+falló en A2, en A3 y en A7.
+
+**Se quitaron los otros tres sitios:** `validatePassword` y `PasswordValidationRules` de
+`LoginStaff.tsx` y `LoginTenantPage.tsx`, y el `password.length < 8` propio de
+`ResetPasswordPage.tsx`.
+
+**Lo que importa de este cambio no es la regla, es a qué se aplica.** Solo a contraseñas
+nuevas. Quien se dio de alta cuando el servidor pedía `min:6` sigue entrando con su
+contraseña de seis caracteres. Si la regla tocara también al login, cada uno de esos
+clientes se quedaría fuera de su propia cuenta, y la única salida sería adivinar que va por
+«olvidé mi contraseña» — que es precisamente el callejón que describía este hallazgo, pero
+peor.
+
+**Se descartó** `uncompromised()`: consulta HaveIBeenPwned por red dentro del alta, y eso es
+latencia y una dependencia externa en el camino crítico.
+
+**Vigilado por tres tests**, y el que de verdad importa es el primero:
+- una contraseña antigua que ya no cumple la regla **sigue sirviendo para entrar**;
+- el registro rechaza una débil;
+- el reset la rechaza igual.
+
+Dos tests existentes fallaron al aplicar el cambio, y estaban en lo cierto: codificaban las
+reglas viejas (`secret12345` en el registro, `new_secure_pass_999` en el reset). Se
+actualizaron. Que fallaran exactamente esos dos y ninguno más es la señal de que el cambio
+llegó donde debía y no más allá.
 
 ---
 

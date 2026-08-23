@@ -7,6 +7,7 @@ namespace Src\CentralCustomer\Infrastructure\Http\Controller;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 use Src\CentralCustomer\Application\UseCases\RegisterCentralCustomerUseCase;
 use Src\Shared\Helper\ApiResponse;
 
@@ -21,7 +22,9 @@ final class RegisterCentralCustomerPOSTController
         $request->validate([
             'name' => 'required|string|max:150',
             'email' => 'required|email|max:150',
-            'password' => 'required|string|min:6',
+            // A4: la definicion vive en AppServiceProvider, no aqui. Antes era min:6
+            // mientras el reset pedia min:8.
+            'password' => ['required', 'string', Password::defaults()],
             'phone' => 'nullable|string|max:50',
             'document_id' => 'nullable|string|max:50',
         ]);

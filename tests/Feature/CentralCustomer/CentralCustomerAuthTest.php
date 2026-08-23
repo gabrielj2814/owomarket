@@ -61,7 +61,7 @@ test('POST /api/central/customer/register registers a new central customer with 
     $response = $this->postJson('/api/central/customer/register', [
         'name' => 'Carlos Mendoza',
         'email' => $email,
-        'password' => 'secret12345',
+        'password' => 'Secret_12345',
         'phone' => '+584121234567',
         'document_id' => 'V-12345678',
     ]);
@@ -75,7 +75,7 @@ test('POST /api/central/customer/register registers a new central customer with 
     $customer = CentralCustomer::where('email', $email)->first();
     expect($customer)->not->toBeNull();
     expect($customer->name)->toBe('Carlos Mendoza');
-    expect(Hash::check('secret12345', $customer->password))->toBeTrue();
+    expect(Hash::check('Secret_12345', $customer->password))->toBeTrue();
 });
 
 test('POST /api/central/customer/login authenticates valid central credentials', function () {
@@ -280,4 +280,38 @@ test('A customer cannot read or edit another customer profile', function () {
  */
 test('la pagina de login de cliente ya no existe (A1)', function () {
     $this->get('/auth/customer/login')->assertNotFound();
+});
+
+/*
+ * Hallazgo A4. La regla nueva —8, mayuscula, minuscula, digito y simbolo— solo puede
+ * aplicarse a contrasenas NUEVAS. Si tocara tambien al login, cada cliente dado de alta
+ * cuando el servidor pedia min:6 se quedaria fuera de su propia cuenta, y el unico camino
+ * de vuelta seria adivinar que la salida es "olvide mi contrasena".
+ *
+ * Por eso se quito la comprobacion de formato de los dos formularios de login. Este test
+ * es lo que impide que alguien la reintroduzca "por coherencia".
+ */
+test('una contrasena antigua que ya no cumple la regla sigue sirviendo para entrar (A4)', function () {
+    $email = 'antigua_'.bin2hex(random_bytes(3)).'@example.com';
+
+    // Seis caracteres, sin mayuscula ni simbolo: lo que el servidor aceptaba con min:6.
+    CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Cliente de siempre',
+        'email' => $email,
+        'password' => Hash::make('abc123'),
+    ]);
+
+    $this->postJson('/api/central/customer/login', [
+        'email' => $email,
+        'password' => 'abc123',
+    ])->assertStatus(200);
+});
+
+test('una contrasena nueva debil se rechaza en el registro (A4)', function () {
+    $this->postJson('/api/central/customer/register', [
+        'name' => 'Cuenta debil',
+        'email' => 'debil_'.bin2hex(random_bytes(3)).'@example.com',
+        'password' => 'abc123',
+    ])->assertStatus(422)->assertJsonValidationErrors('password');
 });
