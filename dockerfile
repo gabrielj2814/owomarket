@@ -14,7 +14,11 @@ RUN npm run build
 # ==========================================
 # Etapa 2: PHP Base con Extensiones
 # ==========================================
-FROM php:8.3-fpm-alpine AS base
+# 8.5, que es la version del entorno de desarrollo y contra la que esta resuelto el
+# composer.lock. Con la 8.3 que habia aqui el contenedor construia bien y despues moria en
+# CADA peticion — "Your Composer dependencies require a PHP version >= 8.4.0" — que es la
+# peor forma de estar roto: parece que funciona hasta que sirve algo.
+FROM php:8.5-fpm-alpine AS base
 
 # Instalar dependencias del sistema y extensiones de PHP necesarias para Laravel
 RUN apk add --no-cache \
@@ -31,7 +35,11 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     $PHPIZE_DEPS \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl opcache \
+    # Sin `mbstring` ni `opcache`: la imagen oficial YA los trae compilados. Estaban en
+    # esta lista, asi que cada build los recompilaba desde el codigo fuente para nada —y
+    # mbstring, con toda libmbfl, es con diferencia el compilado mas largo de los ocho.
+    # Esa sola linea era la razon de que construir tardara un cuarto de hora.
+    && docker-php-ext-install pdo_mysql exif pcntl bcmath gd zip intl \
     && pecl install redis \
     && docker-php-ext-enable redis \
     && apk del $PHPIZE_DEPS

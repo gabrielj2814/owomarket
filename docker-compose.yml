@@ -9,7 +9,11 @@
 # ------------------------------------------------------------------------------
 x-entorno-contenedor: &entorno-contenedor
   DB_HOST: db
+  DB_USERNAME: root
+  DB_PASSWORD: root
   CENTRAL_DB_HOST: db
+  CENTRAL_DB_USERNAME: root
+  CENTRAL_DB_PASSWORD: root
   REDIS_HOST: redis
   QUEUE_CONNECTION: redis
   CACHE_STORE: redis
@@ -22,7 +26,7 @@ services:
   app:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
       target: base
     container_name: owomarket_app
     restart: unless-stopped
@@ -71,11 +75,23 @@ services:
     ports:
       - "3306:3306"
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-owomarket}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_USER: ${DB_USERNAME:-owomarket}
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      # Estas son las credenciales DEL CONTENEDOR, no las del `.env` del host.
+      #
+      # Antes se derivaban de las de la aplicacion: `MYSQL_USER: ${DB_USERNAME:-owomarket}`
+      # con un `.env` que dice `DB_USERNAME=root` se resolvia a `MYSQL_USER: root`, y la
+      # imagen oficial de MySQL SE NIEGA A ARRANCAR con eso ("MYSQL_USER and MYSQL_PASSWORD
+      # are for configuring a regular user and cannot be used for the root user"). El
+      # contenedor moria en el arranque, asi que este compose nunca habia levantado.
+      #
+      # Ademas `MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}` se resolvia a `root` porque el
+      # `.env` trae la contrasena vacia — la de Laragon—, con lo que aunque hubiera
+      # arrancado la aplicacion no habria podido conectarse.
+      #
+      # Se fijan aqui y se le dan a la aplicacion por `x-entorno-contenedor`, que es el
+      # mismo mecanismo que ya se usaba para DB_HOST. El `.env` no se toca, para que
+      # trabajar con Laragon fuera de Docker siga funcionando.
+      MYSQL_DATABASE: ${DB_DATABASE:-owomarket_dev}
+      MYSQL_ROOT_PASSWORD: root
     volumes:
       - db_data:/var/lib/mysql
     networks:
@@ -100,7 +116,7 @@ services:
   horizon:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
       target: base
     container_name: owomarket_horizon
     restart: unless-stopped

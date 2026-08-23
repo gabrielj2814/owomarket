@@ -38,7 +38,32 @@ return [
             'database' => env('CENTRAL_DB_DATABASE', 'owomarket_dev'),
             'username' => env('CENTRAL_DB_USERNAME', 'root'),
             'password' => env('CENTRAL_DB_PASSWORD', ''),
-            // ... resto de configuración
+
+            /*
+             * Hallazgo T2. Aqui habia un comentario «// ... resto de configuracion» y nada
+             * mas: la conexion se quedo escrita a medias y nadie completo ese resto.
+             *
+             * No era cosmetico. `charset` y `collation` llegaban NULL, y stancl/tenancy los
+             * lee de esta conexion para crear la base de cada tienda, asi que emitia
+             *
+             *     CREATE DATABASE `tenant_...` CHARACTER SET `` COLLATE ``
+             *
+             * que MySQL rechaza con «Unknown character set: ''». **Crear una tienda era
+             * imposible**: el alta de comerciante fallaba entera y hacia rollback.
+             *
+             * Los valores son los mismos que la conexion `mysql` de abajo, que es de donde
+             * debieron copiarse.
+             */
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                Pdo\Mysql::ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+            ]) : [],
         ],
 
         'sqlite' => [

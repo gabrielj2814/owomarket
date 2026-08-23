@@ -21,12 +21,27 @@
         </include>
     </source>
     <php>
+        <!--
+            `force="true"` para que PHPUnit imponga estos valores en vez de respetar los que
+            ya existan en el entorno del proceso.
+            ATENCION - dentro de Docker esto NO basta, y conviene saber por que: PHPUnit
+            escribe en `$_ENV` y con `putenv()`, pero no en `$_SERVER`, y docker-compose si
+            exporta ahi. El repositorio de variables de Laravel consulta `$_SERVER` primero,
+            asi que gana el valor del contenedor.
+            El sintoma es enganoso — siete tests de MultiStoreCentralCheckout fallan dentro
+            de Docker y pasan fuera, porque DispatchCentralOrderJob se encola en Redis en vez
+            de correr en linea— y no se puede corregir desde el codigo del test: el limitador
+            de tasa captura su almacen de cache durante el arranque, antes de que ningun
+            `setUp()` pueda cambiarlo.
+            Por eso los tests en Docker se lanzan pasando las tres variables explicitamente.
+            Ver DOCKER_GUIA.md, seccion «Correr los tests».
+        -->
         <env name="APP_ENV" value="testing"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="BROADCAST_CONNECTION" value="null"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
         <!--
             Tarea 4 de la auditoria: `tenancy.database.central_connection` ya nombra una
             conexion («central», que es MySQL) en vez de tomar el driver de DB_CONNECTION.
@@ -34,10 +49,10 @@
             de stancl lo consulta para saber donde viven los dominios.
         -->
         <env name="TENANCY_CENTRAL_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
         <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="PULSE_ENABLED" value="false"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
