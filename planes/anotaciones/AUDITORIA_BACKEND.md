@@ -22,7 +22,7 @@
 | Módulo | Ruta | Tamaño | Estado |
 | :--- | :--- | :--- | :--- |
 | **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ **Auditado** — 2 hallazgos |
-| Order | `src/Order/` | 52 ficheros · 2.917 líneas | ⬜ Pendiente |
+| **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ **Auditado** — 1 hallazgo |
 | Shipment | `src/Shipment/` | 36 ficheros · 1.730 líneas | ⬜ Pendiente |
 | Payment | `src/Payment/` | 33 ficheros · 1.626 líneas | ⬜ Pendiente |
 
@@ -34,8 +34,9 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **PR1** | Product | Borrado arbitrario de ficheros del disco público | 🔴 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **PR2** | Product | Actualizar el stock de un producto con variantes no hace nada | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
 
-> **Ninguno está probado ejecutando.** Los dos salen de leer el código. En este proyecto esa
+> **Ninguno está probado ejecutando.** Todos salen de leer el código. En este proyecto esa
 > distinción ha importado varias veces en un solo día —una lectura llevó a un falso positivo
 > de fijación de sesión, y un fixture incompleto casi archiva el hallazgo T7 como
 > inexistente—, así que queda marcada hasta que se demuestren.
@@ -177,3 +178,102 @@ No hace falta volver a mirarlo:
 | **Subida de imágenes** | ✅ `file`, `image`, `mimes:jpeg,png,jpg,webp`, `max:5120` |
 | **Sincronización con el catálogo central** | ✅ `ProductObserver` cubre `saved`, `deleted` y `restored` — la preocupación de E1 está atendida |
 | **Identidad de variantes al editar** | ✅ E4 cerrado: se actualiza lo existente en vez de borrar y recrear con uuid nuevos |
+
+---
+
+# Módulo Order
+
+**Auditado el 23/08/2026.** Mismo método: perímetro, después integridad de estados y dinero.
+
+> **Es el módulo mejor construido que se ha auditado en este proyecto.** La máquina de
+> estados del pedido está definida en el dominio y **se respeta entera**; cancelar repone
+> stock y revierte comisión; la comisión no se vuelve cobrable hasta que el pago se confirma.
+> Un solo hallazgo, y es de coherencia, no de seguridad.
+
+## OR1. 🟡 El estado de pago no tiene máquina de estados
+
+> **Estado:** ⬜ ABIERTO
+
+**Dónde:** `UpdateOrderPaymentStatusUseCase` y `Order::markPaymentPaid()` / `markPaymentFailed()`
+
+El **estado del pedido** está protegido en el dominio: las seis transiciones
+—`confirm`, `process`, `markAsShipped`, `markAsDelivered`, `cancel`, `refund`— comprueban su
+guarda (`canBeConfirmed()`, `canBeShipped()`, …) y lanzan
+`InvalidOrderStateTransitionException` si no procede.
+
+El **estado del pago** no tiene nada de eso:
+
+```php
+public function markPaymentPaid(): void
+{
+    $this->paymentStatus = PaymentStatus::PAID;
+    $this->updatedAt = new DateTimeImmutable;
+}
+```
+
+`PaymentStatus` sólo define predicados (`isPaid()`, `isRefunded()`, …). **No hay ni un
+`canBeX()`**, así que aquí no estamos ante una protección escrita y sin cablear —el patrón
+habitual de este repositorio— sino ante una que nunca se escribió.
+
+### Las dos consecuencias
+
+**1. Se pueden alcanzar combinaciones incoherentes.** Un pedido `refunded` puede marcarse
+como `paid`: el estado del pedido sigue siendo «reembolsado» y el del pago pasa a «pagado».
+Nada lo impide y nada lo detecta.
+
+**2. `pending` se acepta y no hace absolutamente nada.**
+
+```php
+match ($status) {
+    PaymentStatus::PAID => $order->markPaymentPaid(),
+    PaymentStatus::FAILED => $order->markPaymentFailed(),
+    PaymentStatus::REFUNDED => $order->refund(),
+    PaymentStatus::PENDING => null,   // ← acepta y no cambia nada
+    ...
+};
+```
+
+El endpoint devuelve éxito y el pedido se queda como estaba. Un comerciante que marcó
+«pagado» por error e intenta revertirlo **recibe confirmación de un cambio que no ocurre**.
+Es la misma clase de fallo silencioso que PR2: aceptar la operación y no aplicarla.
+
+### Lo que NO es
+
+**No hay doble cobro.** `ActivateOrderCommissionUseCase` sólo promueve comisiones que están
+en `awaiting_payment`, así que marcar «pagado» dos veces no cobra dos veces. Se comprobó a
+propósito porque era la sospecha inicial.
+
+### Por dónde iría el arreglo
+
+Darle a `PaymentStatus` las mismas guardas que tiene `OrderStatus`, y que `PENDING` o bien
+revierta de verdad —con lo que eso implique para la comisión ya activada— o bien se rechace
+con un mensaje claro. Lo que no puede es responder éxito sin hacer nada.
+
+---
+
+## Lo que se comprobó y está BIEN
+
+| Qué | Resultado |
+| :--- | :--- |
+| **Perímetro de rutas** | ✅ Las 8 rutas de `api-tenant/order/*` llevan `Authenticate` + `throttle:api` + `tenant_can:manage_orders` |
+| **Máquina de estados del pedido** | ✅ Las seis transiciones comprueban su guarda en la entidad. Un pedido cancelado no se puede enviar |
+| **Despacho de estados** | ✅ El controlador usa un `match` a casos de uso por transición, y la lista `in:` del FormRequest **coincide exactamente** con las ramas: no hay `UnhandledMatchError` alcanzable |
+| **Cancelar repone stock** | ✅ N13 cerrado, con el razonamiento de por qué sólo aplica a `pending`/`confirmed`/`processing` — un pedido enviado no se puede cancelar, así que la mercancía nunca salió |
+| **Cancelar revierte comisión** | ✅ D2 cerrado: la comisión de una venta que nunca se cobró ya no entra en la liquidación |
+| **La comisión espera al pago** | ✅ N15 cerrado: nace en `awaiting_payment` y sólo se vuelve cobrable al confirmar el pago |
+| **Activación de comisión idempotente** | ✅ Sólo promueve filas en `awaiting_payment`; marcar «pagado» dos veces no cobra dos veces |
+| **Validación al crear** | ✅ Incluye `exists:products,id` por artículo, precios `min:0` y cantidades `min:1` |
+
+### Una observación que no es hallazgo
+
+`CreateOrderUseCase` **acepta el precio de cada artículo tal y como se lo dan** — no lo
+resuelve contra el catálogo. Se miró con detenimiento porque es el error de B1, y **aquí no
+lo es**:
+
+- Los dos caminos públicos ya resuelven el precio antes de llegar: el checkout del
+  escaparate con `StorefrontItemPriceResolver` y el central con `CentralItemPriceResolver`.
+- El tercero, `POST /api-tenant/order/create`, es el comerciante creando un pedido manual en
+  **su propia** tienda. Fijar el precio ahí es una operación legítima de negocio (venta
+  telefónica, mostrador, acuerdo puntual).
+
+Queda anotado porque el siguiente que lo lea se hará la misma pregunta.
