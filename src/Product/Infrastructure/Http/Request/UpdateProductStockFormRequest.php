@@ -20,6 +20,9 @@ final class UpdateProductStockFormRequest extends FormRequest
     {
         return [
             'quantity' => ['required', 'integer', 'min:0'],
+            // Hallazgo PR2: en un producto con variantes el stock vive en la variante, no
+            // en el padre. Sin esto, reponer no surtia efecto y nadie se enteraba.
+            'variant_id' => ['nullable', 'string'],
         ];
     }
 

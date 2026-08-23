@@ -20,8 +20,9 @@ final class UpdateProductStockPATCHController
     {
         try {
             $quantity = (int) $request->input('quantity');
+            $variantId = $request->input('variant_id');
 
-            $this->useCase->execute($id, $quantity);
+            $this->useCase->execute($id, $quantity, $variantId ? (string) $variantId : null);
 
             return ApiResponse::success(
                 data: null,
@@ -29,9 +30,17 @@ final class UpdateProductStockPATCHController
                 code: 200
             );
         } catch (Exception $e) {
+            /*
+             * `(int) $e->getCode()` no vale para cualquier excepcion: un QueryException trae
+             * el SQLSTATE como cadena —'HY000', '23000'— y castearlo da 0, que no es un
+             * estado HTTP valido. Symfony reventaba con «The HTTP status code "0" is not
+             * valid» y el error real quedaba enterrado bajo un 500 sin mensaje.
+             */
+            $codigo = (int) $e->getCode();
+
             return ApiResponse::error(
                 message: $e->getMessage(),
-                code: (int) ($e->getCode() ?: 400)
+                code: ($codigo >= 400 && $codigo < 600) ? $codigo : 500
             );
         }
     }

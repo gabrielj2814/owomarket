@@ -18,11 +18,19 @@ final class DeleteProductImageDELETEController extends Controller
 
     public function __invoke(Request $request): JsonResponse
     {
-        $imagePath = (string) $request->input('image_path', $request->query('image_path', ''));
+        $request->validate([
+            'image_path' => ['required', 'string', 'max:2048'],
+        ]);
 
-        if (! empty($imagePath)) {
-            $this->deleteUseCase->execute($imagePath);
-        }
+        $imagePath = (string) $request->input('image_path');
+
+        // Hallazgo PR1: el mismo `tenant('id')` que usa la subida al escribir la ruta. Es
+        // lo que delimita que se puede borrar; sin el, esta ruta aceptaba cualquier fichero
+        // del disco publico.
+        $this->deleteUseCase->execute(
+            $imagePath,
+            tenant('id') ? (string) tenant('id') : null
+        );
 
         return ApiResponse::success(
             data: null,

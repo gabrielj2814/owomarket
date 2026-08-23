@@ -14,7 +14,7 @@ final class UpdateProductStockUseCase
         private readonly ProductRepositoryInterface $repository
     ) {}
 
-    public function execute(string $id, int $quantity): void
+    public function execute(string $id, int $quantity, ?string $variantId = null): void
     {
         $productId = ProductId::fromString($id);
         $product = $this->repository->findById($productId);
@@ -23,6 +23,6 @@ final class UpdateProductStockUseCase
             throw new ProductNotFoundException($id);
         }
 
-        $this->repository->updateStock($productId, $quantity);
+        $this->repository->updateStock($productId, $quantity, $variantId);
     }
 }

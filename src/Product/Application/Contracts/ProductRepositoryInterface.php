@@ -29,5 +29,11 @@ interface ProductRepositoryInterface
 
     public function toggleVisibility(ProductId $id, bool $isVisible): void;
 
-    public function updateStock(ProductId $id, int $quantity): void;
+    /**
+     * Hallazgo PR2: `$variantId` no es un extra opcional, es lo que decide DONDE se escribe.
+     * En un producto con variantes el `quantity` del padre no lo mantiene ni lo lee nadie
+     * —`StockReserver` solo descuenta de la variante (N36)—, asi que escribir ahi era
+     * aceptar la operacion y no aplicarla.
+     */
+    public function updateStock(ProductId $id, int $quantity, ?string $variantId = null): void;
 }

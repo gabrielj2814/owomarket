@@ -21,7 +21,7 @@
 
 | Módulo | Ruta | Tamaño | Estado |
 | :--- | :--- | :--- | :--- |
-| **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ **Auditado** — 2 hallazgos |
+| **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ Auditado — **2 hallazgos CERRADOS** |
 | **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ **Auditado** — 1 hallazgo |
 | **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ **Auditado** — 1 hallazgo |
 | **Payment** | `src/Payment/` | 33 ficheros · 1.626 líneas | ✅ **Auditado** — 1 hallazgo |
@@ -34,8 +34,8 @@
 
 | # | Módulo | Qué | Severidad | Estado | Demostrado |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **PR1** | Product | Borrado arbitrario de ficheros del disco público | 🔴 | ⬜ Abierto | ⚠️ Sólo lectura |
-| **PR2** | Product | Actualizar el stock de un producto con variantes no hace nada | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **PR1** | Product | Borrado sin acotar dentro del almacenamiento de la tienda | 🟡 | ✅ **Cerrado** | ✅ Probado |
+| **PR2** | Product | Actualizar el stock de un producto con variantes no hacía nada | 🟠 | ✅ **Cerrado** | ✅ Probado |
 | **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **PY1** | Payment | La capa de pasarelas no la usa nadie, y su endpoint acepta importes sin registrar nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
@@ -52,9 +52,32 @@
 **Auditado el 23/08/2026.** Método: perímetro de rutas y guardas, después integridad de los
 datos que el módulo escribe (stock, precios, ficheros).
 
-## PR1. 🔴 Borrado arbitrario de ficheros del disco público
+## PR1. 🟡 Borrado sin acotar dentro del almacenamiento de la tienda
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
+>
+> ### ⚠️ La severidad original era FALSA
+>
+> Este hallazgo se anotó como 🔴 diciendo que se podían borrar ficheros de **otras tiendas y
+> del hub central** — avatares de administrador, PDFs de factura. **No es cierto**, y se
+> comprobó ejecutando:
+>
+> ```
+> raiz SIN tenancy: /var/www/storage/app/public
+> raiz CON tenancy: /var/www/storage/tenant{id}/app/public/
+> ```
+>
+> `FilesystemTenancyBootstrapper` sufija el disco `public` por inquilino
+> (`config/tenancy.php`, sección `filesystem`), así que el borrado **nunca pudo salir del
+> almacenamiento de esa tienda**. Lo del hub central se escribe sin tenancy, en la raíz sin
+> sufijar, y era inalcanzable.
+>
+> El error fue mío: di por buena la lectura del `Storage::disk('public')->delete()` sin
+> comprobar qué raíz tenía ese disco durante una petición de tienda. **Baja de 🔴 a 🟡.**
+>
+> Lo que sí era cierto y se ha cerrado: dentro de su propia tienda, cualquiera con
+> `manage_catalog` podía borrar cualquier fichero pasando su ruta — incluidas las facturas y
+> los adjuntos de soporte **de esa tienda**, que son registros.
 
 **Dónde:** `DeleteProductImageDELETEController` → `DeleteProductImageUseCase` →
 `LaravelProductMediaStorageService::deleteImage()`
@@ -116,16 +139,35 @@ no puede apuntar fuera de la tienda. Si hay que seguir aceptando rutas, comproba
 empiecen por el prefijo de imágenes de producto **y** que exista una fila de
 `product_images` que las reclame.
 
-### Cómo demostrarlo
+### ✅ Cómo se cerró
 
-Autenticarse como usuario de tienda con `manage_catalog` y llamar al endpoint con la ruta de
-un avatar o de una factura. Es la comprobación que falta antes de darlo por bueno.
+`deleteImage()` recibe ahora el inquilino —el mismo parámetro que `uploadImage()` ya tenía— y
+sólo borra rutas bajo `tenants/{id}/products/`. Simetría a propósito: si un día cambia el
+esquema de rutas, las dos mitades están a la vista en el mismo fichero.
+
+**No se comprueba contra `product_images`**, que sería lo natural, porque el formulario borra
+una imagen recién subida **antes** de guardar el producto: en ese momento no existe ninguna
+fila que la reclame, y exigirla rompería el caso legítimo. Se comprobó leyendo el flujo del
+`ProductImageDropzone` antes de elegir.
+
+También se rechaza cualquier ruta con `..` —Flysystem ya lo impide, pero quien manda eso está
+intentando algo— y se rechaza el borrado si no hay inquilino: **negar de más es recuperable,
+borrar de más no.**
+
+**Vigilado por cuatro tests**, incluido el del caso legítimo por HTTP —por ruta y por URL—
+para que cerrar la puerta no se llevara por delante el flujo del formulario.
+
+Los casos negativos se comprueban contra el servicio y no por HTTP, y queda anotado por qué:
+`Storage::fake()` y el sufijado de disco de la tenancy no conviven bien en un test de
+petición, y una aserción sobre el disco tras un `deleteJson` mide una raíz distinta de la que
+usó el request. Se probó, dio falsos negativos, y un test que falla por el andamiaje es peor
+que no tenerlo.
 
 ---
 
-## PR2. 🟠 Actualizar el stock de un producto con variantes no hace nada
+## PR2. 🟠 Actualizar el stock de un producto con variantes no hacía nada
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 **Dónde:** `UpdateProductStockPATCHController` → `UpdateProductStockUseCase` →
 `ProductRepository::updateStock()`
@@ -160,11 +202,24 @@ Un producto agotado sigue agotado después de reponerlo, y el comerciante no tie
 saber por qué. Es un fallo silencioso en el inventario: no da error, simplemente no surte
 efecto.
 
-### Por dónde iría el arreglo
+### ✅ Cómo se cerró
 
-Que el endpoint acepte un `variant_id` opcional y escriba donde toca, o que rechace la
-operación sobre un producto con variantes indicando que el stock se gestiona por variante.
-Lo que no puede es aceptar el cambio y no aplicarlo.
+Las dos cosas, no una: el endpoint acepta `variant_id` y escribe en la variante, **y** si el
+producto tiene variantes y no se dice cuál, responde 422 con el motivo. Se exige además que
+la variante sea de ese producto — sin esa condición, un id de variante ajena repondría stock
+de otro artículo del catálogo.
+
+La regla vive en el repositorio y no en el caso de uso porque es una pregunta de
+persistencia: **dónde** está el stock de este producto.
+
+**Y un fallo latente que apareció de camino:** el controlador hacía
+`code: (int) ($e->getCode() ?: 400)`. Un `QueryException` trae el SQLSTATE como cadena
+—`'HY000'`—, y castearlo da **0**, que no es un estado HTTP válido: Symfony reventaba con
+«The HTTP status code "0" is not valid» y el error real quedaba enterrado bajo un 500 sin
+mensaje. Eso me costó tres intentos de diagnóstico. Ahora el código se acota a 400–599.
+
+**Vigilado por cuatro tests:** sin variantes sigue funcionando, con variantes y sin decir
+cuál se rechaza, la variante concreta se repone, y una variante de otro producto se rechaza.
 
 ---
 

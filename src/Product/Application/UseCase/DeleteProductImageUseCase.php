@@ -12,8 +12,12 @@ final class DeleteProductImageUseCase
         private readonly ProductMediaStorageInterface $mediaStorage
     ) {}
 
-    public function execute(string $imagePathOrUrl): void
+    /**
+     * Hallazgo PR1: el inquilino viaja hasta el almacenamiento, que es quien decide si esa
+     * ruta le pertenece. Antes se borraba cualquier fichero del disco publico.
+     */
+    public function execute(string $imagePathOrUrl, ?string $tenantId = null): void
     {
-        $this->mediaStorage->deleteImage($imagePathOrUrl);
+        $this->mediaStorage->deleteImage($imagePathOrUrl, $tenantId);
     }
 }

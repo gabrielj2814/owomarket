@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Product\Infrastructure\Eloquent\Repositories;
 
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Src\Product\Application\Contracts\ProductMediaStorageInterface;
 use Src\Product\Application\Contracts\ProductRepositoryInterface;
@@ -256,13 +257,48 @@ final class ProductRepository implements ProductRepositoryInterface
         EloquentProduct::where('id', $id->value())->first()?->update(['is_visible' => $isVisible]);
     }
 
-    public function updateStock(ProductId $id, int $quantity): void
+    public function updateStock(ProductId $id, int $quantity, ?string $variantId = null): void
     {
         // Hallazgo E2: este método era el ÚNICO que propagaba algo a `central_products`, y
         // lo hacía con una copia a mano del stock envuelta en un `catch` vacío. Ahora
         // guarda sobre el modelo y es `ProductObserver` quien sincroniza la fila entera
         // —precio, nombre e imágenes incluidos—, registrando el fallo si lo hay.
-        EloquentProduct::where('id', $id->value())->first()?->update(['quantity' => max(0, $quantity)]);
+        $quantity = max(0, $quantity);
+
+        /*
+         * Hallazgo PR2: antes esto escribia SIEMPRE en `products.quantity`, y en un producto
+         * con variantes ese campo no lo mantiene ni lo lee nadie: `StockReserver` solo
+         * descuenta de la variante (N36) y la ficha muestra la de la variante. El
+         * comerciante reponia desde su lista, veia que se guardaba, y ni lo que se vende ni
+         * lo que se muestra cambiaba.
+         *
+         * La regla vive aqui y no en el caso de uso porque es una pregunta de persistencia:
+         * DONDE esta el stock de este producto.
+         */
+        if ($variantId !== null && $variantId !== '') {
+            $variante = EloquentProductVariant::where('id', $variantId)
+                ->where('product_id', $id->value())
+                ->first();
+
+            // Se exige que la variante sea DE ESTE producto. Sin esa condicion, un id de
+            // variante ajena repondria stock de otro articulo del catalogo.
+            if ($variante === null) {
+                throw new Exception('La variante indicada no pertenece a este producto.', 422);
+            }
+
+            $variante->update(['quantity' => $quantity]);
+
+            return;
+        }
+
+        if (EloquentProductVariant::where('product_id', $id->value())->exists()) {
+            throw new Exception(
+                'Este producto gestiona el stock por variante. Indica cuál quieres reponer.',
+                422
+            );
+        }
+
+        EloquentProduct::where('id', $id->value())->first()?->update(['quantity' => $quantity]);
     }
 
     /**

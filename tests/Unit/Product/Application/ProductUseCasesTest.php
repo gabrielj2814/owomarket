@@ -315,9 +315,12 @@ describe('Product Use Cases Unit Tests', function () {
             ->once()
             ->andReturn($product);
 
+        // Hallazgo PR2: el tercer argumento es la variante. Sin el, el caso de uso escribia
+        // siempre en `products.quantity`, un campo que en un producto con variantes no lo
+        // mantiene ni lo lee nadie.
         $repository->shouldReceive('updateStock')
             ->once()
-            ->with(Mockery::type(ProductId::class), 25);
+            ->with(Mockery::type(ProductId::class), 25, null);
 
         $useCase = new UpdateProductStockUseCase($repository);
         $useCase->execute($productId, 25);
