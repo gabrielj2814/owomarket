@@ -7,6 +7,7 @@ namespace Src\CentralCustomer\Infrastructure\Http\Controller;
 use Exception;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rules\Password;
 use Src\CentralCustomer\Application\UseCases\UpdateCentralCustomerProfileUseCase;
 use Src\CentralCustomer\Infrastructure\Http\Support\ResolvesAuthenticatedCustomer;
 
@@ -32,7 +33,12 @@ final class UpdateCustomerProfilePUTController
             'document_id' => ['nullable', 'string', 'max:50'],
             'avatar' => ['nullable', 'string'],
             'current_password' => ['nullable', 'string'],
-            'new_password' => ['nullable', 'string', 'min:8'],
+            // Hallazgo A4, tercer hermano. El cierre de A4 llevo Password::defaults() al
+            // registro y al reset y se salto ESTE, que es el tercer sitio donde nace una
+            // contrasena. Se quedo en min:8 mientras los otros dos exigian mayuscula,
+            // minuscula, digito y simbolo: cambiar la contrasena desde el perfil se
+            // saltaba la politica entera y 'aaaaaaaa' pasaba.
+            'new_password' => ['nullable', 'string', Password::defaults()],
         ]);
 
         try {

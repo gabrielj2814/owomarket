@@ -315,3 +315,32 @@ test('una contrasena nueva debil se rechaza en el registro (A4)', function () {
         'password' => 'abc123',
     ])->assertStatus(422)->assertJsonValidationErrors('password');
 });
+
+/*
+ * Hallazgo A4, tercer hermano. El cierre de A4 llevo Password::defaults() al registro y al
+ * reset — los dos sitios que nombraba el hallazgo— y se salto el cambio de contrasena desde
+ * el perfil, que es el tercer sitio donde nace una contrasena y se quedo en min:8.
+ *
+ * O sea que la politica se podia esquivar entera: registrarse cumpliendo la regla y luego
+ * cambiar la contrasena a 'aaaaaaaa' desde Mi Perfil.
+ */
+test('cambiar la contrasena desde el perfil respeta la misma regla (A4)', function () {
+    $email = 'perfil_'.bin2hex(random_bytes(3)).'@example.com';
+    $customer = CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Cliente Perfil',
+        'email' => $email,
+        'password' => Hash::make('OwO_12345678'),
+    ]);
+
+    $this->actingAs($customer, 'central_customer')
+        ->putJson("/api/central/customer/profile/{$customer->id}", [
+            'name' => 'Cliente Perfil',
+            'current_password' => 'OwO_12345678',
+            'new_password' => 'aaaaaaaa',
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('new_password');
+
+    expect(Hash::check('OwO_12345678', $customer->fresh()->password))->toBeTrue();
+});

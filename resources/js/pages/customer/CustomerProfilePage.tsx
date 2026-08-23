@@ -36,10 +36,11 @@ export const CustomerProfilePage: React.FC = () => {
         if (!customer?.id) return;
 
         if (newPassword) {
-            if (newPassword.length < 8) {
-                setErrorMsg('La nueva contraseña debe tener al menos 8 caracteres.');
-                return;
-            }
+            /*
+             * Hallazgo A4: aqui habia un `newPassword.length < 8` propio, el quinto sitio
+             * que contestaba que es una contrasena valida. La regla vive en
+             * Password::defaults() y el servidor devuelve 422 con el mensaje exacto.
+             */
             if (newPassword !== confirmPassword) {
                 setErrorMsg('La confirmación de la contraseña no coincide.');
                 return;

@@ -335,10 +335,32 @@ peor.
 **Se descartó** `uncompromised()`: consulta HaveIBeenPwned por red dentro del alta, y eso es
 latencia y una dependencia externa en el camino crítico.
 
-**Vigilado por tres tests**, y el que de verdad importa es el primero:
+### ⚠️ Se cerro incompleto — corregido el 23/08/2026
+
+Al auditar `customer/**` aparecio un **tercer** sitio donde nace una contrasena, que este
+hallazgo no nombraba y el cierre no toco:
+[`UpdateCustomerProfilePUTController:35`](../../src/CentralCustomer/Infrastructure/Http/Controller/UpdateCustomerProfilePUTController.php#L35),
+el cambio de contrasena desde «Mi Perfil». Se quedo en `min:8` mientras el registro y el
+reset ya exigian mayuscula, minuscula, digito y simbolo.
+
+**La politica se podia esquivar entera:** registrarse cumpliendo la regla y despues cambiar
+la contrasena a `aaaaaaaa` desde el perfil. Y la pagina tenia ademas su propio
+`newPassword.length < 8`, con lo que los sitios que contestaban a la pregunta seguian siendo
+tres, no uno.
+
+Es el patron de este repositorio aplicado al propio arreglo: **llego a dos hermanos de
+tres**. Queda anotado sin adornos porque el hallazgo original avisaba justo de esto.
+
+Ya usa `Password::defaults()`, la comprobacion del cliente se quito, y hay un cuarto test que
+lo vigila.
+
+---
+
+**Vigilado por cuatro tests**, y el que de verdad importa es el primero:
 - una contraseña antigua que ya no cumple la regla **sigue sirviendo para entrar**;
 - el registro rechaza una débil;
-- el reset la rechaza igual.
+- el reset la rechaza igual;
+- y el cambio desde «Mi Perfil» también.
 
 Dos tests existentes fallaron al aplicar el cambio, y estaban en lo cierto: codificaban las
 reglas viejas (`secret12345` en el registro, `new_secure_pass_999` en el reset). Se
