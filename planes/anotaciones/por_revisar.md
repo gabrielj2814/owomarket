@@ -76,3 +76,29 @@ y su base de datos.
 
 Se vacían **siempre**, sin excepción para desarrollo: menos condicionales y ninguna
 posibilidad de que la excepción acabe en una build de producción.
+
+
+---
+
+## 4. T6 — la facturación de una tienda es legible sin autenticarse
+
+**Qué:** en el dominio de cualquier tienda, estos dos GET responden sin sesión:
+
+```
+GET /monetization/summary      → tarifa de comisión y resumen de monetización
+GET /monetization/settlements  → historial de liquidaciones
+```
+
+**Cómo apareció:** cerrando T5, que era el mismo fichero de rutas sin ningún middleware.
+Los POST se cerraron; estos dos no.
+
+**Por qué no se cerró a la vez:** es una fuga de datos de negocio, no un cambio de estado.
+Protegerlos exige montar sesión de usuario de inquilino en los tests que los usan, y eso es
+otro cambio — meterlo en la cola de T5 habría ampliado el alcance de un arreglo de seguridad
+sin necesidad.
+
+**Riesgo si está mal:** un competidor que pase por el escaparate ve qué comisión paga esa
+tienda y su historial de liquidaciones.
+
+**Cómo cerrarlo:** `auth` + `tenant_can:manage_billing`, el mismo par que ya lleva
+`/settlements/pay`, y actualizar los tests que los llaman para que autentiquen.

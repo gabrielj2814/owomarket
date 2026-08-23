@@ -170,14 +170,16 @@ test('Tenant can subscribe to plan and inspect monetization summary via API', fu
     $plansResponse->assertStatus(200)
         ->assertJsonPath('status', 'success');
 
-    // 2. Subscribe to Enterprise plan
-    $subResponse = $this->postJson("http://{$this->domain}/monetization/subscribe", [
-        'plan' => 'enterprise',
-        'billing_cycle' => 'yearly',
-    ]);
-    $subResponse->assertStatus(200)
-        ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.plan.slug', 'enterprise');
+    /*
+     * Hallazgo T5: esto llamaba a `POST /monetization/subscribe` SIN AUTENTICAR y afirmaba
+     * que devolvia 200 — o sea que el test consagraba el fallo, como ya paso con A3, A4, C1
+     * y AdminPhaseOneOperations. Esa ruta se borro: dejaba que cualquiera cambiase el plan
+     * de una tienda, y con el plan viaja la tarifa de comision.
+     *
+     * Aqui la suscripcion es escenario, no lo que se prueba, asi que se monta con el caso
+     * de uso — igual que ya hacian los otros tests de este fichero.
+     */
+    app(SubscribeTenantToPlanUseCase::class)->execute($this->tenant->id, 'enterprise', 'yearly');
 
     // 3. Get summary
     $summaryResponse = $this->getJson("http://{$this->domain}/monetization/summary");
