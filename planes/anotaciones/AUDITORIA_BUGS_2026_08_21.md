@@ -209,7 +209,14 @@ sintaxis y nada más; la primera aplicación puede necesitar ajustes.
 > dueño de cualquier tienda. Están en
 > [AUDITORIA_PANELES_2026_08_22.md](AUDITORIA_PANELES_2026_08_22.md).**
 >
-> Esa pasada miró sólo la autorización. Lo de abajo sigue sin revisar.
+> Esa pasada miró sólo la autorización. Los cuatro hallazgos están **cerrados** desde el
+> 22/08.
+>
+> ⚠️ **`pages/auth/**` también está auditado (22/08): 5 hallazgos, dos críticos** —el login
+> de cliente publica en el endpoint equivocado, y el PIN de recuperación no tiene límite de
+> intentos. Están en [AUDITORIA_AUTH_2026_08_22.md](AUDITORIA_AUTH_2026_08_22.md).
+>
+> Lo de abajo sigue sin revisar.
 
 No son tareas abiertas —son zonas que **nunca se revisaron**, así que no se sabe qué hay:
 
