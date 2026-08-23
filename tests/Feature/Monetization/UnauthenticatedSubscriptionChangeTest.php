@@ -120,3 +120,27 @@ test('un anonimo NO puede reportar el pago de una liquidacion (T5)', function ()
 
     expect($respuesta->status())->toBeIn([401, 403, 419]);
 });
+
+/*
+ * Hallazgo T6. Estos dos GET eran publicos: `/summary` expone la tarifa de comision que paga
+ * la tienda y `/settlements` su historial de liquidaciones. Un competidor los leia con solo
+ * pasar por el escaparate.
+ *
+ * Se comprueban aqui y no en TenantMonetizationAndCommissionTest a proposito: aquel fichero
+ * autentica a todos sus tests en el `beforeEach`, asi que jamas habria detectado que la
+ * puerta estaba abierta.
+ */
+test('la facturacion de una tienda no se lee sin sesion (T6)', function () {
+    $this->getJson("http://{$this->domain}/monetization/summary")
+        ->assertStatus(401);
+
+    $this->getJson("http://{$this->domain}/monetization/settlements")
+        ->assertStatus(401);
+});
+
+test('el catalogo de planes si es publico (T6)', function () {
+    // Cerrar la fuga no puede llevarse por delante lo que si debe ser publico: los planes
+    // son informacion comercial y se muestran a quien se plantea abrir tienda.
+    $this->getJson("http://{$this->domain}/monetization/plans")
+        ->assertStatus(200);
+});

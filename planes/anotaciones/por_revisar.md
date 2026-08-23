@@ -3,6 +3,18 @@
 > Cosas ciertas y comprobadas que quedaron fuera del alcance de lo que se estaba
 > arreglando. No son hallazgos de auditoría: son deudas conocidas, con su motivo de
 > aplazamiento. Última actualización: 23/08/2026.
+>
+> ## ✅ LOS CUATRO PUNTOS CERRADOS
+>
+> **Dos de los cuatro estaban mal diagnosticados por quien los escribió**, y la corrección
+> queda dentro de cada uno en vez de borrarse:
+>
+> - El punto 2 afirmaba que `vitest` rompía el CI. No lo rompía — siempre salió con código 0.
+> - El punto 1 daba por hecho que un usuario real se topaba con el menú móvil roto. No podía:
+>   ese menú era código inalcanzable.
+>
+> En ambos casos **fue levantar la aplicación lo que los desmintió**, no leer el código ni
+> mirar los tests. Vale la pena recordarlo la próxima vez que una deuda parezca obvia.
 
 ---
 
@@ -135,7 +147,7 @@ posibilidad de que la excepción acabe en una build de producción.
 
 ---
 
-## 4. T6 — la facturación de una tienda es legible sin autenticarse
+## 4. ✅ RESUELTO (23/08/2026) — T6, la facturación de una tienda era legible sin autenticarse
 
 **Qué:** en el dominio de cualquier tienda, estos dos GET responden sin sesión:
 
@@ -155,5 +167,20 @@ sin necesidad.
 **Riesgo si está mal:** un competidor que pase por el escaparate ve qué comisión paga esa
 tienda y su historial de liquidaciones.
 
-**Cómo cerrarlo:** `auth` + `tenant_can:manage_billing`, el mismo par que ya lleva
-`/settlements/pay`, y actualizar los tests que los llaman para que autentiquen.
+**Cerrado con `auth` a secas, y la ausencia de `tenant_can:manage_billing` es deliberada.**
+
+Al ir a ponerlo apareció el motivo para no hacerlo: `EnsureTenantUserHasPermission` **deja
+pasar todas las lecturas sin comprobar nada** (`esLectura()`), por decisión documentada —
+un `staff` tiene que poder consultar la facturación para trabajar; lo que no puede es
+modificarla. Añadirlo a un GET no habría añadido ni una comprobación, y habría hecho creer
+al siguiente lector que ese GET está filtrado por permiso.
+
+**No hizo falta tocar ningún test existente**, contra lo que se suponía aquí: los ficheros
+que llaman a estos endpoints ya autenticaban —uno en su `beforeEach`, otro heredando el
+`actingAs` de una llamada anterior del mismo test—.
+
+**Y eso es justamente lo que hacía falta anotar:** esos tests jamás habrían detectado que la
+puerta estaba abierta, porque siempre llamaban con sesión. La comprobación de que un anónimo
+recibe 401 se añadió en `UnauthenticatedSubscriptionChangeTest`, que no autentica a nadie.
+Junto con ella, otra que confirma que el catálogo de planes **sigue siendo público**: cerrar
+una fuga no puede llevarse por delante lo que sí debe ser accesible.

@@ -39,12 +39,20 @@ Route::post('/settlements/pay', ReportTenantSettlementPaymentPOSTController::cla
     ->name('tenant.monetization.settlements.pay');
 
 /*
- * Hallazgo T6 (ABIERTO, anotado en por_revisar.md): estos tres GET siguen siendo publicos.
- * `/summary` y `/settlements` exponen la tarifa de comision de la tienda y su historial de
- * liquidaciones a quien pase por el escaparate. Es una fuga de datos de negocio, no un
- * cambio de estado, asi que NO se cierra aqui: protegerlos exige montar sesion de usuario
- * de inquilino en los tests y eso es otro cambio, no la cola de este.
+ * Hallazgo T6: estos dos eran publicos. `/summary` expone la tarifa de comision que paga la
+ * tienda y `/settlements` su historial de liquidaciones — datos de negocio que un competidor
+ * leia con solo pasar por el escaparate.
+ *
+ * Llevan `auth` y NO `tenant_can:manage_billing`, y la ausencia es deliberada:
+ * EnsureTenantUserHasPermission deja pasar todas las lecturas sin comprobar nada
+ * (`esLectura()`), por decision documentada — un `staff` tiene que poder consultar la
+ * facturacion para trabajar; lo que no puede es modificarla. Ponerlo aqui no anadiria ni
+ * una comprobacion y haria creer al siguiente lector que este GET esta filtrado por permiso.
  */
-Route::get('/summary', GetTenantMonetizationSummaryGETController::class)->name('tenant.monetization.summary');
-Route::get('/settlements', GetTenantSettlementHistoryGETController::class)->name('tenant.monetization.settlements');
+Route::middleware('auth')->group(function () {
+    Route::get('/summary', GetTenantMonetizationSummaryGETController::class)->name('tenant.monetization.summary');
+    Route::get('/settlements', GetTenantSettlementHistoryGETController::class)->name('tenant.monetization.settlements');
+});
+
+// El catalogo de planes es informacion comercial publica y no depende de quien pregunte.
 Route::get('/plans', ListPlansGETController::class)->name('tenant.monetization.plans');
