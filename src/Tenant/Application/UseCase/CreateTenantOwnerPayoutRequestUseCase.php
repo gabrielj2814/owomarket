@@ -6,16 +6,16 @@ namespace Src\Tenant\Application\UseCase;
 
 use Exception;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
-use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 
 final class CreateTenantOwnerPayoutRequestUseCase
 {
     public function __construct(
-        private readonly TenantOwnershipVerifier $ownership
+        private readonly TenantOwnershipVerifier $ownership,
+        private readonly TenantAvailableBalance $balance
     ) {}
 
     /**
@@ -38,9 +38,18 @@ final class CreateTenantOwnerPayoutRequestUseCase
         }
 
         return DB::transaction(function () use ($userId, $data) {
-            // 2. El importe solicitado no puede superar el saldo disponible de la tienda.
-            //    Se recalcula dentro de la transacción para no partir de una lectura vieja.
-            $availableBalance = $this->availableBalanceFor($data['tenant_id']);
+            /*
+             * 2. El importe solicitado no puede superar el saldo disponible de la tienda.
+             *
+             * Hallazgo T1: recalcular dentro de la transacción no bastaba. Sin bloqueo, dos
+             * peticiones simultáneas leen el mismo saldo, las dos pasan y las dos se crean
+             * — el hallazgo C3 con otro nombre, y B3/C6 antes que él. `lock: true` bloquea
+             * las filas de retiros de esta tienda mientras dure la transacción.
+             *
+             * La fórmula ya no vive aquí: la comparte con la aprobación, que es donde el
+             * dinero sale de verdad y donde no se comprobaba nada.
+             */
+            $availableBalance = $this->balance->requestable($data['tenant_id'], lock: true);
 
             if ($data['amount'] > $availableBalance) {
                 throw new Exception(
@@ -74,38 +83,5 @@ final class CreateTenantOwnerPayoutRequestUseCase
                 ],
             ]);
         });
-    }
-
-    /**
-     * Saldo retirable de una tienda: ventas netas de comisión, menos lo ya liquidado
-     * y lo que hay pendiente de liquidar.
-     */
-    private function availableBalanceFor(string $tenantId): float
-    {
-        $grossSales = 0.0;
-        $totalCommissions = 0.0;
-        $settledPayouts = 0.0;
-        $pendingPayouts = 0.0;
-
-        if (Schema::hasTable('platform_commissions')) {
-            $grossSales = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('order_total');
-            $totalCommissions = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('commission_amount');
-        }
-
-        if (Schema::hasTable('commission_settlements')) {
-            $settledPayouts = (float) CommissionSettlement::where('tenant_id', $tenantId)
-                ->where('type', 'payout')
-                ->where('status', 'settled')
-                ->sum('net_amount');
-
-            $pendingPayouts = (float) CommissionSettlement::where('tenant_id', $tenantId)
-                ->where('type', 'payout')
-                ->where('status', 'pending')
-                ->sum('net_amount');
-        }
-
-        $netEarnings = max(0.0, $grossSales - $totalCommissions);
-
-        return max(0.0, $netEarnings - $settledPayouts - $pendingPayouts);
     }
 }

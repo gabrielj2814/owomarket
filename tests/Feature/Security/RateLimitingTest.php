@@ -12,10 +12,17 @@ use Illuminate\Support\Facades\RateLimiter;
 | Hasta la Fase 4.1 no habia ninguno: se podian probar contrasenas contra el login a
 | ritmo de maquina, dar de alta cuentas en bucle o quemar tokens SSO sin freno.
 |
-| Este comentario decia que aquella fase "puso `throttle:5,15` en las dos rutas del PIN".
-| No era cierto, y esa frase — repetida tambien en apiCentral.php — es probablemente la
-| razon de que el hueco durara: dos sitios afirmaban que la puerta estaba cerrada. La
-| cerro el hallazgo A2, y los tests del final la vigilan.
+| Esa fase puso `throttle:5,15` en las dos rutas del PIN del ADMINISTRADOR (hallazgo A7,
+| ver src/Admin/Infrastructure/Http/Routes/web.php), pero el resto seguia abierto.
+|
+| La precision de "del administrador" no es cosmetica: sin ella esta frase se lee como si
+| el PIN del CLIENTE tambien tuviera freno, y no lo tenia — ese fue el hallazgo A2. De
+| hecho apiCentral.php llegaba a afirmarlo ("el PIN ya llevaba freno desde la Fase 4.1"),
+| eso si era falso, y es probablemente la razon de que el hueco durara.
+|
+| Anotado tambien porque al cerrar A2 esta frase se dio por falsa y se reescribio: era
+| cierta, solo que ambigua. Una frase verdadera y vaga se confunde con una mentira, y
+| corregirla "de mas" mete el error que se venia a quitar.
 |
 | Los tests golpean los endpoints reales, no el limitador aislado: lo que hay que
 | demostrar es que la puerta esta cerrada, no que la cerradura funcione en el banco.

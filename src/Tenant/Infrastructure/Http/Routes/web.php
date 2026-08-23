@@ -64,10 +64,14 @@ Route::middleware(['auth', 'staff:manage_tenants'])->group(function () {
 |--------------------------------------------------------------------------
 |
 | Esta ruta es anonima a proposito: es el formulario de registro de comercios. Su unica
-| proteccion posible es el limite de tasa — y no lo tenia. Tres sitios distintos afirmaban
-| que si: el comentario de las rutas del PIN, la cabecera de RateLimitingTest y la excepcion
-| de GovernanceRoutesAreGatedTest, que exime esta ruta del control de rol diciendo que "su
-| proteccion es el limite de tasa".
+| proteccion posible es el limite de tasa — y no lo tenia. GovernanceRoutesAreGatedTest la
+| exime del control de rol razonando que "su proteccion es el limite de tasa, no el rol":
+| el razonamiento es correcto, el limite no existia.
+|
+| (Aqui se dijo que eran TRES los sitios que afirmaban un freno inexistente. Verificado en
+| el barrido del 23/08: eran dos —este y el comentario de apiCentral.php—. La cabecera de
+| RateLimitingTest hablaba del PIN del ADMINISTRADOR, que si lo tenia desde A7: era una
+| frase ambigua, no falsa.)
 |
 | Lo que costaba una peticion sin autenticar: CreateTenantUseCase guarda el tenant, eso
 | dispara TenantCreated, y el pipeline de TenancyServiceProvider corre CreateDatabase +

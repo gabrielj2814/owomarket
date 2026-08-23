@@ -211,8 +211,21 @@ buzón a alguien y encadenar ventanas) y **10/hora por IP**, más holgado a prop
 **Encontrado de paso, y es la causa de que durara:** el comentario que había sobre estas
 rutas afirmaba que *«el PIN ya llevaba freno desde la Fase 4.1»*, y la cabecera de
 `RateLimitingTest.php` repetía que aquella fase *«puso `throttle:5,15` en las dos rutas del
-PIN»*. Ninguna de las dos cosas era verdad. Dos sitios declaraban cerrada una puerta
-abierta. Ambos comentarios están corregidos.
+PIN»*.
+
+**Corrección del 23/08, tras el barrido de comentarios:** de esas dos frases **sólo una era
+falsa**. La de `apiCentral.php` sí lo era: hablaba del PIN del cliente, que no tenía ningún
+freno. La de `RateLimitingTest.php` era **cierta** — se refería a las dos rutas del PIN del
+**administrador**, que sí llevan `throttle:5,15` desde A7. Era ambigua, no mentirosa.
+
+Al cerrar A2 se dio por falsa y se reescribió, con lo que **se metió una afirmación falsa
+donde había una verdadera**: exactamente el defecto que se venía a corregir. Está revertida,
+con la precisión «del administrador» que le faltaba.
+
+La lección: **una frase verdadera y vaga se confunde con una mentira**, y corregirla de más
+introduce el error que se venía a quitar. Cuando un comentario parezca falso, verificar qué
+afirma exactamente antes de tocarlo — no sólo si la protección existe, sino *de qué ruta*
+habla.
 
 **Vigilado por:** tres tests en [`tests/Feature/Security/RateLimitingTest.php`](../../tests/Feature/Security/RateLimitingTest.php)
 — el corte del PIN a los cinco intentos, el corte de peticiones de código a las tres por
@@ -453,8 +466,12 @@ exime deliberadamente esta ruta del control de rol, y razona:
 > *«El alta pública de tienda es deliberadamente anónima: es el formulario de registro, y su
 > protección es el límite de tasa, no el rol.»*
 
-El razonamiento es correcto. El límite de tasa no existía. Con A2 son **tres sitios** en
-este repositorio afirmando un freno que no estaba puesto.
+El razonamiento es correcto. El límite de tasa no existía.
+
+Junto con `apiCentral.php` (A2) son **dos sitios** en este repositorio afirmando un freno que
+no estaba puesto. Durante un tiempo se contaron tres: la tercera —la cabecera de
+`RateLimitingTest.php`— resultó ser cierta al verificarla en el barrido del 23/08. Ver la
+corrección en A2.
 
 ### El hermano
 

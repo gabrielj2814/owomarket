@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\User;
@@ -46,6 +47,27 @@ test('Super Admin can list, approve and reject payout requests', function () {
         'slug' => 'store-payout-test',
         'status' => 'active',
         'request' => 'approved',
+    ]);
+
+    /*
+     * Hallazgo T1: este fixture creaba retiros SIN ninguna comision de respaldo — un pago
+     * sin ventas detras—, y el test afirmaba que se podian aprobar. Consagraba justo lo que
+     * T1 vino a impedir.
+     *
+     * Ahora la tienda tiene ventas por 200 sin comision, o sea 200 de saldo liquidable: el
+     * primer retiro (150) esta respaldado y se aprueba; el segundo se rechaza por decision
+     * del administrador, que es lo que el test comprueba de verdad.
+     */
+    PlatformCommission::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $tenant->id,
+        'order_id' => (string) Str::uuid(),
+        'order_number' => 'ORD-PAYOUT-BACKING',
+        'order_total' => 200.00,
+        'commission_rate' => 0.00,
+        'commission_amount' => 0.00,
+        'currency' => 'USD',
+        'status' => 'pending',
     ]);
 
     $payout1 = CommissionSettlement::create([
