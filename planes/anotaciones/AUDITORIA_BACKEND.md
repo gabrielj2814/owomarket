@@ -24,7 +24,9 @@
 | **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ **Auditado** — 2 hallazgos |
 | **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ **Auditado** — 1 hallazgo |
 | **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ **Auditado** — 1 hallazgo |
-| Payment | `src/Payment/` | 33 ficheros · 1.626 líneas | ⬜ Pendiente |
+| **Payment** | `src/Payment/` | 33 ficheros · 1.626 líneas | ✅ **Auditado** — 1 hallazgo |
+
+> **Los cuatro módulos auditados.** 5 hallazgos: 1 🔴 · 2 🟠 · 2 🟡.
 
 ---
 
@@ -36,6 +38,7 @@
 | **PR2** | Product | Actualizar el stock de un producto con variantes no hace nada | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **PY1** | Payment | La capa de pasarelas no la usa nadie, y su endpoint acepta importes sin registrar nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
 
 > **Ninguno está probado ejecutando.** Todos salen de leer el código. En este proyecto esa
 > distinción ha importado varias veces en un solo día —una lectura llevó a un falso positivo
@@ -366,3 +369,111 @@ Y separadamente, que crear un envío rechace los pedidos en estado terminal.
 | **Validación de seguimiento** | ✅ `tracking_number` obligatorio con longitud, `carrier`, `service`, `cost` con `min:0` y `shipped_at` como fecha |
 | **Validación al crear** | ✅ `order_id` con `exists:orders,id` |
 | **Escritura transaccional** | ✅ El `save()` del repositorio corre dentro de una transacción, así que envío y pedido se actualizan juntos o no se actualiza ninguno |
+
+---
+
+# Módulo Payment
+
+**Auditado el 23/08/2026.** Es el módulo con más dinero encima, así que la pregunta de
+entrada fue la de siempre: ¿se fía alguien de un importe que llega del cliente?
+
+**La respuesta corta: el camino que se usa de verdad está bien. El que no se usa, no.**
+
+## Lo primero, una corrección del propio proceso
+
+A mitad de la auditoría estuve a punto de anotar un hallazgo falso: que los datos bancarios
+que el administrador configura —banco, cédula, teléfono, titular y Binance Pay ID de la
+plataforma— **se guardaban y no los leía nadie**. El `grep` de `CentralSetting` fuera de
+`src/Payment/` volvía vacío y encajaba con el patrón de C1 y T3.
+
+**Era falso.** `CentralPaymentMethodsProvider` los lee y los lleva al checkout central; el
+grep no lo vio porque el proveedor vive dentro del propio módulo. El comentario del
+controlador lo dice sin ambigüedad:
+
+> *«La Fase 0.5 sacó los datos de cobro de demostración del checkout del inquilino, pero el
+> central se quedó con los suyos incrustados en el TSX. Ahora salen de `central_settings`, y
+> un método sin configurar no se ofrece.»*
+
+Queda escrito porque el error es instructivo: **un `grep` que vuelve vacío no demuestra que
+algo esté muerto**, sólo que no está donde se buscó.
+
+---
+
+## PY1. 🟡 La capa de pasarelas es infraestructura paralela que no participa en ningún cobro
+
+> **Estado:** ⬜ ABIERTO
+
+El módulo tiene **dos mitades que no se tocan**.
+
+### La mitad viva
+
+| Qué | Quién la usa |
+| :--- | :--- |
+| `CentralPaymentMethodsProvider` | El checkout central, con los datos de `central_settings` |
+| `StorefrontPaymentMethodsProvider` | El checkout de cada tienda, con los ajustes de esa tienda |
+
+El comprador elige método, envía sus datos de pago, y el comerciante confirma el cobro con
+`POST /api-tenant/order/{id}/payment-status`. **Ahí no interviene ninguna pasarela.**
+
+### La mitad muerta
+
+| Qué | Estado |
+| :--- | :--- |
+| `PagoMovilPaymentGateway`, `BinancePayPaymentGateway`, `CashOnDeliveryPaymentGateway`, `ManualBankTransferPaymentGateway` | Sólo los alcanza `/api-tenant/payment/process` |
+| `POST /api-tenant/payment/process` | **Ninguna página del frontend lo llama** |
+| `GET /api-tenant/payment/gateways` | Igual, sin llamantes |
+| Tabla `payments` y modelo `Payment` | **Nada escribe en ella en todo el repositorio** |
+
+Se comprobaron los tres: los proveedores no usan el factory de pasarelas,
+`ListAvailablePaymentGatewaysUseCase` sólo lo usa su propio controlador, y no hay un solo
+`Payment::create()` en `src/`.
+
+### Por qué esto importa aunque hoy no rompa nada
+
+`/api-tenant/payment/process` es un endpoint **vivo y autenticado** que:
+
+- acepta un `amount` arbitrario (`numeric|min:0.01`),
+- con `order_id` **opcional** (`nullable`),
+- devuelve un `transaction_id` y un `PaymentResult::pending()`,
+- y **no registra absolutamente nada** — `ProcessPaymentUseCase` es un paso directo al
+  `charge()` de la pasarela y no guarda ni una fila.
+
+Hoy no lo llama nadie. Pero es el endpoint que cualquiera cablearía el día que hiciera falta
+«procesar un pago»: se llama exactamente así. Y quien lo hiciera obtendría un flujo **sin
+vínculo con el pedido y sin verificación del importe** — el error de B1 esperando a que
+alguien lo active.
+
+La tabla `payments` tiene el mismo problema al revés: cualquier informe o conciliación que
+se construya sobre ella hoy devolvería cero filas, y no porque no haya pagos.
+
+### Por dónde iría la decisión
+
+No es un arreglo, es una decisión de arquitectura, y sólo hay dos salidas honestas:
+
+1. **Borrar la mitad muerta.** Si el negocio son métodos manuales conciliados por el
+   comerciante —que es lo que hay hoy—, las pasarelas y la tabla `payments` sobran, y con
+   ellas el endpoint que invita al error.
+2. **Cablearla de verdad**, y entonces `/payment/process` tiene que exigir `order_id`,
+   verificar el importe contra el total del pedido y persistir el pago.
+
+Lo que no puede quedarse es a medias: una puerta abierta con el nombre correcto y el
+comportamiento equivocado.
+
+---
+
+## Lo que se comprobó y está BIEN
+
+| Qué | Resultado |
+| :--- | :--- |
+| **Perímetro de rutas** | ✅ Los ajustes centrales bajo `auth` + `super_admin`; los endpoints de tienda bajo `auth` + `throttle:api` + `tenant_can:manage_billing` |
+| **Los datos de cobro llegan al comprador** | ✅ `CentralPaymentMethodsProvider` los lee de `central_settings` y **un método sin configurar no se ofrece** (G1 cerrado de verdad) |
+| **Guardado de ajustes** | ✅ Validado en el controlador, `only(KEYS)` contra asignación masiva, `trim`, y **transaccional**: «todo o nada, unos datos de cobro a medias es justo lo que no queremos que vea el comprador» |
+| **No hay credenciales guardadas** | ✅ Las cinco claves son datos de cobro públicos —banco, cédula, teléfono, titular, Binance Pay ID—. No hay `api_key` ni secretos en `central_settings` |
+| **Pago Móvil no inventa cobros** | ✅ `charge()` devuelve `PaymentResult::pending()` con la referencia: registra la intención, no afirma que el dinero llegó |
+
+### Una observación que no es hallazgo
+
+El checkout muestra al comprador el **titular, la cédula y el teléfono** de la cuenta de
+cobro. Es información personal en una página pública — y es **necesaria**: sin esos tres
+datos no se puede hacer un Pago Móvil en Venezuela. Se anota porque llama la atención al
+leerlo, no porque haya nada que corregir.
