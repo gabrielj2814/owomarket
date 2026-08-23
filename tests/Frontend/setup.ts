@@ -2,6 +2,28 @@ import '@testing-library/jest-dom/vitest';
 import React from 'react';
 import { vi } from 'vitest';
 
+/*
+ * La tasa de cambio, simulada para todos los tests de componente.
+ *
+ * `CurrencyPriceDisplay` pide la tasa activa al montarse cuando no se la pasan por prop
+ * (hallazgo G13: una promesa compartida a nivel de modulo, para que 24 tarjetas no hagan 24
+ * peticiones). En los tests eso era una peticion de RED DE VERDAD: happy-dom sirve
+ * `http://localhost:3000` como URL por defecto, asi que una llamada relativa intentaba
+ * conectarse a ese puerto.
+ *
+ * El sintoma era un volcado de ECONNREFUSED ::1:3000 despues del resumen de resultados —
+ * ruido que parecia un fallo de CI y no lo era: la ejecucion siempre salio con codigo 0.
+ * Lo que si era de verdad es que los tests de componente tocaban la red.
+ *
+ * Se simula aqui y no en `ProductCard.test.tsx` a proposito: cualquier componente que
+ * renderice un precio hereda esa peticion, asi que arreglarlo en un solo test dejaria al
+ * siguiente con el mismo problema.
+ */
+vi.mock('@/Services/ExchangeRateServices', () => ({
+    getSharedActiveRate: vi.fn().mockResolvedValue(null),
+    default: { getSharedActiveRate: vi.fn().mockResolvedValue(null) },
+}));
+
 // Mock Inertia.js
 vi.mock('@inertiajs/react', () => {
     return {

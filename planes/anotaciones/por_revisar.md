@@ -6,7 +6,7 @@
 
 ---
 
-## 1. A1 no se ha comprobado a mano contra la aplicación
+## 1. ✅ RESUELTO (23/08/2026) — A1 comprobado contra la aplicación
 
 **Qué:** el cierre de A1 borró `/auth/customer/login` y cambió los tres enlaces del menú
 móvil para que abran el modal de acceso. Eso obligó a montar `<CustomerAuthModal />` en
@@ -23,12 +23,49 @@ no puede demostrar ningún test de los que se corrieron.
 **Riesgo si está mal:** el menú móvil se queda sin acceso — el estado cambia y no aparece
 nada. Sería peor que el bug original, que al menos mostraba una pantalla.
 
-**Cómo comprobarlo:** levantar la app, entrar por el dominio de una tienda en móvil, abrir
-el menú y pulsar Login. El cajón debe cerrarse y aparecer el modal.
+**Comprobado el 23/08/2026 en Docker, con navegador real**, escaparate de tienda a 375×812:
+
+| | |
+| :--- | :--- |
+| El escaparate carga | ✅ HTTP 200 |
+| Botón de acceso → **modal OwO Pass** | ✅ abre, con sus dos pestañas y el enlace de recuperación |
+| `/auth/customer/login` (la ruta que borró A1) | ✅ **404** |
+| `/auth/login` y `/auth/forgot-password` | ✅ 200 |
+
+### ⚠️ Y la comprobación corrigió el propio hallazgo A1
+
+**El menú móvil que A1 describía es código inalcanzable.** La cadena está cerrada sobre sí
+misma y ningún controlador la abre:
+
+```
+tenantHomePage.tsx   ← ningún fichero PHP la renderiza
+  └─ TenantLayout
+       ├─ NavBarMovilMarketComponent   ← los tres enlaces de A1
+       └─ SidebarMarketComponent
+```
+
+La home de tienda real es `TenantStorefrontHomePage` sobre `StorefrontLayout`, que es la que
+se verificó funcionando. Así que la frase de la auditoría —«un cliente que use el menú móvil
+se encuentra una pantalla que rechaza sus credenciales correctas»— **no era cierta: ningún
+cliente podía llegar a ese menú**. Y el arreglo de A1 sobre esos tres enlaces se aplicó a
+código que nadie ejecuta.
+
+Lo que sí valía de A1 se mantiene y queda verificado: la ruta rota existía y ya da 404.
+
+`tenantHomePage` era el gemelo viejo de `TenantStorefrontHomePage` — uno vivo, otro muerto,
+nadie borró el muerto. **Los cuatro ficheros se borraron.**
+
+### Nota de montaje
+
+Para navegar hubo que apuntar `chivostore.owomarket.local` —que ya estaba en el `hosts`— a
+la tienda del contenedor, y dejarle **un solo dominio**: los assets se sirven desde el
+dominio primario del inquilino, así que con dos dominios el navegador pedía uno que el
+`hosts` no resuelve. Es cosa del montaje de prueba, no de la aplicación, pero conviene
+saberlo si algún día se sirve una tienda por dos dominios.
 
 ---
 
-## 2. `vitest` sale con error aunque los 16 tests pasen
+## 2. ✅ RESUELTO (23/08/2026) — El ruido de `vitest`
 
 **Qué:** `npm run test:unit` da `Test Files 7 passed (7)` y `Tests 16 passed (16)`, y
 *después* de terminar escupe:
@@ -41,12 +78,30 @@ Error: socket hang up
 Algo intenta conectarse a un servidor en el puerto 3000 que no está levantado, una vez
 acabada la ejecución.
 
-**Por qué importa:** el comando sale con código distinto de cero. Si hay CI, está marcando
-la build en rojo sin que ningún test falle — y eso enseña a ignorar el rojo, que es peor
-que no tener CI.
+### ⚠️ Corrección: no rompía el CI
 
-**Estado:** es anterior a la sesión del 23/08 y no lo causó ninguno de los arreglos de esa
-jornada. No se tocó por no mezclarlo con la auditoría.
+Aquí se afirmó que «el comando sale con código distinto de cero» y que estaría marcando la
+build en rojo. **Era falso.** Comprobado: `npm run test:unit` siempre salió con **código 0**.
+El volcado se imprime después del resumen y no afecta al resultado.
+
+Se anota el error en vez de borrarlo: una deuda mal diagnosticada hace perder el tiempo a
+quien la recoge, y esta habría mandado a alguien a mirar la configuración del CI.
+
+### Lo que sí era, y sí importaba
+
+**Los tests de componente hacían peticiones de red de verdad.** `CurrencyPriceDisplay` pide
+la tasa activa al montarse cuando no se la pasan por prop (hallazgo G13), y `ProductCard` lo
+renderiza sin simularla. `happy-dom` sirve `http://localhost:3000` como URL por defecto, así
+que esa llamada relativa intentaba conectarse a ese puerto de verdad.
+
+Los tests pasaban porque el fallo se tragaba en silencio, pero eran más lentos, no
+deterministas, y **si algo llegara a escuchar en el 3000 los tests hablarían con ello**.
+
+**Cerrado** simulando `ExchangeRateServices` en `tests/Frontend/setup.ts` — no en
+`ProductCard.test.tsx`. Cualquier componente que muestre un precio hereda esa petición, así
+que arreglarlo en un solo test dejaría al siguiente con el mismo problema.
+
+Resultado: 7 ficheros, 16 tests, cero `ECONNREFUSED`.
 
 ---
 
