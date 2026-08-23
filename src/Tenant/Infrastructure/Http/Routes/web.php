@@ -100,8 +100,26 @@ Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index
 |
 | `own_user` lo cierra en la ruta, donde se ve al leerla — y donde se vera si falta.
 */
+/*
+ * Hallazgo T8: aqui habia una TERCERA declaracion de ConsumeTenantOwnerSsoTokenGETController
+ * —`/tenant/auth/sso-consume` en el dominio central— con solo `web`, sin el `throttle:sso`
+ * que N18 puso a proposito sobre las otras dos por ser el canje de una credencial de un
+ * solo uso.
+ *
+ * Nadie generaba esa URL: tanto GenerateTenantOwnerSsoTokenUseCase como
+ * AdminImpersonateTenantUseCase construyen `{dominio_de_la_tienda}/auth/sso-consume`, que
+ * es la ruta con freno. Solo la referenciaba el fichero generado por Wayfinder, porque
+ * estaba registrada.
+ *
+ * Es la misma limpieza que hizo P0 en este mismo fichero —«se borran los tres duplicados,
+ * el duplicado esquivaba al portero»— con una que sobrevivio.
+ *
+ * Gravedad medida y no inflada: el token es `bin2hex(random_bytes(32))`, 256 bits, asi que
+ * no se adivina y el freno era defensa en profundidad. Pero el controlador hace
+ * `Auth::login($user, true)` —con «recuerdame»— y por esta puerta lo hacia en el dominio
+ * CENTRAL, que no es donde el flujo pretende dejar la sesion.
+ */
 // Rutas del Tenant Owner Central
-Route::get('/auth/sso-consume', \Src\Tenant\Infrastructure\Http\Controller\ConsumeTenantOwnerSsoTokenGETController::class)->name('central.tenant.sso-consume');
 Route::get('/owner/backoffice/{user_uuid}/dashboard', [ViewDashboardCentralTenantOwnerIndexGETController::class, 'index'])->name('central.backoffice.web.tenant.owner.dashboard')->middleware(['auth', 'own_user']);
 Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerWalletGETController::class)->name('central.backoffice.web.tenant.owner.wallet')->middleware(['auth', 'own_user']);
 Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware(['auth', 'own_user']);

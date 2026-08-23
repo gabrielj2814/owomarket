@@ -131,16 +131,92 @@ ventas que respaldan el retiro.
 
 ---
 
-## Lo que queda por barrer
+## Barrido 4 — divergencia entre gemelos
 
-Este barrido cubrió una pregunta. Las otras, por orden de rendimiento esperado:
+**Método:** en vez de comparar carpetas a ojo, detectar mecánicamente **el mismo controlador
+expuesto desde varias rutas con guardas distintas**. Es la forma exacta del hallazgo P0
+(«el duplicado esquivaba al portero»), y sale de una consulta sobre `route:list --json`.
 
-1. **`alert()` en `admin/**` y `tenant/**`** — ya localizados **6**, en tarifas de cambio,
-   gestión de administradores, soporte y facturación. Mismo hallazgo que A5 y C2.
-2. **Formularios con datos precargados reales** (clase S3). En un panel de administración
-   sería peor que en el alta pública.
-3. **Divergencia entre gemelos** admin/tenant.
-4. **Operaciones sensibles sin límite de tasa.**
+Seis divergencias. **Dos eran fallos, cuatro no.**
 
-Ya descartado, con evidencia: **las 10 URLs escritas a mano en esas carpetas resuelven a
-rutas reales.** El fallo de S1 no se repite ahí.
+### T7. 🟠 `/auth/user/{uuid}` devolvía el perfil de cualquiera
+
+> **Estado:** ✅ CERRADO — 23/08/2026
+
+`CurrentUserGETController` está expuesto dos veces:
+
+| Ruta | Guarda | Audiencia |
+| :--- | :--- | :--- |
+| `api/auth/interna/user/{uuid}` | `InternalServiceMiddleware` | servicio a servicio |
+| `auth/user/{user_uuid}` | `auth` a secas | cara al usuario |
+
+El controlador toma el uuid de la URL y **nunca lo compara con la sesión**. Para el interno
+eso es correcto — su trabajo es consultar a cualquiera. Para el otro no, y **la semántica del
+interno se coló en el de usuario**.
+
+**Demostrado:** un `tenant_owner` pidiendo el perfil de un `super_admin` → **HTTP 200** con
+nombre, correo y rol. La tabla `users` son el personal, los administradores y los
+propietarios, así que un comerciante corriente podía enumerar a los administradores de la
+plataforma con sus correos — el inventario que se necesita antes de una campaña de phishing.
+
+Es el hallazgo P1 otra vez: *«pasan el `{user_uuid}` de la URL al caso de uso sin compararlo
+nunca con la sesión»*.
+
+**Cerrado con `own_user`**, el alias que ya existía desde P1. Y estaba declarada **dos
+veces** —central y tenant—, así que se arreglaron las dos. El gemelo, otra vez.
+
+**Un tropiezo que conviene anotar:** la primera versión del test creaba sólo la fila de
+`users` y el endpoint devolvía 500 para todos los uuid. Parecía que no había fuga y era el
+fixture: el endpoint lee de `auth_users`, una proyección. Un falso negativo por escenario
+incompleto es tan peligroso como un falso positivo por lectura.
+
+### T8. 🟡 Un tercer `sso-consume` sin límite de tasa
+
+> **Estado:** ✅ CERRADO — 23/08/2026
+
+`ConsumeTenantOwnerSsoTokenGETController` estaba declarado **tres** veces. Dos con
+`throttle:sso`, que N18 puso a propósito por ser el canje de una credencial de un solo uso.
+La tercera —`/tenant/auth/sso-consume`, en el dominio central— con sólo `web`.
+
+Nadie generaba esa URL: `GenerateTenantOwnerSsoTokenUseCase` y `AdminImpersonateTenantUseCase`
+construyen `{dominio_de_la_tienda}/auth/sso-consume`, que sí tiene freno.
+
+Es la misma limpieza que hizo **P0 en ese mismo fichero** —«se borran los tres duplicados»—
+con una que sobrevivió.
+
+**Gravedad medida, no inflada:** el token es `bin2hex(random_bytes(32))`, 256 bits. No se
+adivina, así que el freno era defensa en profundidad. Pero el controlador hace
+`Auth::login($user, true)` —con «recuérdame»— y por esa puerta lo hacía en el dominio
+central, que no es donde el flujo pretende dejar la sesión. Borrada.
+
+### Las cuatro que NO eran fallos
+
+| Divergencia | Veredicto |
+| :--- | :--- |
+| `GetSupportTicketDetail` y `UpdateSupportTicketStatus` con `support_session` vs `auth` | ✅ No es fuga. `ResolvesSupportRequester` deriva la identidad de la sesión en los dos casos y el caso de uso filtra por `requesterId`. La diferencia es de audiencia: el guarda central admite además sesión de cliente |
+| `ListPlansGETController` bajo `super_admin` en central y público en tienda | ✅ Es el catálogo de planes, información comercial pública |
+| `ConsultUserByEmailPOSTController` con y sin `throttle` explícito | ✅ Los dos llevan `InternalServiceMiddleware`; el que «faltaba» hereda `throttle:api` del grupo |
+| `CurrentUserGETController` en sus dos variantes internas | ✅ Ambas tras `InternalServiceMiddleware` |
+
+---
+
+## Balance de los barridos
+
+**Los cuatro están hechos.**
+
+| Barrido | Resultado |
+| :--- | :--- |
+| Comentarios que afirman protecciones | ✅ **T1** — el saldo de los retiros |
+| `alert()` en admin y tenant | ✅ los 6 — salieron **T3** y **T4** |
+| Formularios con datos precargados | ✅ limpio (falso positivo: eran estados de aviso) |
+| URLs escritas a mano | ✅ las 10 resuelven — el fallo de S1 no se repite |
+| Operaciones sensibles sin límite de tasa | ✅ **T5** — cambiar el plan sin autenticarse |
+| Divergencia entre gemelos | ✅ **T7** y **T8** |
+
+**Lo que el método enseñó:** cruzar una pregunta por todo el repositorio rindió siete
+hallazgos —dos de ellos en caminos de dinero— mientras que releer una carpeta ya auditada
+(`marketplace/**`, 6.540 líneas) rindió cero. Y dos de los siete aparecieron auditando otra
+cosa, no revisando la carpeta donde vivían.
+
+Queda abierto **T6** en `por_revisar.md`: `/monetization/summary` y `/monetization/settlements`
+siguen siendo GET públicos.
