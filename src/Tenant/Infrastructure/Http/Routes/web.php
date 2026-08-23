@@ -58,8 +58,28 @@ Route::middleware(['auth', 'staff:manage_tenants'])->group(function () {
     Route::patch('/backoffice/{id}/approved', [ApprovedTenantByUuidPATCHController::class, 'index']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Alta publica de tienda (hallazgo A6)
+|--------------------------------------------------------------------------
+|
+| Esta ruta es anonima a proposito: es el formulario de registro de comercios. Su unica
+| proteccion posible es el limite de tasa — y no lo tenia. Tres sitios distintos afirmaban
+| que si: el comentario de las rutas del PIN, la cabecera de RateLimitingTest y la excepcion
+| de GovernanceRoutesAreGatedTest, que exime esta ruta del control de rol diciendo que "su
+| proteccion es el limite de tasa".
+|
+| Lo que costaba una peticion sin autenticar: CreateTenantUseCase guarda el tenant, eso
+| dispara TenantCreated, y el pipeline de TenancyServiceProvider corre CreateDatabase +
+| MigrateDatabase con shouldBeQueued(false) — es decir, una base de datos MySQL nueva y toda
+| la tanda de migraciones DENTRO de la propia peticion, antes de que nadie apruebe nada.
+| Sin tope eso llena el disco y ademas retiene un worker por peticion.
+|
+| throttle:altas ya existia (3/hora por IP) y dice justo esto. Crear una tienda es un acto
+| deliberado y raro: tres por hora sobra para el comerciante honesto.
+*/
 Route::get('/create/account', [ViewCreateAccountTenantGETController::class, 'index'])->name('central.web.signup.create.account.tenant');
-Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index']);
+Route::post('/create/account', [CreateAccountTenantPOSTController::class, 'index'])->middleware('throttle:altas');
 
 /*
 |--------------------------------------------------------------------------
@@ -83,7 +103,9 @@ Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Ht
 Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware(['auth', 'own_user']);
 Route::get('/owner/backoffice/{user_uuid}/billing', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerBillingGETController::class)->name('central.backoffice.web.tenant.owner.billing')->middleware(['auth', 'own_user']);
 
-Route::post('/owner/tenant', [CreateTenantPOSTController::class, 'index'])->middleware('auth');
+// A6: el hermano de /create/account. Tiene sesion, pero 'auth' no es un tope: un
+// propietario podia crear tiendas —y bases de datos— en bucle igual que un anonimo.
+Route::post('/owner/tenant', [CreateTenantPOSTController::class, 'index'])->middleware(['auth', 'throttle:altas']);
 Route::delete('/owner/tenant', [DeleteTenantDELETEController::class, 'index'])->middleware('auth');
 
 /*

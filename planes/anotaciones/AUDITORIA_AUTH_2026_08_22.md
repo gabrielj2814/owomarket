@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO — 23/08/2026
 >
-> **A2 y A3 CERRADOS. Quedan 3 abiertos: A1 🔴 · A4 🟠 · A5 🟡.**
+> **A2, A3 y A6 CERRADOS. Quedan 3 abiertos: A1 🔴 · A4 🟠 · A5 🟡.**
 >
 > A2 y A3 se cerraron juntos y primero — por delante de A1, que es más visible— porque se
 > componían: A3 entregaba la lista de correos con cuenta y A2 dejaba atacar cada uno sin
@@ -46,7 +46,8 @@ Dos patrones, y ninguno es «falta código»:
 | **A2** | ✅ El PIN de recuperación no tiene límite de intentos | 🔴 | ✅ 42 intentos, ningún 429 |
 | **A3** | ✅ «Olvidé mi contraseña» revela si un correo existe | 🟠 | ✅ 200 vs 404 con mensaje explícito |
 | **A4** | Cuatro reglas de contraseña distintas: se puede crear una cuenta con la que el login se niega a intentar | 🟠 | ✅ lectura de las cuatro |
-| **A5** | Todo el feedback de los tres logins es `alert()`, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
+| **A5** | ⬜ Todo el feedback de los tres logins es `alert()`, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
+| **A6** | ✅ El alta de tiendas no tiene límite: cada una crea una base de datos MySQL dentro de la petición | 🔴 | ✅ lectura del pipeline de tenancy |
 
 ---
 
@@ -279,6 +280,58 @@ mensajes en línea. Los tres logins son los únicos que se quedaron atrás.
 
 ---
 
+## A6. 🔴 El alta de tiendas no tiene límite, y cada alta crea una base de datos
+
+> **Estado:** ✅ CERRADO — 23/08/2026
+
+**Dónde:** [`src/Tenant/Infrastructure/Http/Routes/web.php:62`](../../src/Tenant/Infrastructure/Http/Routes/web.php#L62)
+
+Salió de pasada al cerrar A2. La pregunta que quedaba pendiente era *en qué momento se crea
+la base de datos*, porque eso decidía la severidad. La respuesta es la peor de las dos:
+
+`CreateTenantUseCase` guarda el tenant → se dispara `TenantCreated` → el pipeline de
+[`TenancyServiceProvider.php:28-40`](../../app/Providers/TenancyServiceProvider.php#L28)
+corre `CreateDatabase` + `MigrateDatabase` con **`shouldBeQueued(false)`**.
+
+Es decir: **una base de datos MySQL nueva y toda la tanda de migraciones dentro de la propia
+petición HTTP**, sin autenticar y antes de que nadie apruebe la tienda. No es «cada tienda
+aprobada crea una base»; es cada tienda *solicitada*. Sin tope eso llena el disco y además
+retiene un worker por petición, que es la mitad barata del ataque.
+
+### El tercer comentario que declaraba cerrada una puerta abierta
+
+[`GovernanceRoutesAreGatedTest.php:60`](../../tests/Feature/Security/GovernanceRoutesAreGatedTest.php#L60)
+exime deliberadamente esta ruta del control de rol, y razona:
+
+> *«El alta pública de tienda es deliberadamente anónima: es el formulario de registro, y su
+> protección es el límite de tasa, no el rol.»*
+
+El razonamiento es correcto. El límite de tasa no existía. Con A2 son **tres sitios** en
+este repositorio afirmando un freno que no estaba puesto.
+
+### El hermano
+
+`POST /tenant/owner/tenant` ([`web.php:86`](../../src/Tenant/Infrastructure/Http/Routes/web.php#L86))
+crea tenants por el mismo camino. Lleva `auth`, pero `auth` no es un tope: un propietario con
+sesión podía crear tiendas —y bases de datos— en bucle igual que un anónimo. Buscarlo fue
+aplicar el patrón que ya se repite en este proyecto: *cada arreglo llegó a un flujo y se
+saltó a su gemelo*.
+
+### ✅ Cómo se cerró
+
+`throttle:altas` a las dos rutas. No hizo falta limitador nuevo: el que existe desde N18 son
+3/hora por IP y su comentario ya decía exactamente esto —«crear cuentas es legítimo, crear
+cientos es lo que llena la base de basura»—. Crear una tienda es un acto deliberado y raro;
+tres por hora sobra para el comerciante honesto, y aquí el argumento del NAT que sí aplicaba
+en A2 no aplica: tres altas de tienda por hora desde una oficina no es un patrón legítimo.
+
+**Vigilado por:** dos tests en [`RateLimitingTest.php`](../../tests/Feature/Security/RateLimitingTest.php)
+— el corte del alta pública a las tres por hora, y que la ruta del propietario lleve el
+limitador. El segundo comprueba el middleware en vez de hacer tres altas reales: montarlas
+crearía tres bases de datos de verdad, que es justo lo que se está impidiendo.
+
+---
+
 ## Lo que se comprobó y está BIEN
 
 Estas cinco se verificaron a propósito, y no hace falta volver a mirarlas:
@@ -303,7 +356,5 @@ Estas cinco se verificaron a propósito, y no hace falta volver a mirarlas:
 
 - `resources/js/pages/customer/**` (11 páginas, 2.801 líneas) — el portal del cliente.
 - `resources/js/pages/marketplace/**` (14 páginas, 6.540 líneas) — escaparate y checkout.
-- `resources/js/pages/signup/**` (1 página, 398 líneas). Ya se detectó de pasada que
-  **`POST /tenant/create/account` no tiene ningún límite de tasa**: el alta de tiendas es
-  ilimitada, y cada tienda aprobada crea una base de datos. Pendiente de confirmar en qué
-  momento se crea esa base, que es lo que decide la severidad.
+- `resources/js/pages/signup/**` (1 página, 398 líneas). El límite de tasa que faltaba
+  ya está cerrado como **A6** (ver abajo); la página en sí sigue sin auditar.

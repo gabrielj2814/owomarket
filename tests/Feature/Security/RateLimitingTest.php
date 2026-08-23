@@ -24,6 +24,7 @@ use Illuminate\Support\Facades\RateLimiter;
 beforeEach(function () {
     RateLimiter::clear('credenciales');
     RateLimiter::clear('recuperacion');
+    RateLimiter::clear('altas');
     cache()->flush();
 });
 
@@ -165,4 +166,47 @@ test('un correo sin cuenta no se distingue de uno con cuenta (A3)', function () 
     $existe->assertStatus(200);
     $noExiste->assertStatus(200);
     expect($noExiste->json('message'))->toBe($existe->json('message'));
+});
+
+/*
+|--------------------------------------------------------------------------
+| Hallazgo A6 — el alta de tiendas
+|--------------------------------------------------------------------------
+|
+| GovernanceRoutesAreGatedTest exime a `create/account` del control de rol diciendo que
+| "su proteccion es el limite de tasa". Era la tercera afirmacion falsa del mismo tipo en
+| este repositorio: no habia ninguno. Este test es lo que hace verdadera esa frase, asi
+| que si alguien quita el throttle, el que falla es este y no una revision manual.
+|
+| Lo que costaba una peticion: CreateDatabase + MigrateDatabase corren con
+| shouldBeQueued(false), o sea una base MySQL nueva y todas las migraciones dentro de la
+| peticion, sin que nadie haya aprobado la tienda.
+*/
+
+test('el alta publica de tiendas se corta tras tres por hora (A6)', function () {
+    $alta = fn (int $i) => $this->postJson('/tenant/create/account', [
+        'name' => "Comerciante {$i}",
+        'email' => "tienda{$i}@example.com",
+        'phone' => '12345678901',
+        'store_name' => "Tienda {$i}",
+        'password' => 'OwO_12345678',
+        'password_confirmation' => 'OwO_12345678',
+    ]);
+
+    for ($i = 0; $i < 3; $i++) {
+        $alta($i);
+    }
+
+    $alta(4)->assertStatus(429);
+});
+
+test('crear tiendas con sesion de propietario tampoco es ilimitado (A6)', function () {
+    // El hermano. Se comprueba solo que la ruta lleva el limitador: montar tres altas
+    // reales aqui crearia tres bases de datos de verdad, que es justo lo que se esta
+    // impidiendo.
+    $ruta = collect(Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
+        ->first(fn ($r) => $r->uri() === 'tenant/owner/tenant' && in_array('POST', $r->methods(), true));
+
+    expect($ruta)->not->toBeNull();
+    expect($ruta->gatherMiddleware())->toContain('throttle:altas');
 });
