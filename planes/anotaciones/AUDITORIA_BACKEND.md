@@ -23,7 +23,7 @@
 | :--- | :--- | :--- | :--- |
 | **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ **Auditado** — 2 hallazgos |
 | **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ **Auditado** — 1 hallazgo |
-| Shipment | `src/Shipment/` | 36 ficheros · 1.730 líneas | ⬜ Pendiente |
+| **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ **Auditado** — 1 hallazgo |
 | Payment | `src/Payment/` | 33 ficheros · 1.626 líneas | ⬜ Pendiente |
 
 ---
@@ -35,6 +35,7 @@
 | **PR1** | Product | Borrado arbitrario de ficheros del disco público | 🔴 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **PR2** | Product | Actualizar el stock de un producto con variantes no hace nada | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
 
 > **Ninguno está probado ejecutando.** Todos salen de leer el código. En este proyecto esa
 > distinción ha importado varias veces en un solo día —una lectura llevó a un falso positivo
@@ -277,3 +278,91 @@ lo es**:
   telefónica, mostrador, acuerdo puntual).
 
 Queda anotado porque el siguiente que lo lea se hará la misma pregunta.
+
+---
+
+# Módulo Shipment
+
+**Auditado el 23/08/2026.** Mismo método, con una pregunta añadida: Shipment escribe sobre
+el pedido, y en Order acabamos de verificar que esas transiciones están protegidas en el
+dominio. La pregunta era si Shipment las respeta.
+
+**No las respeta.**
+
+## SH1. 🟠 Entregar un envío fuerza el pedido a `delivered` saltándose su máquina de estados
+
+> **Estado:** ⬜ ABIERTO
+
+**Dónde:** `EloquentShipmentRepository::save()`
+
+```php
+$order = EloquentOrder::find($shipment->orderId());
+if ($order !== null) {
+    if ($shipment->isDelivered()) {
+        $order->update([
+            'status' => 'delivered',
+            'delivered_at' => ...,
+        ]);
+    } elseif ($shipment->isInTransit() && ! in_array($order->status, ['delivered', 'cancelled', 'refunded'], true)) {
+        $order->update(['status' => 'shipped', ...]);
+    }
+}
+```
+
+Escribe el estado del pedido **con `$order->update()` sobre el modelo Eloquent**, sin pasar
+por la entidad `Order`. Y `Order::markAsDelivered()` sí comprueba `canBeDelivered()` y lanza
+`InvalidOrderStateTransitionException` — pero desde aquí no se llama nunca.
+
+### La asimetría es lo que lo delata
+
+Mírense las dos ramas juntas:
+
+| Rama | ¿Comprueba el estado del pedido? |
+| :--- | :--- |
+| `isInTransit()` → `shipped` | ✅ Sí — excluye `delivered`, `cancelled` y `refunded` |
+| `isDelivered()` → `delivered` | ❌ **No comprueba nada** |
+
+Alguien pensó en el problema para una rama y no para la otra. No es un descuido de diseño:
+es un descuido de una línea.
+
+### El camino completo
+
+`CreateShipmentUseCase` **tampoco comprueba el estado del pedido** — crea el envío para
+cualquier `order_id` que exista (la validación es `exists:orders,id` y nada más). Así que:
+
+1. Un pedido en `processing` recibe un envío.
+2. El pedido se cancela — legítimo, `canBeCancelled()` lo permite en `processing`. **Se
+   repone el stock** (N13) y **se revierte la comisión** (D2).
+3. Se marca el envío como entregado.
+4. El pedido pasa a `delivered`.
+
+### Lo que queda descuadrado
+
+Un pedido que dice **entregado**, cuya mercancía volvió al inventario y por el que la
+plataforma **no cobra comisión**. Las tres cosas no pueden ser ciertas a la vez.
+
+Y no hace falta mala fe: basta con que el almacén marque la entrega de un paquete que ya
+había salido, después de que atención al cliente cancelara el pedido. Dos personas haciendo
+su trabajo.
+
+### Por dónde iría el arreglo
+
+Que la sincronización use la entidad —`$order->markAsDelivered()`— y deje que la excepción
+del dominio decida, o como mínimo que la rama de `delivered` tenga la **misma** exclusión que
+ya tiene la de `shipped`. Lo segundo es una línea y cierra el caso de hoy; lo primero es lo
+correcto, porque pone la regla en un solo sitio.
+
+Y separadamente, que crear un envío rechace los pedidos en estado terminal.
+
+---
+
+## Lo que se comprobó y está BIEN
+
+| Qué | Resultado |
+| :--- | :--- |
+| **Perímetro de rutas** | ✅ Las 7 rutas de `api-tenant/shipment/*` llevan `Authenticate` + `throttle:api` + `tenant_can:manage_orders` |
+| **Rama `shipped` de la sincronización** | ✅ Excluye `delivered`, `cancelled` y `refunded` — es la que está bien hecha |
+| **Entrega idempotente** | ✅ `Shipment::markAsDelivered()` sale temprano si ya está entregado, y rellena `shippedAt` si faltaba |
+| **Validación de seguimiento** | ✅ `tracking_number` obligatorio con longitud, `carrier`, `service`, `cost` con `min:0` y `shipped_at` como fecha |
+| **Validación al crear** | ✅ `order_id` con `exists:orders,id` |
+| **Escritura transaccional** | ✅ El `save()` del repositorio corre dentro de una transacción, así que envío y pedido se actualizan juntos o no se actualiza ninguno |
