@@ -4,6 +4,7 @@ import FormLogin from "@/types/FormLogin";
 import { Button, Card, Checkbox, Label, TextInput } from "flowbite-react";
 import React, { FC, useState } from "react";
 import { HiLockClosed, HiMail } from "react-icons/hi";
+import { HiOutlineExclamationCircle } from "react-icons/hi2";
 import { LuSend, LuStore  } from "react-icons/lu";
 
 interface LoginTenantPageProps {
@@ -15,7 +16,6 @@ interface LoginTenantPageProps {
 const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
 
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
-    // alert(`dominio: ${domain}`);
     // console.log("centralDomain:", centralDomain);
     // ======= States =======
 
@@ -25,6 +25,14 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
     });
 
     const [statusLoader,    setStatusLoader]   = useState<boolean>(false);
+
+    /*
+     * Hallazgo A5. Todo el feedback de esta pantalla era alert(): bloquea el hilo, no se
+     * puede estilar, no es accesible y se pierde en cuanto se acepta. Las paginas de
+     * recuperacion ya usaban estado y mensaje en linea; estos logins eran los que se
+     * habian quedado atras, asi que se copia ese patron en vez de inventar otro.
+     */
+    const [errorMsg,        setErrorMsg]      = useState<string | null>(null);
 
     // ======= UseEffect =======
 
@@ -63,9 +71,10 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setErrorMsg(null);
 
         if(!validarEmail(statuFormLogin.email)){
-            alert("El email no es válido");
+            setErrorMsg("El email no es válido.");
             return
         }
 
@@ -89,12 +98,12 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
         setStatusLoader(false);
 
         if(respuestaServidor.status !== 200){
-            alert(respuestaServidor.response?.data.message);
+            setErrorMsg(respuestaServidor.response?.data?.message || "No se pudo iniciar sesión. Revisa tus credenciales.");
             return null
         }
 
         if(respuestaServidor.data.data == null){
-            alert(respuestaServidor.response?.data.message);
+            setErrorMsg(respuestaServidor.response?.data?.message || "No se pudo iniciar sesión. Revisa tus credenciales.");
             return null
         }
 
@@ -126,6 +135,12 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
                         <div className="w-full lg:w-3/6 ">
                             <h1 className=" text-2xl text-gray-600 dark:text-gray-400 mb-5 font-bold">Login Staff Sing In</h1>
                             <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+                            {errorMsg && (
+                                <div role="alert" className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 text-xs font-bold flex items-center gap-2">
+                                    <HiOutlineExclamationCircle className="w-4 h-4 flex-shrink-0" />
+                                    {errorMsg}
+                                </div>
+                            )}
                                 <div className="">
                                     <div className="mb-2 block">
                                         <Label htmlFor="email">Email</Label>

@@ -2,12 +2,19 @@
 
 > ## 📌 ESTADO — 23/08/2026
 >
-> **A1, A2, A3, A4 y A6 CERRADOS. Queda 1 abierto: A5 🟡 (parcial).**
+> **LOS SEIS CERRADOS: A1 ✅ · A2 ✅ · A3 ✅ · A4 ✅ · A5 ✅ · A6 ✅.**
+>
+> Cero hallazgos abiertos en `pages/auth/**`. Lo siguiente sin auditar es
+> `customer/**` y `marketplace/**` — y ahí dentro está el checkout.
 >
 > A2 y A3 se cerraron juntos y primero — por delante de A1, que es más visible— porque se
 > componían: A3 entregaba la lista de correos con cuenta y A2 dejaba atacar cada uno sin
 > freno. A1 rompe una pantalla; estos dos se explotaban.
-> **Los cinco están demostrados contra la aplicación real**, no deducidos.
+>
+> **Los cinco originales se demostraron contra la aplicación real**, no se dedujeron. A6
+> salió al cerrar A2 y se confirmó leyendo el pipeline de tenancy. Los arreglos, en cambio,
+> están comprobados con Pest contra el stack HTTP — middleware, validación y rutas reales—,
+> no golpeando la aplicación en Laragon. La distinción importa y por eso queda escrita.
 >
 > Alcance: las 6 páginas de `resources/js/pages/auth/**` (939 líneas) y los endpoints que
 > hay detrás — login de staff, de propietario y de cliente, y el flujo de recuperación de
@@ -46,7 +53,7 @@ Dos patrones, y ninguno es «falta código»:
 | **A2** | ✅ El PIN de recuperación no tiene límite de intentos | 🔴 | ✅ 42 intentos, ningún 429 |
 | **A3** | ✅ «Olvidé mi contraseña» revela si un correo existe | 🟠 | ✅ 200 vs 404 con mensaje explícito |
 | **A4** | ✅ Cuatro reglas de contraseña distintas: se puede crear una cuenta con la que el login se niega a intentar | 🟠 | ✅ lectura de las cuatro |
-| **A5** | 🟡 Parcial — quedan `LoginStaff` y `LoginTenantPage`; el tercero se borró con A1, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
+| **A5** | ✅ Todo el feedback de los logins era `alert()`, y uno acababa en un callejón sin salida | 🟡 | ✅ lectura |
 | **A6** | ✅ El alta de tiendas no tiene límite: cada una crea una base de datos MySQL dentro de la petición | 🔴 | ✅ lectura del pipeline de tenancy |
 
 ---
@@ -342,7 +349,7 @@ llegó donde debía y no más allá.
 
 ## A5. 🟡 Todo el feedback de los logins es `alert()`
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 Las tres páginas de login usan `alert()` para errores y aciertos:
 [`LoginStaff.tsx:103,108,121,126`](../../resources/js/pages/auth/LoginStaff.tsx#L103),
@@ -355,6 +362,27 @@ el usuario acierta la contraseña, acepta un diálogo del navegador y se queda d
 
 Las páginas de recuperación (`ForgotPasswordPage`, `ResetPasswordPage`) ya usan estado y
 mensajes en línea. Los tres logins son los únicos que se quedaron atrás.
+
+### ✅ Cómo se cerró
+
+El tercero —`LoginCustomerPage`, el del `alert("Login exitoso como cliente")` que era el
+callejón sin salida— se fue entero con A1. Quedaban dos.
+
+No se inventó un patrón: se copió el que `ForgotPasswordPage` y `ResetPasswordPage` ya
+usaban en este mismo directorio. Estado `errorMsg` y un banner en línea dentro del
+formulario, con `role="alert"` para que un lector de pantalla lo anuncie — que es la mitad
+accesible del hallazgo, y la que no se arregla sola al quitar el `alert()`.
+
+**Se arregló de paso un fallo real que el `alert()` escondía.** Las dos ramas de error leían
+`respuestaServidor.response?.data.message`, y la segunda —la que salta cuando el servidor
+responde 200 pero sin datos— no tiene `response`, así que el diálogo decía literalmente
+`undefined`. Ahora hay texto de reserva.
+
+También se borró un `alert()` de depuración comentado en `LoginTenantPage`.
+
+**Lo que queda igual a propósito:** el `alert()` no era el único problema de estas dos
+pantallas, pero sí el del hallazgo. Siguen usando credenciales de prueba precargadas en el
+estado inicial, que es otra cosa y no se toca aquí.
 
 ---
 
