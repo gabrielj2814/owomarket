@@ -1,8 +1,12 @@
 # Auditoría de autenticación — `pages/auth/**`
 
-> ## 📌 ESTADO — 22/08/2026
+> ## 📌 ESTADO — 23/08/2026
 >
-> **5 hallazgos abiertos: A1 🔴 · A2 🔴 · A3 🟠 · A4 🟠 · A5 🟡.**
+> **A2 y A3 CERRADOS. Quedan 3 abiertos: A1 🔴 · A4 🟠 · A5 🟡.**
+>
+> A2 y A3 se cerraron juntos y primero — por delante de A1, que es más visible— porque se
+> componían: A3 entregaba la lista de correos con cuenta y A2 dejaba atacar cada uno sin
+> freno. A1 rompe una pantalla; estos dos se explotaban.
 > **Los cinco están demostrados contra la aplicación real**, no deducidos.
 >
 > Alcance: las 6 páginas de `resources/js/pages/auth/**` (939 líneas) y los endpoints que
@@ -38,9 +42,9 @@ Dos patrones, y ninguno es «falta código»:
 
 | # | Qué | Severidad | Demostrado |
 | :--- | :--- | :--- | :--- |
-| **A1** | La página de login de cliente publica en el endpoint de *staff*: un cliente nunca puede entrar por ahí | 🔴 | ✅ 401 vs 200 con las mismas credenciales |
-| **A2** | El PIN de recuperación no tiene límite de intentos | 🔴 | ✅ 42 intentos, ningún 429 |
-| **A3** | «Olvidé mi contraseña» revela si un correo existe | 🟠 | ✅ 200 vs 404 con mensaje explícito |
+| **A1** | ⬜ La página de login de cliente publica en el endpoint de *staff*: un cliente nunca puede entrar por ahí | 🔴 | ✅ 401 vs 200 con las mismas credenciales |
+| **A2** | ✅ El PIN de recuperación no tiene límite de intentos | 🔴 | ✅ 42 intentos, ningún 429 |
+| **A3** | ✅ «Olvidé mi contraseña» revela si un correo existe | 🟠 | ✅ 200 vs 404 con mensaje explícito |
 | **A4** | Cuatro reglas de contraseña distintas: se puede crear una cuenta con la que el login se niega a intentar | 🟠 | ✅ lectura de las cuatro |
 | **A5** | Todo el feedback de los tres logins es `alert()`, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
 
@@ -100,7 +104,7 @@ de entrar; ahora mismo hay dos y una está rota.
 
 ## A2. 🔴 El PIN de recuperación no tiene límite de intentos
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 **Dónde:** [`src/CentralCustomer/Infrastructure/Http/Routes/apiCentral.php:48-49`](../../src/CentralCustomer/Infrastructure/Http/Routes/apiCentral.php#L48)
 
@@ -146,11 +150,32 @@ Los limitadores con nombre ya existen desde N18. `throttle:credenciales` encaja 
 `reset-password` (5/min por cuenta + 20/min por IP) y `throttle:altas` o similar en
 `forgot-password`, que además hoy permite enviar correos sin freno a costa del proyecto.
 
+### ✅ Cómo se cerró
+
+`reset-password` lleva `throttle:credenciales` tal cual: lo que se está adivinando ahí es
+un secreto de seis dígitos, y eso se cuenta por minuto.
+
+`forgot-password` **no** reusa `throttle:altas`. Son 3/hora contando sólo por IP, y aplicado
+a la recuperación de contraseña eso deja sin su única puerta a toda una oficina detrás de un
+NAT por culpa de una persona. Se añadió `throttle:recuperacion` con los dos cerrojos del
+mismo patrón que `credenciales`: **3/hora por cuenta** (que es lo que impide llenarle el
+buzón a alguien y encadenar ventanas) y **10/hora por IP**, más holgado a propósito.
+
+**Encontrado de paso, y es la causa de que durara:** el comentario que había sobre estas
+rutas afirmaba que *«el PIN ya llevaba freno desde la Fase 4.1»*, y la cabecera de
+`RateLimitingTest.php` repetía que aquella fase *«puso `throttle:5,15` en las dos rutas del
+PIN»*. Ninguna de las dos cosas era verdad. Dos sitios declaraban cerrada una puerta
+abierta. Ambos comentarios están corregidos.
+
+**Vigilado por:** tres tests en [`tests/Feature/Security/RateLimitingTest.php`](../../tests/Feature/Security/RateLimitingTest.php)
+— el corte del PIN a los cinco intentos, el corte de peticiones de código a las tres por
+hora, y que una cuenta agotada no arrastre a las demás de la misma IP.
+
 ---
 
 ## A3. 🟠 «Olvidé mi contraseña» revela si un correo existe
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 **Dónde:** [`SendCentralCustomerPasswordResetPinUseCase.php:21-22`](../../src/CentralCustomer/Application/UseCases/SendCentralCustomerPasswordResetPinUseCase.php#L21)
 
@@ -181,6 +206,26 @@ código HTTP *y* en texto, así que no hace falta ni medir tiempos.
 Responder siempre lo mismo —«si ese correo tiene cuenta, te hemos enviado un código»— y
 enviar el PIN sólo cuando exista. Es la respuesta estándar y no le cuesta nada al usuario
 legítimo, que de todas formas va a ir a su correo.
+
+### ✅ Cómo se cerró
+
+El caso de uso ya no lanza el 404: cuando el correo no tiene cuenta sale en silencio con la
+misma forma, el mismo 200 y el mismo texto, sin crear registro ni enviar nada. El mensaje
+vive en una única constante (`MENSAJE_NEUTRO`) usada por las dos ramas, precisamente para
+que no puedan divergir por descuido más adelante.
+
+También se neutralizó el texto de reserva de
+[`ForgotPasswordPage.tsx`](../../resources/js/pages/auth/ForgotPasswordPage.tsx), que
+afirmaba el envío por su cuenta si el servidor no mandaba mensaje.
+
+**Lo que queda, dicho sin adornos:** la rama con cuenta escribe en la base y la otra no, así
+que sigue habiendo una diferencia de *tiempo* entre las dos. Es una señal mucho más débil
+que un 404 con texto explícito, y taparla del todo pide trabajo simulado. Está reducido, no
+eliminado, y así está anotado en el código.
+
+**Vigilado por:** dos tests unitarios y uno de feature que compara las dos respuestas
+carácter a carácter. El test que antes **exigía** el 404 se reescribió para exigir lo
+contrario: tal como estaba, blindaba la fuga.
 
 ---
 

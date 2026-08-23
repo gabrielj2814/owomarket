@@ -34,6 +34,7 @@ class RouteServiceProvider extends ServiceProvider
     {
         $this->limitadorDeCredenciales();
         $this->limitadorDeAltas();
+        $this->limitadorDeRecuperacion();
         $this->limitadorDeSso();
         $this->limitadorGeneralDeApi();
     }
@@ -69,6 +70,34 @@ class RouteServiceProvider extends ServiceProvider
     {
         RateLimiter::for('altas', fn (Request $request) => Limit::perHour(3)->by($request->ip())
             ->response(fn () => $this->demasiadas('Has creado demasiadas cuentas desde esta conexión. Inténtalo más tarde.')));
+    }
+
+    /**
+     * Recuperación de contraseña por PIN (`forgot-password`).
+     *
+     * Dos cerrojos, por el mismo motivo que en `credenciales`. Por cuenta, tres por hora:
+     * pedir un código es legítimo, pedir cientos es llenarle el buzón a alguien a costa
+     * del proyecto. Por IP el techo es más alto a propósito — recuperar la contraseña es
+     * justo lo que hace mucha gente detrás de un mismo NAT, y castigarles a todos por uno
+     * les deja sin la única puerta que les quedaba.
+     *
+     * El consumo del PIN (`reset-password`) no usa este limitador sino `credenciales`:
+     * ahí lo que se está adivinando es un secreto de seis dígitos, y eso se cuenta por
+     * minuto, no por hora.
+     */
+    private function limitadorDeRecuperacion(): void
+    {
+        RateLimiter::for('recuperacion', function (Request $request) {
+            $identificador = mb_strtolower((string) $request->input('email', ''));
+
+            return [
+                Limit::perHour(3)->by('recuperacion|'.$identificador)
+                    ->response(fn () => $this->demasiadas('Ya has pedido varios códigos de recuperación. Revisa tu correo antes de pedir otro.')),
+
+                Limit::perHour(10)->by('recuperacion-ip|'.$request->ip())
+                    ->response(fn () => $this->demasiadas('Demasiadas solicitudes de recuperación desde esta conexión.')),
+            ];
+        });
     }
 
     /**

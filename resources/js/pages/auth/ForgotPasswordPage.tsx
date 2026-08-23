@@ -24,7 +24,9 @@ export const ForgotPasswordPage: React.FC = () => {
 
         try {
             const res = await CustomerPortalServices.requestPasswordReset(email.trim());
-            setSuccessMsg(res.message || 'Hemos enviado un código PIN de 6 dígitos a tu correo electrónico.');
+            // A3: el texto de reserva también tiene que ser neutro. El servidor ya no dice
+            // si la cuenta existe, y no tiene sentido que el fallback lo afirme por él.
+            setSuccessMsg(res.message || 'Si ese correo tiene una cuenta, te hemos enviado un código de recuperación.');
         } catch (err: any) {
             setErrorMsg(err.response?.data?.message || 'No se pudo enviar el código de recuperación.');
         } finally {

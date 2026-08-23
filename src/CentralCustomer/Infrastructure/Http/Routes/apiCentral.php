@@ -41,12 +41,18 @@ use Src\CentralCustomer\Infrastructure\Http\Controller\UpdateCustomerProfilePUTC
 |
 */
 Route::middleware('web')->group(function () {
-    // Hallazgo N18: las cuatro puertas sin sesion del cliente central. El PIN ya
-    // llevaba freno desde la Fase 4.1; el alta y el acceso no.
+    // Hallazgo N18: las cuatro puertas sin sesion del cliente central. El alta y el
+    // acceso se cerraron entonces.
+    //
+    // Hallazgo A2: las dos rutas del PIN NO. El comentario que habia aqui afirmaba que
+    // "el PIN ya llevaba freno desde la Fase 4.1" y no era cierto — no lo llevaba, y esa
+    // frase es probablemente la razon de que nadie volviera a mirar. El PIN del
+    // administrador si se arreglo (hallazgo A7) razonando que seis digitos son un millon
+    // de combinaciones; el del cliente es identico y se quedo abierto.
     Route::post('/register', RegisterCentralCustomerPOSTController::class)->middleware('throttle:altas');
     Route::post('/login', LoginCentralCustomerPOSTController::class)->middleware('throttle:credenciales');
-    Route::post('/forgot-password', SendCustomerPasswordResetPinPOSTController::class);
-    Route::post('/reset-password', ResetCustomerPasswordWithPinPOSTController::class);
+    Route::post('/forgot-password', SendCustomerPasswordResetPinPOSTController::class)->middleware('throttle:recuperacion');
+    Route::post('/reset-password', ResetCustomerPasswordWithPinPOSTController::class)->middleware('throttle:credenciales');
 
     /*
     |----------------------------------------------------------------------

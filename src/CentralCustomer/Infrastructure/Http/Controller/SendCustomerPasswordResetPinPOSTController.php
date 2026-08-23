@@ -31,7 +31,10 @@ final class SendCustomerPasswordResetPinPOSTController
                 'data' => [
                     'email' => $result['email'],
                     'expires_at' => $result['expires_at'],
-                    'pin_code' => app()->environment('local', 'testing') ? $result['pin_code'] : null,
+                    // Hallazgo A3: 'pin_code' ya no viene siempre. Cuando el correo no tiene cuenta
+                    // el caso de uso sale en silencio y no genera ninguno, asi que aqui
+                    // seria una clave inexistente. Fuera de local/testing es null igual.
+                    'pin_code' => app()->environment('local', 'testing') ? ($result['pin_code'] ?? null) : null,
                 ],
             ]);
         } catch (Exception $e) {

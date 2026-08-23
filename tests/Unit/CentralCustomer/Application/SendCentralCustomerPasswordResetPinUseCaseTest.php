@@ -54,7 +54,38 @@ test('SendCentralCustomerPasswordResetPinUseCase generates 6-digit PIN and token
     expect($record->expires_at)->toBeGreaterThan(now());
 });
 
-test('SendCentralCustomerPasswordResetPinUseCase throws 404 for non-existent email', function () {
+/*
+ * Hallazgo A3. Este test decia lo contrario: exigia un 404 «No existe una cuenta
+ * registrada con este correo». Eso era exactamente la fuga — el que pregunta se entera
+ * de que cuentas hay. Ahora exige lo inverso, que las dos salidas sean indistinguibles.
+ */
+test('un correo sin cuenta responde igual que uno con cuenta y no crea nada (A3)', function () {
+    $inexistente = 'nonexistent@example.com';
+
     $useCase = new SendCentralCustomerPasswordResetPinUseCase;
-    $useCase->execute('nonexistent@example.com');
-})->throws(Exception::class, 'No existe una cuenta registrada con este correo electrónico.');
+    $resultado = $useCase->execute($inexistente);
+
+    expect($resultado['success'])->toBeTrue();
+    expect($resultado['email'])->toBe($inexistente);
+
+    // Lo que no debe pasar: ni PIN generado ni registro en la tabla.
+    expect($resultado)->not->toHaveKey('pin_code');
+    expect(CentralCustomerPasswordReset::where('email', $inexistente)->exists())->toBeFalse();
+});
+
+test('el mensaje es identico exista o no la cuenta (A3)', function () {
+    $email = 'a3_'.bin2hex(random_bytes(3)).'@example.com';
+    CentralCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Cliente A3',
+        'email' => $email,
+        'password' => 'secret123',
+    ]);
+
+    $useCase = new SendCentralCustomerPasswordResetPinUseCase;
+
+    // Si estos dos textos divergen, vuelve la enumeracion: no hace falta el codigo HTTP,
+    // basta con leer la respuesta.
+    expect($useCase->execute($email)['message'])
+        ->toBe($useCase->execute('no.existe.jamas@example.com')['message']);
+});
