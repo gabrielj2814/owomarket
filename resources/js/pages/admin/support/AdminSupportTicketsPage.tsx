@@ -121,6 +121,9 @@ const AdminSupportTicketsPage: FC<AdminSupportTicketsPageProps> = ({
     const [newStatus, setNewStatus] = useState<string>("");
     const [replyFiles, setReplyFiles] = useState<File[]>([]);
     const [submittingReply, setSubmittingReply] = useState(false);
+    // Unica pagina de las cuatro que no tenia estado de aviso: el fallo al responder un
+    // ticket salia por alert(). Misma forma `{type, text}` que usan las demas.
+    const [replyFeedback, setReplyFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     // Visor multimedia
@@ -169,6 +172,10 @@ const AdminSupportTicketsPage: FC<AdminSupportTicketsPageProps> = ({
         e.preventDefault();
         if (!selectedTicket || (!replyMessage.trim() && replyFiles.length === 0)) return;
 
+        // Limpiar el aviso anterior: si no, un error de hace un rato se queda en pantalla
+        // mientras el envio nuevo va bien.
+        setReplyFeedback(null);
+
         setSubmittingReply(true);
         try {
             const formData = new FormData();
@@ -192,7 +199,7 @@ const AdminSupportTicketsPage: FC<AdminSupportTicketsPageProps> = ({
                 fetchTickets(pagination.current_page);
             }
         } catch (error: any) {
-            alert(error.response?.data?.message || "Error al enviar la respuesta.");
+            setReplyFeedback({ type: 'error', text: error.response?.data?.message || 'No se pudo enviar la respuesta.' });
         } finally {
             setSubmittingReply(false);
         }
@@ -624,6 +631,18 @@ const AdminSupportTicketsPage: FC<AdminSupportTicketsPageProps> = ({
                                     </div>
 
                                     <form onSubmit={handleSendReply}>
+                                        {replyFeedback && (
+                                            <div
+                                                role={replyFeedback.type === 'error' ? 'alert' : 'status'}
+                                                className={`mb-2 p-2 rounded-lg text-[11px] font-bold border ${
+                                                    replyFeedback.type === 'error'
+                                                        ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+                                                        : 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                                                }`}
+                                            >
+                                                {replyFeedback.text}
+                                            </div>
+                                        )}
                                         <textarea
                                             rows={2}
                                             value={replyMessage}

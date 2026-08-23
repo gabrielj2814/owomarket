@@ -123,6 +123,26 @@ const TenantServices = {
         }
     },
 
+    /**
+     * Hallazgo T3: solicitud de cambio de plan.
+     *
+     * El boton «Mejorar Plan» de la pantalla de facturacion era un `alert()` que decia
+     * «Solicitud registrada. Un asesor te contactara» y no mandaba nada a ninguna parte.
+     * Ahora existe el endpoint y esta es la llamada.
+     */
+    solicitarCambioDePlan: async (tenantId: string, planId: string): Promise<ApiResponse<{ id: string; status: string }>> => {
+        try {
+            const respuesta: ApiResponse<{ id: string; status: string }> = await axiosTenant.post(
+                `owner/api/plan-change-request`,
+                { tenant_id: tenantId, plan_id: planId }
+            );
+
+            return respuesta;
+        } catch (error) {
+            return error as ApiResponse<{ id: string; status: string }>;
+        }
+    },
+
     consultMyCompanies: async (idOwner: string, page: number = 1, prePage: number = 50): Promise<ApiResponse<Tenant[]>> => {
         try {
             const body = {

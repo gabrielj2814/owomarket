@@ -102,6 +102,18 @@ Route::middleware(['auth', 'staff:manage_payouts'])->group(function () {
     Route::get('/api/payouts', ListCentralPayoutsGETController::class);
     Route::post('/api/payouts/{id}/approve', ApproveCentralPayoutPOSTController::class);
     Route::post('/api/payouts/{id}/reject', RejectCentralPayoutPOSTController::class);
+
+    /*
+     * Hallazgo T3: resolucion de solicitudes de cambio de plan.
+     *
+     * Bajo el mismo permiso que los retiros —`staff:manage_payouts`— porque es la misma
+     * clase de decision: cambiar el plan cambia la `commission_rate` de la tienda, o sea lo
+     * que la plataforma le cobra por cada venta.
+     */
+    Route::get('/backoffice/{user_uuid}/plan-changes', [\Src\Monetization\Infrastructure\Http\Controller\ViewAdminPlanChangesPageGETController::class, 'index'])->name('central.backoffice.web.admin.plan-changes');
+    Route::get('/api/plan-changes', \Src\Monetization\Infrastructure\Http\Controller\ListTenantPlanChangeRequestsGETController::class);
+    Route::post('/api/plan-changes/{id}/approve', \Src\Monetization\Infrastructure\Http\Controller\ApproveTenantPlanChangeRequestPOSTController::class);
+    Route::post('/api/plan-changes/{id}/reject', \Src\Monetization\Infrastructure\Http\Controller\RejectTenantPlanChangeRequestPOSTController::class);
 });
 
 // ---------------------------------------------------------------------------

@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
+import TenantServices from '@/Services/TenantServices';
 import Dashboard from '@/components/layouts/Dashboard';
 import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
 import {
@@ -38,6 +39,8 @@ interface TenantOwnerBillingPageProps {
         max_products: number;
         features?: string[];
     }>;
+    // Hallazgo T3: solicitudes ya en curso, para no dejar pedir dos veces lo mismo.
+    pending_plan_changes?: Array<{ id: string; tenant_id: string; requested_plan_id: string }>;
 }
 
 export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
@@ -45,13 +48,70 @@ export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
     tenants,
     subscriptions,
     available_plans,
+    pending_plan_changes = [],
 }) => {
+    /*
+     * Hallazgo T3. Este boton era `onClick={() => alert('Solicitud de cambio de plan
+     * registrada. Un asesor te contactara')}` y no mandaba absolutamente nada: no existia
+     * endpoint ni tabla. El comerciante pulsaba, leia que su solicitud quedaba registrada, y
+     * esperaba una llamada que nadie iba a hacer. Sin momento en el que enterarse.
+     *
+     * Ahora crea una solicitud de verdad, que un administrador resuelve desde su panel.
+     */
+    const [pendientes, setPendientes] = useState(pending_plan_changes);
+    const [enviando, setEnviando] = useState<string | null>(null);
+    // Que plan quiere cada tienda. El boton original decia «Mejorar Plan» sin decir a cual:
+    // no habia nada que elegir, y por eso podia ser un alert() sin mas.
+    const [planElegido, setPlanElegido] = useState<Record<string, string>>({});
+    const [aviso, setAviso] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+    const tienePendiente = (tenantId: string) => pendientes.some(p => p.tenant_id === tenantId);
+
+    const solicitarCambio = async (tenantId: string, planId: string) => {
+        setAviso(null);
+        setEnviando(tenantId);
+
+        const respuesta = await TenantServices.solicitarCambioDePlan(tenantId, planId);
+        setEnviando(null);
+
+        const creada = respuesta?.data?.code === 201 || respuesta?.status === 201;
+
+        if (!creada) {
+            setAviso({
+                type: 'error',
+                text: respuesta?.response?.data?.message || 'No se pudo enviar la solicitud de cambio de plan.',
+            });
+            return;
+        }
+
+        setPendientes(prev => [...prev, { id: 'nueva', tenant_id: tenantId, requested_plan_id: planId }]);
+        setAviso({
+            type: 'success',
+            text: 'Solicitud enviada. Te avisaremos cuando la revisemos.',
+        });
+    };
+
     return (
         <Dashboard user_uuid={user_id}>
             <Head title="Suscripciones & Facturas B2B - OwOMarket" />
 
             <div className="p-4 sm:p-6 space-y-6">
                 <TenantOwnerNavTabs userId={user_id} activeTab="billing" />
+
+                {/* Hallazgo T3: el resultado de la solicitud, en linea. Antes era un alert()
+                    que mentia sobre lo que habia pasado. */}
+                {aviso && (
+                    <div
+                        role={aviso.type === 'error' ? 'alert' : 'status'}
+                        className={`p-3 rounded-2xl text-xs font-bold border ${
+                            aviso.type === 'error'
+                                ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
+                                : 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                        }`}
+                    >
+                        {aviso.text}
+                    </div>
+                )}
 
                 {/* Header */}
                 <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -109,13 +169,37 @@ export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
                                         </div>
                                     </div>
 
-                                    <button
-                                        onClick={() => alert(`Solicitud de cambio de plan para ${tenant.name} registrada. Un asesor te contactará.`)}
-                                        className="w-full py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-bold transition flex items-center justify-center gap-1.5"
-                                    >
-                                        <HiOutlineSparkles className="w-3.5 h-3.5" />
-                                        <span>Mejorar Plan (Upgrade)</span>
-                                    </button>
+                                    {tienePendiente(tenant.id) ? (
+                                        <div className="w-full py-2 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 text-xs font-bold text-center border border-amber-200 dark:border-amber-800">
+                                            Cambio de plan pendiente de revisión
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <select
+                                                value={planElegido[tenant.id] ?? ''}
+                                                onChange={(e) => setPlanElegido(prev => ({ ...prev, [tenant.id]: e.target.value }))}
+                                                className="w-full text-xs rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 px-3"
+                                            >
+                                                <option value="">Cambiar a otro plan…</option>
+                                                {available_plans
+                                                    .filter(p => p.id !== sub?.plan?.id)
+                                                    .map(p => (
+                                                        <option key={p.id} value={p.id}>
+                                                            {p.name} — {p.commission_rate}% de comisión
+                                                        </option>
+                                                    ))}
+                                            </select>
+
+                                            <button
+                                                onClick={() => solicitarCambio(tenant.id, planElegido[tenant.id])}
+                                                disabled={!planElegido[tenant.id] || enviando === tenant.id}
+                                                className="w-full py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                <HiOutlineSparkles className="w-3.5 h-3.5" />
+                                                <span>{enviando === tenant.id ? 'Enviando…' : 'Solicitar cambio de plan'}</span>
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}

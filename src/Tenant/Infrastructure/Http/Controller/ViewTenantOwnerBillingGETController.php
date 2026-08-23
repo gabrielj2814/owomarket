@@ -38,6 +38,16 @@ final class ViewTenantOwnerBillingGETController extends Controller
             $availablePlans = SubscriptionPlan::where('is_active', true)->orderBy('price_monthly', 'asc')->get()->toArray();
         }
 
+        // Hallazgo T3: las solicitudes de cambio de plan pendientes, para que el boton
+        // muestre «pendiente de revision» en vez de dejar pedir otra vez lo mismo.
+        $pendientes = [];
+        if (Schema::hasTable('tenant_plan_change_requests')) {
+            $pendientes = \Src\Monetization\Infrastructure\Eloquent\Models\TenantPlanChangeRequest::whereIn('tenant_id', $tenants->pluck('id')->toArray())
+                ->where('status', 'pending')
+                ->get(['id', 'tenant_id', 'requested_plan_id'])
+                ->toArray();
+        }
+
         return Inertia::render('tenant/billing/TenantOwnerBillingPage', [
             'title' => 'Suscripciones y Facturación B2B - OwOMarket',
             'user_id' => $user_uuid,
@@ -48,6 +58,7 @@ final class ViewTenantOwnerBillingGETController extends Controller
             ])->toArray(),
             'subscriptions' => $subscriptions,
             'available_plans' => $availablePlans,
+            'pending_plan_changes' => $pendientes,
         ]);
     }
 }

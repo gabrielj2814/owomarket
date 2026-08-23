@@ -203,7 +203,7 @@ export const TenantStoreSupportPage: React.FC<TenantStoreSupportPageProps> = ({
                 setReplyFilePreviews([]);
             }
         } catch (err: any) {
-            alert(err?.response?.data?.message || 'Error al enviar respuesta.');
+            setFeedback({ type: 'error', text: err?.response?.data?.message || 'No se pudo enviar la respuesta.' });
         } finally {
             setLoading(false);
         }

@@ -111,14 +111,18 @@ export const ExchangeRateManagementPage: React.FC<ExchangeRateManagementPageProp
 
     const handleSaveManualRate = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFeedbackMsg(null);
+
         const numericVal = parseFloat(manualRate);
         if (isNaN(numericVal) || numericVal <= 0) {
-            alert('Por favor introduce una tasa numérica válida mayor a 0.');
+            // Esta pagina ya tenia `feedbackMsg` y lo usaba para el resto de avisos; solo
+            // esta rama se habia quedado en alert(). Se corrige la incoherencia, no se
+            // inventa un patron.
+            setFeedbackMsg({ type: 'error', text: 'Introduce una tasa numérica válida mayor a 0.' });
             return;
         }
 
         setIsSavingManual(true);
-        setFeedbackMsg(null);
         try {
             const res = await createManualRate({
                 rate: numericVal,

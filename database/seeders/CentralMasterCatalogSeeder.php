@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use App\Models\CentralBrand;
 use App\Models\CentralCategory;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 final class CentralMasterCatalogSeeder extends Seeder
 {
@@ -120,7 +119,7 @@ final class CentralMasterCatalogSeeder extends Seeder
                 ]
             );
 
-            if (!empty($rootCatData['children'])) {
+            if (! empty($rootCatData['children'])) {
                 $childPos = 1;
                 foreach ($rootCatData['children'] as $childData) {
                     CentralCategory::updateOrCreate(

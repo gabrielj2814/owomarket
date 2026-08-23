@@ -133,6 +133,21 @@ Route::middleware(['auth', 'tenant_owner'])->group(function () {
     Route::post('/owner/api/sso-token', \Src\Tenant\Infrastructure\Http\Controller\GenerateTenantOwnerSsoTokenPOSTController::class);
     Route::get('/owner/api/wallet-summary', \Src\Tenant\Infrastructure\Http\Controller\GetTenantOwnerWalletSummaryGETController::class);
     Route::post('/owner/api/payout-request', \Src\Tenant\Infrastructure\Http\Controller\CreateTenantOwnerPayoutRequestPOSTController::class);
+
+    /*
+     * Hallazgo T3: solicitud de cambio de plan.
+     *
+     * Antes el boton «Mejorar Plan» de la pantalla de facturacion era un `alert()` que decia
+     * «Solicitud registrada. Un asesor te contactara» y no mandaba nada: no existia endpoint
+     * ni tabla. El comerciante esperaba una llamada que nadie iba a hacer.
+     *
+     * Lleva `throttle:altas` (3/hora por IP) por la misma razon que el alta de tiendas:
+     * pedir un cambio de plan es un acto deliberado y raro, y sin tope el panel del
+     * administrador se llena de solicitudes que no distingue. El caso de uso ademas impide
+     * tener mas de una pendiente por tienda.
+     */
+    Route::post('/owner/api/plan-change-request', \Src\Monetization\Infrastructure\Http\Controller\CreateTenantPlanChangeRequestPOSTController::class)
+        ->middleware('throttle:altas');
     Route::get('/owner/api/products', \Src\Tenant\Infrastructure\Http\Controller\ListTenantOwnerProductsGETController::class);
     Route::post('/owner/api/products/{id}/toggle-marketplace', \Src\Tenant\Infrastructure\Http\Controller\ToggleTenantOwnerProductPublicationPOSTController::class);
 });

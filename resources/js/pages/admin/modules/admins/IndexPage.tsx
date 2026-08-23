@@ -177,10 +177,6 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
         });
     }
 
-    const verRegistro = () => {
-        alert("ula")
-    }
-
     const irAhFormularioEdit = (uuid: string) => {
         setStateLodaer(true)
         window.location.href=`/admin/backoffice/${user_id}/module/record/${uuid}`
@@ -270,9 +266,15 @@ const IndexPage: FC<IndexPageProps> = ({ title = "Nuevo Modulo OwOMarket", user_
                 <div><span className="font-bold">Phone:</span> <span>{item.phone}</span> </div>
                 <ToggleSwitch checked={item.is_active} label="Activo" onChange={(statusAdmin: boolean) =>  actualizarEstadoUsuario(item.id, statusAdmin)}  />
                 <div className=" flex flex-row gap-4">
-                    {/* <div className=" basis-6/12">
-                        <Button title="See" className="w-full" onClick={() => verRegistro()}>  <LuEye className=" w-5 h-5" />  </Button>
-                    </div> */}
+                    {/*
+                      * Hallazgo T4: aqui habia un boton "See" (icono de ojo) ya comentado,
+                      * cableado a un `verRegistro()` cuyo cuerpo entero era `alert("ula")`.
+                      * Comentado no lo veia nadie, pero la funcion seguia viva en el fichero
+                      * y el siguiente que descomentara el boton habria servido ese aviso.
+                      *
+                      * Se borran los dos. El boton de editar de al lado ya abre la ficha del
+                      * registro, asi que no falta ninguna funcionalidad.
+                      */}
                     <div className=" basis-6/12">
                         <Button color="yellow" title="edit" className="w-full" onClick={() => irAhFormularioEdit(item.id)}> <LuPencil className=" w-5 h-5"/> </Button>
                     </div>
