@@ -50,7 +50,7 @@ jornada. No se tocó por no mezclarlo con la auditoría.
 
 ---
 
-## 3. Los dos logins llevan credenciales de prueba precargadas
+## 3. ✅ RESUELTO (23/08/2026) — Los dos logins llevaban credenciales precargadas
 
 **Dónde:** [`LoginStaff.tsx`](../../resources/js/pages/auth/LoginStaff.tsx) y
 [`LoginTenantPage.tsx`](../../resources/js/pages/auth/LoginTenantPage.tsx).
@@ -70,5 +70,9 @@ otra cosa.
 que se sirve al navegador de cualquiera. Aunque esas cuentas no existan en producción,
 publican la convención de nombres y el formato de contraseña que usa la plataforma.
 
-**Pendiente de decidir:** si se vacían siempre, o solo cuando `import.meta.env.DEV` sea
-falso.
+**Resuelto** al cerrar S3 de la auditoría de `signup/**`, donde apareció el mismo problema
+en el alta pública de comercios — y allí era peor, porque un clic distraído creaba una tienda
+y su base de datos.
+
+Se vacían **siempre**, sin excepción para desarrollo: menos condicionales y ninguna
+posibilidad de que la excepción acabe en una build de producción.

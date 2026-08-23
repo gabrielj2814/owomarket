@@ -335,7 +335,26 @@ peor.
 **Se descartó** `uncompromised()`: consulta HaveIBeenPwned por red dentro del alta, y eso es
 latencia y una dependencia externa en el camino crítico.
 
-### ⚠️ Se cerro incompleto — corregido el 23/08/2026
+### ⚠️ Se cerro incompleto DOS VECES — corregido el 23/08/2026
+
+**Segundo hermano perdido:** auditando `signup/**` aparecio un CUARTO sitio donde nace una
+contrasena — `CreateTenantOwnerAccountFormRequest`, el alta de comerciante — que seguia en
+`min:8|max:72` sin complejidad. Es el que mas pesa de los cuatro: un dueno de tienda
+controla su catalogo, sus pedidos y sus liquidaciones, y aceptaba `aaaaaaaa` cuando un
+comprador ya no podia. Cerrado como **S2**.
+
+**Y el cierre se llevo por delante algo que estaba bien:** aquel formulario tenia `max:72`,
+el limite de bcrypt, por encima del cual trunca en SILENCIO — dos contrasenas distintas que
+compartan los primeros 72 bytes abren la misma cuenta. `Password::defaults()` no lo tenia.
+Ahora vive dentro de la definicion unica, asi que lo tienen los cuatro flujos y no solo el
+que ya lo traia.
+
+La leccion, escrita para la proxima vez: **unificar no es solo quitar copias, es asegurarse
+de que la que queda es la mejor de todas.**
+
+---
+
+### ⚠️ Primer hermano perdido — corregido el 23/08/2026
 
 Al auditar `customer/**` aparecio un **tercer** sitio donde nace una contrasena, que este
 hallazgo no nombraba y el cierre no toco:

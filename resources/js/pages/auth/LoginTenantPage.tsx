@@ -19,9 +19,15 @@ const LoginTenantPage:FC<LoginTenantPageProps> = ({ domain }) => {
     // console.log("centralDomain:", centralDomain);
     // ======= States =======
 
+    /*
+     * Hallazgo S3: esto venia relleno con un usuario y una contrasena reales del entorno de
+     * desarrollo, o sea credenciales dentro del bundle de JavaScript que se sirve a
+     * cualquiera. Aunque esas cuentas no existan en produccion, publican la convencion de
+     * nombres y el formato de contrasena de la plataforma.
+     */
     const [statuFormLogin,  setStatuFormLogin] = useState<FormLogin>({
-        email: "admin@chivostore.com",
-        password: 'EndAdmin_12345678',
+        email: "",
+        password: '',
     });
 
     const [statusLoader,    setStatusLoader]   = useState<boolean>(false);

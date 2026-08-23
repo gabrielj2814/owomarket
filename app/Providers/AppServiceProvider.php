@@ -56,7 +56,11 @@ class AppServiceProvider extends ServiceProvider
         | solo deja fuera a gente con contrasenas antiguas. Por eso se quito esa
         | comprobacion de los dos formularios de login.
         */
-        Password::defaults(fn () => Password::min(8)->mixedCase()->numbers()->symbols());
+        // El max(72) es el limite de bcrypt: por encima trunca en SILENCIO, asi que dos
+        // contrasenas distintas que compartan los primeros 72 bytes abren la misma cuenta.
+        // El alta de comerciante ya lo llevaba ('min:8|max:72') y el cierre de A4 lo perdio
+        // al unificar: se cayo una parte que estaba bien. Aqui vuelve, y ahora para todos.
+        Password::defaults(fn () => Password::min(8)->max(72)->mixedCase()->numbers()->symbols());
 
         /*
         |----------------------------------------------------------------------

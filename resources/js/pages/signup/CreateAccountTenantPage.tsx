@@ -19,14 +19,21 @@ interface ValidationErrors {
 }
 
 const CreateAccountTenantPage = () => {
+    /*
+     * Hallazgo S3: esto venia relleno con "Jaen Doe" / "Zenless Zone Zero Corp" y una
+     * contrasena de ejemplo. Es la pagina PUBLICA de alta de comercios: cualquier visitante
+     * la veia rellena con los datos de otro, y un clic distraido daba de alta esa tienda.
+     * Con A6 sabemos lo que cuesta ese clic — un alta crea una base de datos MySQL entera,
+     * sincrona, dentro de la peticion.
+     */
     const [formulario, setFormulario] = useState<FormCreateAccounTenant>({
-        name: "Jaen Doe",
-        email: "Jaen@hoyoverse.com",
-        phone: "04121234567",
-        password: "Jaen_Doe1234",
-        confirmPassword: "Jaen_Doe1234",
-        store_name: "Zenless Zone Zero Corp",
-        tenant_name: "zenless-zone-zero-corp.owomarket.local"
+        name: "",
+        email: "",
+        phone: "",
+        password: "",
+        confirmPassword: "",
+        store_name: "",
+        tenant_name: ""
     });
 
     const [errors, setErrors] = useState<ValidationErrors>({});
@@ -87,8 +94,18 @@ const CreateAccountTenantPage = () => {
             newErrors.phone = "El teléfono debe tener al menos 8 dígitos.";
         }
 
-        if (!formulario.password || formulario.password.length < 8) {
-            newErrors.password = "La contraseña debe tener al menos 8 caracteres.";
+        /*
+         * Hallazgo A4: aqui habia un `password.length < 8` propio, que decia «al menos 8
+         * caracteres» mientras el servidor exige ademas mayuscula, minuscula, digito y
+         * simbolo. Un aviso que miente sobre lo que se pide es peor que ninguno: deja al
+         * comerciante corrigiendo lo que no falla. La regla vive en Password::defaults() y
+         * el servidor devuelve el detalle campo a campo, que esta pagina ya sabe pintar.
+         *
+         * Se conserva la comprobacion de «vacio», que no es una regla de contrasena sino
+         * de formulario obligatorio.
+         */
+        if (!formulario.password) {
+            newErrors.password = "La contraseña es obligatoria.";
         }
 
         if (formulario.password !== formulario.confirmPassword) {
@@ -148,8 +165,22 @@ const CreateAccountTenantPage = () => {
 
             setSuccessMessage("¡Cuenta creada exitosamente! Redirigiendo al panel de inicio de sesión...");
 
+            /*
+             * Hallazgo S1: aqui ponia "/auth/login-staff", que es el NOMBRE de la ruta
+             * (central.web.auth.login-staff) usado como si fuera la URL. La URL es
+             * "/auth/login", y /auth/login-staff daba 404 — comprobado.
+             *
+             * O sea que el comerciante rellenaba el alta, se le creaba la cuenta y su base
+             * de datos, leia "Redirigiendo al panel de inicio de sesion" y aterrizaba en un
+             * error. Su tienda existia y el creia que habia fallado.
+             *
+             * Se deja una cadena relativa y no el helper de Wayfinder a proposito: el
+             * generado es una URL ABSOLUTA con el dominio incrustado
+             * ("//owomarket.local/auth/login"), que en produccion apuntaria al sitio
+             * equivocado. Relativa funciona en cualquier dominio.
+             */
             setTimeout(() => {
-                window.location.href = "/auth/login-staff";
+                window.location.href = "/auth/login";
             }, 1800);
         } catch (error: any) {
             setStatusLoader(false);

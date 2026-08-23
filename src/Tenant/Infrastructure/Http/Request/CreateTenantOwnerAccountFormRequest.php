@@ -6,6 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\Rules\Password;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Infrastructure\Http\Data\CreateTenantOwnerAccountData;
 
@@ -32,7 +33,12 @@ class CreateTenantOwnerAccountFormRequest extends FormRequest
             'name' => 'required|string|min:3|max:100',
             'email' => 'required|email|max:150|unique:Src\Tenant\Infrastructure\Eloquent\Models\User,email',
             'phone' => 'required|string|min:8|max:25',
-            'password' => 'required|string|min:8|max:72',
+            // Hallazgo S2, cuarto hermano de A4. Era 'min:8|max:72' sin complejidad, asi
+            // que el alta de COMERCIANTE —quien controla un catalogo, sus pedidos y sus
+            // liquidaciones— aceptaba 'aaaaaaaa' mientras el registro de comprador ya
+            // exigia mayuscula, minuscula, digito y simbolo. El max(72) no se pierde: vive
+            // ahora dentro de Password::defaults().
+            'password' => ['required', 'string', Password::defaults()],
             'confirmPassword' => 'nullable|same:password',
             'store_name' => 'required|string|min:3|max:100|unique:Src\Tenant\Infrastructure\Eloquent\Models\Tenant,name',
             'tenant_name' => 'required|string|min:2|max:253|unique:Src\Tenant\Infrastructure\Eloquent\Models\Domain,domain',
@@ -55,8 +61,10 @@ class CreateTenantOwnerAccountFormRequest extends FormRequest
             'phone.max' => 'El número telefónico no debe exceder 25 caracteres.',
 
             'password.required' => 'La contraseña es obligatoria.',
-            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
-            'password.max' => 'La contraseña no debe exceder los 72 caracteres.',
+            // S2: sin mensajes propios para min/max. Decian «al menos 8 caracteres», que ya
+            // no describe la regla, y un mensaje que miente sobre lo que se pide deja al
+            // comerciante probando contrasenas a ciegas. El de Password::defaults() enumera
+            // los requisitos que faltan.
 
             'confirmPassword.same' => 'Las contraseñas no coinciden.',
 
