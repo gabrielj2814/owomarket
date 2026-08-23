@@ -1,3 +1,4 @@
+import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
@@ -31,6 +32,8 @@ export const CustomerReturnsPage: React.FC = () => {
     const [reason, setReason] = useState('damaged');
     const [description, setDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    // Hallazgo C2: el resultado de cada accion, en linea en vez de un alert().
+    const [feedback, setFeedback] = useState<PortalFeedback | null>(null);
 
     const loadData = () => {
         if (!customer?.id) return;
@@ -53,8 +56,9 @@ export const CustomerReturnsPage: React.FC = () => {
 
     const handleCreateReturn = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFeedback(null);
         if (!customer?.id || !selectedOrderId || !selectedProductId) {
-            alert('Por favor selecciona una orden y el producto a devolver.');
+            setFeedback({ type: 'error', text: 'Selecciona una orden y el producto que quieres devolver.' });
             return;
         }
 
@@ -70,9 +74,9 @@ export const CustomerReturnsPage: React.FC = () => {
             setShowModal(false);
             setDescription('');
             loadData();
-            alert('Solicitud de devolución enviada con éxito.');
+            setFeedback({ type: 'success', text: 'Solicitud de devolución enviada. Te avisaremos cuando la tienda la revise.' });
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al enviar solicitud de devolución.');
+            setFeedback({ type: 'error', text: err.response?.data?.message || 'No se pudo enviar la solicitud de devolución.' });
         } finally {
             setSubmitting(false);
         }
@@ -101,6 +105,7 @@ export const CustomerReturnsPage: React.FC = () => {
             description="Gestiona reclamos, cambios por garantía y solicitudes de reembolso de tus compras."
         >
             {loadError && <PortalLoadError />}
+            <PortalActionFeedback feedback={feedback} />
 
             <Head title="Devoluciones - OwOMarket" />
 

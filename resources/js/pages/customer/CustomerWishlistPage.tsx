@@ -1,3 +1,4 @@
+import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
@@ -20,6 +21,8 @@ export const CustomerWishlistPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
     const [loadError, setLoadError] = useState(false);
+    // Hallazgo C2: el resultado de cada accion, en linea en vez de un alert().
+    const [feedback, setFeedback] = useState<PortalFeedback | null>(null);
 
     const loadWishlist = () => {
         if (!customer?.id) return;
@@ -40,6 +43,7 @@ export const CustomerWishlistPage: React.FC = () => {
 
     const handleRemove = async (item: CustomerWishlistItemData) => {
         if (!customer?.id) return;
+        setFeedback(null);
         try {
             await CustomerPortalServices.toggleWishlist({
                 customer_id: customer.id,
@@ -50,7 +54,7 @@ export const CustomerWishlistPage: React.FC = () => {
             });
             loadWishlist();
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al actualizar lista de deseos.');
+            setFeedback({ type: 'error', text: err.response?.data?.message || 'No se pudo actualizar tu lista de deseos.' });
         }
     };
 
@@ -74,6 +78,7 @@ export const CustomerWishlistPage: React.FC = () => {
             description="Guarda los artículos que más te gusten para comprarlos más adelante en un solo clic."
         >
             {loadError && <PortalLoadError />}
+            <PortalActionFeedback feedback={feedback} />
 
             <Head title="Mis Favoritos - OwOMarket" />
 

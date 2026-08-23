@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO — 23/08/2026
 >
-> **C1 ✅ cerrado · C2 ⬜ abierto.**
+> **C1 ✅ y C2 ✅ cerrados. Cero hallazgos abiertos en `pages/customer/**`.**
 >
 > Alcance: las 11 páginas de `resources/js/pages/customer/**` (2.801 líneas) y los 18
 > controladores de `Src\CentralCustomer` que hay detrás.
@@ -31,7 +31,7 @@ sobrevivió porque A5 tenía otro alcance.
 | # | Qué | Severidad | Demostrado |
 | :--- | :--- | :--- | :--- |
 | **C1** | ✅ El portal anuncia tres cupones que el checkout rechaza | 🟠 | ✅ los tres pasados por el validador real |
-| **C2** | ⬜ Diez `alert()` en cinco páginas del portal | 🟡 | ✅ lectura |
+| **C2** | ✅ Diez `alert()` en cinco páginas del portal | 🟡 | ✅ lectura |
 
 ---
 
@@ -94,7 +94,7 @@ falla.
 
 ## C2. 🟡 Diez `alert()` en cinco páginas del portal
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 A5 arregló los `alert()` de `pages/auth/**`. Su alcance no incluía el portal, así que aquí
 siguen intactos:
@@ -114,6 +114,33 @@ error deja al usuario sin saber si su solicitud de devolución se envió o no.
 
 El patrón a copiar ya existe en este mismo directorio: `PortalLoadError` para fallos de
 carga, y estado con mensaje en línea para el resto.
+
+### ✅ Cómo se cerró
+
+No se copió un banner en cada página: se añadió un componente compartido,
+`PortalActionFeedback`, junto al `PortalLoadError` que ya vivía ahí. **A propósito** — el
+modo de fallo de este repositorio es que cuatro copias de lo mismo acaben diciendo cuatro
+cosas distintas, que es exactamente lo que produjo A4.
+
+La forma del estado (`{ type, text }`) se copió de `CustomerSupportPage`, que ya la usaba.
+Un patrón menos que inventar.
+
+Los dos componentes hacen cosas distintas y conviene no mezclarlos:
+`PortalLoadError` explica que **una lista vacía puede no ser la verdad**;
+`PortalActionFeedback` informa del **resultado de algo que la persona acaba de hacer**.
+
+**Un detalle que no estaba en el hallazgo:** cada handler limpia el aviso anterior antes de
+empezar. Sin eso, un error de hace un minuto se queda en pantalla mientras la acción nueva
+va bien — que es peor que no avisar, porque el usuario se lo cree.
+
+**Los mensajes se reescribieron.** «Error al enviar solicitud de devolución» pasó a «No se
+pudo enviar la solicitud de devolución», y el acierto ahora dice qué va a pasar después:
+«Te avisaremos cuando la tienda la revise». En un `alert()` que hay que descartar a mano da
+igual el texto; en un mensaje que se queda en pantalla, no.
+
+**Lo que no se hizo:** los `confirm()` de borrado siguen ahí. Son diálogos nativos igual que
+`alert()`, pero bloquear el hilo antes de una acción destructiva es lo que se quiere. No
+entraban en este hallazgo.
 
 ---
 

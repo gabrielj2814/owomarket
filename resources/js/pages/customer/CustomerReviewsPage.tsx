@@ -1,3 +1,4 @@
+import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
@@ -25,6 +26,8 @@ export const CustomerReviewsPage: React.FC = () => {
     const [title, setTitle] = useState('');
     const [comment, setComment] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    // Hallazgo C2: el resultado de cada accion, en linea en vez de un alert().
+    const [feedback, setFeedback] = useState<PortalFeedback | null>(null);
 
     const loadReviews = () => {
         if (!customer?.id) return;
@@ -54,6 +57,7 @@ export const CustomerReviewsPage: React.FC = () => {
 
     const handleSubmitReview = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFeedback(null);
         if (!customer?.id || !selectedItem) return;
 
         setSubmitting(true);
@@ -68,9 +72,9 @@ export const CustomerReviewsPage: React.FC = () => {
             });
             setShowModal(false);
             loadReviews();
-            alert('¡Gracias! Tu reseña ha sido publicada exitosamente.');
+            setFeedback({ type: 'success', text: '¡Gracias! Tu reseña se publicó correctamente.' });
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al publicar la reseña.');
+            setFeedback({ type: 'error', text: err.response?.data?.message || 'No se pudo publicar la reseña.' });
         } finally {
             setSubmitting(false);
         }
@@ -82,6 +86,7 @@ export const CustomerReviewsPage: React.FC = () => {
             description="Comparte tu opinión sobre los productos comprados para ayudar a la comunidad de compradores."
         >
             {loadError && <PortalLoadError />}
+            <PortalActionFeedback feedback={feedback} />
 
             <Head title="Mis Reseñas - OwOMarket" />
 

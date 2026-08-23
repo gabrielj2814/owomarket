@@ -1,3 +1,4 @@
+import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
@@ -19,6 +20,8 @@ export const CustomerAddressesPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
     const [loadError, setLoadError] = useState(false);
+    // Hallazgo C2: el resultado de cada accion, en linea en vez de un alert().
+    const [feedback, setFeedback] = useState<PortalFeedback | null>(null);
 
     // Modal state
     const [showModal, setShowModal] = useState(false);
@@ -76,6 +79,7 @@ export const CustomerAddressesPage: React.FC = () => {
         e.preventDefault();
         if (!customer?.id) return;
 
+        setFeedback(null);
         setSaving(true);
         try {
             if (editingAddress) {
@@ -102,7 +106,7 @@ export const CustomerAddressesPage: React.FC = () => {
             setShowModal(false);
             loadAddresses();
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al guardar la dirección.');
+            setFeedback({ type: 'error', text: err.response?.data?.message || 'No se pudo guardar la dirección.' });
         } finally {
             setSaving(false);
         }
@@ -110,21 +114,23 @@ export const CustomerAddressesPage: React.FC = () => {
 
     const handleDelete = async (addressId: string) => {
         if (!customer?.id || !confirm('¿Estás seguro de eliminar esta dirección?')) return;
+        setFeedback(null);
         try {
             await CustomerPortalServices.deleteAddress(customer.id, addressId);
             loadAddresses();
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al eliminar dirección.');
+            setFeedback({ type: 'error', text: err.response?.data?.message || 'No se pudo eliminar la dirección.' });
         }
     };
 
     const handleSetDefault = async (addressId: string) => {
         if (!customer?.id) return;
+        setFeedback(null);
         try {
             await CustomerPortalServices.setDefaultAddress(customer.id, addressId);
             loadAddresses();
         } catch (err: any) {
-            alert(err.response?.data?.message || 'Error al actualizar dirección predeterminada.');
+            setFeedback({ type: 'error', text: err.response?.data?.message || 'No se pudo cambiar la dirección predeterminada.' });
         }
     };
 
@@ -134,6 +140,7 @@ export const CustomerAddressesPage: React.FC = () => {
             description="Administra los lugares de entrega de tus compras para agilizar el proceso de compra."
         >
             {loadError && <PortalLoadError />}
+            <PortalActionFeedback feedback={feedback} />
 
             <Head title="Mis Direcciones - OwOMarket" />
 
