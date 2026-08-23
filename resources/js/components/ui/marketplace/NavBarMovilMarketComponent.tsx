@@ -1,5 +1,6 @@
 
 
+import { useCustomerAuth } from "@/contexts/CustomerAuthContext";
 import { useDashboard } from "@/contexts/DashboardContext";
 import {
     Avatar,
@@ -39,7 +40,22 @@ import { TbBuildingStore } from "react-icons/tb";
 const NavBarMovilMarketComponent = () => {
 
     const centralDomain = import.meta.env.VITE_APP_CENTRAL_DOMAIN;
-    const APP_URL = import.meta.env.VITE_APP_URL;
+
+    const { openAuthModal } = useCustomerAuth();
+
+    /*
+     * Hallazgo A1. Estos tres enlaces iban a /auth/customer/login, una pagina que publicaba
+     * en el login de personal y por tanto rechazaba credenciales de cliente correctas. Se
+     * borro; ahora abren el modal, que es por donde entra todo el mundo y el unico camino
+     * que existe ya.
+     *
+     * Se cierra el cajon antes: si no, el Drawer queda por encima del modal.
+     */
+    const abrirLogin = (e: React.MouseEvent) => {
+        e.preventDefault();
+        handleClose();
+        openAuthModal('login');
+    };
 
     const [isOpen, setIsOpen] = useState(false);
 
@@ -114,7 +130,7 @@ const NavBarMovilMarketComponent = () => {
                             <NavbarLink href="#">Products</NavbarLink>
                         </>
                     }
-                    <NavbarLink href={APP_URL+"/auth/customer/login"}>Login</NavbarLink>
+                    <NavbarLink href="#" onClick={abrirLogin}>Login</NavbarLink>
                 </NavbarCollapse>
             </Navbar>
             <Drawer open={isOpen} onClose={handleClose}>
@@ -145,7 +161,7 @@ const NavBarMovilMarketComponent = () => {
                                             <SidebarItem href={`/tenant/create/account`} icon={LuStore}>
                                                 Create your business
                                             </SidebarItem>
-                                            <SidebarItem href={APP_URL+"/auth/customer/login"} icon={HiLogin}>
+                                            <SidebarItem href="#" onClick={abrirLogin} icon={HiLogin}>
                                                 Login
                                             </SidebarItem>
                                         </SidebarItemGroup>
@@ -165,7 +181,7 @@ const NavBarMovilMarketComponent = () => {
                                             <SidebarItem href="#" icon={HiClock}>
                                                 Products
                                             </SidebarItem>
-                                            <SidebarItem href={APP_URL+"/auth/customer/login"} icon={HiLogin}>
+                                            <SidebarItem href="#" onClick={abrirLogin} icon={HiLogin}>
                                                 Login
                                             </SidebarItem>
                                         </SidebarItemGroup>

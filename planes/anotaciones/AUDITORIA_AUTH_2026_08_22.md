@@ -2,7 +2,7 @@
 
 > ## 📌 ESTADO — 23/08/2026
 >
-> **A2, A3 y A6 CERRADOS. Quedan 3 abiertos: A1 🔴 · A4 🟠 · A5 🟡.**
+> **A1, A2, A3 y A6 CERRADOS. Quedan 2 abiertos: A4 🟠 · A5 🟡 (parcial).**
 >
 > A2 y A3 se cerraron juntos y primero — por delante de A1, que es más visible— porque se
 > componían: A3 entregaba la lista de correos con cuenta y A2 dejaba atacar cada uno sin
@@ -42,18 +42,18 @@ Dos patrones, y ninguno es «falta código»:
 
 | # | Qué | Severidad | Demostrado |
 | :--- | :--- | :--- | :--- |
-| **A1** | ⬜ La página de login de cliente publica en el endpoint de *staff*: un cliente nunca puede entrar por ahí | 🔴 | ✅ 401 vs 200 con las mismas credenciales |
+| **A1** | ✅ La página de login de cliente publica en el endpoint de *staff*: un cliente nunca puede entrar por ahí | 🔴 | ✅ 401 vs 200 con las mismas credenciales |
 | **A2** | ✅ El PIN de recuperación no tiene límite de intentos | 🔴 | ✅ 42 intentos, ningún 429 |
 | **A3** | ✅ «Olvidé mi contraseña» revela si un correo existe | 🟠 | ✅ 200 vs 404 con mensaje explícito |
 | **A4** | Cuatro reglas de contraseña distintas: se puede crear una cuenta con la que el login se niega a intentar | 🟠 | ✅ lectura de las cuatro |
-| **A5** | ⬜ Todo el feedback de los tres logins es `alert()`, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
+| **A5** | 🟡 Parcial — quedan `LoginStaff` y `LoginTenantPage`; el tercero se borró con A1, y uno acaba en un callejón sin salida | 🟡 | ✅ lectura |
 | **A6** | ✅ El alta de tiendas no tiene límite: cada una crea una base de datos MySQL dentro de la petición | 🔴 | ✅ lectura del pipeline de tenancy |
 
 ---
 
 ## A1. 🔴 El login de cliente publica en el endpoint equivocado
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 23/08/2026
 
 **Dónde:** [`resources/js/pages/auth/LoginCustomerPage.tsx:114`](../../resources/js/pages/auth/LoginCustomerPage.tsx#L114)
 
@@ -100,6 +100,45 @@ correctas.
 O la página usa `CustomerAuthServices.loginCentral` y redirige al portal, o se borra y el
 enlace del menú abre el modal que ya funciona. Lo segundo es menos código y una sola forma
 de entrar; ahora mismo hay dos y una está rota.
+
+### ✅ Cómo se cerró — se borró
+
+Se evaluaron las dos salidas en serio. **Arreglarla costaba unas diez líneas**, no era
+difícil: cambiar `AuthServices.login` por `useCustomerAuth().login`, quitar la validación de
+contraseña y redirigir a `/account/dashboard`. La dificultad no fue el criterio.
+
+Lo que decidió fue que una página arreglada no tendría lógica propia — sería el modal con
+otro marco alrededor. Y **dos implementaciones de lo mismo es el modo de fallo documentado
+de este repositorio**: A7 llegó al PIN del administrador y no al del cliente, A2 y A3
+llegaron a las APIs y no a las páginas, tres comentarios distintos afirmaban un límite de
+tasa que nadie había puesto. Aquí no era un riesgo teórico.
+
+Además el modal hace dos cosas que la página no hacía y habría que haberle portado:
+el intercambio SSO cuando el comprador está en el escaparate de un comerciante en vez de en
+el marketplace central, y **no perder el formulario a medio rellenar en el checkout** —
+[`TenantCheckoutPage.tsx:1050`](../../resources/js/pages/marketplace/checkout/TenantCheckoutPage.tsx#L1050)
+documenta que navegar a una página de login ya se probó y se revirtió justo por eso.
+
+**Se borró:** la página (197 líneas), su controlador `LoginCustomerScreenGETController` y la
+ruta `central.web.auth.login-customer`. Los ficheros generados por Wayfinder desaparecieron
+solos al regenerar.
+
+**Los tres enlaces del menú móvil** abren ahora el modal. Hizo falta montar
+`<CustomerAuthModal />` en [`TenantLayout`](../../resources/js/components/layouts/TenantLayout.tsx),
+que es donde vive ese menú y que no lo renderizaba: sin esa línea `openAuthModal()` cambiaba
+el estado y no aparecía nada. El provider ya era global, así que era eso solo.
+
+**Se descartó** jubilar el modal y dejar la página como entrada única. `openAuthModal` tiene
+siete puntos de llamada, y dos son los checkouts: ahí el modal es lo que evita perder el
+formulario, y la página vive en el dominio central mientras el checkout de una tienda vive
+en el del comerciante.
+
+**De regalo:** se lleva por delante un tercio de A5. Quedan los `alert()` de `LoginStaff` y
+`LoginTenantPage`.
+
+**Vigilado por:** `tests/Feature/CentralCustomer/CentralCustomerAuthTest.php` — un test que
+comprueba que la ruta responde 404. Es lo único que impide que la página vuelva sin que
+nadie se entere.
 
 ---
 

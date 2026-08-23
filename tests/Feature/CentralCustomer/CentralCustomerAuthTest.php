@@ -264,3 +264,20 @@ test('A customer cannot read or edit another customer profile', function () {
 
     expect($victim->fresh()->name)->toBe('Víctima');
 });
+
+/*
+ * Hallazgo A1. Habia dos formas de iniciar sesion como cliente y la enlazada en el menu
+ * movil era la rota: /auth/customer/login publicaba en /auth/login, el login de personal,
+ * que busca en `users`. Un cliente vive en `central_customers`, asi que 401 con las
+ * credenciales correctas. Y aunque acertara, la redireccion estaba comentada.
+ *
+ * La pagina se borro en vez de arreglarse: arreglarla la dejaba como una segunda
+ * implementacion del modal, y dos caminos para lo mismo es el patron que produjo este bug
+ * —y A2, y A3—. Queda el modal, que ademas resuelve el SSO desde el escaparate de una
+ * tienda y no pierde el formulario a medio rellenar en el checkout.
+ *
+ * Este test es lo unico que impide que vuelva sin que nadie se entere.
+ */
+test('la pagina de login de cliente ya no existe (A1)', function () {
+    $this->get('/auth/customer/login')->assertNotFound();
+});
