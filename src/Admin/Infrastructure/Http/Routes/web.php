@@ -144,6 +144,12 @@ Route::middleware(['auth', 'staff:manage_orders'])->group(function () {
     Route::get('/api/orders', \Src\Admin\Infrastructure\Http\Controller\ListAdminGlobalOrdersGETController::class);
     Route::get('/api/orders/{id}/detail', \Src\Admin\Infrastructure\Http\Controller\GetAdminGlobalOrderDetailGETController::class);
     Route::post('/api/orders/{id}/resolve-dispute', \Src\Admin\Infrastructure\Http\Controller\ResolveAdminOrderDisputePOSTController::class);
+
+    // Hallazgo A: confirmar el cobro de un pedido central no existia. Va en este grupo
+    // y no bajo `super_admin` porque la accion de al lado --resolver una disputa-- ya
+    // reembolsa al comprador y anula comisiones: pedir mas permiso para confirmar que el
+    // dinero entro que para devolverlo seria teatro.
+    Route::post('/api/orders/{id}/confirm-payment', \Src\Admin\Infrastructure\Http\Controller\ConfirmAdminOrderPaymentPOSTController::class);
 });
 
 // ---------------------------------------------------------------------------

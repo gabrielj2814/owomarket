@@ -156,6 +156,7 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
     const [disputeReason, setDisputeReason] = useState("");
     const [disputeNotes, setDisputeNotes] = useState("");
     const [submittingDispute, setSubmittingDispute] = useState(false);
+    const [confirmingPayment, setConfirmingPayment] = useState(false);
 
     const fetchOrders = async (page = 1) => {
         setLoading(true);
@@ -205,6 +206,36 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
             setToast({ type: "error", text: "Error al cargar detalle de la orden." });
         } finally {
             setLoadingDetail(false);
+        }
+    };
+
+    // Hallazgo A: confirmar el cobro de un pedido central no existia. Sin esto la comision
+    // se quedaba en `awaiting_payment` para siempre, y eso bloquea tanto el cobro de la
+    // plataforma como el `payout` a la tienda: el comerciante no cobraba su venta central.
+    const handleConfirmPayment = async () => {
+        if (!selectedOrder) return;
+
+        setConfirmingPayment(true);
+        try {
+            const response = await axios.post(`/admin/api/orders/${selectedOrder.id}/confirm-payment`, {
+                reference: selectedOrder.payment_reference || undefined,
+            });
+
+            if (response.data?.status === "success") {
+                setToast({
+                    type: "success",
+                    text: response.data.message || "Cobro confirmado.",
+                });
+                setDetailModalOpen(false);
+                fetchOrders(pagination.current_page);
+            }
+        } catch (error: any) {
+            setToast({
+                type: "error",
+                text: error.response?.data?.message || "Error al confirmar el cobro.",
+            });
+        } finally {
+            setConfirmingPayment(false);
         }
     };
 
@@ -568,6 +599,11 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
                                             {selectedOrder.payment_method?.replace("_", " ")}
                                         </p>
                                         <p className="text-gray-400 font-mono">Ref: {selectedOrder.payment_reference || "N/A"}</p>
+                                        {selectedOrder.payment_status === "pending" && (
+                                            <p className="text-[11px] text-amber-600 dark:text-amber-500">
+                                                Coteja esta referencia contra el banco antes de confirmar el cobro.
+                                            </p>
+                                        )}
                                         <Badge
                                             color={selectedOrder.payment_status === "paid" ? "success" : "warning"}
                                             className="w-fit mt-1"
@@ -684,17 +720,25 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
                             Cerrar
                         </Button>
 
-                        {selectedOrder && selectedOrder.status !== "refunded" && selectedOrder.status !== "cancelled" && (
-                            <Button
-                                color="failure"
-                                onClick={() => {
-                                    setDisputeModalOpen(true);
-                                }}
-                            >
-                                <LuShieldAlert className="w-4 h-4 mr-2" />
-                                Mediar / Reembolsar Orden
-                            </Button>
-                        )}
+                        <div className="flex gap-2">
+                            {selectedOrder && selectedOrder.payment_status === "pending" && (
+                                <Button color="success" onClick={handleConfirmPayment} disabled={confirmingPayment}>
+                                    {confirmingPayment ? "Confirmando..." : "Confirmar Cobro Recibido"}
+                                </Button>
+                            )}
+
+                            {selectedOrder && selectedOrder.status !== "refunded" && selectedOrder.status !== "cancelled" && (
+                                <Button
+                                    color="failure"
+                                    onClick={() => {
+                                        setDisputeModalOpen(true);
+                                    }}
+                                >
+                                    <LuShieldAlert className="w-4 h-4 mr-2" />
+                                    Mediar / Reembolsar Orden
+                                </Button>
+                            )}
+                        </div>
                     </ModalFooter>
                 </Modal>
 

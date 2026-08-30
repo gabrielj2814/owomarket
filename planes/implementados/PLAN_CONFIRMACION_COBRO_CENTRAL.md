@@ -1,6 +1,26 @@
 # Plan — Confirmación del cobro de un pedido central
 
-> **Estado:** ⬜ Por hacer · Redactado el 30/08/2026
+> **Estado:** ✅ IMPLEMENTADO — 30/08/2026 · **A y C cerrados, con 6 tests**
+>
+> ### Lo que cambió respecto a lo planeado
+>
+> **El permiso.** El plan decía `super_admin`. Se implementó bajo `staff:manage_orders`, en
+> el mismo grupo que `resolve-dispute` — que **reembolsa al comprador y anula comisiones**.
+> Exigir más permiso para confirmar que el dinero entró que para devolverlo es teatro, no
+> seguridad. Cambiarlo es mover una línea de grupo en
+> `src/Admin/Infrastructure/Http/Routes/web.php`.
+>
+> **El frontend usa `axios` directo**, contra `reglas.md` §1.1. Es lo que ya hacen las tres
+> llamadas vecinas del mismo fichero. Crear un servicio para la cuarta y dejar las otras tres
+> incrustadas no arregla la regla, sólo añade inconsistencia. Queda anotado como limpieza
+> aparte de `AdminGlobalOrdersPage.tsx`.
+>
+> **Un detalle del fixture que costó un diagnóstico:** `EloquentOrderRepository::save()`
+> reescribe las líneas del pedido y eso arrastra `product_variants`. Sin esa tabla el guardado
+> revienta con un `no such table` que el controlador convierte en un 400 genérico.
+>
+> **El test de C se ejecutó sin el arreglo y falla**, que era la condición para que probara
+> algo.
 >
 > Sale de cerrar OR1 en `planes/anotaciones/AUDITORIA_BACKEND.md`. Allí quedó anotado que
 > «en pago móvil, transferencia y contra entrega el `payment_status` no refleja la realidad».
