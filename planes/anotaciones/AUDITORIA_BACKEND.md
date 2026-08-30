@@ -22,7 +22,7 @@
 | Módulo | Ruta | Tamaño | Estado |
 | :--- | :--- | :--- | :--- |
 | **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ Auditado — **2 hallazgos CERRADOS** |
-| **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ **Auditado** — 1 hallazgo |
+| **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ Auditado — **1 hallazgo CERRADO** |
 | **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ **Auditado** — 1 hallazgo |
 | **Payment** | `src/Payment/` | 33 ficheros · 1.626 líneas | ✅ **Auditado** — 1 hallazgo |
 
@@ -36,14 +36,17 @@
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **PR1** | Product | Borrado sin acotar dentro del almacenamiento de la tienda | 🟡 | ✅ **Cerrado** | ✅ Probado |
 | **PR2** | Product | Actualizar el stock de un producto con variantes no hacía nada | 🟠 | ✅ **Cerrado** | ✅ Probado |
-| **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ✅ **Cerrado** | ✅ Probado |
 | **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
 | **PY1** | Payment | La capa de pasarelas no la usa nadie, y su endpoint acepta importes sin registrar nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
 
-> **Ninguno está probado ejecutando.** Todos salen de leer el código. En este proyecto esa
+> **SH1 y PY1 siguen sin probarse ejecutando.** Salen de leer el código. En este proyecto esa
 > distinción ha importado varias veces en un solo día —una lectura llevó a un falso positivo
 > de fijación de sesión, y un fixture incompleto casi archiva el hallazgo T7 como
 > inexistente—, así que queda marcada hasta que se demuestren.
+>
+> **Y volvió a importar al cerrar OR1:** el arreglo que salió de la lectura era demasiado
+> estricto, y sólo se supo al ejecutar la suite. Está contado abajo.
 
 ---
 
@@ -251,7 +254,7 @@ No hace falta volver a mirarlo:
 
 ## OR1. 🟡 El estado de pago no tiene máquina de estados
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 30/08/2026
 
 **Dónde:** `UpdateOrderPaymentStatusUseCase` y `Order::markPaymentPaid()` / `markPaymentFailed()`
 
@@ -302,11 +305,82 @@ Es la misma clase de fallo silencioso que PR2: aceptar la operación y no aplica
 en `awaiting_payment`, así que marcar «pagado» dos veces no cobra dos veces. Se comprobó a
 propósito porque era la sospecha inicial.
 
-### Por dónde iría el arreglo
+### 3. Y una tercera que la lectura inicial no vio
 
-Darle a `PaymentStatus` las mismas guardas que tiene `OrderStatus`, y que `PENDING` o bien
-revierta de verdad —con lo que eso implique para la comisión ya activada— o bien se rechace
-con un mensaje claro. Lo que no puede es responder éxito sin hacer nada.
+`Order::refund()` comprueba la guarda del **pedido** y después escribe
+`paymentStatus = REFUNDED` sin comprobar nada:
+
+```php
+$this->status = OrderStatus::REFUNDED;
+$this->paymentStatus = PaymentStatus::REFUNDED;   // ← sin guarda
+```
+
+Eso alcanza también a `RefundOrderUseCase`, que es un segundo endpoint. Un pago que **falló**
+podía quedar marcado como «reembolsado»: ahí nunca hubo dinero que devolver.
+
+## ✅ Cómo se cerró
+
+`PaymentStatus` tiene ahora sus tres guardas, con el mismo estilo que `OrderStatus` y sin
+auto-transiciones:
+
+| Guarda | Desde |
+| :--- | :--- |
+| `canBePaid()` | `pending`, `failed` — un pago fallido se reintenta |
+| `canBeFailed()` | `pending` |
+| `canBeRefunded()` | `paid`, `pending` — el porqué de `pending` está más abajo |
+
+Las tres se comprueban en `markPaymentPaid()`, `markPaymentFailed()` y `refund()`. En
+`refund()` va **después** de la guarda del pedido, para no cambiar los mensajes que ya
+existían.
+
+`PENDING` deja de ser `null` en el caso de uso y **se rechaza con el motivo**. No se
+implementa la reversión real: arrastraría deshacer la comisión ya activada, que es otro
+módulo y otra decisión. Rechazar con motivo ya arregla lo que estaba roto —responder éxito a
+un cambio que no ocurre—, y no finge arreglar lo que no arregla.
+
+Se deja `'pending'` en el `in:` del FormRequest a propósito: rechazarlo en el dominio da un
+mensaje que explica **por qué**, mientras que sacarlo de la lista sólo daría un 422 genérico.
+
+**Sin clase de excepción nueva.** `InvalidOrderStateTransitionException` ya existía y el
+controlador ya la convierte en 400; le basta un segundo constructor nombrado, `payment()`.
+Nadie las distinguiría en un `catch`.
+
+### ⚠️ El primer arreglo estaba mal, y lo cazó la suite
+
+`canBeRefunded()` se escribió primero como `paid` a secas, con el razonamiento evidente: sin
+pago no hay nada que devolver. **Es falso en este proyecto**, y lo dice el propio código unas
+líneas más arriba, en el comentario de N15:
+
+> *«para pago móvil, transferencia manual y contra entrega [el `payment_status`] es siempre
+> `pending`»*
+
+Un pedido entregado y cobrado en mano tiene el pago en `pending` **para siempre**, porque
+nadie toca el endpoint de pagos. Exigir `paid` para reembolsar habría bloqueado la devolución
+de los métodos de pago más usados de la plataforma.
+
+Lo tumbó `TenantMonetizationAndCommissionTest` —el test del hallazgo D2— en la primera
+ejecución: 400 donde esperaba 200. **La lectura no lo habría visto nunca**, porque el dato que
+lo invalida no está en `Order` ni en `PaymentStatus`, sino en un comentario de otro módulo.
+Es exactamente la distinción que este documento lleva marcando desde el principio, esta vez
+en contra de quien la escribió.
+
+Así que `pending → refunded` se permite. Lo que la guarda sí frena: **reembolsar un pago que
+falló** y **reembolsar dos veces**.
+
+### Vigilado por diez tests
+
+Nueve en `tests/Unit/Order/Domain/OrderPaymentStatusTest.php` —los tres caminos legítimos
+(`pending → paid`, reintento tras `failed`, y el reembolso de pago móvil desde `pending`) y
+los rechazos (`refunded → paid`, `paid → paid`, `paid → failed`, `failed → refunded`, doble
+reembolso)— y uno en `OrderUseCasesTest` que comprueba que `'pending'` falla **y que
+`save()` no llega a ejecutarse**.
+
+### Lo que queda fuera
+
+Revertir `paid → pending` de verdad. Y el fondo del asunto que asomó al cerrar esto: en pago
+móvil, transferencia y contra entrega **el `payment_status` no refleja la realidad**, se queda
+en `pending` aunque el dinero haya entrado. Eso no es un problema de máquina de estados —es
+que nadie registra ese cobro— y merece su propio hallazgo.
 
 ---
 

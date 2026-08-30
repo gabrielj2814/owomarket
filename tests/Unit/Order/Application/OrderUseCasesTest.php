@@ -22,6 +22,7 @@ use Src\Order\Application\UseCases\ShipOrderUseCase;
 use Src\Order\Application\UseCases\UpdateOrderPaymentStatusUseCase;
 use Src\Order\Domain\Entities\Order;
 use Src\Order\Domain\Entities\OrderItem;
+use Src\Order\Domain\Exceptions\InvalidOrderStateTransitionException;
 use Src\Order\Domain\Exceptions\OrderNotFoundException;
 use Src\Order\Domain\ValueObjects\OrderId;
 use Src\Order\Domain\ValueObjects\OrderStatus;
@@ -185,6 +186,31 @@ it('UpdateOrderPaymentStatusUseCase updates payment status', function () {
 
     $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository, $activateCommission);
     $paymentUseCase->execute($order->id()->value(), 'paid');
+
+    expect($order->paymentStatus())->toBe(PaymentStatus::PAID);
+});
+
+it('UpdateOrderPaymentStatusUseCase rechaza revertir el pago a pending en vez de fingir exito', function () {
+    // Hallazgo OR1: la rama `PENDING` era `null`. El caso de uso guardaba el pedido sin
+    // tocar y el controlador respondia 200 con "actualizado a 'pending' exitosamente",
+    // asi que un comerciante que marco "pagado" por error recibia confirmacion de un
+    // cambio que nunca ocurrio. Ahora falla, y `save()` no llega a ejecutarse.
+    $repository = m::mock(OrderRepositoryInterface::class);
+
+    $item = OrderItem::create('p-1', 'Prod 1', 'SKU-1', 10.0, 1);
+    $order = Order::create('cust-1', 'cash', [$item]);
+    $order->markPaymentPaid();
+
+    $repository->shouldReceive('findById')->once()->andReturn($order);
+    $repository->shouldNotReceive('save');
+
+    $activateCommission = m::mock(\Src\Monetization\Application\UseCases\ActivateOrderCommissionUseCase::class);
+    $activateCommission->shouldNotReceive('execute');
+
+    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository, $activateCommission);
+
+    expect(fn () => $paymentUseCase->execute($order->id()->value(), 'pending'))
+        ->toThrow(InvalidOrderStateTransitionException::class);
 
     expect($order->paymentStatus())->toBe(PaymentStatus::PAID);
 });

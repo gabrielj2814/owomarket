@@ -8,6 +8,7 @@ use InvalidArgumentException;
 use Src\Monetization\Application\UseCases\ActivateOrderCommissionUseCase;
 use Src\Order\Application\Contracts\Repositories\OrderRepositoryInterface;
 use Src\Order\Domain\Entities\Order;
+use Src\Order\Domain\Exceptions\InvalidOrderStateTransitionException;
 use Src\Order\Domain\Exceptions\OrderNotFoundException;
 use Src\Order\Domain\ValueObjects\OrderId;
 use Src\Order\Domain\ValueObjects\PaymentStatus;
@@ -33,7 +34,14 @@ final class UpdateOrderPaymentStatusUseCase
             PaymentStatus::PAID => $order->markPaymentPaid(),
             PaymentStatus::FAILED => $order->markPaymentFailed(),
             PaymentStatus::REFUNDED => $order->refund(),
-            PaymentStatus::PENDING => null,
+            // Hallazgo OR1: antes era `null`. El endpoint respondia 200 con "actualizado a
+            // 'pending' exitosamente" y el pedido se quedaba igual. Revertir de verdad
+            // implicaria deshacer la comision ya activada -- otro modulo, otra decision --,
+            // asi que de momento se rechaza con el motivo en vez de fingir exito.
+            PaymentStatus::PENDING => throw InvalidOrderStateTransitionException::payment(
+                $order->paymentStatus()->value,
+                PaymentStatus::PENDING->value
+            ),
             default => throw new InvalidArgumentException("Estado de pago no soportado: '{$paymentStatus}'."),
         };
 

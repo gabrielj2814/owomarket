@@ -264,6 +264,13 @@ final class Order
             throw InvalidOrderStateTransitionException::from($this->status->value, OrderStatus::REFUNDED->value);
         }
 
+        // Hallazgo OR1: esta linea escribia el estado del pago sin guarda alguna, asi que
+        // un pedido `confirmed` cuyo pago nunca paso de `pending` quedaba como reembolsado:
+        // se "devolvia" dinero que jamas entro.
+        if (! $this->paymentStatus->canBeRefunded()) {
+            throw InvalidOrderStateTransitionException::payment($this->paymentStatus->value, PaymentStatus::REFUNDED->value);
+        }
+
         $this->status = OrderStatus::REFUNDED;
         $this->paymentStatus = PaymentStatus::REFUNDED;
         $this->updatedAt = new DateTimeImmutable;
@@ -271,12 +278,20 @@ final class Order
 
     public function markPaymentPaid(): void
     {
+        if (! $this->paymentStatus->canBePaid()) {
+            throw InvalidOrderStateTransitionException::payment($this->paymentStatus->value, PaymentStatus::PAID->value);
+        }
+
         $this->paymentStatus = PaymentStatus::PAID;
         $this->updatedAt = new DateTimeImmutable;
     }
 
     public function markPaymentFailed(): void
     {
+        if (! $this->paymentStatus->canBeFailed()) {
+            throw InvalidOrderStateTransitionException::payment($this->paymentStatus->value, PaymentStatus::FAILED->value);
+        }
+
         $this->paymentStatus = PaymentStatus::FAILED;
         $this->updatedAt = new DateTimeImmutable;
     }
