@@ -62,11 +62,17 @@ test('Super Admin can list, approve and reject payout requests', function () {
         'id' => (string) Str::uuid(),
         'tenant_id' => $tenant->id,
         'order_id' => (string) Str::uuid(),
+        // Fase 2: sin `central_order_id` esto es una venta del escaparate, y el comerciante
+        // ya cobro directo en su banco: la plataforma no le debe nada y no respalda ningun
+        // retiro. Este fixture representa lo contrario --una venta central cobrada por la
+        // plataforma--, asi que ahora lo dice.
+        'central_order_id' => (string) Str::uuid(),
         'order_number' => 'ORD-PAYOUT-BACKING',
         'order_total' => 200.00,
         'commission_rate' => 0.00,
         'commission_amount' => 0.00,
         'currency' => 'USD',
+        'exchange_rate' => 50.00,
         'status' => 'pending',
     ]);
 

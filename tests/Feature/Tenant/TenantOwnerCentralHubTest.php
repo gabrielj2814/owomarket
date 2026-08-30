@@ -123,11 +123,14 @@ test('Tenant Owner can view wallet summary and request payout', function () {
         'id' => (string) Str::uuid(),
         'tenant_id' => 'wallet-store-test',
         'order_id' => (string) Str::uuid(),
+        // Fase 2: venta del canal central, que es la unica que genera saldo en la wallet.
+        'central_order_id' => (string) Str::uuid(),
         'order_number' => 'ORD-TEST-001',
         'order_total' => 500.00,
         'commission_rate' => 8.00,
         'commission_amount' => 40.00,
         'currency' => 'USD',
+        'exchange_rate' => 50.00,
         'status' => 'collected',
     ]);
 
@@ -135,7 +138,10 @@ test('Tenant Owner can view wallet summary and request payout', function () {
     $summaryResponse = $this->actingAs($user)->getJson("/tenant/owner/api/wallet-summary?user_id={$user->id}");
     $summaryResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        ->assertJsonStructure(['data' => ['gross_sales', 'available_balance', 'bcv_rate']]);
+        // `bcv_rate` ya no existe: era una tasa escrita a mano en el caso de uso. Los
+        // bolivares salen ahora de la tasa congelada de cada venta (Fase 1).
+        ->assertJsonStructure(['data' => ['gross_sales', 'available_balance', 'available_balance_ves', 'tenant_id']])
+        ->assertJsonPath('data.available_balance_ves', 23000);   // (500 - 40) * 50
 
     // 2. Request Payout
     $payoutResponse = $this->actingAs($user)->postJson('/tenant/owner/api/payout-request', [

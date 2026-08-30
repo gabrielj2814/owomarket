@@ -1,6 +1,6 @@
 # Plan — Wallet de la tienda y retiros
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fase 1 ✅ cerrada, 3 tests**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1 y 2 ✅ cerradas, 10 tests**
 >
 > Sale de una conversación de diseño sobre cómo debe fluir el dinero del marketplace
 > central. Se descartaron dos modelos antes de llegar a éste; queda escrito por qué, porque
@@ -120,16 +120,70 @@ la tasa se congela; una venta no se cae si el BCV no ha sincronizado; y el saldo
 sale de la consulta derivada **conservando cada venta la tasa de su día** — con dos ventas a
 tasas distintas, que es lo que distingue congelar de revalorizar.
 
-### Fase 2 — La wallet
+### Fase 2 — La wallet · ✅ HECHA (30/08/2026)
 
-Vista de solo lectura en el backoffice de la tienda: saldo retirable en Bs, saldo retenido, y
-el desglose por pedido. Y qué hacer con las comisiones sin tasa capturada.
+**La wallet ya existía**, y la Fase 3 también: `TenantOwnerWalletPage`,
+`GetTenantOwnerWalletSummaryUseCase` y un `CreateTenantOwnerPayoutRequestUseCase` que ya
+verifica propiedad, corre en transacción y bloquea con `lockForUpdate()` (hallazgos T1 y C3,
+cerrados). Así que la Fase 2 no fue construir nada: fue arreglar lo que había.
 
-### Fase 3 — Solicitar retiro
+#### 🔴 La fórmula del saldo contaba dinero que no existe
 
-El comerciante dispara un `payout`; hoy sólo lo dispara el admin.
-`GenerateTenantCommissionSettlementUseCase` ya calcula el neto. El admin transfiere y cierra
-con `ConfirmAndSettleCommissionUseCase`.
+`TenantAvailableBalance::netEarnings()` sumaba `order_total` y `commission_amount` de **todas**
+las comisiones de la tienda. Le faltaban los dos filtros, y **no es una consulta de pantalla:
+es la que autoriza cuánto dinero real sale**.
+
+- **Sin filtro de estado.** El enum es `awaiting_payment`, `pending`, `collected`, `waived`,
+  `refunded`. Una venta cancelada o reembolsada seguía contando como saldo retirable, y un
+  cobro sin confirmar también.
+- **Sin filtro de canal.** Contaba las ventas del escaparate, donde el comprador transfirió
+  directo al banco del comerciante. La plataforma no recibió ese dinero y aun así se lo
+  ofrecía para retirar: pagar dos veces la misma venta.
+
+Ahora `ventasDe()` acota a `central_order_id` no nulo, y los estados van por **lista blanca**,
+`['pending', 'collected']`, no por lista negra: en dinero, un estado nuevo que nadie previó
+tiene que quedarse fuera del saldo, no colarse dentro.
+
+#### La copia de la fórmula, borrada
+
+`GetTenantOwnerWalletSummaryUseCase` calculaba el saldo por su cuenta, con su propia resta y
+una tasa BCV escrita a mano —`775.3356`— bajo un `TODO(Fase 1)`. El docblock del servicio
+compartido ya lo había advertido:
+
+> *«dos copias de una fórmula de saldo que divergen es como se pierde dinero, y este
+> repositorio ya ha demostrado que las copias divergen»*
+
+La advertencia estaba escrita y la copia seguía viva al lado. Ahora la pantalla y la
+autorización del retiro leen el mismo número.
+
+#### Lo demás
+
+Los bolívares salen de las tasas congeladas de la Fase 1. Se añadieron dos apartados
+visibles: **retenido** (ventas cuyo cobro la plataforma no ha confirmado) y **pendiente de
+valorar** (sin tasa capturada). Excluirlas en silencio le haría desaparecer dinero al
+comerciante sin explicación, que es el patrón de fallo que esta auditoría lleva cerrando
+desde PR2.
+
+Y se quitó `amount_ves` del historial de liquidaciones: se calculaba con la tasa fija, así que
+era un número inventado.
+
+**Un fallo que apareció de camino:** la pantalla enviaba
+`tenant_id: wallet.settlements[0]?.tenant_id || 'tecs'` al pedir un retiro. Una tienda sin
+liquidaciones previas —toda tienda nueva— mandaba el id literal `'tecs'`. El backend verifica
+la propiedad, así que no colaba; simplemente **no se podía pedir el primer retiro nunca**. El
+resumen devuelve ahora el `tenant_id`.
+
+**Vigilada por siete tests**, y seis de ellos fallan sin el arreglo. El que importa no
+comprueba una cifra en pantalla: comprueba que **un retiro pedido contra el saldo inflado se
+rechaza**. Antes esas cuatro comisiones —reembolsada, cancelada, sin confirmar y del
+escaparate— sumaban 368 USD retirables.
+
+### Fase 3 — Solicitar retiro · 🔵 casi hecha
+
+`CreateTenantOwnerPayoutRequestUseCase` ya existe y está bien construido. Lo que queda es
+**decidir la moneda del retiro**: hoy la solicitud se guarda en USD, y bajo este modelo el
+comerciante retira bolívares. Mientras eso no se cierre, el importe que pide y el saldo que se
+le muestra están en unidades distintas.
 
 ### Fase 4 — Retención y banco
 

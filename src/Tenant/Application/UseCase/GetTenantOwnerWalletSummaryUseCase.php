@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Tenant\Application\UseCase;
 
 use Illuminate\Support\Facades\Schema;
+use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
@@ -12,7 +13,8 @@ use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 final class GetTenantOwnerWalletSummaryUseCase
 {
     public function __construct(
-        private readonly TenantOwnershipVerifier $ownership
+        private readonly TenantOwnershipVerifier $ownership,
+        private readonly TenantAvailableBalance $balance
     ) {}
 
     /**
@@ -29,16 +31,34 @@ final class GetTenantOwnerWalletSummaryUseCase
         $totalCommissions = 0.0;
         $settledPayouts = 0.0;
         $pendingPayouts = 0.0;
+        $availableBalance = 0.0;
         $settlements = [];
-
-        // TODO(Fase 1): la tasa está fijada en código, igual que en el frontend.
-        // Debe venir de Src\ExchangeRate (hallazgo D3/G13 de la auditoría).
-        $bcvRate = 775.3356;
+        $bolivares = ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
 
         if ($tenantIds !== []) {
             if (Schema::hasTable('platform_commissions')) {
-                $grossSales = (float) PlatformCommission::whereIn('tenant_id', $tenantIds)->sum('order_total');
-                $totalCommissions = (float) PlatformCommission::whereIn('tenant_id', $tenantIds)->sum('commission_amount');
+                // Fase 2: aqui habia una copia de la formula del saldo, con su propia resta y
+                // sin los filtros de canal y estado. El docblock de `TenantAvailableBalance`
+                // ya avisaba de esto --"dos copias de una formula de saldo que divergen es
+                // como se pierde dinero"--, y la copia seguia viva justo al lado.
+                //
+                // Ahora la pantalla y la autorizacion del retiro leen el mismo numero.
+                $ventas = PlatformCommission::whereIn('tenant_id', $tenantIds)
+                    ->whereNotNull('central_order_id')
+                    ->whereIn('status', ['pending', 'collected']);
+
+                $grossSales = (float) (clone $ventas)->sum('order_total');
+                $totalCommissions = (float) (clone $ventas)->sum('commission_amount');
+
+                foreach ($tenantIds as $tenantId) {
+                    $availableBalance += $this->balance->requestable($tenantId);
+
+                    $desglose = $this->balance->breakdown($tenantId);
+                    $bolivares['disponible_bs'] += $desglose['disponible_bs'];
+                    $bolivares['retenido_bs'] += $desglose['retenido_bs'];
+                    $bolivares['sin_valorar_usd'] += $desglose['sin_valorar_usd'];
+                    $bolivares['sin_valorar_count'] += $desglose['sin_valorar_count'];
+                }
             }
 
             if (Schema::hasTable('commission_settlements')) {
@@ -56,14 +76,18 @@ final class GetTenantOwnerWalletSummaryUseCase
                     ->orderBy('created_at', 'desc')
                     ->limit(10)
                     ->get()
-                    ->map(function ($s) use ($bcvRate) {
+                    ->map(function ($s) {
                         return [
                             'id' => $s->id,
                             'settlement_number' => $s->settlement_number,
                             'tenant_id' => $s->tenant_id,
                             'type' => $s->type,
                             'amount_usd' => (float) $s->net_amount,
-                            'amount_ves' => round((float) $s->net_amount * $bcvRate, 2),
+                            // Sin `amount_ves`: se calculaba con la tasa fija, asi que era un
+                            // numero inventado. La liquidacion guarda su importe en USD y
+                            // expresarlo en bolivares con la tasa de hoy seria revalorizar
+                            // justo lo que este modelo congela. Lo resuelve la Fase 3, cuando
+                            // el retiro registre sus propios bolivares.
                             'status' => $s->status,
                             'payment_method' => $s->payment_method ?? 'Pago Móvil',
                             'payment_reference' => $s->payment_reference,
@@ -74,17 +98,21 @@ final class GetTenantOwnerWalletSummaryUseCase
             }
         }
 
-        $netEarnings = max(0.0, $grossSales - $totalCommissions);
-        $availableBalance = max(0.0, $netEarnings - $settledPayouts - $pendingPayouts);
-
         return [
             'gross_sales' => $grossSales,
             'total_commissions' => $totalCommissions,
             'available_balance' => $availableBalance,
-            'available_balance_ves' => round($availableBalance * $bcvRate, 2),
+            // Bolivares a la tasa congelada de cada venta, no a la de hoy.
+            'available_balance_ves' => round($bolivares['disponible_bs'], 2),
+            'retained_ves' => round($bolivares['retenido_bs'], 2),
+            'unvalued_usd' => round($bolivares['sin_valorar_usd'], 2),
+            'unvalued_count' => $bolivares['sin_valorar_count'],
             'pending_payouts' => $pendingPayouts,
             'settled_payouts' => $settledPayouts,
-            'bcv_rate' => $bcvRate,
+            // La pantalla lo necesita para pedir un retiro. Antes lo adivinaba de la primera
+            // liquidacion, asi que una tienda sin liquidaciones previas no podia pedir la
+            // primera.
+            'tenant_id' => $tenantIds[0] ?? null,
             'tenants_count' => count($tenantIds),
             'settlements' => $settlements,
         ];

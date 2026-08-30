@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\Service;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
@@ -24,6 +26,18 @@ use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
  */
 final class TenantAvailableBalance
 {
+    /**
+     * Los unicos estados que son dinero del comerciante.
+     *
+     * Antes no habia filtro y la suma cogia el enum entero: una venta cancelada (`waived`) o
+     * reembolsada (`refunded`) seguia contando como saldo retirable, y `awaiting_payment`
+     * --el cobro que la plataforma todavia no ha confirmado-- tambien.
+     *
+     * Lista blanca y no lista negra a proposito: en dinero, un estado nuevo que nadie previo
+     * tiene que quedarse FUERA del saldo, no colarse dentro.
+     */
+    private const ESTADOS_COBRADOS = ['pending', 'collected'];
+
     /**
      * Cuanto puede PEDIR ahora el comerciante.
      *
@@ -55,16 +69,67 @@ final class TenantAvailableBalance
         return max(0.0, $this->netEarnings($tenantId) - $this->payouts($tenantId, ['settled'], $lock));
     }
 
+    /**
+     * El saldo en bolivares, valorado a la tasa congelada de CADA venta (Fase 1 del plan de
+     * wallet y retiros). No se revaloriza al consultar: la plataforma le debe al comerciante
+     * los bolivares que recibio del comprador, no los de hoy.
+     *
+     * @return array{disponible_bs: float, retenido_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
+     */
+    public function breakdown(string $tenantId): array
+    {
+        if (! Schema::hasTable('platform_commissions')) {
+            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
+        }
+
+        $enBolivares = fn (array $estados) => (float) $this->ventasDe($tenantId)
+            ->whereIn('status', $estados)
+            ->whereNotNull('exchange_rate')
+            ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
+
+        // Sin tasa no se puede expresar en bolivares. Se muestran aparte en vez de
+        // excluirlas en silencio: al comerciante no puede desaparecerle dinero sin
+        // explicacion.
+        $sinValorar = $this->ventasDe($tenantId)
+            ->whereIn('status', self::ESTADOS_COBRADOS)
+            ->whereNull('exchange_rate');
+
+        return [
+            'disponible_bs' => $enBolivares(self::ESTADOS_COBRADOS),
+            'retenido_bs' => $enBolivares(['awaiting_payment']),
+            'sin_valorar_usd' => (float) (clone $sinValorar)->sum(DB::raw('order_total - commission_amount')),
+            'sin_valorar_count' => (clone $sinValorar)->count(),
+        ];
+    }
+
     private function netEarnings(string $tenantId): float
     {
         if (! Schema::hasTable('platform_commissions')) {
             return 0.0;
         }
 
-        $ventas = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('order_total');
-        $comisiones = (float) PlatformCommission::where('tenant_id', $tenantId)->sum('commission_amount');
+        $ventas = (float) $this->ventasDe($tenantId)->whereIn('status', self::ESTADOS_COBRADOS)->sum('order_total');
+        $comisiones = (float) $this->ventasDe($tenantId)->whereIn('status', self::ESTADOS_COBRADOS)->sum('commission_amount');
 
         return max(0.0, $ventas - $comisiones);
+    }
+
+    /**
+     * Las ventas por las que la plataforma le debe dinero a esta tienda.
+     *
+     * Aqui faltaban los dos filtros, y esta consulta no pinta una pantalla: **es la que
+     * autoriza cuanto dinero real sale**.
+     *
+     * `central_order_id` no nulo acota al canal central, que es el unico donde cobra la
+     * plataforma. En el escaparate el comprador transfiere directo al comerciante, que ya
+     * tiene su dinero en el banco: contarlo aqui le ofrecia retirar por segunda vez algo que
+     * la plataforma nunca recibio.
+     */
+    private function ventasDe(string $tenantId): Builder
+    {
+        return PlatformCommission::query()
+            ->where('tenant_id', $tenantId)
+            ->whereNotNull('central_order_id');
     }
 
     /**

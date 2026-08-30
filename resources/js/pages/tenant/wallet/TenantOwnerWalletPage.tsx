@@ -18,10 +18,15 @@ interface WalletData {
     gross_sales: number;
     total_commissions: number;
     available_balance: number;
+    // Bolivares a la tasa congelada de cada venta, no a la de hoy: la plataforma debe los
+    // bolivares que recibio del comprador. Antes salia de una tasa escrita a mano.
     available_balance_ves: number;
+    retained_ves: number;
+    unvalued_usd: number;
+    unvalued_count: number;
+    tenant_id: string | null;
     pending_payouts: number;
     settled_payouts: number;
-    bcv_rate: number;
     tenants_count: number;
     settlements: Array<{
         id: string;
@@ -29,7 +34,6 @@ interface WalletData {
         tenant_id: string;
         type: string;
         amount_usd: number;
-        amount_ves: number;
         status: string;
         payment_method: string;
         payment_reference: string | null;
@@ -83,7 +87,11 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
 
             const response = await axios.post('/tenant/owner/api/payout-request', {
                 user_id,
-                tenant_id: wallet.settlements[0]?.tenant_id || 'tecs',
+                // Antes esto salia de `wallet.settlements[0]?.tenant_id || 'tecs'`: una tienda
+                // sin liquidaciones previas --toda tienda nueva-- enviaba el id literal
+                // 'tecs'. El backend verifica la propiedad, asi que no colaba; simplemente
+                // no se podia pedir el primer retiro nunca.
+                tenant_id: wallet.tenant_id,
                 amount: numericAmount,
                 payment_method: payoutMethod === 'pago_movil' ? 'Pago Móvil (Bs. BCV)' : 'Binance Pay (USDT)',
                 payment_details: paymentDetails,
@@ -152,6 +160,29 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                 )}
 
                 {/* KPI Cards */}
+                {(wallet.retained_ves > 0 || wallet.unvalued_count > 0) && (
+                    <div className="mb-4 space-y-2">
+                        {wallet.retained_ves > 0 && (
+                            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
+                                <span className="font-black">
+                                    Bs. {wallet.retained_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                                </span>{' '}
+                                retenidos: son ventas cuyo cobro la plataforma todavía no ha confirmado. Pasarán a tu
+                                saldo disponible en cuanto se confirmen.
+                            </div>
+                        )}
+
+                        {wallet.unvalued_count > 0 && (
+                            <div className="rounded-2xl border border-gray-200 bg-gray-50 px-4 py-3 text-xs text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                                <span className="font-black">${wallet.unvalued_usd.toFixed(2)} USD</span> en{' '}
+                                {wallet.unvalued_count}{' '}
+                                {wallet.unvalued_count === 1 ? 'venta pendiente' : 'ventas pendientes'} de valorar: no se
+                                registró la tasa de cambio del día. Escríbenos para acreditarlas.
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Disponible */}
                     <div className="p-6 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white shadow-lg shadow-emerald-500/20 space-y-2">
@@ -162,7 +193,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                             ${wallet.available_balance.toFixed(2)} USD
                         </div>
                         <div className="text-xs text-emerald-100 font-semibold">
-                            ≈ Bs. {wallet.available_balance_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })} (Tasa BCV)
+                            Bs. {wallet.available_balance_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })} (tasa de cada venta)
                         </div>
                     </div>
 
@@ -226,7 +257,6 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                         <th className="py-3 px-4">Fecha</th>
                                         <th className="py-3 px-4">Método</th>
                                         <th className="py-3 px-4 text-right">Monto (USD)</th>
-                                        <th className="py-3 px-4 text-right">Monto (VES)</th>
                                         <th className="py-3 px-4 rounded-r-xl text-center">Estado</th>
                                     </tr>
                                 </thead>
@@ -242,9 +272,6 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                             </td>
                                             <td className="py-4 px-4 text-right font-black text-gray-900 dark:text-white">
                                                 ${item.amount_usd.toFixed(2)}
-                                            </td>
-                                            <td className="py-4 px-4 text-right font-black text-emerald-600 dark:text-emerald-400">
-                                                Bs. {item.amount_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span
