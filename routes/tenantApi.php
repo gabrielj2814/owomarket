@@ -77,11 +77,14 @@ Route::middleware('auth')->group(function () {
         Route::prefix('shipment')->group(callback: base_path('src/Shipment/Infrastructure/Http/Routes/apiTenant.php'));
     });
 
-    // Facturacion y cobros van juntos: anular una factura y tocar un pago son la misma
-    // clase de decision, y quien pueda una deberia poder la otra.
+    // Hallazgo PY1: aqui colgaba tambien `payment/*`, con `/payment/process` y
+    // `/payment/gateways`. Eran la unica puerta a una capa de pasarelas que no cobraba
+    // nada: `/process` aceptaba un importe arbitrario con `order_id` opcional y no
+    // persistia ni una fila. El cobro real es manual --el comprador paga por su banco y el
+    // comerciante confirma con `order/{id}/payment-status`--, asi que la capa entera se
+    // borro en vez de cablearla.
     Route::middleware('tenant_can:manage_billing')->group(function () {
         Route::prefix('billing')->group(callback: base_path('src/Billing/Infrastructure/Http/Routes/apiTenant.php'));
-        Route::prefix('payment')->group(callback: base_path('src/Payment/Infrastructure/Http/Routes/apiTenant.php'));
     });
 
     // Impuestos, envios y ajustes de la tienda cambian lo que se le cobra a TODOS los

@@ -14,7 +14,6 @@ return [
     App\Providers\HorizonServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
     App\Providers\OrderServiceProvider::class,
-    App\Providers\PaymentServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\ReviewServiceProvider::class,
     App\Providers\RouteServiceProvider::class,

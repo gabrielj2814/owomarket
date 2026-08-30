@@ -70,8 +70,9 @@ test('El backoffice del inquilino rechaza peticiones sin sesión', function () {
     $this->postJson("http://{$this->domain}/api-tenant/review/".Str::uuid().'/moderate', [])
         ->assertStatus(401);
 
-    // Procesar un pago.
-    $this->postJson("http://{$this->domain}/api-tenant/payment/process", [])
+    // Confirmar el cobro de un pedido. Antes esto apuntaba a `/api-tenant/payment/process`,
+    // borrado en PY1; la confirmacion manual del pago es la que existe de verdad.
+    $this->postJson("http://{$this->domain}/api-tenant/order/".Str::uuid().'/payment-status', [])
         ->assertStatus(401);
 });
 

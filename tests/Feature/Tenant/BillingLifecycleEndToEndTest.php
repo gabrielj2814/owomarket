@@ -86,28 +86,16 @@ it('executes full billing and payment lifecycle end-to-end', function () {
         ->assertJsonPath('data.invoice_prefix', 'FAC-E2E-')
         ->assertJsonPath('data.next_invoice_number', 101);
 
-    // 2. Consultar Pasarelas de Pago Disponibles
-    $gatewaysResponse = $this->getJson("http://{$this->domain}/api-tenant/payment/gateways");
-    $gatewaysResponse->assertStatus(200)
-        ->assertJsonPath('status', 'success');
-
-    $gateways = collect($gatewaysResponse->json('data'))->pluck('identifier')->all();
-    expect($gateways)->toContain('manual_transfer')
-        ->and($gateways)->toContain('cash_on_delivery');
-
-    // 3. Procesar un Pago mediante la pasarela Manual
-    $paymentResponse = $this->postJson("http://{$this->domain}/api-tenant/payment/process", [
-        'amount' => 595.00,
-        'currency' => 'USD',
-        'customer_email' => 'comprador@cliente.com',
-        'customer_name' => 'Comprador Final',
-        'payment_method' => 'manual_transfer',
-        'order_id' => 'ORD-E2E-001',
-        'description' => 'Compra de productos de prueba',
-    ]);
-    $paymentResponse->assertStatus(200)
-        ->assertJsonPath('status', 'success')
-        ->assertJsonPath('data.success', true);
+    // Los pasos 2 y 3 consultaban `/api-tenant/payment/gateways` y procesaban un cobro por
+    // `/api-tenant/payment/process`. Ambos se borraron con el hallazgo PY1: eran la unica
+    // puerta a una capa de pasarelas que no cobraba nada --`/process` devolvia exito con un
+    // importe arbitrario y no persistia ni una fila--, y este mismo test lo enseñaba sin
+    // querer, "pagando" 595.00 contra un `order_id` inventado que no existia como pedido.
+    //
+    // El cobro real es manual y vive en otro sitio: el comprador paga por su banco, el
+    // checkout registra el pago en la tabla `payments`, y el comerciante lo confirma con
+    // `POST /api-tenant/order/{id}/payment-status`. Lo cubren
+    // `StorefrontCheckoutPaymentsTest` y `OrderPaymentStatusTest`.
 
     // 4. Emitir Factura Directa / Mostrador con 2 conceptos, descuento e IVA 19%
     $invoicePayload = [

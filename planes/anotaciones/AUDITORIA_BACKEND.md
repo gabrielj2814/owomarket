@@ -24,9 +24,9 @@
 | **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ Auditado — **2 hallazgos CERRADOS** |
 | **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ Auditado — **1 hallazgo CERRADO** |
 | **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ Auditado — **1 hallazgo CERRADO** |
-| **Payment** | `src/Payment/` | 33 ficheros · 1.626 líneas | ✅ **Auditado** — 1 hallazgo |
+| **Payment** | `src/Payment/` | 33 ficheros · 1.626 líneas | ✅ Auditado — **1 hallazgo CERRADO** |
 
-> **Los cuatro módulos auditados.** 5 hallazgos: 1 🔴 · 2 🟠 · 2 🟡.
+> **Los cuatro módulos auditados y los 5 hallazgos cerrados** —1 🔴 · 2 🟠 · 2 🟡—, cada uno con tests que lo vigilan.
 
 ---
 
@@ -38,15 +38,19 @@
 | **PR2** | Product | Actualizar el stock de un producto con variantes no hacía nada | 🟠 | ✅ **Cerrado** | ✅ Probado |
 | **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ✅ **Cerrado** | ✅ Probado |
 | **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ✅ **Cerrado** | ✅ Probado |
-| **PY1** | Payment | La capa de pasarelas no la usa nadie, y su endpoint acepta importes sin registrar nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **PY1** | Payment | La capa de pasarelas no la usa nadie, y su endpoint acepta importes sin registrar nada | 🟡 | ✅ **Cerrado** | ✅ Probado |
 
-> **PY1 sigue sin probarse ejecutando.** Sale de leer el código. En este proyecto esa
-> distinción ha importado varias veces en un solo día —una lectura llevó a un falso positivo
-> de fijación de sesión, y un fixture incompleto casi archiva el hallazgo T7 como
-> inexistente—, así que queda marcada hasta que se demuestren.
+> **Los cinco quedaron demostrados ejecutando**, y en este proyecto esa distinción no es
+> ceremonia. Costó tres correcciones, una por hallazgo:
 >
-> **Y volvió a importar al cerrar OR1:** el arreglo que salió de la lectura era demasiado
-> estricto, y sólo se supo al ejecutar la suite. Está contado abajo.
+> - **OR1:** el arreglo que salió de la lectura era demasiado estricto y habría bloqueado el
+>   reembolso de los métodos de pago más usados. Lo tumbó la suite en la primera ejecución.
+> - **SH1:** los tres caminos que la lectura veía separados pasaban todos por el mismo
+>   `save()`. Sólo se vio trazando el flujo entero.
+> - **PY1:** la auditoría daba por muerta la tabla `payments`, que estaba viva. El `grep`
+>   había buscado por el eje equivocado.
+>
+> Ninguna de las tres se habría visto releyendo el código con más atención.
 
 ---
 
@@ -591,7 +595,7 @@ algo esté muerto**, sólo que no está donde se buscó.
 
 ## PY1. 🟡 La capa de pasarelas es infraestructura paralela que no participa en ningún cobro
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 30/08/2026 · **Borrada**
 
 El módulo tiene **dos mitades que no se tocan**.
 
@@ -612,7 +616,7 @@ El comprador elige método, envía sus datos de pago, y el comerciante confirma 
 | `PagoMovilPaymentGateway`, `BinancePayPaymentGateway`, `CashOnDeliveryPaymentGateway`, `ManualBankTransferPaymentGateway` | Sólo los alcanza `/api-tenant/payment/process` |
 | `POST /api-tenant/payment/process` | **Ninguna página del frontend lo llama** |
 | `GET /api-tenant/payment/gateways` | Igual, sin llamantes |
-| Tabla `payments` y modelo `Payment` | **Nada escribe en ella en todo el repositorio** |
+| Tabla `payments` y modelo `Payment` | ~~Nada escribe en ella~~ — **esto era falso, ver abajo** |
 
 Se comprobaron los tres: los proveedores no usan el factory de pasarelas,
 `ListAvailablePaymentGatewaysUseCase` sólo lo usa su propio controlador, y no hay un solo
@@ -633,21 +637,84 @@ Hoy no lo llama nadie. Pero es el endpoint que cualquiera cablearía el día que
 vínculo con el pedido y sin verificación del importe** — el error de B1 esperando a que
 alguien lo active.
 
-La tabla `payments` tiene el mismo problema al revés: cualquier informe o conciliación que
-se construya sobre ella hoy devolvería cero filas, y no porque no haya pagos.
+> ### ⚠️ Corrección: la tabla `payments` estaba viva
+>
+> Escrito arriba: *«nada escribe en ella en todo el repositorio»*, y de ahí *«cualquier
+> informe devolvería cero filas»*. **Las dos cosas son falsas.** Escriben dos sitios, y con
+> cuidado:
+>
+> - `CreateStorefrontOrderPOSTController` en cada compra del escaparate. Lleva un comentario
+>   explicando que le quitaron un `catch` vacío para que un pago sin registrar revierta el
+>   pedido entero.
+> - `DispatchCentralOrderToTenantsUseCase` en cada pedido multi-tienda, con otro explicando
+>   que registra el importe imputable a cada tienda y no el subtotal bruto «porque la suma de
+>   los `payments` no cuadraba».
+>
+> El `grep` buscó `Payment::create()` —el modelo Eloquent— y no vio
+> `DB::table('payments')->insert()`. **Es el mismo error que este documento describe tres
+> párrafos más arriba sobre `CentralSetting`**, cometido por quien acababa de escribirlo.
+>
+> Lo que sí era cierto: el **modelo** `Payment` no lo usaba nadie. Existe para esa tabla y
+> los dos que escriben en ella lo esquivan.
 
-### Por dónde iría la decisión
+## ✅ Cómo se cerró: borrada
 
-No es un arreglo, es una decisión de arquitectura, y sólo hay dos salidas honestas:
+Se eligió la primera salida. El negocio de hoy son métodos manuales que concilia el
+comerciante, ese camino funciona y está probado, y cablear una integración de pasarela que
+nadie pide es trabajo especulativo. Git conserva lo borrado para el día que entre una
+pasarela real.
 
-1. **Borrar la mitad muerta.** Si el negocio son métodos manuales conciliados por el
-   comerciante —que es lo que hay hoy—, las pasarelas y la tabla `payments` sobran, y con
-   ellas el endpoint que invita al error.
-2. **Cablearla de verdad**, y entonces `/payment/process` tiene que exigir `order_id`,
-   verificar el importe contra el total del pedido y persistir el pago.
+**De 33 ficheros a 8**, y los ocho son la mitad viva:
 
-Lo que no puede quedarse es a medias: una puerta abierta con el nombre correcto y el
-comportamiento equivocado.
+| Se fue | Se quedó |
+| :--- | :--- |
+| Las 4 pasarelas, el factory y su interfaz | `StorefrontPaymentMethodsProvider` |
+| `ProcessPaymentUseCase`, `RefundPaymentUseCase`, `ListAvailablePaymentGatewaysUseCase` | `CentralPaymentMethodsProvider` |
+| Sus 3 DTOs, sus 2 excepciones y los 5 VO que sólo ellos usaban | El VO `PaymentMethod` |
+| Los 2 controladores, el FormRequest y las 2 rutas | `CentralSetting` y los ajustes del admin |
+| El modelo `Payment`, sin un solo uso | La tabla `payments` y sus **dos** escritores |
+| `PaymentServiceProvider` entero — no ataba otra cosa | `web.php` |
+
+### La condición que se puso al aprobarlo
+
+«Borrar la mitad muerta **y dejar el Pago Móvil, con la confirmación manual**». Se cumple
+sola, y por un motivo que conviene dejar escrito porque es contraintuitivo: **el Pago Móvil
+que funciona no pasa por `PagoMovilPaymentGateway`.** Su camino es otro:
+
+1. `StorefrontPaymentMethodsProvider` saca banco, cédula y teléfono de los ajustes.
+2. El comprador paga por su banco y envía la referencia.
+3. `CreateStorefrontOrderPOSTController` crea el pedido y **registra el pago** en `payments`.
+4. El comerciante confirma a mano con `POST /api-tenant/order/{id}/payment-status`.
+
+Los cuatro pasos están en la mitad viva. El adaptador era una clase que sólo alcanzaba el
+endpoint muerto.
+
+**Y no se afirmó: se demostró.** El test del checkout con Pago Móvil se ejecutó **antes** de
+borrar nada y **después**, y pasa igual. Tras OR1 —donde una afirmación razonable resultó
+falsa y sólo la suite lo vio— esa comprobación dejó de ser opcional.
+
+### Lo que apareció al borrar
+
+Dos cosas que la lectura no había visto:
+
+**1. `BillingLifecycleEndToEndTest` demostraba el hallazgo sin querer.** Entre emitir facturas,
+«pagaba» 595.00 por `/payment/process` contra `'ORD-E2E-001'`, un `order_id` **que no existía
+como pedido**, y el endpoint respondía éxito. Era exactamente el fallo descrito —importe
+arbitrario, sin vínculo con ningún pedido, sin persistir nada— ejecutándose en verde dentro
+de la propia suite del proyecto.
+
+**2. Un `grep` de clases no encuentra rutas.** Al borrar se comprobaron las referencias por
+nombre de clase y quedaron seis tests rotos que llamaban a los endpoints **por URL**. La misma
+lección de la corrección de arriba, tercera vez en este documento: buscar en un solo eje no
+demuestra nada.
+
+`PaymentApiTest` se borró entero —sus cuatro tests eran los endpoints muertos—, y de
+`TenantApiAuthorizationTest` la comprobación de perímetro se movió a
+`order/{id}/payment-status`, que es la confirmación de cobro que existe de verdad. El fichero
+`StorefrontPaymentGatewaysTest` pasó a llamarse `StorefrontCheckoutPaymentsTest`: ya no queda
+ninguna pasarela y el nombre habría mandado al siguiente lector a buscar una capa que no está.
+
+**Coste en tests: 12 menos.** Todos cubrían sólo el código borrado.
 
 ---
 

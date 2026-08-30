@@ -7,9 +7,6 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
-use Src\Payment\Application\Contracts\PaymentGatewayFactoryInterface;
-use Src\Payment\Infrastructure\Adapters\BinancePayPaymentGateway;
-use Src\Payment\Infrastructure\Adapters\PagoMovilPaymentGateway;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
@@ -97,19 +94,6 @@ afterEach(function () {
     if (tenancy()->initialized) {
         tenancy()->end();
     }
-});
-
-test('PaymentGatewayFactory resolves PagoMovil and BinancePay adapters', function () {
-    /** @var PaymentGatewayFactoryInterface $factory */
-    $factory = app(PaymentGatewayFactoryInterface::class);
-
-    $pagoMovil = $factory->make('pago_movil');
-    expect($pagoMovil)->toBeInstanceOf(PagoMovilPaymentGateway::class);
-    expect($pagoMovil->getIdentifier())->toBe('pago_movil');
-
-    $binancePay = $factory->make('binance_pay');
-    expect($binancePay)->toBeInstanceOf(BinancePayPaymentGateway::class);
-    expect($binancePay->getIdentifier())->toBe('binance_pay');
 });
 
 test('Storefront checkout creates order and records payment with Pago Movil details', function () {
