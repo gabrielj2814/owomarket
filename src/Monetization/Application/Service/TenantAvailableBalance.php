@@ -95,6 +95,8 @@ final class TenantAvailableBalance
             ->whereNull('exchange_rate');
 
         return [
+            // Ojo: esto es lo GANADO en bolivares, sin descontar retiros. Lo retirable es
+            // `requestable()`, que es el unico numero contra el que se autoriza dinero.
             'disponible_bs' => $enBolivares(self::ESTADOS_COBRADOS),
             'retenido_bs' => $enBolivares(['awaiting_payment']),
             'sin_valorar_usd' => (float) (clone $sinValorar)->sum(DB::raw('order_total - commission_amount')),
@@ -102,16 +104,28 @@ final class TenantAvailableBalance
         ];
     }
 
+    /**
+     * Lo que la plataforma le debe a la tienda, **en bolivares**.
+     *
+     * El dolar es la unidad en la que se pone el precio; el comprador ve el precio en dolares
+     * y su equivalente en bolivares a la tasa del dia, y paga bolivares. Nunca entra un dolar
+     * a ninguna cuenta. Asi que el saldo no es "dolares convertidos": es la suma de los
+     * bolivares que aporto cada venta --su total en USD por la tasa a la que compro ese
+     * cliente--, y no hay nada que convertir al leer.
+     *
+     * Antes esta funcion devolvia dolares mientras la pantalla enseñaba bolivares, asi que el
+     * comerciante veia bolivares y pedia dolares en el mismo formulario.
+     */
     private function netEarnings(string $tenantId): float
     {
         if (! Schema::hasTable('platform_commissions')) {
             return 0.0;
         }
 
-        $ventas = (float) $this->ventasDe($tenantId)->whereIn('status', self::ESTADOS_COBRADOS)->sum('order_total');
-        $comisiones = (float) $this->ventasDe($tenantId)->whereIn('status', self::ESTADOS_COBRADOS)->sum('commission_amount');
-
-        return max(0.0, $ventas - $comisiones);
+        return (float) $this->ventasDe($tenantId)
+            ->whereIn('status', self::ESTADOS_COBRADOS)
+            ->whereNotNull('exchange_rate')
+            ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
     }
 
     /**
@@ -143,6 +157,13 @@ final class TenantAvailableBalance
 
         $consulta = CommissionSettlement::where('tenant_id', $tenantId)
             ->where('type', 'payout')
+            // Los retiros que se restan tienen que estar en la misma moneda que el saldo. Sin
+            // este filtro, una liquidacion vieja en USD se restaria como si fueran bolivares y
+            // descuadraria el saldo por un factor de la tasa entera.
+            // ponytail: los retiros en USD anteriores al cambio de unidad quedan fuera del
+            // calculo. Son datos de desarrollo; si alguna vez hubiera retiros reales en USD
+            // habria que decidir que se hace con ellos, no ignorarlos.
+            ->where('currency', 'VES')
             ->whereIn('status', $estados);
 
         // Bloquea las filas de retiros de esta tienda mientras dure la transaccion. Sin

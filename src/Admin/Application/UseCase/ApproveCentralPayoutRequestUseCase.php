@@ -63,9 +63,9 @@ final class ApproveCentralPayoutRequestUseCase
         if ((float) $settlement->net_amount > $disponible) {
             throw new Exception(
                 sprintf(
-                    'El retiro (%.2f USD) supera el saldo disponible de la tienda (%.2f USD). El saldo cambió desde que se solicitó.',
-                    (float) $settlement->net_amount,
-                    $disponible
+                    'El retiro (Bs. %s) supera el saldo disponible de la tienda (Bs. %s). El saldo cambió desde que se solicitó.',
+                    number_format((float) $settlement->net_amount, 2, ',', '.'),
+                    number_format($disponible, 2, ',', '.')
                 ),
                 422
             );

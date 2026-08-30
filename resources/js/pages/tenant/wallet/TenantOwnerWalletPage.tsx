@@ -17,10 +17,10 @@ import axios from 'axios';
 interface WalletData {
     gross_sales: number;
     total_commissions: number;
+    // EN BOLIVARES. El dolar es la unidad en la que se pone el precio; el comprador paga
+    // bolivares y el comerciante retira bolivares. `gross_sales` sigue en USD como
+    // referencia, pero el dinero disponible no.
     available_balance: number;
-    // Bolivares a la tasa congelada de cada venta, no a la de hoy: la plataforma debe los
-    // bolivares que recibio del comprador. Antes salia de una tasa escrita a mano.
-    available_balance_ves: number;
     retained_ves: number;
     unvalued_usd: number;
     unvalued_count: number;
@@ -33,7 +33,8 @@ interface WalletData {
         settlement_number: string;
         tenant_id: string;
         type: string;
-        amount_usd: number;
+        amount: number;
+        currency: string;
         status: string;
         payment_method: string;
         payment_reference: string | null;
@@ -75,7 +76,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
         }
 
         if (numericAmount > wallet.available_balance) {
-            setMessage({ type: 'error', text: 'El monto solicitado supera el balance disponible.' });
+            setMessage({ type: 'error', text: 'El monto solicitado supera tu saldo disponible en bolívares.' });
             setLoading(false);
             return;
         }
@@ -190,10 +191,10 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                             Saldo Disponible
                         </span>
                         <div className="text-2xl sm:text-3xl font-black">
-                            ${wallet.available_balance.toFixed(2)} USD
+                            Bs. {wallet.available_balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-xs text-emerald-100 font-semibold">
-                            Bs. {wallet.available_balance_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })} (tasa de cada venta)
+                            A la tasa de cada venta. Es lo que vas a retirar.
                         </div>
                     </div>
 
@@ -206,7 +207,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                             ${wallet.gross_sales.toFixed(2)} USD
                         </div>
                         <div className="text-xs text-gray-500">
-                            Total procesado en Marketplace
+                            Total procesado en Marketplace. Referencia: es la unidad en la que pusiste los precios.
                         </div>
                     </div>
 
@@ -216,7 +217,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                             Retiros en Proceso
                         </span>
                         <div className="text-2xl font-black text-gray-900 dark:text-white">
-                            ${wallet.pending_payouts.toFixed(2)} USD
+                            Bs. {wallet.pending_payouts.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-xs text-gray-500">
                             Pendiente de transferencia
@@ -229,7 +230,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                             Total Liquidado
                         </span>
                         <div className="text-2xl font-black text-gray-900 dark:text-white">
-                            ${wallet.settled_payouts.toFixed(2)} USD
+                            Bs. {wallet.settled_payouts.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                         </div>
                         <div className="text-xs text-gray-500">
                             Transferido a tus cuentas
@@ -256,7 +257,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                         <th className="py-3 px-4 rounded-l-xl">N° Referencia</th>
                                         <th className="py-3 px-4">Fecha</th>
                                         <th className="py-3 px-4">Método</th>
-                                        <th className="py-3 px-4 text-right">Monto (USD)</th>
+                                        <th className="py-3 px-4 text-right">Monto</th>
                                         <th className="py-3 px-4 rounded-r-xl text-center">Estado</th>
                                     </tr>
                                 </thead>
@@ -271,7 +272,13 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                                 {item.payment_method}
                                             </td>
                                             <td className="py-4 px-4 text-right font-black text-gray-900 dark:text-white">
-                                                ${item.amount_usd.toFixed(2)}
+                                                {/* El historial mezcla retiros, que van en
+                                                    bolívares, con liquidaciones de comisión del
+                                                    escaparate, que van en dólares. Cada fila
+                                                    dice la suya en vez de asumir una. */}
+                                                {item.currency === 'VES'
+                                                    ? `Bs. ${item.amount.toLocaleString('es-VE', { minimumFractionDigits: 2 })}`
+                                                    : `$${item.amount.toFixed(2)} USD`}
                                             </td>
                                             <td className="py-4 px-4 text-center">
                                                 <span
@@ -348,8 +355,11 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
 
                             <div>
                                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Monto a Retirar (USD)
+                                    Monto a Retirar (Bs.)
                                 </label>
+                                {/* En bolívares, igual que el saldo. Antes el saldo se mostraba
+                                    en Bs y este campo pedía USD: el comerciante veía una unidad
+                                    y escribía en otra. */}
                                 <input
                                     type="number"
                                     min="1"
@@ -361,7 +371,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                     required
                                 />
                                 <span className="text-[11px] text-gray-400 mt-1 block">
-                                    Máximo disponible: ${wallet.available_balance.toFixed(2)} USD
+                                    Máximo disponible: Bs. {wallet.available_balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                                 </span>
                             </div>
 

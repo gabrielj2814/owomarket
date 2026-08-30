@@ -138,10 +138,11 @@ test('Tenant Owner can view wallet summary and request payout', function () {
     $summaryResponse = $this->actingAs($user)->getJson("/tenant/owner/api/wallet-summary?user_id={$user->id}");
     $summaryResponse->assertStatus(200)
         ->assertJsonPath('status', 'success')
-        // `bcv_rate` ya no existe: era una tasa escrita a mano en el caso de uso. Los
-        // bolivares salen ahora de la tasa congelada de cada venta (Fase 1).
-        ->assertJsonStructure(['data' => ['gross_sales', 'available_balance', 'available_balance_ves', 'tenant_id']])
-        ->assertJsonPath('data.available_balance_ves', 23000);   // (500 - 40) * 50
+        // `bcv_rate` ya no existe: era una tasa escrita a mano en el caso de uso. Y
+        // `available_balance` es ahora BOLIVARES, que es lo que el comerciante retira: el
+        // dolar solo es la unidad en la que se puso el precio (Fases 1 y 3).
+        ->assertJsonStructure(['data' => ['gross_sales', 'available_balance', 'tenant_id']])
+        ->assertJsonPath('data.available_balance', 23000);   // (500 - 40) * 50
 
     // 2. Request Payout
     $payoutResponse = $this->actingAs($user)->postJson('/tenant/owner/api/payout-request', [

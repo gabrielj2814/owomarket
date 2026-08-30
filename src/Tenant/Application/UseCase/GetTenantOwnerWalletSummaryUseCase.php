@@ -82,7 +82,11 @@ final class GetTenantOwnerWalletSummaryUseCase
                             'settlement_number' => $s->settlement_number,
                             'tenant_id' => $s->tenant_id,
                             'type' => $s->type,
-                            'amount_usd' => (float) $s->net_amount,
+                            'amount' => (float) $s->net_amount,
+                            // El historial mezcla retiros (VES) con liquidaciones de comision
+                            // del escaparate (USD). Cada fila lleva su moneda en vez de que la
+                            // pantalla asuma una.
+                            'currency' => (string) ($s->currency ?? 'USD'),
                             // Sin `amount_ves`: se calculaba con la tasa fija, asi que era un
                             // numero inventado. La liquidacion guarda su importe en USD y
                             // expresarlo en bolivares con la tasa de hoy seria revalorizar
@@ -101,9 +105,10 @@ final class GetTenantOwnerWalletSummaryUseCase
         return [
             'gross_sales' => $grossSales,
             'total_commissions' => $totalCommissions,
-            'available_balance' => $availableBalance,
-            // Bolivares a la tasa congelada de cada venta, no a la de hoy.
-            'available_balance_ves' => round($bolivares['disponible_bs'], 2),
+            // En BOLIVARES, que es lo que se retira. `gross_sales` y `total_commissions`
+            // siguen en USD a proposito: son la unidad en la que se pusieron los precios, y
+            // le sirven al comerciante de referencia. Pero el dinero es bolivares.
+            'available_balance' => round($availableBalance, 2),
             'retained_ves' => round($bolivares['retenido_bs'], 2),
             'unvalued_usd' => round($bolivares['sin_valorar_usd'], 2),
             'unvalued_count' => $bolivares['sin_valorar_count'],

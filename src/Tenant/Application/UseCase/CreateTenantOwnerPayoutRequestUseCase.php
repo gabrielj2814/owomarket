@@ -21,7 +21,7 @@ final class CreateTenantOwnerPayoutRequestUseCase
     /**
      * @param array{
      *     tenant_id: string,
-     *     amount: float,
+     *     amount: float,   // en bolivares
      *     payment_method: string,
      *     payment_details: array<string, mixed>,
      *     notes?: string|null
@@ -54,9 +54,9 @@ final class CreateTenantOwnerPayoutRequestUseCase
             if ($data['amount'] > $availableBalance) {
                 throw new Exception(
                     sprintf(
-                        'El monto solicitado (%.2f USD) supera tu saldo disponible (%.2f USD).',
-                        $data['amount'],
-                        $availableBalance
+                        'El monto solicitado (Bs. %s) supera tu saldo disponible (Bs. %s).',
+                        number_format($data['amount'], 2, ',', '.'),
+                        number_format($availableBalance, 2, ',', '.')
                     ),
                     422
                 );
@@ -72,7 +72,10 @@ final class CreateTenantOwnerPayoutRequestUseCase
                 'gross_sales_amount' => $data['amount'],
                 'commission_amount' => 0.00,
                 'net_amount' => $data['amount'],
-                'currency' => 'USD',
+                // El comerciante retira BOLIVARES: es lo que el comprador pago y lo que la
+                // plataforma recibio. El dolar solo es la unidad en la que se puso el precio.
+                // Antes esto decia 'USD' mientras la pantalla enseñaba bolivares.
+                'currency' => 'VES',
                 'status' => 'pending',
                 'payment_method' => $data['payment_method'],
                 'notes' => $data['notes'] ?? 'Solicitud de retiro generada desde la Billetera Central',

@@ -1,6 +1,6 @@
 # Plan — Wallet de la tienda y retiros
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1 y 2 ✅ cerradas, 10 tests**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2 y 3 ✅ cerradas, 14 tests**
 >
 > Sale de una conversación de diseño sobre cómo debe fluir el dinero del marketplace
 > central. Se descartaron dos modelos antes de llegar a éste; queda escrito por qué, porque
@@ -73,7 +73,17 @@ histórico y conversión.
 
 ## La decisión de moneda
 
-**El saldo se guarda en bolívares, congelado a la tasa de la venta.**
+**El saldo ES bolívares.** No es «dólares convertidos a bolívares».
+
+El dólar es la unidad en la que se **pone el precio**: al comprador se le muestra el precio en
+dólares y su equivalente en bolívares a la tasa del día, y **paga bolívares**. Nunca entra un
+dólar a ninguna cuenta. Así que el saldo de la wallet es la suma de los bolívares que aportó
+cada venta —su total en USD por la tasa a la que compró ese cliente— y **no hay nada que
+convertir al leer**.
+
+Esta redacción llegó después de una peor: «un saldo en dólares congelado a la tasa de la
+venta». Es la misma aritmética, pero invitaba a la pregunta *«¿qué tasa usamos al retirar?»*,
+que en este modelo no existe.
 
 La plataforma recibe X Bs del comprador y le debe exactamente esos X Bs al comerciante. La
 posición queda cuadrada pase lo que pase con la tasa: **no se debe más de lo que se tiene.**
@@ -178,14 +188,47 @@ comprueba una cifra en pantalla: comprueba que **un retiro pedido contra el sald
 rechaza**. Antes esas cuatro comisiones —reembolsada, cancelada, sin confirmar y del
 escaparate— sumaban 368 USD retirables.
 
-### Fase 3 — Solicitar retiro · 🔵 casi hecha
+### Fase 3 — El retiro, en bolívares · ✅ HECHA (30/08/2026)
 
-`CreateTenantOwnerPayoutRequestUseCase` ya existe y está bien construido. Lo que queda es
-**decidir la moneda del retiro**: hoy la solicitud se guarda en USD, y bajo este modelo el
-comerciante retira bolívares. Mientras eso no se cierre, el importe que pide y el saldo que se
-le muestra están en unidades distintas.
+`CreateTenantOwnerPayoutRequestUseCase` ya existía y estaba bien construido. Lo que estaba mal
+era la **unidad**, y estaba mal en los dos lados a la vez:
 
-### Fase 4 — Retención y banco
+| | Antes | Ahora |
+| :--- | :--- | :--- |
+| Saldo que calcula el servicio | USD | **Bs** |
+| Saldo que mostraba la pantalla | Bs | Bs |
+| Importe que pide el comerciante | USD | **Bs** |
+| `commission_settlements.currency` | `'USD'` | `'VES'` |
+
+**El comerciante veía bolívares y escribía dólares en el mismo formulario.** Con un saldo de
+23.000 Bs, el campo aceptaba hasta 276 — y rechazaba cualquier retiro real.
+
+`netEarnings()` devuelve ahora bolívares, y los retiros que se restan del saldo se filtran por
+`currency = 'VES'`: sin ese filtro, una liquidación vieja en dólares se restaría como si fueran
+bolívares y descuadraría el saldo por el factor entero de la tasa.
+
+`gross_sales` y `total_commissions` siguen en USD **a propósito**: son la unidad en la que el
+comerciante puso sus precios y le sirven de referencia. Pero el dinero es bolívares, y la
+pantalla ya no los mezcla — el historial de liquidaciones muestra la moneda de cada fila,
+porque ahí conviven retiros en Bs con liquidaciones de comisión del escaparate en USD.
+
+**Cuatro tests más**, y uno de ellos cubre el descuadre de unidades: que un retiro viejo en
+dólares no se reste como si fueran bolívares.
+
+**Y un test de la Fase 2 que estaba verde por el motivo equivocado:** asignaba la propiedad de
+la tienda con `tenants.user_id`, que no es como se resuelve —va por `tenant_users`—, así que la
+solicitud fallaba con un 403 de permisos y **nunca llegaba a mirar el saldo**. Ahora comprueba
+el código 422 y el mensaje, no sólo que algo lanzó.
+
+### Fase 4 — Retención, banco, y la tasa en el pedido
+
+**Apareció al cerrar la Fase 3:** la tasa **no se guarda en el pedido**, ni en
+`CreateStorefrontOrderPOSTController` ni en `CreateUnifiedCentralOrderUseCase`. Sólo vive en la
+comisión, que basta para la wallet pero no para el comprador: su total en bolívares se calcula
+al pintar la pantalla, con la tasa de ese momento. Si vuelve a su pedido dos días después ve un
+importe distinto del que pagó, y su factura también.
+
+Es el mismo hallazgo que la Fase 1, un nivel más arriba.
 
 Sólo entra en el saldo retirable lo que llegó a `delivered` — la máquina de estados ya sabe
 cuándo pasa, así que no hay que inventar plazos. Protege del reembolso posterior al retiro.
