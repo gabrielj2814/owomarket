@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace Src\Monetization\Application\UseCases;
 
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Src\ExchangeRate\Application\UseCase\GetActiveExchangeRateUseCase;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Throwable;
 
 final class CalculateAndRecordOrderCommissionUseCase
 {
+    public function __construct(
+        private readonly GetActiveExchangeRateUseCase $tasaActiva
+    ) {}
+
     /**
      * @param  array<string, mixed>  $metadata
      */
@@ -56,12 +63,41 @@ final class CalculateAndRecordOrderCommissionUseCase
             'commission_rate' => $rate,
             'commission_amount' => $commissionAmount,
             'currency' => $currency,
+            'exchange_rate' => $this->capturarTasa(),
             'status' => $paid ? 'pending' : 'awaiting_payment',
             'payment_gateway' => $paymentGateway,
             'metadata' => array_merge($metadata, [
                 'resolved_rate_source' => $this->resolveRateSource($tenantId),
             ]),
         ]);
+    }
+
+    /**
+     * Fase 1 del plan de wallet y retiros: la tasa se congela en el momento de la venta.
+     *
+     * La wallet de la tienda guarda su saldo en bolivares a la tasa del dia en que vendio,
+     * asi que la plataforma le debe exactamente los bolivares que recibio del comprador. Sin
+     * capturarla aqui, ese saldo ya no se puede congelar despues: el dato no existe en
+     * ninguna otra parte.
+     *
+     * Va en este caso de uso porque es el punto por donde pasan los DOS canales -- el
+     * checkout del escaparate y el despacho central. Una captura, no dos.
+     *
+     * Devuelve null y no revienta si no hay tasa activa: una venta no puede caerse porque el
+     * BCV no haya sincronizado. Queda sin valorar, y que hacer con esas comisiones es la
+     * Fase 2.
+     */
+    private function capturarTasa(): ?float
+    {
+        try {
+            return $this->tasaActiva->execute()->getRate()->value();
+        } catch (Throwable $e) {
+            Log::warning('Comision registrada sin tasa de cambio: no sera retirable hasta valorarla.', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     public function resolveCommissionRate(string $tenantId): float

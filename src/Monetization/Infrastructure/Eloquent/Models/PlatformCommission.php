@@ -36,6 +36,7 @@ class PlatformCommission extends Model
         'commission_rate',
         'commission_amount',
         'currency',
+        'exchange_rate',
         'status',
         'settlement_id',
         'payment_gateway',
@@ -46,6 +47,7 @@ class PlatformCommission extends Model
         'order_total' => 'float',
         'commission_rate' => 'float',
         'commission_amount' => 'float',
+        'exchange_rate' => 'float',
         'metadata' => 'array',
     ];
 
