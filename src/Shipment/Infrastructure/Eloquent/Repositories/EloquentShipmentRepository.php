@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace Src\Shipment\Infrastructure\Eloquent\Repositories;
 
 use Illuminate\Support\Facades\DB;
+use Src\Order\Domain\ValueObjects\OrderStatus;
 use Src\Order\Infrastructure\Eloquent\Models\Order as EloquentOrder;
 use Src\Shipment\Application\DTOs\FilterShipmentsCriteria;
 use Src\Shipment\Application\DTOs\PaginatedShipmentResult;
 use Src\Shipment\Application\DTOs\ShipmentMetricsData;
 use Src\Shipment\Application\Repositories\ShipmentRepositoryInterface;
 use Src\Shipment\Domain\Entities\Shipment;
+use Src\Shipment\Domain\Exceptions\ShipmentNotAllowedForOrderException;
 use Src\Shipment\Domain\ValueObjects\ShipmentId;
 use Src\Shipment\Domain\ValueObjects\TrackingNumber;
 use Src\Shipment\Infrastructure\Eloquent\Models\Shipment as EloquentShipment;
@@ -37,14 +39,42 @@ final class EloquentShipmentRepository implements ShipmentRepositoryInterface
             );
 
             // Sync status with related Order
+            //
+            // Hallazgo SH1: esto escribia el estado del pedido con `$order->update()` y las
+            // dos ramas no se parecian. La de `shipped` excluia a mano `delivered`,
+            // `cancelled` y `refunded`; la de `delivered` no comprobaba absolutamente nada.
+            // Asi que marcar entregado el envio de un pedido cancelado lo devolvia a
+            // `delivered`: un pedido "entregado" con la mercancia de vuelta en el almacen y
+            // sin comision para la plataforma. Bastaba con que el almacen cerrara papeles
+            // despues de que atencion al cliente anulara. Dos personas haciendo su trabajo.
+            //
+            // Ahora la regla la pone el dominio y la usan las dos ramas.
             $order = EloquentOrder::find($shipment->orderId());
             if ($order !== null) {
-                if ($shipment->isDelivered()) {
+                $estado = OrderStatus::fromString($order->status);
+
+                // Se rechaza en vez de saltarselo en silencio: es la misma clase de fallo
+                // que PR2 y OR1 --aceptar la operacion y no aplicarla--, y aqui ademas el
+                // `DB::transaction` deshace el envio, asi que no queda uno huerfano.
+                if (! $estado->acceptsShipments()) {
+                    throw ShipmentNotAllowedForOrderException::because($order->id, $estado->value);
+                }
+
+                $destino = match (true) {
+                    $shipment->isDelivered() => OrderStatus::DELIVERED,
+                    $shipment->isInTransit() => OrderStatus::SHIPPED,
+                    default => null,
+                };
+
+                // Si la guarda del dominio no deja pasar la transicion es porque el pedido ya
+                // esta ahi o mas alla --un segundo envio de un pedido ya entregado, por
+                // ejemplo--, y entonces no hay nada que escribir.
+                if ($destino === OrderStatus::DELIVERED && $estado->canBeDelivered()) {
                     $order->update([
                         'status' => 'delivered',
                         'delivered_at' => $shipment->deliveredAt()?->format('Y-m-d H:i:s') ?? now(),
                     ]);
-                } elseif ($shipment->isInTransit() && ! in_array($order->status, ['delivered', 'cancelled', 'refunded'], true)) {
+                } elseif ($destino === OrderStatus::SHIPPED && $estado->canBeShipped()) {
                     $order->update([
                         'status' => 'shipped',
                         'shipped_at' => $shipment->shippedAt()?->format('Y-m-d H:i:s') ?? now(),

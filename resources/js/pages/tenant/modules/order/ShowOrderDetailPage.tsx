@@ -113,6 +113,15 @@ export default function ShowOrderDetailPage({ title, user_id, order_id, host, us
     // State for invoice generation
     const [invoiceCreatedSuccess, setInvoiceCreatedSuccess] = useState<string | null>(null);
 
+    // Hallazgo SH1: el backend rechaza generar guias para un pedido sin confirmar o ya
+    // cerrado (`OrderStatus::acceptsShipments()`). Se refleja aqui para que el comerciante
+    // vea por que no puede, en vez de comerse un 400 al pulsar.
+    const puedeDespachar = ['confirmed', 'processing', 'shipped', 'delivered'].includes(order?.status ?? '');
+    const motivoNoDespacho =
+        order?.status === 'pending'
+            ? 'Confirma el pedido antes de generar la guia de despacho.'
+            : 'El pedido esta cerrado: no admite nuevas guias de despacho.';
+
     // Modal state for Shipments
     const [isCreateShipmentModalOpen, setIsCreateShipmentModalOpen] = useState<boolean>(false);
     const [formShipment, setFormShipment] = useState<FormCreateShipment>({
@@ -474,7 +483,8 @@ export default function ShowOrderDetailPage({ title, user_id, order_id, host, us
                                         color="blue"
                                         size="sm"
                                         onClick={() => setIsCreateShipmentModalOpen(true)}
-                                        disabled={loadingAction || order.status === 'cancelled'}
+                                        disabled={loadingAction || !puedeDespachar}
+                                        title={puedeDespachar ? undefined : motivoNoDespacho}
                                     >
                                         <HiTruck className="mr-1 h-4 w-4" />
                                         Nueva Guía Despacho
@@ -624,7 +634,8 @@ export default function ShowOrderDetailPage({ title, user_id, order_id, host, us
                                             color="blue"
                                             size="xs"
                                             onClick={() => setIsCreateShipmentModalOpen(true)}
-                                            disabled={loadingAction || order.status === 'cancelled'}
+                                            disabled={loadingAction || !puedeDespachar}
+                                            title={puedeDespachar ? undefined : motivoNoDespacho}
                                         >
                                             <HiPlus className="mr-1 h-3.5 w-3.5" />
                                             Nueva Guía
@@ -643,16 +654,20 @@ export default function ShowOrderDetailPage({ title, user_id, order_id, host, us
                                                 Aún no se han generado guías de despacho para este pedido.
                                             </p>
                                             <p className="mt-1 text-xs text-gray-500">
-                                                Emite la primera guía para registrar la empresa de transporte y número de tracking.
+                                                {puedeDespachar
+                                                    ? 'Emite la primera guía para registrar la empresa de transporte y número de tracking.'
+                                                    : motivoNoDespacho}
                                             </p>
-                                            <Button
-                                                color="blue"
-                                                size="sm"
-                                                className="mx-auto mt-4"
-                                                onClick={() => setIsCreateShipmentModalOpen(true)}
-                                            >
-                                                Crear Guía de Despacho
-                                            </Button>
+                                            {puedeDespachar && (
+                                                <Button
+                                                    color="blue"
+                                                    size="sm"
+                                                    className="mx-auto mt-4"
+                                                    onClick={() => setIsCreateShipmentModalOpen(true)}
+                                                >
+                                                    Crear Guía de Despacho
+                                                </Button>
+                                            )}
                                         </div>
                                     ) : (
                                         <div className="space-y-4">

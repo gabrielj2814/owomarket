@@ -223,3 +223,108 @@ it('executes full shipment lifecycle end-to-end with order synchronization and m
         ->assertJsonPath('data.delivered_shipments', 1)
         ->assertJsonPath('data.total_shipping_cost', 40);
 });
+
+/**
+ * Hallazgo SH1: `EloquentShipmentRepository::save()` sincronizaba el estado del pedido con
+ * `$order->update()`, sin pasar por la entidad. La rama de `in_transit` excluía a mano los
+ * estados terminales; la de `delivered` no comprobaba nada.
+ *
+ * La regla vive ahora en `OrderStatus::acceptsShipments()` y la aplican los tres caminos
+ * que escriben un envío: crear, actualizar seguimiento y entregar. Todos pasan por `save()`.
+ */
+function ordenParaEnvio(string $status): EloquentOrder
+{
+    $customer = EloquentCustomer::create([
+        'id' => (string) Str::uuid(),
+        'name' => 'Cliente SH1',
+        'email' => 'sh1-'.Str::random(6).'@example.com',
+        'is_active' => true,
+    ]);
+
+    return EloquentOrder::create([
+        'id' => (string) Str::uuid(),
+        'order_number' => 'ORD-SH1-'.Str::upper(Str::random(6)),
+        'customer_id' => $customer->id,
+        'status' => $status,
+        'payment_status' => 'paid',
+        'payment_method' => 'webpay',
+        'currency' => 'USD',
+        'subtotal' => 100.00,
+        'total' => 100.00,
+    ]);
+}
+
+it('no resucita un pedido cancelado al marcar su envío como entregado (SH1)', function () {
+    // El envío nace mientras el pedido está vivo: es el caso real del hallazgo, no uno
+    // rebuscado. Atención al cliente anula después, y el almacén cierra papeles al día
+    // siguiente sin saberlo.
+    $order = ordenParaEnvio('processing');
+
+    $crear = $this->postJson("http://{$this->domain}/api-tenant/shipment/create", [
+        'order_id' => $order->id,
+        'carrier' => 'Zoom',
+        'service' => 'Nacional',
+        'cost' => 8.00,
+        'tracking_number' => 'ZM-SH1-001',
+    ]);
+    $crear->assertStatus(201);
+    $shipmentId = $crear->json('data.id');
+
+    $order->update(['status' => 'cancelled', 'cancelled_at' => now()]);
+
+    $entregar = $this->postJson("http://{$this->domain}/api-tenant/shipment/{$shipmentId}/deliver");
+
+    $entregar->assertStatus(400);
+    expect($entregar->json('message'))->toContain('cancelado');
+
+    // El pedido sigue cancelado y el envío no quedó entregado a medias: la transacción
+    // deshizo también la escritura del envío.
+    $order->refresh();
+    expect($order->status)->toBe('cancelled')
+        ->and($order->delivered_at)->toBeNull();
+
+    $envio = $this->getJson("http://{$this->domain}/api-tenant/shipment/{$shipmentId}");
+    expect($envio->json('data.status'))->toBe('in_transit')
+        ->and($envio->json('data.delivered_at'))->toBeNull();
+});
+
+it('no genera guía de despacho para un pedido cancelado (SH1)', function () {
+    $order = ordenParaEnvio('cancelled');
+
+    $crear = $this->postJson("http://{$this->domain}/api-tenant/shipment/create", [
+        'order_id' => $order->id,
+        'carrier' => 'MRW',
+        'service' => 'Nacional',
+        'cost' => 5.00,
+    ]);
+
+    $crear->assertStatus(400);
+    expect($crear->json('message'))->toContain('cancelado');
+
+    $this->getJson("http://{$this->domain}/api-tenant/shipment/order/{$order->id}")
+        ->assertJsonCount(0, 'data');
+});
+
+it('exige confirmar el pedido antes de generar la guía de despacho (SH1)', function () {
+    $order = ordenParaEnvio('pending');
+
+    $crear = $this->postJson("http://{$this->domain}/api-tenant/shipment/create", [
+        'order_id' => $order->id,
+        'carrier' => 'Domesa',
+        'service' => 'Nacional',
+        'cost' => 6.00,
+    ]);
+
+    $crear->assertStatus(400);
+    expect($crear->json('message'))->toContain('sin confirmar');
+
+    // Y en cuanto se confirma, el mismo alta pasa.
+    $order->update(['status' => 'confirmed', 'confirmed_at' => now()]);
+
+    $this->postJson("http://{$this->domain}/api-tenant/shipment/create", [
+        'order_id' => $order->id,
+        'carrier' => 'Domesa',
+        'service' => 'Nacional',
+        'cost' => 6.00,
+    ])->assertStatus(201);
+});

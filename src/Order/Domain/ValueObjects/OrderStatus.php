@@ -96,4 +96,21 @@ enum OrderStatus: string
     {
         return in_array($this, [self::CONFIRMED, self::PROCESSING, self::SHIPPED, self::DELIVERED], true);
     }
+
+    /**
+     * Hallazgo SH1: si este pedido admite que exista un envio suyo.
+     *
+     * Distinto de `canBeShipped()`, que responde si el pedido puede pasar a `shipped`
+     * *ahora mismo*. Este dice si tiene sentido siquiera generar una guia:
+     *
+     * - `pending` no, porque despachar sin confirmar se salta el paso de confirmar.
+     * - `cancelled` y `refunded` tampoco: el pedido esta cerrado, su stock ya volvio al
+     *   inventario (N13) y su comision ya se revirtio (D2). Marcar entregado un envio suyo
+     *   lo resucitaba a `delivered`, y las tres cosas no pueden ser ciertas a la vez.
+     * - `shipped` y `delivered` si, porque ya tienen envios y un pedido admite varios.
+     */
+    public function acceptsShipments(): bool
+    {
+        return in_array($this, [self::CONFIRMED, self::PROCESSING, self::SHIPPED, self::DELIVERED], true);
+    }
 }

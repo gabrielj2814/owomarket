@@ -23,7 +23,7 @@
 | :--- | :--- | :--- | :--- |
 | **Product** | `src/Product/` | 85 ficheros · 4.686 líneas | ✅ Auditado — **2 hallazgos CERRADOS** |
 | **Order** | `src/Order/` | 52 ficheros · 2.917 líneas | ✅ Auditado — **1 hallazgo CERRADO** |
-| **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ **Auditado** — 1 hallazgo |
+| **Shipment** | `src/Shipment/` | 36 ficheros · 1.730 líneas | ✅ Auditado — **1 hallazgo CERRADO** |
 | **Payment** | `src/Payment/` | 33 ficheros · 1.626 líneas | ✅ **Auditado** — 1 hallazgo |
 
 > **Los cuatro módulos auditados.** 5 hallazgos: 1 🔴 · 2 🟠 · 2 🟡.
@@ -37,10 +37,10 @@
 | **PR1** | Product | Borrado sin acotar dentro del almacenamiento de la tienda | 🟡 | ✅ **Cerrado** | ✅ Probado |
 | **PR2** | Product | Actualizar el stock de un producto con variantes no hacía nada | 🟠 | ✅ **Cerrado** | ✅ Probado |
 | **OR1** | Order | El estado de pago no tiene máquina de estados, y `pending` se acepta sin hacer nada | 🟡 | ✅ **Cerrado** | ✅ Probado |
-| **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ⬜ Abierto | ⚠️ Sólo lectura |
+| **SH1** | Shipment | Entregar un envío fuerza el pedido a `delivered` saltándose la máquina de estados | 🟠 | ✅ **Cerrado** | ✅ Probado |
 | **PY1** | Payment | La capa de pasarelas no la usa nadie, y su endpoint acepta importes sin registrar nada | 🟡 | ⬜ Abierto | ⚠️ Sólo lectura |
 
-> **SH1 y PY1 siguen sin probarse ejecutando.** Salen de leer el código. En este proyecto esa
+> **PY1 sigue sin probarse ejecutando.** Sale de leer el código. En este proyecto esa
 > distinción ha importado varias veces en un solo día —una lectura llevó a un falso positivo
 > de fijación de sesión, y un fixture incompleto casi archiva el hallazgo T7 como
 > inexistente—, así que queda marcada hasta que se demuestren.
@@ -423,7 +423,7 @@ dominio. La pregunta era si Shipment las respeta.
 
 ## SH1. 🟠 Entregar un envío fuerza el pedido a `delivered` saltándose su máquina de estados
 
-> **Estado:** ⬜ ABIERTO
+> **Estado:** ✅ CERRADO — 30/08/2026
 
 **Dónde:** `EloquentShipmentRepository::save()`
 
@@ -477,14 +477,75 @@ Y no hace falta mala fe: basta con que el almacén marque la entrega de un paque
 había salido, después de que atención al cliente cancelara el pedido. Dos personas haciendo
 su trabajo.
 
-### Por dónde iría el arreglo
+## ✅ Cómo se cerró
 
-Que la sincronización use la entidad —`$order->markAsDelivered()`— y deje que la excepción
-del dominio decida, o como mínimo que la rama de `delivered` tenga la **misma** exclusión que
-ya tiene la de `shipped`. Lo segundo es una línea y cierra el caso de hoy; lo primero es lo
-correcto, porque pone la regla en un solo sitio.
+Al trazar el camino real apareció algo que la lectura no había visto: **los tres caminos que
+escriben un envío —crear, actualizar seguimiento y entregar— pasan por el mismo
+`save()`**. No hacían falta tres guardas ni el «separadamente» que pedía este apartado. Una,
+en el punto por donde pasan todos.
 
-Y separadamente, que crear un envío rechace los pedidos en estado terminal.
+Y las tres preguntas del hallazgo resultaron ser la misma: *¿este pedido admite un envío?*
+
+```php
+public function acceptsShipments(): bool
+{
+    return in_array($this, [self::CONFIRMED, self::PROCESSING, self::SHIPPED, self::DELIVERED], true);
+}
+```
+
+| Estado del pedido | ¿Admite envío? | Por qué |
+| :--- | :--- | :--- |
+| `pending` | ❌ | Despachar sin confirmar se salta el paso de confirmar |
+| `confirmed`, `processing` | ✅ | El caso normal |
+| `shipped`, `delivered` | ✅ | Ya tienen envíos, y un pedido admite varios |
+| `cancelled`, `refunded` | ❌ | Cerrado: stock repuesto (N13) y comisión revertida (D2) |
+
+La regla vive en `OrderStatus`, no en un `in_array` escrito a mano dentro de un repositorio.
+Y las dos transiciones dejaron de tener listas propias: cada una consulta la guarda del
+dominio que ya existía —`canBeShipped()` y `canBeDelivered()`—, así que la asimetría entre
+ramas que delataba el fallo ya no puede reaparecer.
+
+**Se rechaza, no se salta en silencio.** Es la misma clase de fallo que PR2 y OR1 —aceptar la
+operación y no aplicarla—, y aquí además el `save()` corre dentro de `DB::transaction`, así
+que el envío tampoco se guarda: no queda uno huérfano marcado como entregado.
+
+**Con excepción propia**, `ShipmentNotAllowedForOrderException`, al revés que en OR1. El
+motivo es quién la lee: en OR1 la come un `catch` de un endpoint de backoffice; aquí la come
+el del almacén generando una guía, y *«no se puede cambiar el estado de la orden de 'pending'
+a 'shipped'»* no le dice qué hacer. El mensaje ahora sí: **«El pedido está sin confirmar.
+Confirma el pedido antes de generar la guía de despacho.»**
+
+### El alcance se amplió a propósito
+
+La auditoría proponía como mínimo copiar la exclusión a la rama de `delivered`. Se decidió ir
+al arreglo correcto e incluir además **exigir el pedido confirmado antes de despachar**, que
+la lectura había dejado fuera. Hoy un pedido `pending` con guía saltaba directo a `shipped`
+sin pasar por `confirmed`.
+
+Se planteó como decisión de negocio y no como corrección técnica, porque cambia cómo trabaja
+el comerciante, y **se aprobó**.
+
+### Y por eso hubo que tocar el frontend
+
+Un backend que rechaza y una interfaz que sigue ofreciendo el botón es peor que no arreglar
+nada: el comerciante pulsa «Nueva Guía Despacho» y se come un 400 sin saber por qué. En
+`ShowOrderDetailPage` los tres botones que abren el modal comparten ahora un `puedeDespachar`
+que replica `acceptsShipments()`, y el estado vacío de la sección de envíos explica el motivo
+en vez de ofrecer un botón que va a fallar.
+
+### Vigilado por tres tests
+
+En `ShipmentLifecycleEndToEndTest`, sobre el harness que ya existía en vez de montar otro:
+
+1. **El caso del hallazgo, en orden real:** el envío nace con el pedido vivo, el pedido se
+   cancela después, y al marcar la entrega se rechaza. Se comprueba que el pedido sigue
+   `cancelled` **y que el envío tampoco quedó entregado** —la transacción lo deshizo—,
+   porque medio arreglo aquí sería otro descuadre.
+2. Generar guía para un pedido cancelado se rechaza, y no queda envío suyo.
+3. Generar guía para un pedido sin confirmar se rechaza, **y pasa en cuanto se confirma**:
+   sin esa segunda mitad el test no distingue una guarda correcta de una puerta tapiada.
+
+El ciclo legítimo completo que ya cubría el fichero sigue verde sin tocarlo.
 
 ---
 
