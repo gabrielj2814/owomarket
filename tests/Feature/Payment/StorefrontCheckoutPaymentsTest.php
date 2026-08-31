@@ -7,7 +7,14 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Src\Category\Infrastructure\Eloquent\Models\Category;
+use Src\ExchangeRate\Domain\Contracts\ExchangeRateRepositoryInterface;
+use Src\ExchangeRate\Domain\Entities\ExchangeRate;
+use Src\ExchangeRate\Domain\ValueObjects\CurrencyCode;
+use Src\ExchangeRate\Domain\ValueObjects\RateAmount;
+use Src\ExchangeRate\Domain\ValueObjects\RateDate;
+use Src\ExchangeRate\Domain\ValueObjects\RateSource;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
+use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -22,6 +29,19 @@ beforeEach(function () {
             fn ($bootstrapper) => $bootstrapper !== DatabaseTenancyBootstrapper::class
         )),
     ]);
+
+    // Tasa activa: sin ella el checkout sigue funcionando --un pedido no puede caerse porque
+    // el BCV no haya sincronizado-- pero no habria tasa que comprobar.
+    app(ExchangeRateRepositoryInterface::class)->save(
+        ExchangeRate::create(
+            new LaravelUuidGenerator,
+            CurrencyCode::usd(),
+            CurrencyCode::ves(),
+            RateAmount::make(775.3356),
+            RateSource::bcv(),
+            RateDate::today()
+        )
+    );
 
     // Ensure tenant tables exist in test db
     if (! Schema::hasTable('customers')) {
@@ -53,6 +73,13 @@ beforeEach(function () {
     }
     if (! Schema::hasColumn('products', 'category_id')) {
         (require base_path('database/migrations/tenant/2026_08_18_000004_add_category_and_brand_to_products_table.php'))->up();
+    }
+
+    // Fase 4: la columna donde el pedido guarda la tasa a la que compro el cliente. Este
+    // fichero construye el esquema del inquilino a mano, asi que la migracion aditiva hay que
+    // pedirla aqui igual que se hizo con `coupon_code`.
+    if (Schema::hasTable('orders') && ! Schema::hasColumn('orders', 'exchange_rate')) {
+        (require base_path('database/migrations/tenant/2026_08_30_130000_add_exchange_rate_to_orders_table.php'))->up();
     }
 
     $tenantId = 't_'.bin2hex(random_bytes(4));
@@ -148,6 +175,11 @@ test('Storefront checkout creates order and records payment with Pago Movil deta
     expect($order)->not->toBeNull();
     expect($order->payment_method)->toBe('pago_movil');
     expect((float) $order->total)->toBe(125.00);
+
+    // Fase 4: el precio se pone en dolares pero el comprador paga BOLIVARES, y esa cifra no
+    // quedaba registrada en ninguna parte --existia solo en su extracto bancario--. Ahora el
+    // pedido guarda la tasa a la que compro, asi que sus bolivares son reconstruibles.
+    expect((float) $order->exchange_rate)->toBe(775.3356);
 
     // Verify payment in payments table
     $payment = DB::table('payments')->where('order_id', $orderId)->first();

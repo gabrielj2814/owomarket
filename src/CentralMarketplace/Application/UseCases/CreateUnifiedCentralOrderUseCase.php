@@ -10,14 +10,17 @@ use Illuminate\Support\Str;
 use Src\CentralMarketplace\Application\Service\CentralItemPriceResolver;
 use Src\CentralMarketplace\Application\Service\CentralOrderChargesCalculator;
 use Src\CentralMarketplace\Infrastructure\Jobs\DispatchCentralOrderJob;
+use Src\ExchangeRate\Application\UseCase\GetActiveExchangeRateUseCase;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
+use Throwable;
 
 final class CreateUnifiedCentralOrderUseCase
 {
     public function __construct(
         private readonly CentralItemPriceResolver $priceResolver,
-        private readonly CentralOrderChargesCalculator $chargesCalculator
+        private readonly CentralOrderChargesCalculator $chargesCalculator,
+        private readonly GetActiveExchangeRateUseCase $tasaActiva
     ) {}
 
     /**
@@ -94,9 +97,18 @@ final class CreateUnifiedCentralOrderUseCase
         // Hallazgo C2: la creación del pedido y sus líneas es atómica. Antes no
         // había transacción en ningún nivel, así que un fallo a mitad dejaba un
         // CentralOrder sin líneas —o con parte de ellas— imposible de despachar.
+        // Fuera de la transaccion: si el BCV no ha sincronizado, el pedido no puede caerse
+        // por eso. Queda sin tasa registrada, igual que en la Fase 1 con las comisiones.
+        try {
+            $tasaDeLaCompra = $this->tasaActiva->execute()->getRate()->value();
+        } catch (Throwable) {
+            $tasaDeLaCompra = null;
+        }
+
         $centralOrder = DB::transaction(function () use (
             $customer, $shippingAddress, $payload, $orderNumber, $idempotencyKey,
-            $subtotal, $shippingAmount, $discountAmount, $taxAmount, $total, $resolvedItems, $charges
+            $subtotal, $shippingAmount, $discountAmount, $taxAmount, $total, $resolvedItems,
+            $charges, $tasaDeLaCompra
         ) {
             $order = CentralOrder::create([
                 'id' => (string) Str::uuid(),
@@ -115,6 +127,10 @@ final class CreateUnifiedCentralOrderUseCase
                 'discount_amount' => $discountAmount,
                 'total' => $total,
                 'currency' => (string) ($payload['currency'] ?? 'USD'),
+                // Fase 4: la tasa a la que compra este cliente. El precio se pone en dolares
+                // pero el paga bolivares, y sin esto esa cifra no quedaba registrada en
+                // ninguna parte: existia solo en su extracto bancario.
+                'exchange_rate' => $tasaDeLaCompra,
                 'status' => 'pending',
                 'payment_status' => 'pending',
                 'metadata' => [

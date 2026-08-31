@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\Coupon\Application\UseCase\ValidateCouponUseCase;
 use Src\Customer\Infrastructure\Eloquent\Models\Customer;
+use Src\ExchangeRate\Application\UseCase\GetActiveExchangeRateUseCase;
 use Src\Marketplace\Application\Service\CouponRedeemer;
 use Src\Marketplace\Application\Service\StockReserver;
 use Src\Marketplace\Application\Service\StorefrontItemPriceResolver;
@@ -207,6 +208,24 @@ final class CreateStorefrontOrderPOSTController extends Controller
                 if ($couponCode !== '') {
                     DB::table('orders')->where('id', $orderId)->update(['coupon_code' => $couponCode]);
                 }
+
+                // Fase 4: la tasa a la que compro este cliente. Va por el mismo camino que
+                // `coupon_code` y por el mismo motivo --meterlo por el agregado obligaria a
+                // atravesar DTO, entidad y repositorio para un dato que el dominio del pedido
+                // no usa--, y sin ella los bolivares que el comprador pago no quedaban
+                // registrados en ninguna parte.
+                // El `try` cubre SOLO la consulta de la tasa: sin tasa activa el pedido sigue
+                // siendo valido, lo que queda pendiente es saber a que tasa se cobro. La
+                // escritura va fuera a proposito -- envolverla tambien convertiria un fallo de
+                // esquema en un pedido guardado a medias y en silencio, que es el `catch`
+                // vacio que se quito en el hallazgo C.
+                try {
+                    $tasa = app(GetActiveExchangeRateUseCase::class)->execute()->getRate()->value();
+                } catch (\Throwable) {
+                    $tasa = null;
+                }
+
+                DB::table('orders')->where('id', $orderId)->update(['exchange_rate' => $tasa]);
 
                 // 6. Record Payment in payments table.
                 //    Ya no lleva `catch (\Throwable)` vacío: si el pago no se puede

@@ -220,6 +220,17 @@ final class DispatchCentralOrderToTenantsUseCase
                     $tenantOrderId = $tenantOrder->id()->value();
                     $tenantOrderTotal = $tenantOrder->total()->amount();
 
+                    // Fase 4: el pedido de la tienda HEREDA la tasa del pedido central, no
+                    // captura la suya. El comprador hizo UN solo pago a una sola tasa; si cada
+                    // tienda cogiera la del momento en que corrio este job --que puede ser
+                    // horas despues, o un reintento al dia siguiente--, la suma de los
+                    // bolivares de las tiendas no cuadraria con lo que el cliente pago.
+                    if ($centralOrder->exchange_rate !== null) {
+                        DB::table('orders')
+                            ->where('id', $tenantOrderId)
+                            ->update(['exchange_rate' => $centralOrder->exchange_rate]);
+                    }
+
                     // Pago por el importe REALMENTE imputable a esta tienda.
                     // Antes se registraba el subtotal bruto, así que la suma de
                     // los `payments` no cuadraba con lo que pagó el cliente.

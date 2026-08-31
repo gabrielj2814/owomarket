@@ -65,6 +65,13 @@ beforeEach(function () {
         (require base_path('database/migrations/2026_08_19_000003_create_monetization_tables.php'))->up();
     }
 
+    // Fase 4: la columna donde el pedido guarda la tasa a la que compro el cliente. Este
+    // fichero construye el esquema del inquilino a mano, asi que la migracion aditiva hay que
+    // pedirla aqui igual que se hizo con `coupon_code`.
+    if (Schema::hasTable('orders') && ! Schema::hasColumn('orders', 'exchange_rate')) {
+        (require base_path('database/migrations/tenant/2026_08_30_130000_add_exchange_rate_to_orders_table.php'))->up();
+    }
+
     $tenantId = 't_'.bin2hex(random_bytes(4));
     $this->tenant = ModelsTenant::create([
         'id' => $tenantId,

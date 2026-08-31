@@ -1,6 +1,6 @@
 # Plan — Wallet de la tienda y retiros
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2 y 3 ✅ cerradas, 14 tests**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2, 3 y la tasa del pedido ✅ cerradas**
 >
 > Sale de una conversación de diseño sobre cómo debe fluir el dinero del marketplace
 > central. Se descartaron dos modelos antes de llegar a éste; queda escrito por qué, porque
@@ -220,15 +220,47 @@ la tienda con `tenants.user_id`, que no es como se resuelve —va por `tenant_us
 solicitud fallaba con un 403 de permisos y **nunca llegaba a mirar el saldo**. Ahora comprueba
 el código 422 y el mensaje, no sólo que algo lanzó.
 
-### Fase 4 — Retención, banco, y la tasa en el pedido
+### Fase 4a — La tasa en el pedido · ✅ HECHA (30/08/2026)
 
-**Apareció al cerrar la Fase 3:** la tasa **no se guarda en el pedido**, ni en
-`CreateStorefrontOrderPOSTController` ni en `CreateUnifiedCentralOrderUseCase`. Sólo vive en la
-comisión, que basta para la wallet pero no para el comprador: su total en bolívares se calcula
-al pintar la pantalla, con la tasa de ese momento. Si vuelve a su pedido dos días después ve un
-importe distinto del que pagó, y su factura también.
+Apareció al cerrar la Fase 3. La tasa vivía sólo en la comisión: bastaba para calcular la
+wallet del comerciante, pero **no decía nada del comprador**.
 
-Es el mismo hallazgo que la Fase 1, un nivel más arriba.
+**Corrección de cómo se anotó primero:** se escribió que el cliente «ve un importe distinto del
+que pagó si vuelve dos días después». Es falso — las pantallas de pedidos del cliente muestran
+dólares, no bolívares, así que no hay deriva visible. Lo que hay es un **hueco de registro**:
+el comprador paga bolívares en el checkout y esa cifra no quedaba en ninguna parte. Existía
+sólo en su extracto bancario.
+
+Columna `exchange_rate` en `orders` y en `central_orders`, escrita al crear. En el storefront
+va por `DB::table('orders')->update()`, el mismo camino y el mismo motivo que `coupon_code`:
+atravesar DTO, entidad y repositorio para un dato que el dominio del pedido no usa.
+
+**Lo importante es la herencia.** El pedido de cada tienda **copia la tasa del pedido central**
+en vez de capturar la suya. El comprador hizo **un** pago a **una** tasa; si cada tienda cogiera
+la del momento en que corrió el job —que puede ser horas después, o un reintento al día
+siguiente— la suma de los bolívares de las tiendas no cuadraría con lo que pagó el cliente.
+
+#### Dos errores propios, del mismo tipo
+
+**1. Un `catch (Throwable)` sin importar la clase.** Resolvía al namespace del controlador, así
+que no capturaba nada y el checkout entero devolvía 400 cuando no había tasa activa. Lo delató
+la suite, no la lectura.
+
+**2. El `try` envolvía también la escritura.** Un fallo de esquema quedaba tragado y el pedido
+se guardaba sin tasa, en silencio — el mismo `catch` vacío que se quitó en el hallazgo C, tres
+horas después de quitarlo. Ahora el `try` cubre **sólo** la consulta de la tasa: sin tasa activa
+el pedido sigue siendo válido, pero un fallo de escritura tiene que verse.
+
+Cuatro tests que construyen el esquema del inquilino a mano necesitaron la migración aditiva,
+igual que en su día con `coupon_code`. La comprobación real vive en
+`StorefrontCheckoutPaymentsTest`, que ejecuta el checkout completo: el pedido creado guarda la
+tasa activa.
+
+**Lo que no tiene test:** la herencia de la tasa en el despacho central. El único test que
+ejercita `DispatchCentralOrderToTenantsUseCase` es `MultiStoreCentralCheckoutTest`, que está en
+rojo desde antes de empezar este trabajo. Queda anotado en vez de fingir cobertura.
+
+### Fase 4b — Retención y banco
 
 Sólo entra en el saldo retirable lo que llegó a `delivered` — la máquina de estados ya sabe
 cuándo pasa, así que no hay que inventar plazos. Protege del reembolso posterior al retiro.
