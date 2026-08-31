@@ -200,12 +200,12 @@ it('executes full order lifecycle from creation to delivery and invoicing', func
     $processRes->assertStatus(200)
         ->assertJsonPath('data.status', 'processing');
 
-    // 8. Update Payment Status to 'paid'
-    $paymentRes = $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/payment-status", [
+    // 8. El comerciante NO puede marcar el pago como recibido (Fase 3b): el dinero entra en
+    //    la cuenta de la plataforma y es ella quien lo confirma, por
+    //    `/admin/api/storefront-payments/{id}/confirm`.
+    $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/payment-status", [
         'payment_status' => 'paid',
-    ]);
-    $paymentRes->assertStatus(200)
-        ->assertJsonPath('data.payment_status', 'paid');
+    ])->assertStatus(400);
 
     // 9. Cross-Module Invoicing Bridge: Create direct invoice for this order
     $invoiceRes = $this->postJson("http://{$this->domain}/api-tenant/billing/invoices", [

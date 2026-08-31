@@ -1,6 +1,6 @@
 # Plan — La plataforma cobra todas las ventas
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2 y 3a ✅ · queda la pantalla y cerrar el `paid` del comerciante**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2 y 3 ✅ · queda la pantalla del administrador**
 >
 > Decisión de negocio del 30/08/2026: **el dinero de todas las compras cae en la cuenta del
 > marketplace**, también el de las que se hacen en el escaparate propio de cada tienda.
@@ -152,11 +152,37 @@ habrían quedado atascadas en `awaiting_payment`.
 Cinco tests. Confirmar dos veces se rechaza: mentiría sobre cuándo entró el dinero, y esa fecha
 es la que sostiene cualquier reclamación posterior.
 
-#### Fase 3b — Lo que queda
+#### Fase 3b — El agujero, cerrado · ✅ HECHA (31/08/2026)
 
-- **La pantalla del administrador.** Los endpoints existen y no los llama nadie: hoy es una
-  protección escrita y sin cablear, del mismo tipo que las que esta auditoría lleva cerrando.
-- **Quitarle el `paid` al comerciante**, y darle en su lugar el reporte de referencia.
+`UpdateOrderPaymentStatusUseCase` **rechaza `paid`** con el motivo escrito, y no sacándolo del
+`in:` del FormRequest, que daría un 422 genérico: lo que el comerciante necesita saber es que
+existe otro camino, no que el valor «no es válido».
+
+Con eso desaparece el único punto donde el comerciante promovía una comisión. Los dos que
+quedan —`ConfirmStorefrontPaymentUseCase` y `ConfirmCentralOrderPaymentUseCase`— son los dos de
+la plataforma.
+
+**Lo que le queda al comerciante:** `POST /api-tenant/order/{id}/report-payment`. El comprador a
+veces le pasa la referencia por WhatsApp en vez de por el checkout; él lo sabe y la plataforma
+sólo ve un depósito sin dueño. Reportarla hace que esa información llegue a quien tiene que
+cuadrarla.
+
+Se guarda **en la comisión y no en la fila de `payments` de la tienda**, porque el que tiene que
+leerla es el administrador y él consulta la base central. Y **aparte** de la que puso el
+comprador: si no coinciden, eso es justo lo que hay que poder ver.
+
+Un test comprueba lo importante: **reportar no confirma nada**. Si reportar cobrara, el
+comerciante tendría otra vez la llave del dinero por otro camino.
+
+**Tres tests existentes afirmaban la regla vieja** y se reescribieron para afirmar la nueva. No
+se rompieron: dejaron de ser ciertos.
+
+#### Fase 3c — Lo que queda
+
+**La pantalla del administrador.** Los endpoints de la Fase 3a existen y **no los llama nadie**:
+hoy son una protección escrita y sin cablear, del mismo tipo que las que esta auditoría lleva
+cerrando. Hasta que exista, confirmar un cobro del escaparate sólo se puede hacer por HTTP a
+mano.
 
 ### Fase 4 — Retirar lo que sobra
 

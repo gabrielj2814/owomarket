@@ -174,25 +174,27 @@ it('CancelOrderUseCase and RefundOrderUseCase transition order status', function
     expect($order->status())->toBe(OrderStatus::CANCELLED);
 });
 
-it('UpdateOrderPaymentStatusUseCase updates payment status', function () {
+it('UpdateOrderPaymentStatusUseCase rechaza que el comerciante declare un cobro', function () {
+    // Fase 3b: hasta aqui el comerciante marcaba el pedido como pagado y eso promovia la
+    // comision. Desde que la plataforma cobra todas las ventas el dinero entra en SU cuenta,
+    // asi que eso era autocertificarse un cobro para desbloquear un retiro ajeno.
+    //
+    // Se rechaza con el motivo y no con un 422 generico de validacion: lo que el comerciante
+    // necesita saber es que existe otro camino.
     $repository = m::mock(OrderRepositoryInterface::class);
 
     $item = OrderItem::create('p-1', 'Prod 1', 'SKU-1', 10.0, 1);
     $order = Order::create('cust-1', 'cash', [$item]);
 
     $repository->shouldReceive('findById')->once()->andReturn($order);
-    $repository->shouldReceive('save')->once()->with($order);
+    $repository->shouldNotReceive('save');
 
-    // Hallazgo N15: al confirmar el pago, la comision pasa de `awaiting_payment` a
-    // `pending`. Aqui se comprueba que se invoque; su logica se prueba en
-    // tests/Feature/Monetization/TenantMonetizationAndCommissionTest.php.
-    $activateCommission = m::mock(\Src\Monetization\Application\UseCases\ActivateOrderCommissionUseCase::class);
-    $activateCommission->shouldReceive('execute')->once();
+    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository);
 
-    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository, $activateCommission);
-    $paymentUseCase->execute($order->id()->value(), 'paid');
+    expect(fn () => $paymentUseCase->execute($order->id()->value(), 'paid'))
+        ->toThrow(InvalidArgumentException::class);
 
-    expect($order->paymentStatus())->toBe(PaymentStatus::PAID);
+    expect($order->paymentStatus())->toBe(PaymentStatus::PENDING);
 });
 
 it('UpdateOrderPaymentStatusUseCase rechaza revertir el pago a pending en vez de fingir exito', function () {
@@ -209,10 +211,7 @@ it('UpdateOrderPaymentStatusUseCase rechaza revertir el pago a pending en vez de
     $repository->shouldReceive('findById')->once()->andReturn($order);
     $repository->shouldNotReceive('save');
 
-    $activateCommission = m::mock(\Src\Monetization\Application\UseCases\ActivateOrderCommissionUseCase::class);
-    $activateCommission->shouldNotReceive('execute');
-
-    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository, $activateCommission);
+    $paymentUseCase = new UpdateOrderPaymentStatusUseCase($repository);
 
     expect(fn () => $paymentUseCase->execute($order->id()->value(), 'pending'))
         ->toThrow(InvalidOrderStateTransitionException::class);

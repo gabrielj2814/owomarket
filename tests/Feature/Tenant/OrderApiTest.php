@@ -235,12 +235,14 @@ it('POST /api-tenant/order/{id}/status and /cancel update order lifecycle', func
     $deliverRes->assertStatus(200)
         ->assertJsonPath('data.status', 'delivered');
 
-    // 5. Update payment status
+    // 5. El comerciante ya no puede declarar que un pago llego (Fase 3b). Desde que la
+    //    plataforma cobra todas las ventas el dinero entra en SU cuenta, y el comerciante no
+    //    ve ese extracto: marcarlo aqui era autocertificarse un cobro sobre una cuenta ajena.
     $paymentRes = $this->postJson("http://{$this->domain}/api-tenant/order/{$orderId}/payment-status", [
         'payment_status' => 'paid',
     ]);
-    $paymentRes->assertStatus(200)
-        ->assertJsonPath('data.payment_status', 'paid');
+    $paymentRes->assertStatus(400);
+    expect($paymentRes->json('message'))->toContain('lo confirma la plataforma');
 });
 
 it('GET /api-tenant/order/metrics returns sales and orders summary', function () {
