@@ -46,12 +46,17 @@ class CentralOrder extends Model
         'discount_amount',
         'total',
         'currency',
+        // Fase 4: la tasa a la que compro el cliente. Sin esto en el `fillable`, el
+        // `create()` la descartaba en silencio y la columna se quedaba a null -- un fallo
+        // mudo que solo delato el test de la herencia en el despacho.
+        'exchange_rate',
         'status',
         'payment_status',
         'metadata',
     ];
 
     protected $casts = [
+        'exchange_rate' => 'float',
         'shipping_address' => 'array',
         'payment_details' => 'array',
         'metadata' => 'array',

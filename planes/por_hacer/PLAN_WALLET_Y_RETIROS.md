@@ -256,9 +256,24 @@ igual que en su día con `coupon_code`. La comprobación real vive en
 `StorefrontCheckoutPaymentsTest`, que ejecuta el checkout completo: el pedido creado guarda la
 tasa activa.
 
-**Lo que no tiene test:** la herencia de la tasa en el despacho central. El único test que
-ejercita `DispatchCentralOrderToTenantsUseCase` es `MultiStoreCentralCheckoutTest`, que está en
-rojo desde antes de empezar este trabajo. Queda anotado en vez de fingir cobertura.
+#### La herencia sí tiene test, y encontró que el arreglo no funcionaba
+
+Se quedó sin cubrir porque el único fichero que ejercita `DispatchCentralOrderToTenantsUseCase`
+—`MultiStoreCentralCheckoutTest`— estaba en rojo por el entorno de la suite. En cuanto se
+arregló eso (ver `planes/anotaciones/ENTORNO_DE_TESTS.md`) se escribió el test, y **falló a la
+primera**:
+
+`exchange_rate` no estaba en el `$fillable` de `CentralOrder`, así que el `create()` la
+**descartaba en silencio** y la columna se quedaba a null. La captura en el pedido central
+nunca llegó a funcionar. El test del storefront no lo cazaba porque ese camino escribe con
+`DB::table()`, que no pasa por la asignación masiva.
+
+Es el patrón de siempre —aceptar la operación y no aplicarla—, cometido al implementar el plan
+que lo persigue. Y la lección de todo el documento otra vez: **anotar «esto no tiene test» no
+es lo mismo que tenerlo.**
+
+El test fija además lo que importa de verdad: la tasa cambia entre el pedido y la comprobación,
+y el pedido de cada tienda **sigue teniendo la del pedido central**.
 
 ### Fase 4b — Retención y banco
 

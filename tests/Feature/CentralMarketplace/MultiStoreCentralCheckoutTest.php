@@ -11,6 +11,12 @@ use Src\Category\Infrastructure\Eloquent\Models\Category;
 use Src\CentralMarketplace\Application\UseCases\DispatchCentralOrderToTenantsUseCase;
 use Src\CentralMarketplace\Infrastructure\Eloquent\Models\CentralOrderDispatch;
 use Src\CentralMarketplace\Infrastructure\Jobs\DispatchCentralOrderJob;
+use Src\ExchangeRate\Domain\Contracts\ExchangeRateRepositoryInterface;
+use Src\ExchangeRate\Domain\Entities\ExchangeRate;
+use Src\ExchangeRate\Domain\ValueObjects\CurrencyCode;
+use Src\ExchangeRate\Domain\ValueObjects\RateAmount;
+use Src\ExchangeRate\Domain\ValueObjects\RateDate;
+use Src\ExchangeRate\Domain\ValueObjects\RateSource;
 use Src\Monetization\Application\UseCases\CalculateAndRecordOrderCommissionUseCase;
 use Src\Monetization\Application\UseCases\ListSubscriptionPlansUseCase;
 use Src\Monetization\Application\UseCases\SubscribeTenantToPlanUseCase;
@@ -20,6 +26,7 @@ use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Product\Infrastructure\Eloquent\Models\Product;
 use Src\Product\Infrastructure\Eloquent\Models\ProductVariant;
+use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
@@ -72,6 +79,10 @@ beforeEach(function () {
     }
     if (! Schema::hasTable('order_items')) {
         (require base_path('database/migrations/tenant/2025_10_28_144403_create_order_items.php'))->up();
+    }
+    // Fase 4: la columna donde el pedido de cada tienda hereda la tasa del pedido central.
+    if (Schema::hasColumn('orders', 'id') && ! Schema::hasColumn('orders', 'exchange_rate')) {
+        (require base_path('database/migrations/tenant/2026_08_30_130000_add_exchange_rate_to_orders_table.php'))->up();
     }
     if (! Schema::hasTable('payments')) {
         (require base_path('database/migrations/tenant/2025_10_28_144517_create_payments.php'))->up();
@@ -1033,4 +1044,84 @@ test('una comision del storefront no inventa pedido central (#1)', function () {
 
     expect($comision->central_order_id)->toBeNull()
         ->and($comision->order)->toBeNull();
+});
+
+/**
+ * Fase 4 del plan de wallet y retiros: el pedido de cada tienda **hereda** la tasa del pedido
+ * central en vez de capturar la suya.
+ *
+ * El comprador hace **un** pago a **una** tasa. El despacho corre en un job que puede
+ * ejecutarse horas después —o reintentarse al día siguiente—, y si cada tienda capturara la
+ * tasa vigente en ese momento, la suma de los bolívares de las tiendas no cuadraría con lo que
+ * el cliente pagó. La wallet de cada comerciante se calcula con esa tasa, así que el descuadre
+ * sería dinero.
+ *
+ * Este test no existía cuando se implementó: el único fichero que ejercita el despacho es
+ * éste, y estaba en rojo por el entorno de la suite (ver
+ * `planes/anotaciones/ENTORNO_DE_TESTS.md`). Se añade en cuanto se pudo ejecutar.
+ */
+test('el pedido de cada tienda hereda la tasa del pedido central, no captura la suya', function () {
+    app(ExchangeRateRepositoryInterface::class)->save(
+        ExchangeRate::create(
+            new LaravelUuidGenerator,
+            CurrencyCode::usd(),
+            CurrencyCode::ves(),
+            RateAmount::make(300.0000),
+            RateSource::bcv(),
+            RateDate::make('2026-01-15')
+        )
+    );
+
+    $response = $this->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Tasa Heredada', 'email' => 'tasa@example.com'],
+        'shipping_address' => ['address' => 'Av. Principal', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'payment_details' => ['reference_number' => 'PM-TASA-'.random_int(100000, 999999)],
+        'items' => [
+            [
+                'tenant_id' => $this->tenantA->id,
+                'product_id' => $this->productA->id,
+                'product_name' => $this->productA->name,
+                'sku' => $this->productA->sku,
+                'price' => 50.00,
+                'quantity' => 1,
+            ],
+            [
+                'tenant_id' => $this->tenantB->id,
+                'product_id' => $this->productB->id,
+                'product_name' => $this->productB->name,
+                'sku' => $this->productB->sku,
+                'price' => 100.00,
+                'quantity' => 1,
+            ],
+        ],
+    ]);
+
+    $response->assertStatus(201);
+
+    $masterOrder = CentralOrder::with('items')->find($response->json('data.order_id'));
+    expect((float) $masterOrder->exchange_rate)->toBe(300.0000);
+
+    // Y mientras tanto la tasa cambia: el despacho ya ocurrió, pero aunque no hubiera
+    // ocurrido, lo que se hereda es la del pedido central y no la vigente.
+    app(ExchangeRateRepositoryInterface::class)->save(
+        ExchangeRate::create(
+            new LaravelUuidGenerator,
+            CurrencyCode::usd(),
+            CurrencyCode::ves(),
+            RateAmount::make(900.0000),
+            RateSource::bcv(),
+            RateDate::make('2026-01-16')
+        )
+    );
+
+    foreach ([$this->tenantA, $this->tenantB] as $tenant) {
+        $item = $masterOrder->items->firstWhere('tenant_id', $tenant->id);
+        expect($item->tenant_order_id)->not->toBeNull();
+
+        tenancy()->initialize($tenant);
+        $localOrder = DB::table('orders')->where('id', $item->tenant_order_id)->first();
+        expect((float) $localOrder->exchange_rate)->toBe(300.0000);
+        tenancy()->end();
+    }
 });
