@@ -10,6 +10,7 @@ use Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets;
 use Illuminate\Support\Facades\Route;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureSupportRequesterIsAuthenticated;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureRouteUserIsSelf;
+use Src\Shared\Infrastructure\Http\Middleware\EnsureTenantIsNotSuspended;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureTenantUserHasPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserHasStaffPermission;
 use Src\Shared\Infrastructure\Http\Middleware\EnsureUserIsSuperAdmin;
@@ -137,6 +138,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'staff' => EnsureUserHasStaffPermission::class,
             'tenant_owner' => EnsureUserIsTenantOwner::class,
             'tenant_can' => EnsureTenantUserHasPermission::class,
+            'tenant_active' => EnsureTenantIsNotSuspended::class,
             'own_user' => EnsureRouteUserIsSelf::class,
             'internal' => InternalServiceMiddleware::class,
             'support_session' => EnsureSupportRequesterIsAuthenticated::class,

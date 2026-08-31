@@ -64,7 +64,17 @@ Route::prefix('user')->group(callback: base_path('src/User/Infrastructure/Http/R
 | catalogo toca productos, categorias, marcas y atributos, y no tiene sentido concederlos
 | por separado.
 */
-Route::middleware('auth')->group(function () {
+/*
+| Fase 5 — `tenant_active`: una tienda suspendida no se gestiona.
+|
+| El estado `suspended` existia y no lo comprobaba nadie, asi que suspender era escribir una
+| palabra en una columna. Va junto a 'auth' y no en `bootstrap/app.php` por el mismo motivo que
+| 'auth': tiene que correr DESPUES de InitializeTenancyByDomain para que `tenant()` exista.
+|
+| El escaparate queda fuera a proposito: la tienda sigue vendiendo y la deuda sigue creciendo.
+| Cerrar el escaparate seria cobrarle la deuda al comprador, que no la debe.
+*/
+Route::middleware(['auth', 'tenant_active'])->group(function () {
     Route::middleware('tenant_can:manage_catalog')->group(function () {
         Route::prefix('product')->group(callback: base_path('src/Product/Infrastructure/Http/Routes/apiTenant.php'));
         Route::prefix('category')->group(callback: base_path('src/Category/Infrastructure/Http/Routes/apiTenant.php'));

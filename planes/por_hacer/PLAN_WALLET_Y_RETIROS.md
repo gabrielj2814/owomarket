@@ -1,6 +1,6 @@
 # Plan — Wallet de la tienda y retiros
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1 a 4 ✅ cerradas · queda la Fase 5**
+> **Estado:** ✅ IMPLEMENTADO — 30/08/2026 · **Las cinco fases cerradas, 29 tests**
 >
 > Sale de una conversación de diseño sobre cómo debe fluir el dinero del marketplace
 > central. Se descartaron dos modelos antes de llegar a éste; queda escrito por qué, porque
@@ -355,11 +355,33 @@ problemas la salida es una lista de bancos con código; hoy no hay evidencia de 
 
 **Cinco tests**, incluido el del saldo fantasma y el de las mayúsculas.
 
-### Fase 5 — Cablear `suspended`
+### Fase 5 — Cablear `suspended` · ✅ HECHA (30/08/2026)
 
-Sigue sin aplicarse en ningún sitio: `TenantStatus::STATUS_SUSPENDED` se escribe y nadie lo
-comprueba. Otra protección escrita y sin cablear. Ahora sólo hace falta para la mora del
-canal escaparate.
+El estado existía entero —definido en `TenantStatus`, escrito por
+`TenantRepository::suspended()`, invocado por dos casos de uso con sus endpoints, y contado en
+el panel de admin— y **no lo leía nadie para impedir nada**. Suspender una tienda era escribir
+una palabra en una columna: el comerciante entraba igual y vendía igual.
+
+Otra protección escrita y sin cablear, el patrón que esta auditoría lleva nombrando desde OR1.
+
+**Un middleware, `tenant_active`**, en dos sitios: el grupo `auth` de `routes/tenantApi.php`
+—que cubre toda la API del backoffice de una vez— y un grupo alrededor de las páginas del
+backoffice en `routes/tenant.php`.
+
+**Lo que queda fuera, a propósito:**
+
+| Fuera | Por qué |
+| :--- | :--- |
+| El escaparate | La tienda sigue vendiendo y la deuda sigue creciendo. Cerrarlo sería cobrarle la deuda al comprador, que no la debe |
+| `auth` (login) | Un comerciante que no puede ni entrar no llega a leer el motivo de su suspensión |
+| `inactive` | El enum tiene tres estados y sólo uno es sanción. Bloquear `inactive` metería en el mismo saco a una tienda que no ha terminado de darse de alta |
+
+**El orden importa y es deliberado:** `auth` corre **antes** que `tenant_active`, así que a un
+extraño sin sesión se le responde 401 sin contarle en qué estado está la tienda. El estado de
+una tienda no es información pública, y un 403 explicando la suspensión se la daría a
+cualquiera. Hay un test para eso.
+
+**Cinco tests**, y el del bloqueo se ejecutó sin el cableado para comprobar que falla.
 
 ---
 
@@ -374,5 +396,14 @@ ante SUDEBAN.** Hay que verificarlo con un contador antes de operar en serio. Qu
 aquí para que no se pierda.
 
 **Las disputas se quedan a medias.** `resolve-dispute` marca un reembolso, pero si el dinero
-ya salió en un retiro, devolverlo es perseguirlo. La Fase 4 lo mitiga reteniendo hasta
+ya salió en un retiro, devolverlo es perseguirlo. La Fase 4b lo mitiga reteniendo hasta
 `delivered`; el caso del reembolso posterior sigue sin diseño.
+
+**La suspensión no se aplica sola.** El middleware corta el paso, pero **quién y cuándo pone
+una tienda en `suspended` sigue siendo una decisión manual**. La regla de mora —deuda vencida a
+los N días, aviso, suspensión automática— no está escrita. La palanca ya existe; falta decidir
+cuándo se tira de ella.
+
+**El retiro sigue abierto para una tienda suspendida.** Su wallet es del canal central, y ese
+dinero es suyo. Retenerlo sería una palanca mucho más dura que bloquear el backoffice, y no se
+ha decidido usarla. Queda anotado porque el siguiente que lo lea se hará la pregunta.
