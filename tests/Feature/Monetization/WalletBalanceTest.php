@@ -79,22 +79,28 @@ it('un cobro que la plataforma no ha confirmado todavía no es retirable', funct
     expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
 });
 
-it('una venta del escaparate no entra en la wallet: ese dinero ya lo cobró la tienda', function () {
-    // El comprador transfirió directo al banco del comerciante. La plataforma no recibió
-    // nada, así que no le debe nada. Ofrecérselo para retirar era pagarle dos veces.
+it('una venta del escaparate también entra en la wallet: la plataforma también la cobró', function () {
+    // Este test decía lo contrario hasta el 30/08/2026, y con razón: mientras el comprador
+    // transfería directo al banco del comerciante, la plataforma no recibía ese dinero y no
+    // se lo debía. Desde que cobra TODAS las ventas, incluidas las del escaparate, el
+    // razonamiento se invierte: si lo recibe, lo debe, y esconderlo sería quedarse saldo
+    // ajeno sin decirlo.
     comisionDe($this->tenant, 'pending', central: false);
 
-    expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
+    expect($this->balance->requestable($this->tenant->id))->toBe(4600.0);
 });
 
 it('el retiro se rechaza cuando el saldo inflado no lo respalda', function () {
     // El test que importa: no comprueba una cifra en pantalla, comprueba que el dinero no
-    // sale. Antes del arreglo estas cuatro comisiones sumaban 368 USD de saldo retirable y
-    // esta solicitud pasaba.
+    // sale. Estas tres comisiones sumaban saldo retirable antes del arreglo, y esta solicitud
+    // pasaba.
+    //
+    // Aqui habia una cuarta, del escaparate. Dejo de valer como caso al pasar la plataforma a
+    // cobrar todas las ventas: ahora esa SI es saldo del comerciante, y meterla aqui haria
+    // que el test pasara por el motivo equivocado.
     comisionDe($this->tenant, 'refunded');
     comisionDe($this->tenant, 'waived');
     comisionDe($this->tenant, 'awaiting_payment');
-    comisionDe($this->tenant, 'pending', central: false);
 
     expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
 

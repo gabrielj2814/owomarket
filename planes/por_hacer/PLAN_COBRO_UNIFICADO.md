@@ -1,6 +1,6 @@
 # Plan — La plataforma cobra todas las ventas
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fase 1 ✅ cerrada**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1 y 2 ✅ cerradas**
 >
 > Decisión de negocio del 30/08/2026: **el dinero de todas las compras cae en la cuenta del
 > marketplace**, también el de las que se hacen en el escaparate propio de cada tienda.
@@ -79,20 +79,29 @@ sus propios datos —los que usaba hasta hoy— y se comprueba que el comprador 
 mientras sí ve los de la plataforma. Los demás tests del fichero se reescribieron para hablar de
 ajustes centrales, porque su premisa cambió.
 
-### Fase 2 — Quitar el filtro de canal del saldo
+### Fase 2 — Quitar el filtro de canal del saldo · ✅ HECHA (30/08/2026)
 
-En la Fase 2 del plan de wallet se puso esto:
+El filtro `whereNotNull('central_order_id')` se puso esta misma mañana, con este razonamiento:
+*«en el escaparate el comerciante ya cobró directo en su banco, la plataforma no le debe nada»*.
 
-```php
-->whereNotNull('central_order_id')   // sólo el canal central
-```
+**Era correcto mientras cada canal cobraba por su lado.** Desde que la plataforma cobra todas
+las ventas se invierte: si recibe ese dinero, se lo debe, y el filtro le escondía al comerciante
+saldo que es suyo.
 
-con este razonamiento: *«en el escaparate el comerciante ya cobró directo en su banco, la
-plataforma no le debe nada»*. **Bajo este modelo es falso.** Si la plataforma cobra esas
-ventas, se las debe, y ese filtro le esconde al comerciante saldo que es suyo.
+Cayó en dos sitios —`TenantAvailableBalance::ventasDe()` y la consulta del resumen de wallet— y
+el razonamiento viejo se conserva escrito al lado del nuevo, porque explica por qué estuvo bien
+y qué cambió.
 
-Cae el filtro y cae el test que lo defiende. Los demás filtros del saldo —estado, tasa
-capturada, entrega— siguen valiendo igual.
+**Los demás filtros siguen igual**: estado cobrable, tasa capturada, y entrega con su plazo de
+garantía cumplido.
+
+#### Dos tests cambiaron de significado
+
+- *«Una venta del escaparate no entra en la wallet»* pasa a decir lo contrario, con el motivo
+  del cambio escrito dentro: no es que estuviera mal, es que su premisa dejó de ser cierta.
+- El test del retiro contra saldo inflado tenía cuatro casos y ahora tiene tres. El del
+  escaparate dejó de valer como caso: hoy **sí** es saldo del comerciante, y dejarlo habría
+  hecho que el test pasara por el motivo equivocado.
 
 ### Fase 3 — Confirmar el cobro de una venta del escaparate
 

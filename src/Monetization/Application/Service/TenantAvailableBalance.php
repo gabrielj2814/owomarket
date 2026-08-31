@@ -160,19 +160,23 @@ final class TenantAvailableBalance
     /**
      * Las ventas por las que la plataforma le debe dinero a esta tienda.
      *
-     * Aqui faltaban los dos filtros, y esta consulta no pinta una pantalla: **es la que
-     * autoriza cuanto dinero real sale**.
+     * Esta consulta no pinta una pantalla: **es la que autoriza cuanto dinero real sale**.
      *
-     * `central_order_id` no nulo acota al canal central, que es el unico donde cobra la
-     * plataforma. En el escaparate el comprador transfiere directo al comerciante, que ya
-     * tiene su dinero en el banco: contarlo aqui le ofrecia retirar por segunda vez algo que
-     * la plataforma nunca recibio.
+     * **Aqui hubo un filtro `whereNotNull('central_order_id')`** que acotaba al canal central,
+     * con este razonamiento: en el escaparate el comprador transferia directo al comerciante,
+     * que ya tenia su dinero, asi que contarlo aqui le habria ofrecido retirar dos veces lo
+     * mismo. Era correcto mientras cada canal cobraba por su lado.
+     *
+     * Desde que la plataforma cobra TODAS las ventas --tambien las del escaparate-- ese
+     * razonamiento se invirtio: si la plataforma recibe ese dinero, se lo debe, y el filtro le
+     * escondia al comerciante saldo que es suyo.
+     *
+     * Lo que si sigue filtrando esta el resto de la consulta: estado cobrable, tasa capturada
+     * y entrega con su plazo cumplido.
      */
     private function ventasDe(string $tenantId): Builder
     {
-        return PlatformCommission::query()
-            ->where('tenant_id', $tenantId)
-            ->whereNotNull('central_order_id');
+        return PlatformCommission::query()->where('tenant_id', $tenantId);
     }
 
     /**

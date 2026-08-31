@@ -51,8 +51,9 @@ final class GetTenantOwnerWalletSummaryUseCase
                 // como se pierde dinero"--, y la copia seguia viva justo al lado.
                 //
                 // Ahora la pantalla y la autorizacion del retiro leen el mismo numero.
+                // Sin filtro de canal desde que la plataforma cobra todas las ventas: las del
+                // escaparate tambien son dinero que se le debe a la tienda.
                 $ventas = PlatformCommission::whereIn('tenant_id', $tenantIds)
-                    ->whereNotNull('central_order_id')
                     ->whereIn('status', ['pending', 'collected']);
 
                 $grossSales = (float) (clone $ventas)->sum('order_total');
