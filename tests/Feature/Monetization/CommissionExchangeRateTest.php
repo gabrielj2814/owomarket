@@ -38,6 +38,10 @@ function tasaActivaDe(float $valor, ?string $fecha = null): void
     // creadas en el mismo segundo empatan y el desempate queda al azar, así que cada tasa de
     // este fichero lleva su fecha — que además es el escenario real: la tasa cambia de un día
     // para otro, no dos veces en el mismo segundo.
+    //
+    // Y las fechas van escritas a mano, no con `now()`: `RateDate::today()` usa la zona de
+    // Caracas y `now()` la del servidor, así que «ayer» y «hoy» podían caer en el mismo día
+    // y volver a empatar. El test fallaba según la hora a la que se ejecutara.
     app(ExchangeRateRepositoryInterface::class)->save(
         ExchangeRate::create(
             new LaravelUuidGenerator,
@@ -84,12 +88,12 @@ it('el saldo en bolívares sale derivado, sin columnas de importes', function ()
     // Es la consulta con la que la Fase 2 calculará la wallet. Se comprueba aquí para que la
     // columna quede fijada como suficiente: si algún día hicieran falta importes en Bs
     // guardados, este test es el que lo delata.
-    // Ayer la tasa era 100 y se vendieron 200.
-    tasaActivaDe(100.0, now()->subDay()->format('Y-m-d'));
+    // El día 10 la tasa era 100 y se vendieron 200.
+    tasaActivaDe(100.0, '2026-01-10');
     registrarComision($this->tenant, 200.0);   // 200 - 16 de comisión = 184 USD → 18.400 Bs
 
-    // Hoy es 50 y se venden 100. La venta de ayer NO se revaloriza.
-    tasaActivaDe(50.0);
+    // El día 11 es 50 y se venden 100. La venta del día 10 NO se revaloriza.
+    tasaActivaDe(50.0, '2026-01-11');
     registrarComision($this->tenant, 100.0);   // 100 - 8  de comisión =  92 USD →  4.600 Bs
 
     $saldoBs = (float) DB::table('platform_commissions')
