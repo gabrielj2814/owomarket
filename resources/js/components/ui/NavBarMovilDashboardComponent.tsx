@@ -129,6 +129,9 @@ const NavBarMovilDashboardComponent = () => {
                                             <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/customers`} icon={HiUsers}>
                                                 Clientes Marketplace
                                             </SidebarItem>
+                                            <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/storefront-payments`} icon={HiCurrencyDollar}>
+                                                Cobros por Confirmar
+                                            </SidebarItem>
                                             <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/payouts`} icon={HiCreditCard}>
                                                 Retiros & Finanzas
                                             </SidebarItem>

@@ -1,6 +1,6 @@
 # Plan — La plataforma cobra todas las ventas
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2 y 3 ✅ · queda la pantalla del administrador**
+> **Estado:** ✅ IMPLEMENTADO — 31/08/2026 · **Las tres fases cerradas**
 >
 > Decisión de negocio del 30/08/2026: **el dinero de todas las compras cae en la cuenta del
 > marketplace**, también el de las que se hacen en el escaparate propio de cada tienda.
@@ -177,12 +177,33 @@ comerciante tendría otra vez la llave del dinero por otro camino.
 **Tres tests existentes afirmaban la regla vieja** y se reescribieron para afirmar la nueva. No
 se rompieron: dejaron de ser ciertos.
 
-#### Fase 3c — Lo que queda
+#### Fase 3c — La pantalla · ✅ HECHA (31/08/2026)
 
-**La pantalla del administrador.** Los endpoints de la Fase 3a existen y **no los llama nadie**:
-hoy son una protección escrita y sin cablear, del mismo tipo que las que esta auditoría lleva
-cerrando. Hasta que exista, confirmar un cobro del escaparate sólo se puede hacer por HTTP a
-mano.
+`AdminStorefrontPaymentsPage`, con su entrada en el menú lateral y en el móvil. Sin ella los
+endpoints de la Fase 3a no los llamaba nadie —una protección escrita y sin cablear, el patrón
+que esta auditoría lleva cerrando— y, como el comerciante ya no puede marcar sus pedidos como
+pagados, no había forma de destrabar una comisión desde la interfaz.
+
+**Lo que enseña, y por qué:**
+
+- **El importe en bolívares primero**, con los dólares debajo como referencia. Es lo que hay que
+  buscar en el extracto: el comprador pagó bolívares.
+- **Las dos referencias por separado.** La del checkout y, etiquetada aparte, la que reportó la
+  tienda. Si no coinciden, eso es exactamente lo que hay que ver antes de confirmar.
+- **Un aviso en el modal** de que sólo se confirma con el ingreso ya visto, y de que no hay
+  vuelta atrás.
+- **«Sin tasa registrada»** en rojo cuando la comisión no capturó tasa: ese importe no se puede
+  cotejar en bolívares, y ocultarlo lo dejaría en un limbo silencioso.
+
+**Un test comprueba que la pantalla responde y trae los datos**, no sólo que la ruta existe.
+
+#### Un tropiezo de camino
+
+El test daba 500 y el log apuntaba a un fichero borrado en PY1 — pero eran **rutas de Windows**:
+el log lo estaba contaminando el PHP del host, igual que pasó con el worker de Horizon al
+depurar el entorno de la suite. El error real era otro: la página nueva no estaba en el
+manifiesto de Vite. **Un `npm run build` hacía falta de todas formas** para que funcione en el
+navegador.
 
 ### Fase 4 — Retirar lo que sobra
 

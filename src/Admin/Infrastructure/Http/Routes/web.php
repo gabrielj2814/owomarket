@@ -159,6 +159,7 @@ Route::middleware(['auth', 'staff:manage_orders'])->group(function () {
     | sale de `platform_commissions` en `awaiting_payment`, que es la unica proyeccion central
     | que ya existe de una venta de tienda.
     */
+    Route::get('/backoffice/{user_uuid}/storefront-payments', \Src\Admin\Infrastructure\Http\Controller\ViewAdminStorefrontPaymentsPageGETController::class)->name('central.backoffice.web.admin.storefront_payments');
     Route::get('/api/storefront-payments', \Src\Admin\Infrastructure\Http\Controller\ListPendingStorefrontPaymentsGETController::class);
     Route::post('/api/storefront-payments/{id}/confirm', \Src\Admin\Infrastructure\Http\Controller\ConfirmStorefrontPaymentPOSTController::class);
 });

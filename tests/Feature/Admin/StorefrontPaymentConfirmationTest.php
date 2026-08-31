@@ -183,6 +183,23 @@ it('rechaza confirmar dos veces el mismo cobro', function () {
         ->assertStatus(422);
 });
 
+it('la pantalla del administrador existe y trae los cobros pendientes', function () {
+    // Fase 3c. Sin esta pantalla los endpoints de arriba no los llamaba nadie: una proteccion
+    // escrita y sin cablear, que es justo el patron que esta auditoria lleva cerrando. Y como
+    // el comerciante dejo de poder marcar sus pedidos como pagados, sin ella no habia forma de
+    // destrabar una comision desde la interfaz.
+    ventaDeEscaparate($this->tenant, 'PM-EN-PANTALLA');
+
+    $this->actingAs($this->adminUser)
+        ->get("/admin/backoffice/{$this->adminUser->id}/storefront-payments")
+        ->assertStatus(200)
+        ->assertInertia(fn ($page) => $page
+            ->component('admin/payments/AdminStorefrontPaymentsPage')
+            ->where('metrics.pending_count', 1)
+            ->where('payments_data.data.0.payment_reference', 'PM-EN-PANTALLA')
+        );
+});
+
 it('no confirma cobros sin sesión de administrador', function () {
     $comision = ventaDeEscaparate($this->tenant);
 
