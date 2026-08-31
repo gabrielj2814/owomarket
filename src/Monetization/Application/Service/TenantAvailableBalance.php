@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
+use Throwable;
 
 /**
  * El saldo de una tienda, en un solo sitio (hallazgo T1).
@@ -37,6 +39,16 @@ final class TenantAvailableBalance
      * tiene que quedarse FUERA del saldo, no colarse dentro.
      */
     private const ESTADOS_COBRADOS = ['pending', 'collected'];
+
+    /**
+     * Dias que un pedido entregado espera antes de que su importe sea retirable, si nadie ha
+     * configurado otra cosa.
+     *
+     * Es la ventana de garantia del comprador: el plazo en el que todavia puede pedir una
+     * devolucion o reclamar. Entregar y pagar en el mismo instante deja a la plataforma sin
+     * margen para atender esa reclamacion con el dinero todavia en su cuenta.
+     */
+    private const DIAS_DE_RETENCION_POR_DEFECTO = 1;
 
     /**
      * Cuanto puede PEDIR ahora el comerciante.
@@ -74,19 +86,24 @@ final class TenantAvailableBalance
      * wallet y retiros). No se revaloriza al consultar: la plataforma le debe al comerciante
      * los bolivares que recibio del comprador, no los de hoy.
      *
-     * @return array{disponible_bs: float, retenido_bs: float, retenido_entrega_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
+     * @return array{disponible_bs: float, retenido_bs: float, retenido_entrega_bs: float, retenido_garantia_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
      */
     public function breakdown(string $tenantId): array
     {
         if (! Schema::hasTable('platform_commissions')) {
-            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
+            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'retenido_garantia_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
         }
 
-        $enBolivares = fn (array $estados, ?bool $entregado = null) => (float) $this->ventasDe($tenantId)
+        $limite = now()->subDays($this->diasDeRetencion());
+
+        // Tres situaciones distintas y no dos: entregado y con la garantia cumplida, entregado
+        // pero dentro de la ventana, y sin entregar todavia.
+        $enBolivares = fn (array $estados, ?string $entrega = null) => (float) $this->ventasDe($tenantId)
             ->whereIn('status', $estados)
             ->whereNotNull('exchange_rate')
-            ->when($entregado === true, fn ($q) => $q->whereNotNull('released_at'))
-            ->when($entregado === false, fn ($q) => $q->whereNull('released_at'))
+            ->when($entrega === 'retirable', fn ($q) => $q->where('released_at', '<=', $limite))
+            ->when($entrega === 'en_garantia', fn ($q) => $q->where('released_at', '>', $limite))
+            ->when($entrega === 'sin_entregar', fn ($q) => $q->whereNull('released_at'))
             ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
 
         // Sin tasa no se puede expresar en bolivares. Se muestran aparte en vez de
@@ -99,12 +116,14 @@ final class TenantAvailableBalance
         return [
             // Ojo: esto es lo GANADO en bolivares, sin descontar retiros. Lo retirable es
             // `requestable()`, que es el unico numero contra el que se autoriza dinero.
-            'disponible_bs' => $enBolivares(self::ESTADOS_COBRADOS, entregado: true),
+            'disponible_bs' => $enBolivares(self::ESTADOS_COBRADOS, entrega: 'retirable'),
             // Dos motivos distintos para retener, y al comerciante le importa cual es: uno
             // depende de que la plataforma confirme el cobro y el otro de que el paquete
             // llegue. Meterlos en el mismo saco solo genera preguntas.
             'retenido_bs' => $enBolivares(['awaiting_payment']),
-            'retenido_entrega_bs' => $enBolivares(self::ESTADOS_COBRADOS, entregado: false),
+            'retenido_entrega_bs' => $enBolivares(self::ESTADOS_COBRADOS, entrega: 'sin_entregar'),
+            // Entregado, pero el comprador todavia esta a tiempo de pedir una devolucion.
+            'retenido_garantia_bs' => $enBolivares(self::ESTADOS_COBRADOS, entrega: 'en_garantia'),
             'sin_valorar_usd' => (float) (clone $sinValorar)->sum(DB::raw('order_total - commission_amount')),
             'sin_valorar_count' => (clone $sinValorar)->count(),
         ];
@@ -131,10 +150,10 @@ final class TenantAvailableBalance
         return (float) $this->ventasDe($tenantId)
             ->whereIn('status', self::ESTADOS_COBRADOS)
             ->whereNotNull('exchange_rate')
-            // Fase 4b: solo lo entregado. Si la plataforma paga antes de que la mercancia
-            // llegue y el comprador reclama despues, el dinero ya salio y recuperarlo es
-            // perseguirlo.
-            ->whereNotNull('released_at')
+            // Fase 4b: solo lo entregado, y con su ventana de garantia ya cumplida. Si la
+            // plataforma paga antes y el comprador reclama despues, el dinero ya salio y
+            // recuperarlo es perseguirlo.
+            ->where('released_at', '<=', now()->subDays($this->diasDeRetencion()))
             ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
     }
 
@@ -188,5 +207,30 @@ final class TenantAvailableBalance
         // `net_amount` le dejaria al comerciante la comision como saldo fantasma despues de
         // cada retiro. Repetible, y dinero que se crea solo.
         return (float) $consulta->sum('gross_sales_amount');
+    }
+
+    /**
+     * Dias de garantia antes de que un pedido entregado sea retirable.
+     *
+     * Configurable desde los ajustes de cobro de la plataforma. Cero es un valor legitimo --lo
+     * entregado se puede retirar en el acto-- asi que se distingue de "no configurado", que cae
+     * al valor por defecto.
+     */
+    private function diasDeRetencion(): int
+    {
+        try {
+            $valor = CentralSetting::query()
+                ->where('group', 'payment')
+                ->where('key', 'central_payout_hold_days')
+                ->value('value');
+        } catch (Throwable) {
+            return self::DIAS_DE_RETENCION_POR_DEFECTO;
+        }
+
+        if ($valor === null || trim((string) $valor) === '') {
+            return self::DIAS_DE_RETENCION_POR_DEFECTO;
+        }
+
+        return max(0, (int) $valor);
     }
 }

@@ -275,7 +275,21 @@ es lo mismo que tenerlo.**
 El test fija además lo que importa de verdad: la tasa cambia entre el pedido y la comprobación,
 y el pedido de cada tienda **sigue teniendo la del pedido central**.
 
-### Fase 4b — Retención hasta la entrega · ✅ HECHA (30/08/2026)
+### Fase 4b — Retención hasta la entrega, más la ventana de garantía · ✅ HECHA (30/08/2026)
+
+> **Ampliada el 30/08/2026:** no basta con que el pedido esté entregado. Su importe espera
+> además **un día configurable** (`central_payout_hold_days`) desde la entrega, que es el plazo
+> en el que el comprador todavía puede pedir una devolución o reclamar garantía. Entregar y
+> pagar en el mismo instante deja a la plataforma sin margen para atender esa reclamación con el
+> dinero aún en su cuenta.
+>
+> Eso hace **tres** motivos de retención, y la wallet los distingue: esperando cobro, esperando
+> entrega, y en plazo de garantía. Cada uno se resuelve solo de una forma distinta, y meterlos
+> en el mismo saco convierte la wallet en un misterio.
+>
+> **Cero es un valor legítimo** —«retirable al entregar»— y hay que distinguirlo de «no
+> configurado», que cae al valor por defecto. Hay un test para eso, porque un `empty()` mal
+> puesto los confundiría.
 
 Sólo entra en el saldo retirable lo que llegó a `delivered`. La máquina de estados ya sabe
 cuándo pasa, así que no hubo que inventar plazos. Protege del reembolso posterior al retiro: si

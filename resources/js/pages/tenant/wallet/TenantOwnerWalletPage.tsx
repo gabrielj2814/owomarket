@@ -23,6 +23,7 @@ interface WalletData {
     available_balance: number;
     retained_ves: number;
     retained_delivery_ves: number;
+    retained_warranty_ves: number;
     unvalued_usd: number;
     unvalued_count: number;
     tenant_id: string | null;
@@ -180,7 +181,10 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                 )}
 
                 {/* KPI Cards */}
-                {(wallet.retained_ves > 0 || wallet.retained_delivery_ves > 0 || wallet.unvalued_count > 0) && (
+                {(wallet.retained_ves > 0 ||
+                    wallet.retained_delivery_ves > 0 ||
+                    wallet.retained_warranty_ves > 0 ||
+                    wallet.unvalued_count > 0) && (
                     <div className="mb-4 space-y-2">
                         {wallet.retained_ves > 0 && (
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
@@ -199,6 +203,16 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                 </span>{' '}
                                 pendientes de entrega: ya están cobrados, pero no se pueden retirar hasta que el pedido
                                 llegue al cliente.
+                            </div>
+                        )}
+
+                        {wallet.retained_warranty_ves > 0 && (
+                            <div className="rounded-2xl border border-violet-200 bg-violet-50 px-4 py-3 text-xs text-violet-800 dark:border-violet-900 dark:bg-violet-950/40 dark:text-violet-300">
+                                <span className="font-black">
+                                    Bs. {wallet.retained_warranty_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                                </span>{' '}
+                                en plazo de garantía: ya están entregados, y se liberan cuando pase el plazo en el que el
+                                cliente todavía puede pedir una devolución.
                             </div>
                         )}
 

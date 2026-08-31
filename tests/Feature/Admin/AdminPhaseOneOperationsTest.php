@@ -74,8 +74,9 @@ test('Super Admin can list, approve and reject payout requests', function () {
         'currency' => 'USD',
         'exchange_rate' => 50.00,
         'status' => 'pending',
-        // Fase 4b: entregada, luego retirable. Sin esto el saldo la retiene.
-        'released_at' => now(),
+        // Entregada hace tiempo: retirable. `now()` la dejaria dentro del plazo de
+        // garantia del comprador y el saldo la retendria.
+        'released_at' => now()->subDays(30),
     ]);
 
     $payout1 = CommissionSettlement::create([

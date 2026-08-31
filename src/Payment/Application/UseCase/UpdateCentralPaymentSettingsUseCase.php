@@ -31,6 +31,10 @@ final class UpdateCentralPaymentSettingsUseCase
         // Va aqui y no en un ajuste de tienda porque es una condicion de la plataforma, la
         // misma para todas. El banco propio ya esta arriba, en `central_pago_movil_bank_name`.
         'central_interbank_transfer_fee',
+        // Dias que un pedido entregado espera antes de que su importe sea retirable. Es la
+        // ventana en la que el comprador puede pedir una devolucion o reclamar garantia: si el
+        // dinero ya salio, atenderla es perseguirlo.
+        'central_payout_hold_days',
     ];
 
     /**

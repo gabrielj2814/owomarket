@@ -47,7 +47,9 @@ function comisionDe(Tenant $tenant, string $status, bool $central = true, float 
         'status' => $status,
         // Fase 4b: liberada por defecto para que los tests de las fases anteriores sigan
         // hablando de lo que hablaban. Los de la retencion la pasan a `false` a proposito.
-        'released_at' => $entregado ? now() : null,
+        // Entregada hace tiempo por defecto: los tests de las fases anteriores hablan del
+        // saldo, no de la ventana de garantia. Los de la ventana ponen su propia fecha.
+        'released_at' => $entregado ? now()->subDays(30) : null,
         'payment_gateway' => 'pago_movil',
     ]);
 }
@@ -251,7 +253,7 @@ it('la wallet distingue los dos motivos de retención', function () {
         ->and($desglose['retenido_bs'])->toBe(4600.0);
 });
 
-it('entregar el pedido libera su comisión y la vuelve retirable', function () {
+it('entregar el pedido libera su comisión, que entra en el plazo de garantía', function () {
     $comision = comisionDe($this->tenant, 'pending', entregado: false);
 
     expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
@@ -259,8 +261,19 @@ it('entregar el pedido libera su comisión y la vuelve retirable', function () {
     app(Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase::class)
         ->execute($comision->order_id);
 
+    // Liberar no es lo mismo que retirable: la entrega abre el plazo en el que el comprador
+    // todavía puede reclamar. El importe cambia de motivo de retención, no de bolsillo.
+    $desglose = $this->balance->breakdown($this->tenant->id);
+
     expect($comision->refresh()->released_at)->not->toBeNull()
-        ->and($this->balance->requestable($this->tenant->id))->toBe(4600.0);
+        ->and($desglose['retenido_entrega_bs'])->toBe(0.0)
+        ->and($desglose['retenido_garantia_bs'])->toBe(4600.0)
+        ->and($this->balance->requestable($this->tenant->id))->toBe(0.0);
+
+    // Y cuando el plazo pasa, sí.
+    $comision->update(['released_at' => now()->subDays(2)]);
+
+    expect($this->balance->requestable($this->tenant->id))->toBe(4600.0);
 });
 
 it('liberar dos veces no mueve la fecha de la primera vez', function () {
@@ -359,4 +372,52 @@ it('rechaza un retiro que no cabe en el saldo, con la comisión ya contada', fun
     $this->duenno = duenoDe($this->tenant);
 
     expect(fn () => pedirRetiro($this, 5000.0, 'Mercantil'))->toThrow(Exception::class);
+});
+
+/**
+ * La ventana de garantía: un pedido entregado espera un día antes de que su importe sea
+ * retirable, para que al comprador le dé tiempo a pedir una devolución o reclamar. Si el
+ * dinero ya salió, atender esa reclamación es perseguirlo.
+ */
+it('lo entregado hoy todavía no se puede retirar: el comprador está a tiempo de reclamar', function () {
+    $comision = comisionDe($this->tenant, 'pending');
+    $comision->update(['released_at' => now()]);
+
+    expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
+    expect($this->balance->breakdown($this->tenant->id)['retenido_garantia_bs'])->toBe(4600.0);
+});
+
+it('pasado el plazo, lo entregado se vuelve retirable', function () {
+    $comision = comisionDe($this->tenant, 'pending');
+    $comision->update(['released_at' => now()->subDays(2)]);
+
+    expect($this->balance->requestable($this->tenant->id))->toBe(4600.0);
+    expect($this->balance->breakdown($this->tenant->id)['retenido_garantia_bs'])->toBe(0.0);
+});
+
+it('el plazo es configurable y cero es un valor legítimo', function () {
+    // Cero significa «retirable al entregar», y hay que distinguirlo de «no configurado», que
+    // cae al valor por defecto. Un `empty()` mal puesto los confundiría.
+    Src\Payment\Infrastructure\Eloquent\Models\CentralSetting::updateOrCreate(
+        ['key' => 'central_payout_hold_days'],
+        ['group' => 'payment', 'value' => '0']
+    );
+
+    $comision = comisionDe($this->tenant, 'pending');
+    $comision->update(['released_at' => now()]);
+
+    expect($this->balance->requestable($this->tenant->id))->toBe(4600.0);
+});
+
+it('un plazo más largo retiene más tiempo', function () {
+    Src\Payment\Infrastructure\Eloquent\Models\CentralSetting::updateOrCreate(
+        ['key' => 'central_payout_hold_days'],
+        ['group' => 'payment', 'value' => '7']
+    );
+
+    $comision = comisionDe($this->tenant, 'pending');
+    $comision->update(['released_at' => now()->subDays(3)]);
+
+    // Entregado hace tres días, pero el plazo es de siete.
+    expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
 });
