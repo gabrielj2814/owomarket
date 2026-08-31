@@ -119,7 +119,16 @@ it('MarkShipmentAsDeliveredUseCase sets delivered status and timestamps', functi
         ->with($shipment)
         ->andReturn($shipment);
 
-    $useCase = new MarkShipmentAsDeliveredUseCase($this->repository);
+    // Fase 4b: si el pedido queda entregado, se libera su comision. Con el pedido fuera de
+    // alcance en este test unitario el repositorio devuelve null y no se libera nada -- que
+    // es el comportamiento correcto: no se da por entregado lo que no consta.
+    $orders = Mockery::mock(Src\Order\Application\Contracts\Repositories\OrderRepositoryInterface::class);
+    $orders->shouldReceive('findById')->once()->andReturn(null);
+
+    $liberar = Mockery::mock(Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase::class);
+    $liberar->shouldNotReceive('execute');
+
+    $useCase = new MarkShipmentAsDeliveredUseCase($this->repository, $orders, $liberar);
     $delivered = $useCase->execute($id);
 
     expect($delivered->isDelivered())->toBeTrue()

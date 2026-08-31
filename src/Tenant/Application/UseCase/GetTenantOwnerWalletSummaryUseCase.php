@@ -33,7 +33,7 @@ final class GetTenantOwnerWalletSummaryUseCase
         $pendingPayouts = 0.0;
         $availableBalance = 0.0;
         $settlements = [];
-        $bolivares = ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
+        $bolivares = ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
 
         if ($tenantIds !== []) {
             if (Schema::hasTable('platform_commissions')) {
@@ -56,6 +56,7 @@ final class GetTenantOwnerWalletSummaryUseCase
                     $desglose = $this->balance->breakdown($tenantId);
                     $bolivares['disponible_bs'] += $desglose['disponible_bs'];
                     $bolivares['retenido_bs'] += $desglose['retenido_bs'];
+                    $bolivares['retenido_entrega_bs'] += $desglose['retenido_entrega_bs'];
                     $bolivares['sin_valorar_usd'] += $desglose['sin_valorar_usd'];
                     $bolivares['sin_valorar_count'] += $desglose['sin_valorar_count'];
                 }
@@ -110,6 +111,7 @@ final class GetTenantOwnerWalletSummaryUseCase
             // le sirven al comerciante de referencia. Pero el dinero es bolivares.
             'available_balance' => round($availableBalance, 2),
             'retained_ves' => round($bolivares['retenido_bs'], 2),
+            'retained_delivery_ves' => round($bolivares['retenido_entrega_bs'], 2),
             'unvalued_usd' => round($bolivares['sin_valorar_usd'], 2),
             'unvalued_count' => $bolivares['sin_valorar_count'],
             'pending_payouts' => $pendingPayouts,

@@ -31,7 +31,7 @@ beforeEach(function () {
     $this->balance = app(TenantAvailableBalance::class);
 });
 
-function comisionDe(Tenant $tenant, string $status, bool $central = true, float $total = 100.0, ?float $tasa = 50.0): PlatformCommission
+function comisionDe(Tenant $tenant, string $status, bool $central = true, float $total = 100.0, ?float $tasa = 50.0, bool $entregado = true): PlatformCommission
 {
     return PlatformCommission::create([
         'id' => (string) Str::uuid(),
@@ -45,6 +45,9 @@ function comisionDe(Tenant $tenant, string $status, bool $central = true, float 
         'currency' => 'USD',
         'exchange_rate' => $tasa,
         'status' => $status,
+        // Fase 4b: liberada por defecto para que los tests de las fases anteriores sigan
+        // hablando de lo que hablaban. Los de la retencion la pasan a `false` a proposito.
+        'released_at' => $entregado ? now() : null,
         'payment_gateway' => 'pago_movil',
     ]);
 }
@@ -220,4 +223,55 @@ it('un retiro viejo en dólares no se resta como si fueran bolívares', function
     // Sin el filtro de moneda, esos 50 USD se restarían como 50 Bs: un descuadre silencioso
     // por el factor entero de la tasa. Quedan fuera del cálculo.
     expect($this->balance->requestable($this->tenant->id))->toBe(4600.0);
+});
+
+/**
+ * Fase 4b: el saldo no es retirable hasta que el pedido llega a `delivered`.
+ *
+ * Protege del reembolso posterior al retiro: si la plataforma paga antes de que la mercancía
+ * llegue y el comprador reclama después, el dinero ya salió y recuperarlo es perseguirlo.
+ */
+it('una venta cobrada pero no entregada todavía no se puede retirar', function () {
+    comisionDe($this->tenant, 'pending', entregado: false);
+
+    expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
+});
+
+it('la wallet distingue los dos motivos de retención', function () {
+    // Al comerciante le importa cuál es: uno depende de que la plataforma confirme el cobro
+    // y el otro de que el paquete llegue. En el mismo saco sólo generan preguntas.
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0, entregado: true);          // 4.600 disponibles
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0, entregado: false);         // 4.600 esperando entrega
+    comisionDe($this->tenant, 'awaiting_payment', total: 100.0, tasa: 50.0);                  // 4.600 esperando cobro
+
+    $desglose = $this->balance->breakdown($this->tenant->id);
+
+    expect($desglose['disponible_bs'])->toBe(4600.0)
+        ->and($desglose['retenido_entrega_bs'])->toBe(4600.0)
+        ->and($desglose['retenido_bs'])->toBe(4600.0);
+});
+
+it('entregar el pedido libera su comisión y la vuelve retirable', function () {
+    $comision = comisionDe($this->tenant, 'pending', entregado: false);
+
+    expect($this->balance->requestable($this->tenant->id))->toBe(0.0);
+
+    app(Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase::class)
+        ->execute($comision->order_id);
+
+    expect($comision->refresh()->released_at)->not->toBeNull()
+        ->and($this->balance->requestable($this->tenant->id))->toBe(4600.0);
+});
+
+it('liberar dos veces no mueve la fecha de la primera vez', function () {
+    // Esa fecha es el rastro de cuándo el dinero pasó a ser reclamable. Un segundo envío
+    // entregado del mismo pedido no puede reescribirla.
+    $comision = comisionDe($this->tenant, 'pending', entregado: false);
+    $liberar = app(Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase::class);
+
+    expect($liberar->execute($comision->order_id))->toBe(1);
+    $primera = $comision->refresh()->released_at;
+
+    expect($liberar->execute($comision->order_id))->toBe(0)
+        ->and($comision->refresh()->released_at->equalTo($primera))->toBeTrue();
 });

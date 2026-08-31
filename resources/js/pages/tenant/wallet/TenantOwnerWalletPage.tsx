@@ -22,6 +22,7 @@ interface WalletData {
     // referencia, pero el dinero disponible no.
     available_balance: number;
     retained_ves: number;
+    retained_delivery_ves: number;
     unvalued_usd: number;
     unvalued_count: number;
     tenant_id: string | null;
@@ -161,7 +162,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                 )}
 
                 {/* KPI Cards */}
-                {(wallet.retained_ves > 0 || wallet.unvalued_count > 0) && (
+                {(wallet.retained_ves > 0 || wallet.retained_delivery_ves > 0 || wallet.unvalued_count > 0) && (
                     <div className="mb-4 space-y-2">
                         {wallet.retained_ves > 0 && (
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300">
@@ -170,6 +171,16 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                 </span>{' '}
                                 retenidos: son ventas cuyo cobro la plataforma todavía no ha confirmado. Pasarán a tu
                                 saldo disponible en cuanto se confirmen.
+                            </div>
+                        )}
+
+                        {wallet.retained_delivery_ves > 0 && (
+                            <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-xs text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300">
+                                <span className="font-black">
+                                    Bs. {wallet.retained_delivery_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                                </span>{' '}
+                                pendientes de entrega: ya están cobrados, pero no se pueden retirar hasta que el pedido
+                                llegue al cliente.
                             </div>
                         )}
 

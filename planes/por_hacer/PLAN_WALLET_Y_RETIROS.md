@@ -1,6 +1,6 @@
 # Plan — Wallet de la tienda y retiros
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2, 3 y la tasa del pedido ✅ cerradas**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2, 3 y 4b (retención) ✅ · queda el banco y la Fase 5**
 >
 > Sale de una conversación de diseño sobre cómo debe fluir el dinero del marketplace
 > central. Se descartaron dos modelos antes de llegar a éste; queda escrito por qué, porque
@@ -275,11 +275,46 @@ es lo mismo que tenerlo.**
 El test fija además lo que importa de verdad: la tasa cambia entre el pedido y la comprobación,
 y el pedido de cada tienda **sigue teniendo la del pedido central**.
 
-### Fase 4b — Retención y banco
+### Fase 4b — Retención hasta la entrega · ✅ HECHA (30/08/2026)
 
-Sólo entra en el saldo retirable lo que llegó a `delivered` — la máquina de estados ya sabe
-cuándo pasa, así que no hay que inventar plazos. Protege del reembolso posterior al retiro.
-Y el banco obligatorio como ajuste de la tienda, validado al pedir el retiro.
+Sólo entra en el saldo retirable lo que llegó a `delivered`. La máquina de estados ya sabe
+cuándo pasa, así que no hubo que inventar plazos. Protege del reembolso posterior al retiro: si
+la plataforma paga antes de que la mercancía llegue y el comprador reclama después, el dinero
+ya salió y recuperarlo es perseguirlo.
+
+**Una columna, `released_at`, y no una consulta.** La comisión vive en la base central y el
+estado del pedido en la de cada tienda. Preguntarlo al calcular el saldo obligaría a entrar en
+la base de cada inquilino en cada consulta de wallet. Se anota cuando ocurre: una escritura por
+pedido en vez de una lectura por consulta.
+
+`ReleaseOrderCommissionUseCase` responde a una pregunta distinta de `Activate`, y hacen falta
+las dos:
+
+| Caso de uso | Pregunta | Lo dispara |
+| :--- | :--- | :--- |
+| `Activate` | ¿Entró el dinero? | Confirmar el cobro (N15, hallazgo A) |
+| `Release` | ¿Llegó la mercancía? | El pedido pasa a `delivered` |
+
+**Dos puntos lo disparan**, los dos en la capa de aplicación y **después** del guardado, nunca
+dentro de la transacción del inquilino — escribe en la base central, y acoplar la entrega a esa
+escritura es la lección de N25:
+
+- `DeliverOrderUseCase`, donde la entrega es explícita.
+- `MarkShipmentAsDeliveredUseCase`, que **pregunta por el estado real del pedido** en vez de
+  darlo por hecho: la guarda de SH1 decide si el envío entregado lleva el pedido a `delivered`,
+  y un pedido que ya lo estaba por otro envío no vuelve a liberarse.
+
+La wallet distingue ahora **los dos motivos de retención** — esperando cobro y esperando
+entrega — porque al comerciante le importa cuál es, y en el mismo saco sólo generan preguntas.
+
+**Cuatro tests nuevos**, más el ajuste de los que ya había. Uno comprueba que liberar dos veces
+**no mueve la fecha de la primera**: esa fecha es el rastro de cuándo el dinero pasó a ser
+reclamable, y un segundo envío entregado del mismo pedido no puede reescribirla.
+
+### Fase 4c — El banco obligatorio
+
+Pendiente. Un ajuste de la tienda con la cuenta de cobro, validado al pedir el retiro, para
+evitar comisiones interbancarias.
 
 ### Fase 5 — Cablear `suspended`
 

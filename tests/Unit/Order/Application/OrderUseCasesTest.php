@@ -137,7 +137,12 @@ it('ConfirmOrderUseCase, ProcessOrderUseCase, ShipOrderUseCase, DeliverOrderUseC
         ->and($order->shippingMethod())->toBe('Starken');
 
     // 4. Deliver
-    $deliverUseCase = new DeliverOrderUseCase($repository);
+    // Fase 4b: entregar libera la comision retenida. Aqui solo se comprueba que se invoque;
+    // su logica vive en tests/Feature/Monetization/WalletBalanceTest.php.
+    $liberar = m::mock(Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase::class);
+    $liberar->shouldReceive('execute')->once();
+
+    $deliverUseCase = new DeliverOrderUseCase($repository, $liberar);
     $deliverUseCase->execute($order->id()->value());
     expect($order->status())->toBe(OrderStatus::DELIVERED);
 });

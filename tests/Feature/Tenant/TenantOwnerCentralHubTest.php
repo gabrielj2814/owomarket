@@ -132,6 +132,8 @@ test('Tenant Owner can view wallet summary and request payout', function () {
         'currency' => 'USD',
         'exchange_rate' => 50.00,
         'status' => 'collected',
+        // Fase 4b: entregada, luego retirable. Sin esto el saldo la retiene.
+        'released_at' => now(),
     ]);
 
     // 1. Get Wallet Summary

@@ -74,17 +74,19 @@ final class TenantAvailableBalance
      * wallet y retiros). No se revaloriza al consultar: la plataforma le debe al comerciante
      * los bolivares que recibio del comprador, no los de hoy.
      *
-     * @return array{disponible_bs: float, retenido_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
+     * @return array{disponible_bs: float, retenido_bs: float, retenido_entrega_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
      */
     public function breakdown(string $tenantId): array
     {
         if (! Schema::hasTable('platform_commissions')) {
-            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
+            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
         }
 
-        $enBolivares = fn (array $estados) => (float) $this->ventasDe($tenantId)
+        $enBolivares = fn (array $estados, ?bool $entregado = null) => (float) $this->ventasDe($tenantId)
             ->whereIn('status', $estados)
             ->whereNotNull('exchange_rate')
+            ->when($entregado === true, fn ($q) => $q->whereNotNull('released_at'))
+            ->when($entregado === false, fn ($q) => $q->whereNull('released_at'))
             ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
 
         // Sin tasa no se puede expresar en bolivares. Se muestran aparte en vez de
@@ -97,8 +99,12 @@ final class TenantAvailableBalance
         return [
             // Ojo: esto es lo GANADO en bolivares, sin descontar retiros. Lo retirable es
             // `requestable()`, que es el unico numero contra el que se autoriza dinero.
-            'disponible_bs' => $enBolivares(self::ESTADOS_COBRADOS),
+            'disponible_bs' => $enBolivares(self::ESTADOS_COBRADOS, entregado: true),
+            // Dos motivos distintos para retener, y al comerciante le importa cual es: uno
+            // depende de que la plataforma confirme el cobro y el otro de que el paquete
+            // llegue. Meterlos en el mismo saco solo genera preguntas.
             'retenido_bs' => $enBolivares(['awaiting_payment']),
+            'retenido_entrega_bs' => $enBolivares(self::ESTADOS_COBRADOS, entregado: false),
             'sin_valorar_usd' => (float) (clone $sinValorar)->sum(DB::raw('order_total - commission_amount')),
             'sin_valorar_count' => (clone $sinValorar)->count(),
         ];
@@ -125,6 +131,10 @@ final class TenantAvailableBalance
         return (float) $this->ventasDe($tenantId)
             ->whereIn('status', self::ESTADOS_COBRADOS)
             ->whereNotNull('exchange_rate')
+            // Fase 4b: solo lo entregado. Si la plataforma paga antes de que la mercancia
+            // llegue y el comprador reclama despues, el dinero ya salio y recuperarlo es
+            // perseguirlo.
+            ->whereNotNull('released_at')
             ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
     }
 
