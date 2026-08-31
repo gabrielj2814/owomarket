@@ -72,6 +72,37 @@ otra tarde.
 Y el `catch (Throwable)` de `ProductObserver` sigue ahí, con razón. Si algo vuelve a no
 sincronizarse sin dar error, ése es el primer sitio donde mirar.
 
+## Lo que había estado pasando por defecto
+
+Con la cola apuntando a un redis real, **los dos jobs del proyecto no se ejecutaban nunca
+durante los tests**. Todo lo que dependía de ellos pasaba porque no llegaba a comprobarse.
+Arreglado el entorno, se les hizo una pasada propia y aparecieron dos cosas:
+
+**Un fallo real.** `exchange_rate` no estaba en el `$fillable` de `CentralOrder`, así que la
+tasa del pedido central se descartaba en silencio. Lo cazó el primer test de la herencia de
+tasas en el despacho.
+
+**Seis huecos de cobertura.** Los tests que existían ejercitaban los **casos de uso**, no el
+`handle()` de los jobs, que tiene lógica propia:
+
+| Job | Qué no probaba nadie |
+| :--- | :--- |
+| `DispatchCentralOrderJob` | El `throw` que hace que la cola reintente un despacho parcial |
+| | Que **no** lance si la tienda ya agotó sus intentos |
+| | Que salga sin gastar reintentos si el pedido central ya no existe |
+| `SyncProductToCentralCatalogJob` | Que no reviente si el producto ya no existe al llegarle el turno |
+| | Que no reviente si la tienda ya no existe |
+| | Que devuelva la tenancy activa a quien lo llamó |
+
+El primero es el que más importa: sin ese `throw`, **un despacho parcial parecería exitoso y
+no se reintentaría nunca** — un pedido cobrado que no llega a su tienda, que es exactamente lo
+que el docblock del job dice que no puede pasar. Se prueba sin dobles: la tienda se queda sin
+existencias entre el pedido y el reintento, que es un motivo de fallo que ocurre de verdad.
+
+El último también es sutil: en modo `sync` el job corre **dentro** de la petición que lo
+encoló, así que un `tenancy()->end()` al salir mandaría las escrituras siguientes de esa misma
+petición a la base central. Escribiría, pero en el sitio equivocado, y sin dar error.
+
 ## Un test propio que se cayó de rebote
 
 `CommissionExchangeRateTest` mezclaba `now()` —zona del servidor— con `RateDate::today()`

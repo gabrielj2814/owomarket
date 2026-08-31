@@ -322,3 +322,54 @@ test('un fallo al encolar no tumba la escritura de la tienda (N25)', function ()
 
     expect(EloquentProduct::find($product->id))->not->toBeNull();
 });
+
+/*
+|--------------------------------------------------------------------------
+| El `handle()` del job de sincronización
+|--------------------------------------------------------------------------
+|
+| Los tests de arriba lo ejercitan a través del observador, que es el camino real. Pero el
+| job tiene dos salidas tempranas y un restablecimiento de tenancy que nadie tocaba, y son
+| justo lo que evita que un worker se caiga procesando trabajo viejo.
+|
+| Nada de esto se ejecutaba hasta hoy: la cola de los tests apuntaba a un redis real (ver
+| `planes/anotaciones/ENTORNO_DE_TESTS.md`).
+*/
+
+test('el job no revienta si el producto ya no existe cuando le toca el turno', function () {
+    // Entre encolar y ejecutar puede pasar cualquier cosa. Si el job lanzara, gastaría sus
+    // cinco reintentos con espera creciente sobre algo que no va a volver.
+    $product = ($this->publishedProduct)();
+    $productId = $product->id;
+
+    CentralProduct::where('tenant_product_id', $productId)->delete();
+    $product->forceDelete();
+
+    $job = new SyncProductToCentralCatalogJob($this->tenant->id, $productId, 'sync');
+    $job->handle(app(Src\Product\Application\UseCase\SyncProductToCentralMarketplaceUseCase::class));
+
+    expect(CentralProduct::where('tenant_product_id', $productId)->count())->toBe(0);
+});
+
+test('el job no revienta si la tienda ya no existe', function () {
+    $job = new SyncProductToCentralCatalogJob('t_inexistente', (string) Str::uuid(), 'sync');
+    $job->handle(app(Src\Product\Application\UseCase\SyncProductToCentralMarketplaceUseCase::class));
+
+    expect(true)->toBeTrue();
+});
+
+test('el job devuelve la tienda que estaba activa a quien lo llamó', function () {
+    // Con la cola en modo `sync` el job corre DENTRO de la petición que lo encoló. Un
+    // `tenancy()->end()` a secas al salir desmontaría la tienda de quien llamó, y las
+    // escrituras siguientes de esa misma petición acabarían en la base central. Es la
+    // clase de fallo que no da error: escribe, pero en el sitio equivocado.
+    $product = ($this->publishedProduct)();
+
+    expect(tenant('id'))->toBe($this->tenant->id);
+
+    $job = new SyncProductToCentralCatalogJob($this->tenant->id, (string) $product->id, 'sync');
+    $job->handle(app(Src\Product\Application\UseCase\SyncProductToCentralMarketplaceUseCase::class));
+
+    expect(tenancy()->initialized)->toBeTrue()
+        ->and(tenant('id'))->toBe($this->tenant->id);
+});

@@ -1125,3 +1125,102 @@ test('el pedido de cada tienda hereda la tasa del pedido central, no captura la 
         tenancy()->end();
     }
 });
+
+/*
+|--------------------------------------------------------------------------
+| El `handle()` del job, que hasta ahora no probaba nadie
+|--------------------------------------------------------------------------
+|
+| Los tres tests de N17 de arriba ejercitan el CASO DE USO. El job que lo envuelve tiene
+| lógica propia y ninguna estaba cubierta: decidir si el despacho quedó incompleto y
+| lanzar para que la cola reintente. Si ese `throw` desapareciera, un despacho parcial
+| parecería exitoso y no se reintentaría nunca — un pedido cobrado que no llega a su
+| tienda, que es justo lo que el propio job dice que no puede pasar.
+|
+| No se veía porque hasta hoy la cola de los tests apuntaba a un redis real y los jobs no
+| llegaban a ejecutarse (ver `planes/anotaciones/ENTORNO_DE_TESTS.md`).
+*/
+
+/** Deja el pedido central despachado a medias: la tienda A en `failed` y sin pedido local. */
+function dejarDespachoFallido(object $test, CentralOrder $order, int $intentos = 1): void
+{
+    tenancy()->initialize($test->tenantA);
+    DB::table('payments')->delete();
+    DB::table('order_items')->delete();
+    DB::table('orders')->delete();
+    tenancy()->end();
+
+    CentralOrderDispatch::where('central_order_id', $order->id)
+        ->where('tenant_id', $test->tenantA->id)
+        ->update([
+            'status' => 'failed',
+            'tenant_order_id' => null,
+            'attempts' => $intentos,
+            'error_message' => 'BD de la tienda caída',
+        ]);
+}
+
+/** Un pedido central de una sola tienda, ya despachado. */
+function pedidoCentralDeUnaTienda(object $test): CentralOrder
+{
+    $response = $test->postJson('/api/central/marketplace/checkout/create-order', [
+        'customer' => ['name' => 'Cliente Job', 'email' => 'job-'.Str::random(5).'@example.com'],
+        'shipping_address' => ['address' => 'Calle 1', 'city' => 'Caracas'],
+        'payment_method' => 'pago_movil',
+        'items' => [
+            ['tenant_id' => $test->tenantA->id, 'product_id' => $test->productA->id, 'quantity' => 1],
+        ],
+    ]);
+    $response->assertStatus(201);
+
+    return CentralOrder::with(['items', 'customer'])->find($response->json('data.order_id'));
+}
+
+test('el job lanza si una tienda queda pendiente, para que la cola reintente (N17)', function () {
+    $order = pedidoCentralDeUnaTienda($this);
+
+    dejarDespachoFallido($this, $order, intentos: 1);
+
+    // Y la tienda vuelve a fallar en esta pasada: se queda sin existencias entre el pedido
+    // y el reintento, asi que `StockReserver` lanza y su fila sigue en `failed`. No hace
+    // falta ningun doble: falla de verdad, por un motivo que pasa de verdad.
+    tenancy()->initialize($this->tenantA);
+    DB::table('products')->where('id', $this->productA->id)->update(['quantity' => 0]);
+    tenancy()->end();
+
+    // El caso de uso NO propaga ese fallo --a proposito: el fallo de una tienda no puede
+    // abortar las demas--, asi que es el job quien tiene que detectarlo mirando la tabla.
+    // Sin este `throw`, un despacho parcial pareceria exitoso y no se reintentaria nunca:
+    // un pedido cobrado que no llega a su tienda.
+    $job = new DispatchCentralOrderJob($order->id);
+
+    expect(fn () => $job->handle(app(DispatchCentralOrderToTenantsUseCase::class)))
+        ->toThrow(RuntimeException::class);
+
+    expect(CentralOrderDispatch::where('central_order_id', $order->id)->first()->status)
+        ->toBe('failed');
+});
+
+test('el job no lanza si la tienda ya agoto sus intentos (N17)', function () {
+    $order = pedidoCentralDeUnaTienda($this);
+
+    // Con el tope gastado, el caso de uso ni la toca y el job tampoco lanza: machacar una
+    // tienda rota solo llena la cola de trabajo inutil. Queda para intervencion manual.
+    dejarDespachoFallido($this, $order, intentos: DispatchCentralOrderToTenantsUseCase::MAX_DISPATCH_ATTEMPTS);
+
+    $job = new DispatchCentralOrderJob($order->id);
+    $job->handle(app(DispatchCentralOrderToTenantsUseCase::class));
+
+    expect(CentralOrderDispatch::where('central_order_id', $order->id)->first()->status)
+        ->toBe('failed');
+});
+
+test('el job sale sin gastar reintentos si el pedido central ya no existe (N17)', function () {
+    $job = new DispatchCentralOrderJob((string) Str::uuid());
+
+    // Sin excepcion: reintentar cinco veces algo que no existe no lo va a resucitar, y
+    // cada reintento es trabajo inutil en la cola.
+    $job->handle(app(DispatchCentralOrderToTenantsUseCase::class));
+
+    expect(CentralOrderDispatch::count())->toBe(0);
+});
