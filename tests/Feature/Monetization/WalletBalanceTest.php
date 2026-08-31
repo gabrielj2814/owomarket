@@ -332,6 +332,12 @@ it('reconoce el mismo banco escrito de otra forma', function () {
 
     // Mayúsculas y espacios de sobra no convierten a Banesco en otro banco.
     expect((float) pedirRetiro($this, 100.0, '  BANESCO ')->transfer_fee)->toBe(0.0);
+
+    // Ni el «Banco» delante, que es lo que de verdad escribe la gente.
+    expect((float) pedirRetiro($this, 100.0, 'Banco Banesco')->transfer_fee)->toBe(0.0);
+
+    // Pero otro banco sigue siendo otro banco, con o sin prefijo.
+    expect((float) pedirRetiro($this, 100.0, 'Banco Mercantil')->transfer_fee)->toBe(100.0);
 });
 
 it('el saldo baja lo pedido y no lo recibido: sin bolívares fantasma', function () {

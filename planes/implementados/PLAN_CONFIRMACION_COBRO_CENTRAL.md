@@ -7,8 +7,9 @@
 > **El permiso.** El plan decía `super_admin`. Se implementó bajo `staff:manage_orders`, en
 > el mismo grupo que `resolve-dispute` — que **reembolsa al comprador y anula comisiones**.
 > Exigir más permiso para confirmar que el dinero entró que para devolverlo es teatro, no
-> seguridad. Cambiarlo es mover una línea de grupo en
-> `src/Admin/Infrastructure/Http/Routes/web.php`.
+> seguridad.
+>
+> **Confirmado el 30/08/2026:** se queda en `staff:manage_orders`. La desviación deja de serlo.
 >
 > **El frontend usa `axios` directo**, contra `reglas.md` §1.1. Es lo que ya hacen las tres
 > llamadas vecinas del mismo fichero. Crear un servicio para la cuarta y dejar las otras tres

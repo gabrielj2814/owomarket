@@ -104,9 +104,14 @@ final class CreateTenantOwnerPayoutRequestUseCase
      * interbancaria que pagar-- y el importe configurado en cualquier otro caso. Sin banco
      * declarado se cobra: no poder comprobarlo no es motivo para regalarlo.
      *
-     * ponytail: los bancos se comparan por nombre normalizado. "Banesco", "BANESCO" y
-     * " banesco " son el mismo, pero "Banco Banesco" no lo seria. Si eso empieza a dar
-     * problemas, la salida es una lista de bancos con codigo en vez de texto libre.
+     * Los bancos se comparan por nombre normalizado: minusculas, espacios colapsados y el
+     * prefijo "banco" fuera, que es el caso que de verdad se da --el comerciante escribe
+     * "Banco Mercantil" donde la plataforma tiene "Mercantil"--.
+     *
+     * ponytail: sigue siendo comparacion de texto libre, asi que un alias real ("BOD" contra
+     * "Banco Occidental de Descuento") no casaria. La salida es una lista de bancos con codigo
+     * en el formulario; no se construye hoy porque no hay evidencia de que haga falta, y el
+     * coste de equivocarse es cobrar de mas una comision, no perder dinero.
      *
      * @param  array<string, mixed>  $paymentDetails
      */
@@ -147,6 +152,11 @@ final class CreateTenantOwnerPayoutRequestUseCase
 
     private function normalizar(string $valor): string
     {
-        return mb_strtolower(trim(preg_replace('/\s+/', ' ', $valor) ?? ''));
+        $limpio = mb_strtolower(trim(preg_replace('/\s+/', ' ', $valor) ?? ''));
+
+        // "Banco Mercantil" y "Mercantil" son el mismo banco escrito por dos personas
+        // distintas. Solo se quita como prefijo: un banco que se llamara "Banco Banco" --no
+        // existe, pero la regla no puede depender de eso-- conserva el segundo.
+        return preg_replace('/^banco\s+/', '', $limpio) ?? $limpio;
     }
 }

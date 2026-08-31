@@ -349,9 +349,15 @@ propio ya estaba en `central_pago_movil_bank_name`.
 **El comerciante ve el descuento antes de confirmar.** Un retiro que llega mermado sin aviso es
 una reclamación.
 
-**Los bancos se comparan por nombre normalizado**, y queda marcado con su techo: «Banesco»,
-«BANESCO» y « banesco » son el mismo, pero «Banco Banesco» no lo sería. Si eso empieza a dar
-problemas la salida es una lista de bancos con código; hoy no hay evidencia de que haga falta.
+**Los bancos se comparan por nombre normalizado**: minúsculas, espacios colapsados y el
+prefijo «Banco» fuera. Ese último se añadió al repasar los pendientes, porque era el caso que
+de verdad se da — el comerciante escribe «Banco Mercantil» donde la plataforma tiene
+«Mercantil».
+
+Sigue siendo comparación de texto libre, así que un alias real —«BOD» contra «Banco Occidental
+de Descuento»— no casaría. La salida es una lista de bancos con código en el formulario; no se
+construye porque no hay evidencia de que haga falta, y el coste de equivocarse es **cobrar de
+más una comisión, no perder dinero**.
 
 **Cinco tests**, incluido el del saldo fantasma y el de las mayúsculas.
 

@@ -1,6 +1,6 @@
 import Dashboard from "@/components/layouts/Dashboard";
 import { Head } from "@inertiajs/react";
-import axios from "axios";
+import AdminOrderServices from "@/Services/AdminOrderServices";
 import {
     Badge,
     Breadcrumb,
@@ -169,9 +169,9 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
             if (dateFrom) params.date_from = dateFrom;
             if (dateTo) params.date_to = dateTo;
 
-            const response = await axios.get("/admin/api/orders", { params });
-            if (response.data?.status === "success") {
-                const resData = response.data.data;
+            const response = await AdminOrderServices.listar<any>(params);
+            if (response?.status === "success") {
+                const resData = response.data;
                 setOrders(resData.orders.data);
                 setPagination({
                     current_page: resData.orders.current_page,
@@ -198,9 +198,9 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
         setDetailModalOpen(true);
         setLoadingDetail(true);
         try {
-            const response = await axios.get(`/admin/api/orders/${order.id}/detail`);
-            if (response.data?.status === "success") {
-                setSelectedOrder(response.data.data.order);
+            const response = await AdminOrderServices.detalle<any>(order.id);
+            if (response?.status === "success") {
+                setSelectedOrder(response.data.order);
             }
         } catch (e) {
             setToast({ type: "error", text: "Error al cargar detalle de la orden." });
@@ -217,14 +217,14 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
 
         setConfirmingPayment(true);
         try {
-            const response = await axios.post(`/admin/api/orders/${selectedOrder.id}/confirm-payment`, {
+            const response = await AdminOrderServices.confirmarCobro(selectedOrder.id, {
                 reference: selectedOrder.payment_reference || undefined,
             });
 
-            if (response.data?.status === "success") {
+            if (response?.status === "success") {
                 setToast({
                     type: "success",
-                    text: response.data.message || "Cobro confirmado.",
+                    text: response.message || "Cobro confirmado.",
                 });
                 setDetailModalOpen(false);
                 fetchOrders(pagination.current_page);
@@ -245,16 +245,16 @@ const AdminGlobalOrdersPage: FC<AdminGlobalOrdersPageProps> = ({
 
         setSubmittingDispute(true);
         try {
-            const response = await axios.post(`/admin/api/orders/${selectedOrder.id}/resolve-dispute`, {
-                resolution_type: disputeType,
+            const response = await AdminOrderServices.resolverDisputa(selectedOrder.id, {
+                resolution_type: disputeType as 'refund' | 'cancel',
                 reason: disputeReason.trim(),
                 notes: disputeNotes.trim() || undefined,
             });
 
-            if (response.data?.status === "success") {
+            if (response?.status === "success") {
                 setToast({
                     type: "success",
-                    text: response.data.message || "Disputa resuelta exitosamente.",
+                    text: response.message || "Disputa resuelta exitosamente.",
                 });
                 setDisputeModalOpen(false);
                 setDetailModalOpen(false);
