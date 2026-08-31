@@ -70,7 +70,7 @@ final class CreateStorefrontOrderPOSTController extends Controller
             // Es lo que hace efectivos los lockForUpdate del StockReserver y lo
             // que garantiza que, si el pedido no llega a crearse, el stock no
             // quede descontado ni el cupón consumido.
-            [$orderId, $orderNum, $orderTotal, $paymentMethod] = DB::transaction(function () use ($request) {
+            [$orderId, $orderNum, $orderTotal, $paymentMethod, $paymentReference] = DB::transaction(function () use ($request) {
                 // 2. Customer resolution (find or create in tenant DB)
                 $customerEmail = trim((string) $request->input('customer.email'));
                 $customerName = trim((string) $request->input('customer.name'));
@@ -255,7 +255,7 @@ final class CreateStorefrontOrderPOSTController extends Controller
                     'updated_at' => now(),
                 ]);
 
-                return [$orderId, $orderNum, $orderTotal, $paymentMethod];
+                return [$orderId, $orderNum, $orderTotal, $paymentMethod, (string) $txId];
             });
 
             // 7. Calculate and Record Platform Commission in Central DB.
@@ -282,6 +282,13 @@ final class CreateStorefrontOrderPOSTController extends Controller
                         metadata: [
                             'customer_email' => $request->input('customer.email'),
                             'source' => 'storefront_checkout',
+                            // La referencia que puso el comprador. Viaja hasta la comision
+                            // --que vive en la base central-- porque es lo que el
+                            // administrador coteja contra el extracto del banco de la
+                            // plataforma para confirmar el cobro. En la tabla `payments` de
+                            // la tienda tambien esta, pero ahi no la ve nadie desde la
+                            // central.
+                            'payment_reference' => $paymentReference,
                         ]
                     );
                 }

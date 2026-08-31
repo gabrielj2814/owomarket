@@ -1,6 +1,6 @@
 # Plan — La plataforma cobra todas las ventas
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1 y 2 ✅ cerradas**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2 y 3a ✅ · queda la pantalla y cerrar el `paid` del comerciante**
 >
 > Decisión de negocio del 30/08/2026: **el dinero de todas las compras cae en la cuenta del
 > marketplace**, también el de las que se hacen en el escaparate propio de cada tienda.
@@ -114,14 +114,49 @@ confirmar que llegó**: el comerciante no tiene acceso a ese extracto bancario.
 Y el administrador **hoy no puede ver esos pedidos**: el monitor global lista pedidos
 centrales, y los del escaparate viven en la base de cada tienda.
 
-Hace falta decidir dos cosas antes de diseñarlo:
+#### Las dos decisiones, tomadas el 31/08/2026
 
-1. **Cómo ve el administrador los cobros pendientes de todas las tiendas.** Recorrer las bases
-   de los inquilinos, como ya hace el despacho central, o proyectar los pagos pendientes a una
-   tabla central.
-2. **Si el comerciante conserva algún papel.** Marcar «pagado» deja de tener sentido para él,
-   pero puede seguir siendo útil que reporte una referencia que el cliente le pasó por otro
-   canal.
+**1. La lista sale de `platform_commissions`.** Ni tabla nueva ni recorrer las bases de los
+inquilinos: **la proyección ya existía**. Esa tabla es central, se escribe en cada venta de los
+dos canales, y una comisión en `awaiting_payment` **es** un cobro pendiente. Sólo le faltaba la
+referencia que puso el comprador, que ahora viaja en su `metadata` desde el checkout.
+
+Recorrer inquilinos no escala más allá de unas pocas tiendas, y una tabla nueva es una copia
+más que mantener — este proyecto ya tiene dos cicatrices de copias que divergieron.
+
+**2. El comerciante reporta, la plataforma confirma.** Puede adjuntar la referencia que el
+comprador le pasó por otro canal, y queda como **pista**. Confirmar el cobro sigue siendo de
+quien ve el extracto.
+
+#### ⚠️ El agujero que abrieron las fases 1 y 2
+
+`POST /api-tenant/order/{id}/payment-status` sigue vivo, y con él **el comerciante puede marcar
+sus propios pedidos como pagados**, lo que activa la comisión y vuelve el importe retirable.
+
+Ayer estaba bien: él tenía el dinero. Hoy el dinero está en la cuenta de la plataforma, así que
+eso es **autocertificarse un cobro para desbloquear un retiro contra la cuenta ajena**.
+
+**Por eso esta fase se hizo en este orden**: primero el camino del administrador, después
+cerrar el del comerciante. Al revés, nadie habría podido confirmar nada y las comisiones se
+habrían quedado atascadas en `awaiting_payment`.
+
+#### Fase 3a — El camino del administrador · ✅ HECHA (31/08/2026)
+
+- La referencia del comprador viaja del checkout a la comisión.
+- `GET /admin/api/storefront-payments` — los cobros pendientes de todas las tiendas, con el
+  importe **en bolívares**, que es lo que hay que buscar en el extracto: el comprador pagó
+  bolívares, no dólares.
+- `POST /admin/api/storefront-payments/{id}/confirm` — marca el pedido de la tienda como
+  pagado por la entidad, pone su fila de `payments` en `completed` y activa la comisión.
+
+Cinco tests. Confirmar dos veces se rechaza: mentiría sobre cuándo entró el dinero, y esa fecha
+es la que sostiene cualquier reclamación posterior.
+
+#### Fase 3b — Lo que queda
+
+- **La pantalla del administrador.** Los endpoints existen y no los llama nadie: hoy es una
+  protección escrita y sin cablear, del mismo tipo que las que esta auditoría lleva cerrando.
+- **Quitarle el `paid` al comerciante**, y darle en su lugar el reporte de referencia.
 
 ### Fase 4 — Retirar lo que sobra
 

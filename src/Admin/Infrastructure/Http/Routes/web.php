@@ -150,6 +150,17 @@ Route::middleware(['auth', 'staff:manage_orders'])->group(function () {
     // reembolsa al comprador y anula comisiones: pedir mas permiso para confirmar que el
     // dinero entro que para devolverlo seria teatro.
     Route::post('/api/orders/{id}/confirm-payment', \Src\Admin\Infrastructure\Http\Controller\ConfirmAdminOrderPaymentPOSTController::class);
+
+    /*
+    | Cobros del escaparate pendientes de confirmar, de todas las tiendas.
+    |
+    | Desde que la plataforma cobra todas las ventas, el comerciante ya no puede decir si el
+    | dinero llego --no ve ese extracto--, asi que el que cobra es el que confirma. La lista
+    | sale de `platform_commissions` en `awaiting_payment`, que es la unica proyeccion central
+    | que ya existe de una venta de tienda.
+    */
+    Route::get('/api/storefront-payments', \Src\Admin\Infrastructure\Http\Controller\ListPendingStorefrontPaymentsGETController::class);
+    Route::post('/api/storefront-payments/{id}/confirm', \Src\Admin\Infrastructure\Http\Controller\ConfirmStorefrontPaymentPOSTController::class);
 });
 
 // ---------------------------------------------------------------------------
