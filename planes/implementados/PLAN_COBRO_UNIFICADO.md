@@ -218,12 +218,18 @@ La tasa congelada, la retención hasta `delivered`, la comisión por transferenc
 y el cálculo del saldo en bolívares siguen exactamente igual. Este cambio afecta a **de quién
 es el dinero cuando entra**, no a cómo se cuenta después.
 
-## Y una idea que quedó pendiente de la misma conversación
+## Una idea que se descartó por ahora
 
-Retención como palanca comercial: el saldo se puede retirar pasado un tiempo desde el pedido, y
-**quien paga suscripción retira desde el día uno**. Se apila con la retención hasta `delivered`
-de la Fase 4b, que es una regla de riesgo y no comercial.
+Se planteó usar la retención como **palanca comercial**: que quien pague suscripción pueda
+retirar desde el día uno, saltándose la ventana de garantía.
 
-Falta decidir si ese plazo cuenta desde **la entrega** o desde **la fecha del pedido**. Desde la
-entrega es coherente con la protección que ya existe; desde el pedido, una venta que tarde en
-entregarse podría cumplir el plazo antes de haber llegado y las dos reglas se pisarían.
+**Descartada el 31/08/2026.** Queda anotada por si vuelve, con el motivo por el que era
+delicada: convertir una **regla de riesgo** en un **producto de pago** significa vender el
+derecho a cobrar antes de que el comprador pueda reclamar. El día que a un cliente con plan de
+pago haya que devolverle una venta ya retirada, esa excepción la habrá vendido la propia
+plataforma.
+
+Si se retoma, la ventana de garantía por plan es una excepción a
+`central_payout_hold_days` en `TenantAvailableBalance::diasDeRetencion()`, y lo que se abre con
+ella es exactamente el escenario de
+[`planes/por_hacer/PLAN_REEMBOLSO_TRAS_RETIRO.md`](../por_hacer/PLAN_REEMBOLSO_TRAS_RETIRO.md).
