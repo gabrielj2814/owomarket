@@ -8,7 +8,9 @@ use Illuminate\Support\Facades\Schema;
 use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
+use Throwable;
 
 final class GetTenantOwnerWalletSummaryUseCase
 {
@@ -25,6 +27,12 @@ final class GetTenantOwnerWalletSummaryUseCase
         // Sólo las tiendas del propio usuario. Si no tiene ninguna, el resumen va en cero:
         // NUNCA se cae hacia las tiendas de otros comerciantes.
         $tenants = $this->ownership->tenantsOf($userId);
+
+        try {
+            $ajustes = CentralSetting::query()->where('group', 'payment')->pluck('value', 'key')->all();
+        } catch (Throwable) {
+            $ajustes = [];
+        }
         $tenantIds = $tenants->pluck('id')->map(fn ($id) => (string) $id)->all();
 
         $grossSales = 0.0;
@@ -120,6 +128,10 @@ final class GetTenantOwnerWalletSummaryUseCase
             // liquidacion, asi que una tienda sin liquidaciones previas no podia pedir la
             // primera.
             'tenant_id' => $tenantIds[0] ?? null,
+            // Fase 4c: la pantalla necesita los dos para avisar del descuento ANTES de que el
+            // comerciante confirme. Un retiro que llega mermado sin aviso es una reclamacion.
+            'platform_bank' => $ajustes['central_pago_movil_bank_name'] ?? null,
+            'interbank_transfer_fee' => (float) ($ajustes['central_interbank_transfer_fee'] ?? 0.0),
             'tenants_count' => count($tenantIds),
             'settlements' => $settlements,
         ];

@@ -183,6 +183,10 @@ final class TenantAvailableBalance
             $consulta->lockForUpdate();
         }
 
-        return (float) $consulta->sum('net_amount');
+        // Fase 4c: se resta lo que salio de la wallet, NO lo que llego al banco. Desde que
+        // existe la comision por transferencia los dos importes divergen, y restar
+        // `net_amount` le dejaria al comerciante la comision como saldo fantasma despues de
+        // cada retiro. Repetible, y dinero que se crea solo.
+        return (float) $consulta->sum('gross_sales_amount');
     }
 }

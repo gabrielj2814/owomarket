@@ -275,3 +275,82 @@ it('liberar dos veces no mueve la fecha de la primera vez', function () {
     expect($liberar->execute($comision->order_id))->toBe(0)
         ->and($comision->refresh()->released_at->equalTo($primera))->toBeTrue();
 });
+
+/**
+ * Fase 4c: cada tienda cobra en el banco que quiera, pero si hace falta una transferencia
+ * interbancaria su coste lo asume quien eligió esa vía.
+ */
+function ajustarPlataforma(string $banco, float $comision): void
+{
+    foreach (['central_pago_movil_bank_name' => $banco, 'central_interbank_transfer_fee' => (string) $comision] as $clave => $valor) {
+        Src\Payment\Infrastructure\Eloquent\Models\CentralSetting::updateOrCreate(
+            ['key' => $clave],
+            ['group' => 'payment', 'value' => $valor]
+        );
+    }
+}
+
+function pedirRetiro(object $test, float $importe, string $banco): Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement
+{
+    return app(Src\Tenant\Application\UseCase\CreateTenantOwnerPayoutRequestUseCase::class)
+        ->execute($test->duenno->id, [
+            'tenant_id' => $test->tenant->id,
+            'amount' => $importe,
+            'payment_method' => 'Pago Móvil',
+            'payment_details' => ['bank' => $banco],
+        ]);
+}
+
+it('no cobra comisión si el retiro va al mismo banco de la plataforma', function () {
+    ajustarPlataforma('Banesco', 100.0);
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0);   // 4.600 Bs
+    $this->duenno = duenoDe($this->tenant);
+
+    $retiro = pedirRetiro($this, 1000.0, 'Banesco');
+
+    expect((float) $retiro->transfer_fee)->toBe(0.0)
+        ->and((float) $retiro->net_amount)->toBe(1000.0);
+});
+
+it('cobra la comisión si el retiro va a otro banco', function () {
+    ajustarPlataforma('Banesco', 100.0);
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0);
+    $this->duenno = duenoDe($this->tenant);
+
+    $retiro = pedirRetiro($this, 1000.0, 'Mercantil');
+
+    expect((float) $retiro->transfer_fee)->toBe(100.0)
+        // Sale de la wallet lo pedido; el comerciante recibe la diferencia.
+        ->and((float) $retiro->gross_sales_amount)->toBe(1000.0)
+        ->and((float) $retiro->net_amount)->toBe(900.0);
+});
+
+it('reconoce el mismo banco escrito de otra forma', function () {
+    ajustarPlataforma('Banesco', 100.0);
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0);
+    $this->duenno = duenoDe($this->tenant);
+
+    // Mayúsculas y espacios de sobra no convierten a Banesco en otro banco.
+    expect((float) pedirRetiro($this, 100.0, '  BANESCO ')->transfer_fee)->toBe(0.0);
+});
+
+it('el saldo baja lo pedido y no lo recibido: sin bolívares fantasma', function () {
+    // El test que importa. Con la comisión descontándose del saldo por `net_amount`, al
+    // comerciante le quedarían 100 Bs de saldo inventado después de cada retiro, y repetible.
+    ajustarPlataforma('Banesco', 100.0);
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0);   // 4.600 Bs
+    $this->duenno = duenoDe($this->tenant);
+
+    pedirRetiro($this, 4000.0, 'Mercantil');
+
+    // 4.600 - 4.000 = 600. NO 700, que es lo que saldría restando los 3.900 recibidos.
+    expect($this->balance->requestable($this->tenant->id))->toBe(600.0);
+});
+
+it('rechaza un retiro que no cabe en el saldo, con la comisión ya contada', function () {
+    ajustarPlataforma('Banesco', 100.0);
+    comisionDe($this->tenant, 'pending', total: 100.0, tasa: 50.0);   // 4.600 Bs
+    $this->duenno = duenoDe($this->tenant);
+
+    expect(fn () => pedirRetiro($this, 5000.0, 'Mercantil'))->toThrow(Exception::class);
+});

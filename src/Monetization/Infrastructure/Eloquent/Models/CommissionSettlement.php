@@ -34,6 +34,7 @@ class CommissionSettlement extends Model
         'total_orders_count',
         'gross_sales_amount',
         'commission_amount',
+        'transfer_fee',
         'net_amount',
         'currency',
         'status',
@@ -47,6 +48,7 @@ class CommissionSettlement extends Model
     protected $casts = [
         'gross_sales_amount' => 'float',
         'commission_amount' => 'float',
+        'transfer_fee' => 'float',
         'net_amount' => 'float',
         'settled_at' => 'datetime',
         'metadata' => 'array',

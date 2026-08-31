@@ -1,6 +1,6 @@
 # Plan — Wallet de la tienda y retiros
 
-> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1, 2, 3 y 4b (retención) ✅ · queda el banco y la Fase 5**
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fases 1 a 4 ✅ cerradas · queda la Fase 5**
 >
 > Sale de una conversación de diseño sobre cómo debe fluir el dinero del marketplace
 > central. Se descartaron dos modelos antes de llegar a éste; queda escrito por qué, porque
@@ -311,10 +311,49 @@ entrega — porque al comerciante le importa cuál es, y en el mismo saco sólo 
 **no mueve la fecha de la primera**: esa fecha es el rastro de cuándo el dinero pasó a ser
 reclamable, y un segundo envío entregado del mismo pedido no puede reescribirla.
 
-### Fase 4c — El banco obligatorio
+### Fase 4c — La comisión por transferir a otro banco · ✅ HECHA (30/08/2026)
 
-Pendiente. Un ajuste de la tienda con la cuenta de cobro, validado al pedir el retiro, para
-evitar comisiones interbancarias.
+**El banco dejó de ser obligatorio.** En vez de imponer uno —que habría costado comerciantes
+que no quisieran abrir cuenta allí— cada tienda cobra donde quiera, y **quien elige la vía cara
+la paga**: si el retiro exige una transferencia interbancaria, su coste se descuenta del
+importe.
+
+#### La trampa que apareció al diseñarlo
+
+`TenantAvailableBalance` restaba los retiros por `net_amount`. Daba igual mientras
+`net == gross`, y con la comisión dejan de serlo:
+
+| | Bs |
+| :--- | ---: |
+| El comerciante pide | 4.600 |
+| Comisión interbancaria | −100 |
+| **Recibe** | **4.500** |
+| **Sale de su wallet** | **4.600** |
+
+Restando `net_amount` le quedarían **100 Bs de saldo fantasma después de cada retiro**, y
+repetible: dinero que se crea solo. El saldo resta ahora `gross_sales_amount`, que es lo que de
+verdad salió. Hay un test dedicado a esa cifra; si alguien vuelve a `net_amount`, falla.
+
+#### Lo demás
+
+Los tres importes de un retiro pasan a significar cosas distintas —`gross_sales_amount` lo que
+sale de la wallet, `transfer_fee` lo que se queda la plataforma, `net_amount` lo que recibe el
+comerciante— y por eso la comisión necesita columna propia en vez de reutilizar
+`commission_amount`, que ya significa otra cosa.
+
+**No hay ajuste nuevo en la tienda.** El formulario de retiro ya pide el banco de destino, así
+que guardar además una preferencia sería una segunda fuente de verdad para el mismo dato. Del
+lado de la plataforma sólo hizo falta una clave, `central_interbank_transfer_fee`: el banco
+propio ya estaba en `central_pago_movil_bank_name`.
+
+**El comerciante ve el descuento antes de confirmar.** Un retiro que llega mermado sin aviso es
+una reclamación.
+
+**Los bancos se comparan por nombre normalizado**, y queda marcado con su techo: «Banesco»,
+«BANESCO» y « banesco » son el mismo, pero «Banco Banesco» no lo sería. Si eso empieza a dar
+problemas la salida es una lista de bancos con código; hoy no hay evidencia de que haga falta.
+
+**Cinco tests**, incluido el del saldo fantasma y el de las mayúsculas.
 
 ### Fase 5 — Cablear `suspended`
 

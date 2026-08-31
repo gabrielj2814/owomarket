@@ -26,6 +26,8 @@ interface WalletData {
     unvalued_usd: number;
     unvalued_count: number;
     tenant_id: string | null;
+    platform_bank: string | null;
+    interbank_transfer_fee: number;
     pending_payouts: number;
     settled_payouts: number;
     tenants_count: number;
@@ -63,6 +65,22 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
     const [binancePayId, setBinancePayId] = useState<string>('');
     const [loading, setLoading] = useState<boolean>(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+    // Fase 4c: cada tienda cobra en el banco que quiera, pero si hace falta una transferencia
+    // interbancaria su coste lo asume quien eligió esa vía. Se calcula aquí sólo para AVISAR:
+    // el importe que manda es siempre el pedido, y el backend vuelve a decidir la comisión.
+    // Un retiro que llega mermado sin aviso previo es una reclamación.
+    const normalizarBanco = (valor: string) => valor.trim().toLowerCase().replace(/\s+/g, ' ');
+
+    const comisionTransferencia =
+        payoutMethod === 'pago_movil' &&
+        wallet.interbank_transfer_fee > 0 &&
+        (!wallet.platform_bank || normalizarBanco(bankName) !== normalizarBanco(wallet.platform_bank))
+            ? wallet.interbank_transfer_fee
+            : 0;
+
+    const importePedido = parseFloat(amount || '0');
+    const importeRecibido = Math.max(0, importePedido - comisionTransferencia);
 
     const handleRequestPayout = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -384,6 +402,19 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                 <span className="text-[11px] text-gray-400 mt-1 block">
                                     Máximo disponible: Bs. {wallet.available_balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                                 </span>
+
+                                {comisionTransferencia > 0 && importePedido > 0 && (
+                                    <span className="mt-2 block rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                                        Recibirás{' '}
+                                        <span className="font-black">
+                                            Bs. {importeRecibido.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                                        </span>
+                                        : se descuentan Bs.{' '}
+                                        {comisionTransferencia.toLocaleString('es-VE', { minimumFractionDigits: 2 })} por
+                                        transferir a un banco distinto
+                                        {wallet.platform_bank ? ` de ${wallet.platform_bank}` : ''}.
+                                    </span>
+                                )}
                             </div>
 
                             {payoutMethod === 'pago_movil' ? (

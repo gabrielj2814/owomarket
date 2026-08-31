@@ -27,6 +27,10 @@ final class UpdateCentralPaymentSettingsUseCase
         'central_pago_movil_phone',
         'central_pago_movil_holder_name',
         'central_binance_pay_id',
+        // Fase 4c: coste fijo de una transferencia a un banco distinto del de la plataforma.
+        // Va aqui y no en un ajuste de tienda porque es una condicion de la plataforma, la
+        // misma para todas. El banco propio ya esta arriba, en `central_pago_movil_bank_name`.
+        'central_interbank_transfer_fee',
     ];
 
     /**

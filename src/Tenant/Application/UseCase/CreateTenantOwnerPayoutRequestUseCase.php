@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
+use Throwable;
 
 final class CreateTenantOwnerPayoutRequestUseCase
 {
@@ -64,14 +66,21 @@ final class CreateTenantOwnerPayoutRequestUseCase
 
             $settlementNumber = 'PAY-'.date('Ymd').'-'.strtoupper(Str::random(6));
 
+            // Fase 4c: cada tienda cobra en el banco que quiera, pero si hace falta una
+            // transferencia interbancaria su coste lo asume quien eligio esa via.
+            $comisionTransferencia = $this->comisionPorBanco($data['payment_details']);
+
             return CommissionSettlement::create([
                 'id' => (string) Str::uuid(),
                 'settlement_number' => $settlementNumber,
                 'tenant_id' => $data['tenant_id'],
                 'type' => 'payout',
+                // Los tres dejan de ser el mismo numero: sale de la wallet lo PEDIDO, la
+                // plataforma se queda la comision, y el comerciante recibe la diferencia.
                 'gross_sales_amount' => $data['amount'],
                 'commission_amount' => 0.00,
-                'net_amount' => $data['amount'],
+                'transfer_fee' => $comisionTransferencia,
+                'net_amount' => max(0.0, $data['amount'] - $comisionTransferencia),
                 // El comerciante retira BOLIVARES: es lo que el comprador pago y lo que la
                 // plataforma recibio. El dolar solo es la unidad en la que se puso el precio.
                 // Antes esto decia 'USD' mientras la pantalla enseñaba bolivares.
@@ -86,5 +95,58 @@ final class CreateTenantOwnerPayoutRequestUseCase
                 ],
             ]);
         });
+    }
+
+    /**
+     * Coste de transferir a este banco, en bolivares.
+     *
+     * Cero si el destino es el mismo banco de la plataforma --no hay transferencia
+     * interbancaria que pagar-- y el importe configurado en cualquier otro caso. Sin banco
+     * declarado se cobra: no poder comprobarlo no es motivo para regalarlo.
+     *
+     * ponytail: los bancos se comparan por nombre normalizado. "Banesco", "BANESCO" y
+     * " banesco " son el mismo, pero "Banco Banesco" no lo seria. Si eso empieza a dar
+     * problemas, la salida es una lista de bancos con codigo en vez de texto libre.
+     *
+     * @param  array<string, mixed>  $paymentDetails
+     */
+    private function comisionPorBanco(array $paymentDetails): float
+    {
+        $ajustes = $this->ajustesDeLaPlataforma();
+
+        $comision = (float) ($ajustes['central_interbank_transfer_fee'] ?? 0.0);
+
+        if ($comision <= 0.0) {
+            return 0.0;
+        }
+
+        $bancoPlataforma = $this->normalizar((string) ($ajustes['central_pago_movil_bank_name'] ?? ''));
+        $bancoDestino = $this->normalizar((string) ($paymentDetails['bank'] ?? ''));
+
+        if ($bancoPlataforma === '' || $bancoDestino === '') {
+            return $comision;
+        }
+
+        return $bancoDestino === $bancoPlataforma ? 0.0 : $comision;
+    }
+
+    /** @return array<string, string> */
+    private function ajustesDeLaPlataforma(): array
+    {
+        try {
+            return CentralSetting::query()
+                ->where('group', 'payment')
+                ->pluck('value', 'key')
+                ->all();
+        } catch (Throwable) {
+            // Sin ajustes no se puede saber si hay comision, y cobrar un importe que nadie
+            // configuro seria peor que no cobrarlo.
+            return [];
+        }
+    }
+
+    private function normalizar(string $valor): string
+    {
+        return mb_strtolower(trim(preg_replace('/\s+/', ' ', $valor) ?? ''));
     }
 }
