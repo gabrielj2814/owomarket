@@ -27,6 +27,10 @@ final class UpdateCentralPaymentSettingsUseCase
         'central_pago_movil_phone',
         'central_pago_movil_holder_name',
         'central_binance_pay_id',
+        // Instrucciones de transferencia de la plataforma. Antes este metodo solo existia en
+        // el escaparate, con los datos del comerciante; desde que la plataforma cobra todas
+        // las ventas hace falta la version central o el metodo desaparece.
+        'central_bank_transfer_instructions',
         // Fase 4c: coste fijo de una transferencia a un banco distinto del de la plataforma.
         // Va aqui y no en un ajuste de tienda porque es una condicion de la plataforma, la
         // misma para todas. El banco propio ya esta arriba, en `central_pago_movil_bank_name`.

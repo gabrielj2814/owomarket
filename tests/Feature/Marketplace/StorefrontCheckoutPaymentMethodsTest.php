@@ -70,6 +70,22 @@ function seedPaymentSetting(string $key, string $value): void
     ]);
 }
 
+/**
+ * Desde el 30/08/2026 la plataforma cobra TODAS las ventas, tambien las del escaparate de
+ * cada tienda. Los datos de cobro que ve el comprador salen de `central_settings`, no de los
+ * ajustes del inquilino.
+ *
+ * Nombre propio y no `seedCentralPaymentSetting`: ese ya lo declara
+ * `CentralCheckoutPaymentMethodsTest`, y las funciones de los ficheros de Pest son globales.
+ */
+function seedAjusteCentralDeCobro(string $key, string $value): void
+{
+    Src\Payment\Infrastructure\Eloquent\Models\CentralSetting::updateOrCreate(
+        ['key' => $key],
+        ['group' => 'payment', 'value' => $value]
+    );
+}
+
 test('Una tienda sin datos de cobro configurados no ofrece ningún método de pago', function () {
     $response = $this->get("http://{$this->domain}/checkout");
 
@@ -92,29 +108,57 @@ test('El checkout no expone nunca los datos de demostración hardcodeados', func
     $response->assertDontSee('0412-1234567');
 });
 
-test('Pago Móvil sólo se ofrece con banco, RIF y teléfono configurados', function () {
-    // Con configuración incompleta (falta el teléfono) no debe ofrecerse.
-    seedPaymentSetting('pago_movil_bank_name', '0134 - Banesco');
-    seedPaymentSetting('pago_movil_document_id', 'J-40111222-3');
+test('Pago Móvil sólo se ofrece con banco, RIF y teléfono de la PLATAFORMA', function () {
+    // Con configuración central incompleta (falta el teléfono) no debe ofrecerse.
+    seedAjusteCentralDeCobro('central_pago_movil_bank_name', '0105 - Banco Mercantil');
+    seedAjusteCentralDeCobro('central_pago_movil_document_id', 'J-50999888-1');
 
     $this->get("http://{$this->domain}/checkout")
         ->assertInertia(fn (Assert $page) => $page->has('payment_methods', 0));
 
-    // Al completar el teléfono, aparece con los datos reales de la tienda.
-    seedPaymentSetting('pago_movil_phone', '0414-9998877');
+    seedAjusteCentralDeCobro('central_pago_movil_phone', '0412-5554433');
 
     $this->get("http://{$this->domain}/checkout")
         ->assertInertia(fn (Assert $page) => $page
             ->has('payment_methods', 1)
             ->where('payment_methods.0.id', 'pago_movil')
-            ->where('payment_methods.0.bank_name', '0134 - Banesco')
-            ->where('payment_methods.0.document_id', 'J-40111222-3')
-            ->where('payment_methods.0.phone', '0414-9998877')
+            ->where('payment_methods.0.bank_name', '0105 - Banco Mercantil')
+            ->where('payment_methods.0.document_id', 'J-50999888-1')
+            ->where('payment_methods.0.phone', '0412-5554433')
         );
 });
 
-test('Binance Pay sólo se ofrece con un Pay ID propio configurado', function () {
+test('los datos bancarios del comerciante NUNCA llegan al comprador', function () {
+    // El test que importa de este cambio. La tienda tiene sus propios datos de cobro
+    // configurados --los que usaba hasta hoy-- y el comprador no debe ver ni uno: ese dinero
+    // iria a la cuenta equivocada sin que nada lo avisara.
+    seedPaymentSetting('pago_movil_bank_name', '0134 - Banesco DEL COMERCIANTE');
+    seedPaymentSetting('pago_movil_document_id', 'J-40111222-3');
+    seedPaymentSetting('pago_movil_phone', '0414-9998877');
     seedPaymentSetting('binance_pay_id', '999888777');
+    seedPaymentSetting('bank_transfer_instructions', 'Banesco del comerciante, cuenta 0134-...');
+
+    seedAjusteCentralDeCobro('central_pago_movil_bank_name', '0105 - Banco Mercantil');
+    seedAjusteCentralDeCobro('central_pago_movil_document_id', 'J-50999888-1');
+    seedAjusteCentralDeCobro('central_pago_movil_phone', '0412-5554433');
+
+    $respuesta = $this->get("http://{$this->domain}/checkout");
+
+    $respuesta->assertDontSee('Banesco DEL COMERCIANTE')
+        ->assertDontSee('J-40111222-3')
+        ->assertDontSee('0414-9998877')
+        ->assertDontSee('999888777')
+        ->assertDontSee('Banesco del comerciante');
+
+    // Y sí ve los de la plataforma.
+    $respuesta->assertInertia(fn (Assert $page) => $page
+        ->has('payment_methods', 1)
+        ->where('payment_methods.0.bank_name', '0105 - Banco Mercantil')
+    );
+});
+
+test('Binance Pay sólo se ofrece con el Pay ID de la plataforma configurado', function () {
+    seedAjusteCentralDeCobro('central_binance_pay_id', '999888777');
 
     $this->get("http://{$this->domain}/checkout")
         ->assertInertia(fn (Assert $page) => $page
@@ -148,19 +192,20 @@ test('El pago contra entrega requiere que el comercio lo habilite', function () 
  * el seeder de demostración.
  */
 test('Las claves que siembra el seeder de demostración habilitan los cuatro métodos', function () {
-    $seededByDemoSeeder = [
-        'pago_movil_bank_name' => '0102 - Banco de Venezuela',
-        'pago_movil_document_id' => 'J-40123456-7',
-        'pago_movil_phone' => '0414-1234567',
-        'pago_movil_holder_name' => 'Tienda Demo C.A.',
-        'binance_pay_id' => '123456789',
-        'bank_transfer_instructions' => 'Banco Mercantil, cuenta 0105-0000-00-0000000000.',
-        'cash_on_delivery_enabled' => '1',
-    ];
-
-    foreach ($seededByDemoSeeder as $key => $value) {
-        seedPaymentSetting($key, $value);
+    // Los datos de cobro son ahora de la plataforma; de la tienda queda solo el interruptor
+    // de contra entrega, que sigue siendo decision suya.
+    foreach ([
+        'central_pago_movil_bank_name' => '0102 - Banco de Venezuela',
+        'central_pago_movil_document_id' => 'J-40123456-7',
+        'central_pago_movil_phone' => '0414-1234567',
+        'central_pago_movil_holder_name' => 'OwoMarket C.A.',
+        'central_binance_pay_id' => '123456789',
+        'central_bank_transfer_instructions' => 'Banco Mercantil, cuenta 0105-0000-00-0000000000.',
+    ] as $key => $value) {
+        seedAjusteCentralDeCobro($key, $value);
     }
+
+    seedPaymentSetting('cash_on_delivery_enabled', '1');
 
     $this->get("http://{$this->domain}/checkout")
         ->assertInertia(fn (Assert $page) => $page

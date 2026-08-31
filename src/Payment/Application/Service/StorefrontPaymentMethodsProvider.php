@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Payment\Application\Service;
 
 use Src\ExchangeRate\Application\UseCase\GetActiveExchangeRateUseCase;
+use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Src\TenantSettings\Application\Repositories\TenantSettingsRepositoryInterface;
 use Src\TenantSettings\Domain\ValueObjects\SettingGroup;
 use Throwable;
@@ -122,6 +123,37 @@ final class StorefrontPaymentMethodsProvider
     /**
      * @return array<string, string>
      */
+    /**
+     * Las claves que dicen A QUÉ CUENTA va el dinero.
+     *
+     * Desde que la plataforma cobra todas las ventas, éstas dejan de salir de los ajustes de
+     * la tienda. Se listan para **borrarlas** del mapa del inquilino, no sólo para
+     * sobrescribir las que tengan equivalente central: una tienda con
+     * `bank_transfer_instructions` propias seguiría enseñándole al comprador su banco, y ahí
+     * el dinero acabaría en la cuenta equivocada sin que nada lo avisara.
+     *
+     * Lo que NO está aquí se queda como está: los interruptores por tienda —qué métodos
+     * ofrece cada escaparate— siguen siendo decisión del comerciante. Puede seguir decidiendo
+     * que no acepta Binance; lo que no decide es a qué cuenta entra el dinero.
+     *
+     * @var array<string, string|null> clave del inquilino => clave central que la sustituye
+     */
+    private const CLAVES_DE_COBRO = [
+        'pago_movil_bank_name' => 'central_pago_movil_bank_name',
+        'pago_movil_document_id' => 'central_pago_movil_document_id',
+        'pago_movil_phone' => 'central_pago_movil_phone',
+        'pago_movil_holder_name' => 'central_pago_movil_holder_name',
+        'binance_pay_id' => 'central_binance_pay_id',
+        'bank_transfer_instructions' => 'central_bank_transfer_instructions',
+        // Sin equivalente central a proposito: el QR lo generaba un tercero al que se le
+        // filtraba el identificador de cobro, y ya estaba desaconsejado. Se borra y no se
+        // sustituye.
+        'binance_qr_url' => null,
+    ];
+
+    /**
+     * @return array<string, string>
+     */
     private function paymentSettings(): array
     {
         try {
@@ -129,11 +161,40 @@ final class StorefrontPaymentMethodsProvider
             foreach ($this->settings->listByGroup(SettingGroup::payment()) as $setting) {
                 $map[$setting->key()->value()] = $setting->value();
             }
-
-            return $map;
         } catch (Throwable) {
-            // Tienda sin tabla de settings o sin configuración: se devuelve
-            // vacío, lo que hace que no se ofrezca ningún método de cobro.
+            // Tienda sin tabla de settings o sin configuración: se sigue igualmente, porque
+            // los datos de cobro ya no son suyos. Lo unico que se pierde son sus
+            // interruptores, y sin ellos se ofrece lo que la plataforma tenga configurado.
+            $map = [];
+        }
+
+        $central = $this->ajustesDeLaPlataforma();
+
+        foreach (self::CLAVES_DE_COBRO as $claveTienda => $claveCentral) {
+            unset($map[$claveTienda]);
+
+            if ($claveCentral !== null && isset($central[$claveCentral])) {
+                $map[$claveTienda] = $central[$claveCentral];
+            }
+        }
+
+        return $map;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function ajustesDeLaPlataforma(): array
+    {
+        try {
+            return CentralSetting::query()
+                ->where('group', 'payment')
+                ->pluck('value', 'key')
+                ->filter(fn ($valor) => is_string($valor) && trim($valor) !== '')
+                ->all();
+        } catch (Throwable) {
+            // Sin ajustes centrales no se ofrece ningun metodo de cobro. Es lo correcto:
+            // ofrecer uno sin cuenta detras deja al comprador sin saber donde pagar.
             return [];
         }
     }

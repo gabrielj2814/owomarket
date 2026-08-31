@@ -1,6 +1,6 @@
 # Plan — La plataforma cobra todas las ventas
 
-> **Estado:** ⬜ Por hacer · Redactado el 30/08/2026
+> **Estado:** 🔵 En curso · Redactado el 30/08/2026 · **Fase 1 ✅ cerrada**
 >
 > Decisión de negocio del 30/08/2026: **el dinero de todas las compras cae en la cuenta del
 > marketplace**, también el de las que se hacen en el escaparate propio de cada tienda.
@@ -49,16 +49,35 @@ Ya no es la palanca de cobro.
 
 ## Fases
 
-### Fase 1 — El escaparate cobra a la cuenta de la plataforma ⬅️ **lo urgente**
+### Fase 1 — El escaparate cobra a la cuenta de la plataforma · ✅ HECHA (30/08/2026)
 
-Es lo único que, cada día que siga como está, **pone dinero en la cuenta equivocada**. Todo lo
-demás es procesar dinero que ya tienes.
+Era lo único que, cada día que siguiera como estaba, **ponía dinero en la cuenta equivocada**.
 
-`StorefrontPaymentMethodsProvider::paymentSettings()` es el único sitio que decide de qué
-tienda salen los datos, así que el cambio está contenido ahí: los **datos de la cuenta** pasan
-a venir de `central_settings`, y los **interruptores por tienda** —qué métodos ofrece cada
-escaparate— se quedan como están. Una tienda puede seguir decidiendo que no acepta Binance;
-lo que no decide es a qué cuenta entra el dinero.
+`StorefrontPaymentMethodsProvider::paymentSettings()` era el único sitio que decidía de qué
+tienda salen los datos, así que el cambio quedó contenido ahí: los **datos de la cuenta** vienen
+de `central_settings`, y los **interruptores por tienda** —qué métodos ofrece cada escaparate—
+se quedan como están. Una tienda puede seguir decidiendo que no acepta Binance; lo que no
+decide es a qué cuenta entra el dinero.
+
+#### No bastaba con mapear el Pago Móvil
+
+Las claves de cuenta se **borran** del mapa del inquilino, no sólo se sobrescriben las que
+tienen equivalente central. Si sólo se hubiera mapeado el Pago Móvil, una tienda con sus
+propias `bank_transfer_instructions` habría seguido enseñándole su banco al comprador, y ahí el
+dinero acaba en la cuenta equivocada **sin que nada lo avise**. Lo mismo con el `binance_qr_url`.
+
+Eso obligó a añadir `central_bank_transfer_instructions` a los ajustes de la plataforma: sin
+ella el método de transferencia habría desaparecido del escaparate en silencio.
+
+El QR de Binance se borra y **no se sustituye**: lo generaba un tercero al que se le filtraba el
+identificador de cobro, y ya estaba desaconsejado en el código.
+
+#### El test que importa
+
+*«Los datos bancarios del comerciante nunca llegan al comprador»*: la tienda tiene configurados
+sus propios datos —los que usaba hasta hoy— y se comprueba que el comprador **no ve ni uno**,
+mientras sí ve los de la plataforma. Los demás tests del fichero se reescribieron para hablar de
+ajustes centrales, porque su premisa cambió.
 
 ### Fase 2 — Quitar el filtro de canal del saldo
 
