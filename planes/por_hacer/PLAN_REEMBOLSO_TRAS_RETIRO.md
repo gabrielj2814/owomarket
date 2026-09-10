@@ -109,22 +109,35 @@ en pantalla. Es seguro —bloquea el retiro— pero nadie puede reclamar lo que 
 
 Esto ya no es código: es qué hacer con un comerciante que debe dinero.
 
-### Lo que hay que decidir antes de diseñar nada
+### Las cuatro preguntas, ya respondidas (10/09/2026)
 
-1. **Quién asume la pérdida cuando no se puede recuperar.** ¿La plataforma la da por perdida a
-   partir de cierto importe, o se reclama siempre?
-2. **Si un saldo negativo bloquea algo.** `suspended` ya está cableado desde la Fase 5 y podría
-   servir; pero suspender a un comerciante que además dejó de vender no recupera nada.
-3. **Si hay un tope de tiempo para reclamar.** Un reembolso a los seis meses de una venta ya
-   pagada es un caso distinto de uno a los diez días.
-4. **Si la ventana de garantía debería ser más larga** que un día para ciertas categorías. Es la
-   palanca más barata: cada día de retención es un día menos de exposición.
+Se decidieron en [`planes/anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md`](../anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md),
+que es donde vive el razonamiento completo. Resumen:
 
-### Lo que casi seguro hará falta, decidan lo que decidan
+| # | Pregunta | Respuesta |
+| :--- | :--- | :--- |
+| 1 | Quién asume la pérdida | **La tienda.** Modelo A: la plataforma no es aseguradora, es árbitro, y cobra contra un fondo que ya retiene. Más cortesía acotada a su discreción |
+| 2 | Si un negativo bloquea algo | **Sí.** Registro público de reclamaciones sin responder, suspensión del escaparate, y bloqueo de la identidad para reabrir otra tienda |
+| 3 | Tope de tiempo para reclamar | Deja de ser arbitrario: **es el plazo de garantía del producto**, que pasa a ser un atributo de catálogo |
+| 4 | Ventana de garantía más larga | **Se sustituye por el fondo.** En vez de retener el 100% durante más tiempo, se retiene un porcentaje durante el plazo de garantía |
 
-**Que el negativo se pueda ver.** Sea cual sea la política, alguien tiene que poder listar qué
-comerciantes deben dinero y cuánto. Hoy no hay forma: el dato existe dentro de la resta pero
-`max(0.0, …)` lo tapa antes de que salga del método.
+### Y con eso, este hueco cambia de naturaleza
+
+La conclusión de aquella decisión es que **al hueco 2 no se le gestiona, se le previene**: con el
+modelo A la exposición máxima de la plataforma es el tamaño del fondo retenido, así que un saldo
+negativo irrecuperable deja de poder existir.
+
+**Lo que queda no es un plan de cobro a morosos: es dimensionar una reserva.** Qué porcentaje se
+retiene, con qué regla, y qué le supone eso al flujo de caja de una tienda típica. Es el
+subsistema 4 de los cinco que salen de aquella decisión, y hay que hacerlo antes que el sistema
+de reclamaciones — sin fondo, una reclamación no tiene con qué pagarse.
+
+### Lo que sigue haciendo falta igual
+
+**Que el negativo se pueda ver.** Aunque el fondo lo haga raro, mientras `requestable()` y
+`settleable()` terminen en `max(0.0, …)` un comerciante que debe 4.600 Bs y uno con saldo cero se
+ven idénticos. Bloquea el retiro, que es lo importante, pero nadie puede reclamar lo que no puede
+ver.
 
 ---
 
