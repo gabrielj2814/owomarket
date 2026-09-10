@@ -116,21 +116,30 @@ que es donde vive el razonamiento completo. Resumen:
 
 | # | Pregunta | Respuesta |
 | :--- | :--- | :--- |
-| 1 | Quién asume la pérdida | **La tienda.** Modelo A: la plataforma no es aseguradora, es árbitro, y cobra contra un fondo que ya retiene. Más cortesía acotada a su discreción |
-| 2 | Si un negativo bloquea algo | **Sí.** Registro público de reclamaciones sin responder, suspensión del escaparate, y bloqueo de la identidad para reabrir otra tienda |
+| 1 | Quién asume la pérdida | **La tienda primero**, con un fondo retenido de sus propias ventas. Si no alcanza, **la plataforma cubre hasta un tope por pedido** y la tienda queda con deuda |
+| 2 | Si un negativo bloquea algo | **Sí.** Topa su nivel de reputación en medio —lo que le encarece la retención y le ralentiza los cobros—, más registro público, suspensión y bloqueo de identidad para reabrir |
 | 3 | Tope de tiempo para reclamar | Deja de ser arbitrario: **es el plazo de garantía del producto**, que pasa a ser un atributo de catálogo |
-| 4 | Ventana de garantía más larga | **Se sustituye por el fondo.** En vez de retener el 100% durante más tiempo, se retiene un porcentaje durante el plazo de garantía |
+| 4 | Ventana de garantía más larga | **Se sustituye por el fondo.** En vez de retener el 100% durante más tiempo, se retiene un porcentaje —variable según el nivel de la tienda— durante el plazo de garantía |
 
 ### Y con eso, este hueco cambia de naturaleza
 
-La conclusión de aquella decisión es que **al hueco 2 no se le gestiona, se le previene**: con el
-modelo A la exposición máxima de la plataforma es el tamaño del fondo retenido, así que un saldo
-negativo irrecuperable deja de poder existir.
+Deja de ser un problema abierto y pasa a ser **una consecuencia de dimensionar bien una reserva**.
+La deuda irrecuperable no se elimina —la plataforma sí pone dinero cuando la tienda falla— pero
+queda acotada por el tope y encarecida para quien la genera.
 
-**Lo que queda no es un plan de cobro a morosos: es dimensionar una reserva.** Qué porcentaje se
-retiene, con qué regla, y qué le supone eso al flujo de caja de una tienda típica. Es el
-subsistema 4 de los cinco que salen de aquella decisión, y hay que hacerlo antes que el sistema
-de reclamaciones — sin fondo, una reclamación no tiene con qué pagarse.
+**Lo que queda no es un plan de cobro a morosos: son números.** Qué porcentaje se retiene en cada
+nivel de reputación, durante cuánto tiempo, cuál es el tope por pedido y dónde salta la alarma
+mensual. Es el subsistema 4 de los cinco que salen de aquella decisión, y hay que hacerlo antes
+que el sistema de reclamaciones — sin fondo, una reclamación no tiene con qué pagarse.
+
+### El mecanismo de este plan es el que cobra la deuda
+
+Vale la pena notarlo: **la deuda que deja una tienda tras una cobertura de la plataforma se salda
+por el mismo camino que describe este documento** — el saldo negativo absorbiéndose contra ventas
+futuras, verificado en
+[`CreditNoteBalanceTest.php`](../../tests/Feature/Monetization/CreditNoteBalanceTest.php). La
+tienda no tiene que reunir una suma y entregarla: vendiendo, paga. Por eso el sistema de
+reputación no la expulsa, sino que le encarece seguir.
 
 ### Lo que sigue haciendo falta igual
 
