@@ -1,9 +1,11 @@
 # Plan — Reembolsar cuando el dinero ya salió en un retiro
 
-> **Estado:** ⬜ Por hacer · Redactado el 31/08/2026
+> **Estado:** 🟡 Hueco 1 cerrado (no había nada que arreglar) · Hueco 2 por hacer
 >
-> Es el **punto B** que quedó abierto al cerrar el plan de wallet y retiros. No se implementa
-> ahora; este documento existe para que lo que ya se sabe no haya que volver a averiguarlo.
+> Redactado el 31/08/2026. **Reescrito el 10/09/2026 tras medir el comportamiento real:
+> la mitad de este documento describía un fallo que no existe, y el arreglo que proponía
+> habría introducido uno.** Lo que sigue está verificado con tests, no razonado sobre el
+> código.
 
 ---
 
@@ -17,68 +19,97 @@ Mientras el importe siga en la wallet del comerciante, no hay problema: se descu
 paga dos veces —al comerciante y al comprador— y lo que le queda es reclamárselo al
 comerciante.
 
-## Lo que ya está construido, y que hay que entender antes de tocar nada
-
-### La retención lo hace poco frecuente, no imposible
+## La retención lo hace poco frecuente, no imposible
 
 Un importe no es retirable hasta que el pedido llega a `delivered` **y** pasa su ventana de
 garantía (`central_payout_hold_days`, un día por defecto). Eso cubre el caso más común —el
 paquete que no llegó— pero no el que aparece a las tres semanas.
 
-### La nota de crédito ya existe (hallazgo N16)
+---
 
-`ReverseOrderCommissionUseCase` no se limita a marcar la comisión: cuando ya estaba liquidada,
-**emite otra con el importe en negativo**, `pending` y sin `settlement_id`.
+## ⚠️ Antes de tocar nada: hay DOS mecanismos, y son distintos a propósito
 
-```php
-'order_total'       => -1 * $original->order_total,
-'commission_amount' => -1 * $original->commission_amount,
-```
+Esto es lo que la versión anterior de este plan no vio, y es lo único que de verdad hay que
+entender aquí. Una reversión se descuenta por dos vías separadas porque hay dos preguntas
+distintas que responder, y **cada una ya está resuelta en su sitio**:
 
-`GenerateTenantCommissionSettlementUseCase` la recoge como cualquier otra, así que el neto de
-la siguiente liquidación **sale corregido solo**. Para un `payout` eso es exactamente lo que
-hace falta: la fila negativa resta `gross − comisión`, que es la parte del comerciante.
+### La wallet es un saldo corriente
 
-**No hace falta inventar un mecanismo de devolución: hay que terminar el que existe.**
+`ReverseOrderCommissionUseCase` pasa la comisión a `refunded` o `waived`. Ninguno de los dos
+está en `ESTADOS_COBRADOS`, así que **la venta desaparece de `netEarnings()` por sí sola**.
+
+Y si además se le había pagado en un retiro, ese retiro **sigue restándose** en `payouts()`.
+Esa resta huérfana —un pago sin ganancia que lo respalde— **es la deuda**. No hay que
+registrarla en ninguna parte: emerge de la aritmética.
+
+### Las liquidaciones son documentos de un periodo cerrado
+
+Una liquidación ya emitida no se reescribe. Por eso la corrección tiene que llegar como una
+fila negativa en la siguiente, y para eso existe la nota de crédito del hallazgo N16:
+`ReverseOrderCommissionUseCase::issueCreditNote()` emite una `PlatformCommission` con el
+importe en negativo, `pending` y sin `settlement_id`, que
+`GenerateTenantCommissionSettlementUseCase` recoge como cualquier otra.
+
+### Por qué la nota de crédito NO debe entrar en la wallet
+
+Nace sin `exchange_rate`, y `netEarnings()` exige `whereNotNull('exchange_rate')`. Parece un
+descuido. **No lo es: es lo único que evita cobrar la devolución dos veces.**
+
+La versión anterior de este plan proponía exactamente eso —darle tasa y `released_at` para que
+la wallet la sumara— por creer que la wallet no se enteraba de las reversiones. Medido, con
+una venta de 100 USD a tasa 50 (4.600 Bs de parte del comerciante):
+
+| Escenario | Saldo real | Con la nota sumada a la wallet |
+|---|---|---|
+| Venta cobrada y retirable | 4.600 Bs | 4.600 Bs |
+| Tras reembolsarla | **0 Bs** | 0 Bs |
+| Retiro pagado, reembolso, y vuelve a vender 9.200 Bs | **4.600 Bs** ✅ | **0 Bs** ❌ |
+
+La última fila es el escenario entero de este plan. La deuda ya se cuenta una vez; sumar la
+nota la contaría dos, y le cobraría 4.600 Bs de más a un comerciante que no los debe.
+
+**Está cerrado con tests:** `tests/Feature/Monetization/CreditNoteBalanceTest.php`. El que
+vigila es «la deuda de un reembolso tras un retiro ya pagado se cuenta una sola vez» —
+verificado que se pone rojo (`0.0 is identical to 4600.0`) si alguien reimplementa aquella
+idea.
 
 ---
 
-## Los dos huecos, verificados
+## Hueco 1 — CERRADO
 
-### 1. La nota de crédito la ve la liquidación pero **no la wallet**
+> Decía: «la nota de crédito la ve la liquidación pero no la wallet, así que el saldo del
+> comerciante no baja al revertir una venta ya liquidada».
 
-Se emite sin `exchange_rate` y sin `released_at`. Y `TenantAvailableBalance` exige los dos:
+**No existe.** El saldo sí baja, por la vía del cambio de estado descrita arriba.
 
-```php
-->whereNotNull('exchange_rate')
-->where('released_at', '<=', $limite)
-```
+De dónde salió el error: la lista blanca `ESTADOS_COBRADOS` entró el **30/08/2026** (commit
+`d49f623`, Fase 2 del plan de wallet y retiros) y este plan se redactó el **31/08**, sobre el
+comportamiento de la víspera. Antes de esa lista, `netEarnings()` sumaba todos los estados y
+una venta `refunded` sí seguía contando como saldo. El plan describía correctamente un código
+que ya había cambiado el día anterior.
 
-mientras que `GenerateTenantCommissionSettlementUseCase` sólo mira `status` y `settlement_id`.
+**Lección, que es lo que vale de todo esto:** el plan razonaba sobre el código leyéndolo. Dos
+sondas de veinte líneas contra la base de datos en memoria tumbaron la premisa en dos minutos.
+Cuando un plan afirma que algo está roto, medirlo antes de arreglarlo cuesta menos que
+arreglar lo que no lo estaba.
 
-**Resultado: dos caminos y dos respuestas.** Hoy, al revertir una venta ya liquidada, el saldo
-que el comerciante ve en su wallet **no baja**, pero su siguiente liquidación sí saldrá
-recortada. Puede pedir un retiro contra un saldo que ya no le corresponde.
+## Hueco 2 — POR HACER
 
-Es el mismo patrón que la fórmula duplicada del saldo que se corrigió el 30/08/2026: dos
-consultas que responden a la misma pregunta y divergen.
+> Si la tienda no vuelve a vender, la deuda nunca se compensa.
 
-**Arreglo probable:** que la nota de crédito herede `exchange_rate` de la comisión original y
-nazca con `released_at` puesto —una deuda no espera a entregarse ni a cumplir garantía—. Hay
-que comprobar si el signo negativo se comporta bien en la suma en bolívares.
+**Sigue intacto, y es el único trabajo real que queda aquí.**
 
-### 2. Si la tienda no vuelve a vender, la nota nunca se compensa
+Una deuda se absorbe contra ventas futuras. Un comerciante que cierra, o que simplemente deja
+de vender, arrastra un saldo negativo que no tiene contra qué restarse, y la plataforma se
+queda sin forma de cobrarlo.
 
-Una nota de crédito se absorbe contra ventas futuras. Un comerciante que cierra, o que
-simplemente deja de vender, se queda con un saldo negativo que **no tiene contra qué restarse**,
-y la plataforma sin forma de cobrarlo.
+Hoy ese negativo es además **invisible**: `requestable()` y `settleable()` terminan en
+`max(0.0, …)`, así que un comerciante que debe 4.600 Bs y uno con saldo cero se ven idénticos
+en pantalla. Es seguro —bloquea el retiro— pero nadie puede reclamar lo que no puede ver.
 
-Esto ya no es código: es qué hacer con un comerciante que debe dinero. Hay que decidirlo antes
-de diseñar nada.
+Esto ya no es código: es qué hacer con un comerciante que debe dinero.
 
----
-
-## Lo que hay que decidir
+### Lo que hay que decidir antes de diseñar nada
 
 1. **Quién asume la pérdida cuando no se puede recuperar.** ¿La plataforma la da por perdida a
    partir de cierto importe, o se reclama siempre?
@@ -89,22 +120,48 @@ de diseñar nada.
 4. **Si la ventana de garantía debería ser más larga** que un día para ciertas categorías. Es la
    palanca más barata: cada día de retención es un día menos de exposición.
 
-## Lo que NO hay que hacer
+### Lo que casi seguro hará falta, decidan lo que decidan
 
-**Alargar la ventana de garantía indefinidamente** para no tener que resolver esto. El
-comerciante necesita cobrar; una plataforma que retiene un mes su dinero pierde comerciantes
-más rápido de lo que ahorra en reembolsos.
-
-**Inventar una tabla de deudas.** La nota de crédito ya es exactamente eso: una comisión al
-revés. Una segunda representación de lo mismo divergiría, y este proyecto ya tiene tres
-cicatrices de copias que divergieron.
+**Que el negativo se pueda ver.** Sea cual sea la política, alguien tiene que poder listar qué
+comerciantes deben dinero y cuánto. Hoy no hay forma: el dato existe dentro de la resta pero
+`max(0.0, …)` lo tapa antes de que salga del método.
 
 ---
 
-## Por dónde empezar el día que se retome
+## Anotación aparte: el `max(0.0, …)` de la liquidación
 
-El hueco 1 es **pequeño, verificable y no depende de ninguna decisión de negocio**: que la nota
-de crédito lleve tasa y fecha de liberación, y un test que compruebe que el saldo de la wallet y
-el de la liquidación dicen lo mismo después de revertir una venta ya liquidada.
+Hallazgo del 10/09/2026, **no bloqueante y sin impacto en dinero hoy**, anotado para que no
+haya que volver a rastrearlo.
 
-El hueco 2 no se empieza hasta que las cuatro preguntas de arriba tengan respuesta.
+[`GenerateTenantCommissionSettlementUseCase`](../../src/Monetization/Application/UseCases/GenerateTenantCommissionSettlementUseCase.php):
+
+```php
+$netAmount = $type === 'collection' ? $commissionAmount : max(0.0, $grossSalesAmount - $commissionAmount);
+```
+
+En el camino `payout`, si las comisiones pendientes suman negativo, se emite una liquidación
+por **0** y acto seguido se le estampa `settlement_id` a la nota de crédito: queda consumida
+sin haber compensado nada.
+
+**Por qué no urge:** ese camino crea liquidaciones en `USD`, y `TenantAvailableBalance::payouts()`
+solo cuenta `VES`. No toca el saldo de nadie. Los retiros reales van por
+`CreateTenantOwnerPayoutRequestUseCase`, que no enlaza comisiones. El camino `collection` —el
+que sí cobra comisiones al comerciante— no lleva ese recorte y funciona bien.
+
+Queda como inconsistencia latente del camino en USD. Si algún día se unifica la moneda de las
+liquidaciones, hay que resolverlo antes.
+
+---
+
+## Lo que NO hay que hacer
+
+**Sumar la nota de crédito a la wallet.** Está explicado arriba con los números. Hay un test
+que lo impide.
+
+**Alargar la ventana de garantía indefinidamente** para no tener que resolver el hueco 2. El
+comerciante necesita cobrar; una plataforma que retiene un mes su dinero pierde comerciantes
+más rápido de lo que ahorra en reembolsos.
+
+**Inventar una tabla de deudas.** La deuda ya está representada dos veces y bien: como resta
+huérfana en la wallet y como nota de crédito en las liquidaciones. Una tercera
+representación divergiría, y este proyecto ya tiene tres cicatrices de copias que divergieron.
