@@ -267,6 +267,73 @@ devoluciones que nadie resuelve**. El subsistema 5 tiene que **absorber ese plan
 
 ---
 
+## Cómo se arranca sin histórico
+
+OwoMarket no ha operado todavía: **no hay ni una sola devolución real de la que sacar una tasa
+de reclamaciones.** Y sin esa tasa no se puede calcular el porcentaje de retención.
+
+La salida no es adivinar el número: es **elegir una política que no dependa de él**.
+
+### La postura: conservador, y que suban solos
+
+Retención inicial prudente para todas las tiendas, tope por pedido bajo, y confianza en que el
+sistema de niveles saque rápido a las que se portan bien.
+
+El motivo es una asimetría que conviene tener muy presente: **es muchísimo más fácil bajar una
+retención que subirla.** Bajarla es un regalo que el comerciante celebra. Subirla, al descubrir a
+los seis meses que el número se quedó corto, se vive como una traición — le estás quitando flujo
+de caja a gente que ya organizó su negocio contando con él, y es una discusión con cada tienda.
+
+Y el coste de pasarse de prudente es aquí menor de lo habitual: **una tienda que se porta bien
+sale sola** subiendo de nivel. La prudencia inicial no la castiga mucho tiempo, le pone un plazo.
+
+### Las cuatro palancas que no necesitan histórico
+
+**1. La reputación ya es el recolector de datos.** No hace falta un número de plataforma, porque
+la retención se individualiza por tienda. Todas entran en *medio* y **el historial de cada una es
+el dato que baja su propia retención**. No se espera a tener estadísticas para actuar: se actúa
+mientras se generan. El porcentaje global es solo el punto de partida de una curva que cada tienda
+recorre sola.
+
+**2. El tope por pedido protege desde el día uno, y no requiere estadística.** Un porcentaje mal
+calculado hace daño lentamente; un tope evita el caso catastrófico de inmediato. Arrancar con tope
+bajo —cubre bien los pedidos pequeños, que son la mayoría— y subirlo cuando haya datos.
+
+**3. El plazo de garantía ya es una señal de riesgo que existe hoy.** No se conoce la tasa de
+reclamaciones, pero **sí qué productos prometen 12 meses y cuáles ninguno**. Garantía larga =
+exposición más larga = más retención. No es conjetura: es una relación directa que sale del
+subsistema 2, y da variación de riesgo sin un solo dato histórico.
+
+**4. Dimensionar por política, no por probabilidad.** En vez de «¿qué porcentaje de ventas se
+reclama?» —que no se sabe—, «¿cuántas reclamaciones simultáneas quiero poder cubrir de una tienda
+sin poner dinero propio?». Eso es una decisión, no una estimación, y se responde hoy.
+
+### Configurable no basta
+
+- **Revisión con fecha**, no «cuando nos acordemos»: a los 90 días o a las primeras N ventas
+  entregadas, alguien mira los números de verdad.
+- **El cambio de porcentaje NO es retroactivo.** Lo ya retenido se rige por la regla vigente
+  cuando se vendió. Si no, cada ajuste mueve hacia atrás el saldo de todas las tiendas y nadie
+  entiende su wallet. Es la misma idea que ya rige la tasa de cambio, que se congela por venta y
+  no se revaloriza al consultar.
+
+### ⚠️ Instrumentar antes de necesitarlo
+
+La tabla `customer_return_requests` (migración `2026_08_19_000010`) registra motivo, estado,
+tienda, producto y fechas. **Le faltan tres campos sin los cuales la revisión a 90 días no podrá
+responder nada:**
+
+| Falta | Sin eso no se puede saber |
+| :--- | :--- |
+| **Importe reclamado** | Cuánto dinero mueven las reclamaciones. Un fondo se dimensiona en dinero, no en unidades |
+| **Fecha de entrega del pedido** | Cuántos días después de recibir llega una reclamación — que es justo lo que dice **cuánto tiempo** hay que retener |
+| **`resolved_at` propio** | Cuánto tarda una tienda en responder. Con solo `updated_at` la medida es frágil, y esa es **la señal de la que depende toda la reputación** |
+
+Son baratos y hay que añadirlos con el subsistema 5. **Si no se instrumenta ahora, dentro de tres
+meses se estará igual de ciego que hoy, pero con tres meses perdidos.**
+
+---
+
 ## Lo que sigue abierto del hueco 2
 
 De las cuatro preguntas originales:
@@ -282,7 +349,11 @@ De las cuatro preguntas originales:
 
 **Los números.** Qué porcentaje se retiene en cada nivel, durante cuánto tiempo, cuál es el tope
 por pedido, dónde está el techo mensual de alarma, y qué le supone todo eso al flujo de caja de
-una tienda típica. Es lo único que falta para poder escribir el plan del fondo.
+una tienda típica.
+
+No salen de un cálculo —no hay histórico del que sacarlos— sino de la política descrita en «Cómo
+se arranca sin histórico»: conservadores, configurables, no retroactivos, y con una revisión con
+fecha puesta.
 
 ### Lo que sigue haciendo falta igual
 
@@ -303,3 +374,8 @@ reputación atada a la deuda, esto pasa de conveniente a requisito.
   con una tienda desaparecida se quedaba sin nada, y eso es demasiado frágil para un marketplace
   que aún tiene que ganarse la confianza. La contrapartida —que la tienda pierde parte de su
   incentivo a responder— se compensa con reputación y deuda, no con la queja del cliente.
+- **10/09/2026 — arranque sin histórico.** Se añade cómo fijar los porcentajes en una plataforma
+  que no ha operado: postura conservadora apoyada en que subir una retención después es mucho más
+  costoso que bajarla, las cuatro palancas que funcionan sin datos, la regla de no retroactividad,
+  la revisión con fecha, y los tres campos que hay que añadir a `customer_return_requests` para
+  que esa revisión pueda responder algo.
