@@ -137,7 +137,54 @@ services:
         condition: service_started
 
   # ----------------------------------------------------
-  # Contenedor 5: Redis (Cache, Sesiones y Colas/Horizon)
+  # Contenedor 5: Compilador del Frontend (Vite) — de un solo uso
+  # ----------------------------------------------------
+  #
+  # Por que un servicio y no solo una etapa del `dockerfile`: `app` monta el
+  # proyecto del host en `/var/www` (`.:/var/www`). Ese montaje TAPA lo que la
+  # imagen traiga horneado, asi que un `public/build` construido dentro de la
+  # imagen es invisible en cuanto el contenedor arranca — que es exactamente por
+  # que el proyecto levantaba sin frontend compilado. El build tiene que ocurrir
+  # EN EJECUCION y escribir dentro del montaje, para que `public/build` acabe en
+  # tu carpeta y Nginx lo sirva desde `root /var/www/public`.
+  #
+  # Usa `target: base` — la misma imagen que `app`, que ya trae PHP y Node — para
+  # no construir una segunda imagen solo para esto.
+  #
+  # Es de un solo uso: compila, termina y se queda parado (`restart: "no"`). Para
+  # recompilar tras tocar el frontend:
+  #
+  #     docker compose run --rm frontend
+  #
+  frontend:
+    build:
+      context: .
+      dockerfile: dockerfile
+      target: base
+    container_name: owomarket_frontend
+    restart: "no"
+    working_dir: /var/www
+    # `npm ci` solo si hace falta: en el segundo arranque las dependencias ya
+    # estan en el volumen y saltarselo ahorra varios minutos.
+    command: sh -c "[ -d node_modules/.bin ] || npm ci; npm run build"
+    environment:
+      <<: *entorno-contenedor
+      SERVICE_NAME: frontend
+    volumes:
+      - .:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini:ro
+      # `node_modules` en volumen con nombre, fuera del bind mount: en Windows el
+      # bind mount hace que instalar y leer miles de ficheros pequenos sea
+      # lentisimo, y ademas asi no pisa un `node_modules` local del host.
+      - node_modules:/var/www/node_modules
+    networks:
+      - owomarket_net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ----------------------------------------------------
+  # Contenedor 6: Redis (Cache, Sesiones y Colas/Horizon)
   # ----------------------------------------------------
   redis:
     image: redis:alpine
@@ -155,6 +202,8 @@ networks:
     driver: bridge
 
 volumes:
+  node_modules:
+    driver: local
   db_data:
     driver: local
   redis_data:

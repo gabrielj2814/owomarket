@@ -1,18 +1,5 @@
 # ==========================================
-# Etapa 1: Node.js - Compilar Frontend (Vite/Inertia/React)
-# ==========================================
-FROM node:20-alpine AS frontend-builder
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm ci
-
-COPY . .
-RUN npm run build
-
-# ==========================================
-# Etapa 2: PHP Base con Extensiones
+# Etapa 1: PHP Base con Extensiones
 # ==========================================
 # 8.5, que es la version del entorno de desarrollo y contra la que esta resuelto el
 # composer.lock. Con la 8.3 que habia aqui el contenedor construia bien y despues moria en
@@ -44,23 +31,58 @@ RUN apk add --no-cache \
     && docker-php-ext-enable redis \
     && apk del $PHPIZE_DEPS
 
+# Node y npm EN LA MISMA IMAGEN que PHP, no en una etapa `node:alpine` aparte.
+#
+# No es comodidad: este proyecto usa Wayfinder, y su plugin de Vite ejecuta
+# `php artisan wayfinder:generate` durante el `vite build` para escribir
+# `resources/js/actions`, `routes` y `wayfinder` — que estan en .gitignore, o sea
+# que NO existen hasta que alguien los genera. Un contenedor solo-Node no tiene
+# `php` ni `vendor/`, asi que el build muere ahi. El frontend de esta aplicacion
+# no se puede compilar sin PHP al lado.
+RUN apk add --no-cache nodejs npm
+
 # Instalar Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
 # ==========================================
+# Etapa 2: Compilar el Frontend (Vite/Inertia/React + Wayfinder)
+# ==========================================
+FROM base AS frontend-builder
+
+WORKDIR /var/www
+
+# `vendor/` primero: sin el, el `php artisan wayfinder:generate` que dispara el
+# build de Vite no arranca. --no-scripts porque los scripts de Laravel tocan
+# storage/ y aqui solo hace falta el autoloader.
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-interaction --prefer-dist --no-scripts --no-autoloader
+
+COPY package.json package-lock.json ./
+RUN npm ci
+
+COPY . .
+RUN composer dump-autoload --optimize --no-dev \
+    && npm run build
+
+# ==========================================
 # Etapa 3: Producción (Empaquetado Completo para Kubernetes/Cloud)
 # ==========================================
 FROM base AS production
-
-COPY package*.json composer*.json ./
 
 # Copiar el código fuente completo
 COPY . .
 
 # Copiar los activos compilados desde la etapa de frontend
-COPY --from=frontend-builder /app/public/build ./public/build
+COPY --from=frontend-builder /var/www/public/build ./public/build
+
+# Y los ficheros que Wayfinder genera durante ese build: estan en .gitignore, asi
+# que el `COPY . .` de arriba no los trae y sin ellos la aplicacion no resuelve
+# sus propias rutas en el cliente.
+COPY --from=frontend-builder /var/www/resources/js/actions ./resources/js/actions
+COPY --from=frontend-builder /var/www/resources/js/routes ./resources/js/routes
+COPY --from=frontend-builder /var/www/resources/js/wayfinder ./resources/js/wayfinder
 
 # Instalar dependencias de PHP para producción
 RUN composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
