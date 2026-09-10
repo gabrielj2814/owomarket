@@ -57,6 +57,8 @@ export interface StorefrontProductDetail {
     category_name?: string;
     category_slug?: string;
     specifications?: Record<string, string>;
+    /** Plazo de garantia en dias. `null` o ausente es sin garantia. */
+    warranty_days?: number | null;
     variants: StorefrontProductVariant[];
     rating: number;
     reviews_count: number;

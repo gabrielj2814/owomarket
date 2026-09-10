@@ -34,6 +34,8 @@ class Product extends Model
         'published_to_central_at' => 'datetime',
         'is_featured' => 'boolean',
         'is_digital' => 'boolean',
+        // `null` es sin garantia; N son N dias. Ver la migracion para por que un solo campo.
+        'warranty_days' => 'integer',
         'weight' => 'float',
         'height' => 'float',
         'width' => 'float',

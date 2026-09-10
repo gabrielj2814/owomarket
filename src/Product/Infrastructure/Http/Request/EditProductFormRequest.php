@@ -32,6 +32,10 @@ final class EditProductFormRequest extends FormRequest
             'is_visible' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'is_digital' => ['nullable', 'boolean'],
+            // Subsistema 2: `null` es sin garantia. `min:1` porque una garantia de cero
+            // dias no es una garantia --es no tenerla-- y dos formas de decir lo mismo
+            // acaban divergiendo. El tope son diez años.
+            'warranty_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string'],
             'barcode' => ['nullable', 'string'],

@@ -322,6 +322,11 @@ function ProductDetailPageContent({
                                     SKU: {currentSku}
                                 </span>
                             )}
+                            {product.warranty_days != null && (
+                                <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                    Garantía: {product.warranty_days} días
+                                </span>
+                            )}
                         </div>
 
                         {/* Stock Availability */}

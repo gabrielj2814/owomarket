@@ -18,6 +18,12 @@ RUN apk add --no-cache \
     oniguruma-dev \
     icu-dev \
     icu-libs \
+    # `icu-libs` trae la libreria pero NO los datos de locale: con solo eso, tanto PHP intl
+    # como Node caen en ingles para CUALQUIER locale. `es-VE` daba «VES 2,000.00» donde tiene
+    # que decir «Bs. 2.000,00» -- separadores invertidos y simbolo equivocado, dentro del
+    # contenedor que sirve la aplicacion. No es cosa de los tests: es la moneda del pais mal
+    # escrita en produccion.
+    icu-data-full \
     freetype-dev \
     libjpeg-turbo-dev \
     $PHPIZE_DEPS \

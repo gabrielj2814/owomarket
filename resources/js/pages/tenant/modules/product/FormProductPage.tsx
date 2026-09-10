@@ -35,6 +35,7 @@ const initialForm: FormProduct = {
     is_visible: true,
     is_featured: false,
     is_digital: false,
+    warranty_days: null,
     description: '',
     short_description: '',
     barcode: '',
@@ -57,6 +58,13 @@ const FormProductPage: FC<FormProductPageProps> = ({ user_id, title, host, user_
     const [loadingData, setLoadingData] = useState<boolean>(isEdit);
     const [saving, setSaving] = useState<boolean>(false);
     const [autoSlug, setAutoSlug] = useState<boolean>(!isEdit);
+    /*
+     * Que el producto tenga garantia es estado DE LA PANTALLA, no un dato: en la tabla solo
+     * existe `warranty_days` (`null` = sin garantia). Se guarda aparte porque, si no, vaciar el
+     * input para reescribir el numero equivaldria a apagar la garantia y el campo se
+     * desmontaria a mitad de la edicion. Al enviar se normaliza: sin interruptor, `null`.
+     */
+    const [hasWarranty, setHasWarranty] = useState<boolean>(false);
 
     // Image URL state for adding images
     const [newImageUrl, setNewImageUrl] = useState<string>('');
@@ -103,6 +111,7 @@ const FormProductPage: FC<FormProductPageProps> = ({ user_id, title, host, user_
                         is_visible: p.is_visible,
                         is_featured: p.is_featured,
                         is_digital: p.is_digital,
+                        warranty_days: p.warranty_days ?? null,
                         description: p.description ?? '',
                         short_description: p.short_description ?? '',
                         barcode: p.barcode ?? '',
@@ -115,6 +124,7 @@ const FormProductPage: FC<FormProductPageProps> = ({ user_id, title, host, user_
                         images: p.images ?? [],
                         variants: p.variants ?? [],
                     });
+                    setHasWarranty(p.warranty_days != null);
                 }
             } catch (err) {
                 console.error('Error cargando producto', err);
@@ -486,6 +496,46 @@ const FormProductPage: FC<FormProductPageProps> = ({ user_id, title, host, user_
                                     label="Rastrear Inventario"
                                     onChange={(val) => setForm({ ...form, track_quantity: val })}
                                 />
+                            </div>
+
+                            {/*
+                              * Garantia del producto. El interruptor NO guarda estado propio: se
+                              * deriva de `warranty_days`, que es el unico dato que existe. Con una
+                              * bandera aparte, «tiene garantia» y «cuantos dias» podrian
+                              * contradecirse y habria que decidir cual gana.
+                              */}
+                            <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 dark:border-gray-700">
+                                <ToggleSwitch
+                                    checked={hasWarranty}
+                                    label="Este producto tiene garantía"
+                                    onChange={(val) => {
+                                        setHasWarranty(val);
+                                        setForm({ ...form, warranty_days: val ? (form.warranty_days ?? 30) : null });
+                                    }}
+                                />
+                                {hasWarranty && (
+                                    <div className="max-w-xs">
+                                        <div className="mb-1 block">
+                                            <Label htmlFor="warranty_days">Días de garantía</Label>
+                                        </div>
+                                        <TextInput
+                                            id="warranty_days"
+                                            type="number"
+                                            min={1}
+                                            max={3650}
+                                            value={form.warranty_days ?? ''}
+                                            onChange={(e) =>
+                                                setForm({
+                                                    ...form,
+                                                    warranty_days: e.target.value === '' ? null : Number(e.target.value),
+                                                })
+                                            }
+                                        />
+                                        <HelperText className="mt-1">
+                                            El comprador podrá reclamar durante este plazo desde que recibe el producto.
+                                        </HelperText>
+                                    </div>
+                                )}
                             </div>
                         </Card>
 

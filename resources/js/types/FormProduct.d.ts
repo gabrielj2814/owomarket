@@ -17,6 +17,8 @@ export interface FormProduct {
     is_published_central?: boolean;
     is_featured?: boolean;
     is_digital?: boolean;
+    /** Plazo de garantia en dias. `null` o ausente es sin garantia. */
+    warranty_days?: number | null;
     digital_product_url?: string | null;
     description?: string | null;
     short_description?: string | null;

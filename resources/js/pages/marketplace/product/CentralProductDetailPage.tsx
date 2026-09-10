@@ -224,6 +224,11 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                             )}
                             <h1 className="text-2xl leading-tight font-black text-gray-900 sm:text-3xl dark:text-white">{product.name}</h1>
                             {product.sku && <p className="text-xs text-gray-400">SKU: {product.sku}</p>}
+                            {product.warranty_days != null && (
+                                <span className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                                    Garantía: {product.warranty_days} días
+                                </span>
+                            )}
                         </div>
 
                         {/* Price Display */}

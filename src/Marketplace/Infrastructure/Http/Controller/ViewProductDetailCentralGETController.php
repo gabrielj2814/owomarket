@@ -55,6 +55,7 @@ final class ViewProductDetailCentralGETController extends Controller
                 'quantity' => (int) $product->quantity,
                 'is_visible' => (bool) $product->is_visible,
                 'is_featured' => (bool) $product->is_featured,
+                'warranty_days' => $product->warranty_days !== null ? (int) $product->warranty_days : null,
                 'category_name' => $product->category_name,
                 'brand_name' => $product->brand_name,
                 'images' => $product->images ?? [],

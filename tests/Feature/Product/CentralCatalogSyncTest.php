@@ -53,6 +53,10 @@ beforeEach(function () {
         (require base_path('database/migrations/tenant/2026_08_19_000006_add_marketplace_publication_to_products_table.php'))->up();
     }
 
+    if (! Schema::hasColumn('products', 'warranty_days')) {
+        (require base_path('database/migrations/tenant/2026_09_10_100000_add_warranty_days_to_products_table.php'))->up();
+    }
+
     $tenantId = 't_sync_'.bin2hex(random_bytes(3));
     $this->tenant = ModelsTenant::create([
         'id' => $tenantId,
@@ -372,4 +376,44 @@ test('el job devuelve la tienda que estaba activa a quien lo llamó', function (
 
     expect(tenancy()->initialized)->toBeTrue()
         ->and(tenant('id'))->toBe($this->tenant->id);
+});
+
+/*
+ * Subsistema 2 de `planes/anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md`.
+ *
+ * El plazo de garantia no es un adorno de la ficha: es lo que el fondo de garantia
+ * (subsistema 4) usara para saber cuanto tiempo retener el dinero de una venta. Y un pedido
+ * del marketplace se resuelve contra `central_products`, no contra la base de la tienda, asi
+ * que si el plazo no viaja hasta aqui el fondo se queda ciego justo donde la plataforma cobra.
+ */
+test('el plazo de garantía llega al catálogo central', function () {
+    $product = ($this->publishedProduct)(['warranty_days' => 90]);
+
+    expect(centralRowFor($product)->warranty_days)->toBe(90);
+});
+
+test('cambiar el plazo de garantía se propaga al catálogo central', function () {
+    $product = ($this->publishedProduct)(['warranty_days' => 90]);
+
+    $product->update(['warranty_days' => 365]);
+
+    expect(centralRowFor($product)->warranty_days)->toBe(365);
+});
+
+test('un producto sin garantía llega sin plazo, no con cero', function () {
+    // `null` y `0` no son lo mismo y no pueden acabar significando lo mismo: cero dias de
+    // garantia es no tener garantia, y dos formas de decirlo divergen en cuanto alguien
+    // compare con `> 0` en un sitio y con `!== null` en otro.
+    $product = ($this->publishedProduct)();
+
+    expect(centralRowFor($product)->warranty_days)->toBeNull();
+});
+
+test('quitarle la garantía a un producto se la quita también en el central', function () {
+    $product = ($this->publishedProduct)(['warranty_days' => 90]);
+    expect(centralRowFor($product)->warranty_days)->toBe(90);
+
+    $product->update(['warranty_days' => null]);
+
+    expect(centralRowFor($product)->warranty_days)->toBeNull();
 });

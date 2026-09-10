@@ -226,13 +226,32 @@ Dos avisos de diseño:
 Lo hablado son cinco cosas independientes. No caben en una especificación y mezclarlas garantiza
 que ninguna se termine. Cada una necesita su propio ciclo diseño → plan → implementación.
 
-| # | Subsistema | Qué es | Depende de |
-| :--- | :--- | :--- | :--- |
-| 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — |
-| 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — |
-| 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — |
-| 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 |
-| 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 |
+| # | Subsistema | Qué es | Depende de | Estado |
+| :--- | :--- | :--- | :--- | :--- |
+| 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | ⬜ Por hacer |
+| 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — | ✅ **Hecho** (10/09/2026) |
+| 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ⬜ Por hacer |
+| 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | ⬜ Por hacer |
+| 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | ⬜ Por hacer |
+
+### Subsistema 2 — lo que quedó construido
+
+Un solo campo `warranty_days` (nullable) en `products` y en `central_products`: `null` es sin
+garantía, `N` son N días. Dos columnas para el mismo hecho podían contradecirse; la casilla
+«tiene garantía» vive solo en el formulario, donde la redundancia ayuda al comprador y no puede
+llegar a la tabla.
+
+Se propaga por `SyncProductToCentralMarketplaceUseCase` —sin eso, el subsistema 4 no sabría
+cuánto retener de una venta del marketplace, que es donde la plataforma cobra— y se muestra en
+la ficha de las dos tiendas, central y escaparate.
+
+La validación rechaza `0` a propósito: cero días de garantía es no tenerla, ya se dice con
+`null`, y dos formas de decir lo mismo divergen en cuanto alguien compare con `> 0` en un sitio
+y con `!== null` en otro.
+
+Cubierto por `tests/Feature/Product/CentralCatalogSyncTest.php` (propagación),
+`WarrantyDaysValidationTest.php` (la regla) y
+`tests/Frontend/Components/ProductWarrantyField.test.tsx` (el campo).
 
 ### Orden recomendado
 

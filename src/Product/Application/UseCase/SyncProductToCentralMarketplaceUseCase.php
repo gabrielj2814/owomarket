@@ -99,6 +99,11 @@ final class SyncProductToCentralMarketplaceUseCase
                 // el moderador lo haya vetado — esa decisión no la revierte el comerciante.
                 'is_visible' => (bool) $product->is_visible && ! (bool) ($existing?->is_blocked_by_admin ?? false),
                 'is_featured' => (bool) $product->is_featured,
+                // Subsistema 2: el plazo tiene que llegar hasta aqui. Un pedido central se
+                // resuelve contra esta proyeccion, no contra la base de la tienda, asi que sin
+                // esta linea el fondo de garantia no sabria cuanto retener de una venta del
+                // marketplace --que es justo donde la plataforma cobra--.
+                'warranty_days' => $product->warranty_days !== null ? (int) $product->warranty_days : null,
                 'category_name' => $product->category?->name,
                 'brand_name' => $product->brand?->name,
                 'images' => $imagesData,

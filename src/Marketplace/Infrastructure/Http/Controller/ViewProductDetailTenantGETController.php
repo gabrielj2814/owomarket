@@ -136,6 +136,7 @@ final class ViewProductDetailTenantGETController extends Controller
             'is_visible' => (bool) $product->is_visible,
             'images' => $images,
             'brand_name' => $product->brand?->name,
+            'warranty_days' => $product->warranty_days !== null ? (int) $product->warranty_days : null,
             'category_name' => $product->category?->name,
             'category_slug' => $product->category?->slug,
             'specifications' => is_array($product->specifications) ? $product->specifications : [],

@@ -32,6 +32,10 @@ final class CreateProductFormRequest extends FormRequest
             'is_visible' => ['nullable', 'boolean'],
             'is_featured' => ['nullable', 'boolean'],
             'is_digital' => ['nullable', 'boolean'],
+            // Subsistema 2: `null` es sin garantia. `min:1` porque una garantia de cero
+            // dias no es una garantia --es no tenerla-- y dos formas de decir lo mismo
+            // acaban divergiendo. El tope son diez años.
+            'warranty_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             'description' => ['nullable', 'string'],
             'short_description' => ['nullable', 'string'],
             'barcode' => ['nullable', 'string'],
@@ -68,6 +72,8 @@ final class CreateProductFormRequest extends FormRequest
             'price.min' => 'El precio no puede ser negativo.',
             'quantity.required' => 'La cantidad en stock es obligatoria.',
             'quantity.min' => 'La cantidad en stock no puede ser negativa.',
+            'warranty_days.min' => 'La garantía debe ser de al menos un día. Déjalo vacío si el producto no tiene garantía.',
+            'warranty_days.max' => 'La garantía no puede superar los 3650 días (diez años).',
         ];
     }
 

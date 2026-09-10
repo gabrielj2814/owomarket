@@ -19,6 +19,8 @@ export interface Product {
     published_to_central_at?: string | null;
     is_featured: boolean;
     is_digital: boolean;
+    /** Plazo de garantia en dias. `null` es sin garantia. */
+    warranty_days?: number | null;
     digital_product_url?: string | null;
     description?: string | null;
     short_description?: string | null;

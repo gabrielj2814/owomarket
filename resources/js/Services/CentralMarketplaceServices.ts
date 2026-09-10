@@ -119,6 +119,8 @@ export interface CentralProductItem {
     quantity: number;
     is_visible: boolean;
     is_featured: boolean;
+    /** Plazo de garantia en dias. `null` o ausente es sin garantia. */
+    warranty_days?: number | null;
     category_name?: string | null;
     brand_name?: string | null;
     images?: Array<{
