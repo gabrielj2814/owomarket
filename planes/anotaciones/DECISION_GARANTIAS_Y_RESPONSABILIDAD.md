@@ -231,7 +231,7 @@ que ninguna se termine. Cada una necesita su propio ciclo diseño → plan → i
 | 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | ⬜ Por hacer |
 | 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — | ✅ **Hecho** (10/09/2026) |
 | 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ✅ **Hecho** (11/09/2026) |
-| 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | ⬜ Por hacer |
+| 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | 🟡 Fondo hecho (11/09/2026) · reputación espera al 5 |
 | 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | ⬜ Por hacer |
 
 ### Subsistema 2 — lo que quedó construido
@@ -286,6 +286,52 @@ el subsistema 5.
 
 Cubierto por `tests/Feature/Monetization/DeliveryConfirmationTest.php`. El que vigila es
 «declarar la entrega NO libera el dinero».
+
+### Subsistema 4 — el fondo de garantía
+
+**No es un mecanismo nuevo: es hacer parcial la retención que ya existía.**
+`TenantAvailableBalance::netEarnings()` ya sumaba solo lo que tiene `released_at` vencido, pero
+era todo o nada. Con dos columnas en `platform_commissions` —`reserve_amount` y
+`reserve_until`— una venta libera el 90% y guarda el 10% sesenta días más.
+
+Sin tabla de reservas a propósito: **el saldo de una tienda tiene que salir de un solo sitio.**
+Una segunda tabla que hubiera que restar aparte es exactamente como nacen las dos consultas que
+responden a la misma pregunta y divergen — y este proyecto ya pagó un plan entero por eso.
+
+La reserva se estampa en `ReleaseOrderCommissionUseCase`, que ya corría en el instante correcto
+y ya escribía en esa fila. Con una venta de $100 al 8%:
+
+| | Antes | Con el fondo |
+| :--- | :--- | :--- |
+| Al liberarse | $92 retirables | $82,80 retirables, $9,20 retenidos 60 días |
+
+**10% y 60 días, configurables** (`central_guarantee_reserve_percent` y
+`central_guarantee_reserve_days`). Conservador a propósito, por la asimetría ya anotada: bajar
+una retención después es un regalo, subirla es una discusión con cada tienda.
+
+Dos detalles que no son cosméticos:
+
+- **Una nota de crédito no genera reserva.** Lleva la parte del comerciante en negativo;
+  retener un porcentaje de una deuda no significa nada y además restaría al revés, aumentando
+  el saldo de quien debe dinero.
+- **El fondo se muestra aparte en la wallet** (`retained_reserve_ves`), separado de los otros
+  dos motivos de retención. Al comerciante no puede bajarle el saldo sin que pueda ver por qué.
+
+Cubierto por `tests/Feature/Monetization/GuaranteeReserveTest.php`. El que vigila es «el saldo
+retirable baja en el importe del fondo»: sin él, la reserva sería contabilidad decorativa.
+
+#### Lo que se dejó fuera, y por qué
+
+**Los tres niveles de reputación.** Se calculan de «reclamaciones sin responder», y las
+reclamaciones son el subsistema 5: hoy la señal no existe. Un `reputation_level` que nunca
+puede cambiar de valor es un `config()` disfrazado de columna. La fórmula queda lista para que
+el porcentaje sea variable; el nivel entra cuando haya con qué moverlo.
+
+**El plazo por producto.** `warranty_days` ya existe, pero la comisión se crea sabiendo solo
+totales, no qué productos lleva el pedido. Usarlo exigiría pasarlo desde el despacho y desde el
+checkout del escaparate — y en el escaparate los artículos ni siquiera están en la base
+central, así que el comportamiento saldría distinto según el canal. Plazo plano, una sola regla
+para todos, hasta que haya un motivo medido para afinar.
 
 ### Subsistema 3, fase B — las evidencias
 

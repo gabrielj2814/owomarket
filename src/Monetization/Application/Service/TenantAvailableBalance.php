@@ -86,12 +86,12 @@ final class TenantAvailableBalance
      * wallet y retiros). No se revaloriza al consultar: la plataforma le debe al comerciante
      * los bolivares que recibio del comprador, no los de hoy.
      *
-     * @return array{disponible_bs: float, retenido_bs: float, retenido_entrega_bs: float, retenido_garantia_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
+     * @return array{disponible_bs: float, retenido_bs: float, retenido_entrega_bs: float, retenido_garantia_bs: float, retenido_fondo_bs: float, sin_valorar_usd: float, sin_valorar_count: int}
      */
     public function breakdown(string $tenantId): array
     {
         if (! Schema::hasTable('platform_commissions')) {
-            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'retenido_garantia_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
+            return ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'retenido_garantia_bs' => 0.0, 'retenido_fondo_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
         }
 
         $limite = now()->subDays($this->diasDeRetencion());
@@ -124,6 +124,11 @@ final class TenantAvailableBalance
             'retenido_entrega_bs' => $enBolivares(self::ESTADOS_COBRADOS, entrega: 'sin_entregar'),
             // Entregado, pero el comprador todavia esta a tiempo de pedir una devolucion.
             'retenido_garantia_bs' => $enBolivares(self::ESTADOS_COBRADOS, entrega: 'en_garantia'),
+            // Subsistema 4: el fondo de garantia. Se enseña aparte y no se suma en silencio a
+            // los otros dos motivos de retencion porque es de naturaleza distinta --no espera
+            // a un hecho, espera a que pase el plazo de reclamacion-- y sobre todo porque al
+            // comerciante no puede bajarle el saldo sin decirle por que.
+            'retenido_fondo_bs' => $this->reservaRetenida($tenantId),
             'sin_valorar_usd' => (float) (clone $sinValorar)->sum(DB::raw('order_total - commission_amount')),
             'sin_valorar_count' => (clone $sinValorar)->count(),
         ];
@@ -147,7 +152,7 @@ final class TenantAvailableBalance
             return 0.0;
         }
 
-        return (float) $this->ventasDe($tenantId)
+        $liberado = (float) $this->ventasDe($tenantId)
             ->whereIn('status', self::ESTADOS_COBRADOS)
             ->whereNotNull('exchange_rate')
             // Fase 4b: solo lo entregado, y con su ventana de garantia ya cumplida. Si la
@@ -155,6 +160,34 @@ final class TenantAvailableBalance
             // recuperarlo es perseguirlo.
             ->where('released_at', '<=', now()->subDays($this->diasDeRetencion()))
             ->sum(DB::raw('(order_total - commission_amount) * exchange_rate'));
+
+        return $liberado - $this->reservaRetenida($tenantId);
+    }
+
+    /**
+     * El fondo de garantia todavia retenido, en bolivares (subsistema 4).
+     *
+     * Se resta de lo liberado en vez de vivir en una tabla aparte, y eso es deliberado: el
+     * saldo de una tienda tiene que salir de UN solo sitio. Una segunda tabla que hubiera que
+     * restar por su cuenta es exactamente como nacen las dos consultas que responden a la
+     * misma pregunta y acaban divergiendo.
+     *
+     * A la tasa congelada de cada venta, igual que el resto de la formula: se retiene una
+     * parte de los bolivares que entraron, no un importe revalorizado a la tasa de hoy.
+     */
+    private function reservaRetenida(string $tenantId): float
+    {
+        $reserva = (float) $this->ventasDe($tenantId)
+            ->whereIn('status', self::ESTADOS_COBRADOS)
+            ->whereNotNull('exchange_rate')
+            ->where('reserve_until', '>', now())
+            ->sum(DB::raw('reserve_amount * exchange_rate'));
+
+        // A centimos. Es dinero que se le enseña al comerciante y que se resta de lo que
+        // puede retirar, asi que no puede salir con doce decimales: `9.20 * 50` da
+        // `459.99999999999994` en coma flotante, y un saldo que no cuadra por una millonesima
+        // es un saldo que alguien va a reportar como roto.
+        return round($reserva, 2);
     }
 
     /**

@@ -1,6 +1,6 @@
 # Plan — Reembolsar cuando el dinero ya salió en un retiro
 
-> **Estado:** 🟡 Hueco 1 cerrado (no había nada que arreglar) · Hueco 2 por hacer
+> **Estado:** ✅ Hueco 1 cerrado (no había nada que arreglar) · Hueco 2 cerrado por el fondo de garantía (11/09/2026)
 >
 > Redactado el 31/08/2026. **Reescrito el 10/09/2026 tras medir el comportamiento real:
 > la mitad de este documento describía un fallo que no existe, y el arreglo que proponía
@@ -93,11 +93,21 @@ sondas de veinte líneas contra la base de datos en memoria tumbaron la premisa 
 Cuando un plan afirma que algo está roto, medirlo antes de arreglarlo cuesta menos que
 arreglar lo que no lo estaba.
 
-## Hueco 2 — POR HACER
+## Hueco 2 — CERRADO
 
 > Si la tienda no vuelve a vender, la deuda nunca se compensa.
 
-**Sigue intacto, y es el único trabajo real que queda aquí.**
+**Cerrado el 11/09/2026 por el fondo de garantía** (subsistema 4 de la decisión de garantías):
+cada venta retiene un 10% durante 60 días, así que la deuda de un reembolso tiene con qué
+pagarse sin depender de que la tienda vuelva a vender. El hueco deja de poder existir por
+construcción en vez de tener que gestionarse.
+
+Lo que sigue abierto no es este hueco sino su contabilidad fina: **que un saldo negativo se
+pueda ver**. `requestable()` y `settleable()` terminan en `max(0.0, …)`, así que una tienda que
+debe 4.600 Bs y una con saldo cero se ven idénticas. El fondo lo hace raro; no lo hace
+imposible.
+
+Lo que decía antes de cerrarse:
 
 Una deuda se absorbe contra ventas futuras. Un comerciante que cierra, o que simplemente deja
 de vender, arrastra un saldo negativo que no tiene contra qué restarse, y la plataforma se

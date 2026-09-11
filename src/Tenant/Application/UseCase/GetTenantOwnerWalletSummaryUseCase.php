@@ -41,7 +41,7 @@ final class GetTenantOwnerWalletSummaryUseCase
         $pendingPayouts = 0.0;
         $availableBalance = 0.0;
         $settlements = [];
-        $bolivares = ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'retenido_garantia_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
+        $bolivares = ['disponible_bs' => 0.0, 'retenido_bs' => 0.0, 'retenido_entrega_bs' => 0.0, 'retenido_garantia_bs' => 0.0, 'retenido_fondo_bs' => 0.0, 'sin_valorar_usd' => 0.0, 'sin_valorar_count' => 0];
 
         if ($tenantIds !== []) {
             if (Schema::hasTable('platform_commissions')) {
@@ -67,6 +67,7 @@ final class GetTenantOwnerWalletSummaryUseCase
                     $bolivares['retenido_bs'] += $desglose['retenido_bs'];
                     $bolivares['retenido_entrega_bs'] += $desglose['retenido_entrega_bs'];
                     $bolivares['retenido_garantia_bs'] += $desglose['retenido_garantia_bs'];
+                    $bolivares['retenido_fondo_bs'] += $desglose['retenido_fondo_bs'];
                     $bolivares['sin_valorar_usd'] += $desglose['sin_valorar_usd'];
                     $bolivares['sin_valorar_count'] += $desglose['sin_valorar_count'];
                 }
@@ -123,6 +124,11 @@ final class GetTenantOwnerWalletSummaryUseCase
             'retained_ves' => round($bolivares['retenido_bs'], 2),
             'retained_delivery_ves' => round($bolivares['retenido_entrega_bs'], 2),
             'retained_warranty_ves' => round($bolivares['retenido_garantia_bs'], 2),
+            // Subsistema 4: el fondo de garantia. Aparte de los otros dos motivos de
+            // retencion porque no espera a un hecho --que se entregue, que se confirme-- sino
+            // a que pase el plazo de reclamacion. Al comerciante no puede bajarle el saldo sin
+            // que pueda ver por que.
+            'retained_reserve_ves' => round($bolivares['retenido_fondo_bs'], 2),
             'unvalued_usd' => round($bolivares['sin_valorar_usd'], 2),
             'unvalued_count' => $bolivares['sin_valorar_count'],
             'pending_payouts' => $pendingPayouts,

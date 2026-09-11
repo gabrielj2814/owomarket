@@ -39,6 +39,8 @@ class PlatformCommission extends Model
         'exchange_rate',
         'status',
         'released_at',
+        'reserve_amount',
+        'reserve_until',
         'settlement_id',
         'payment_gateway',
         'metadata',
@@ -50,6 +52,10 @@ class PlatformCommission extends Model
         'commission_amount' => 'float',
         'exchange_rate' => 'float',
         'released_at' => 'datetime',
+        // Subsistema 4: la parte del comerciante que sigue retenida como fondo de garantia,
+        // y hasta cuando. En dolares, como el resto de importes de esta tabla.
+        'reserve_amount' => 'float',
+        'reserve_until' => 'datetime',
         'metadata' => 'array',
     ];
 

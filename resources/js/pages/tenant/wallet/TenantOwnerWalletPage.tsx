@@ -24,6 +24,8 @@ interface WalletData {
     retained_ves: number;
     retained_delivery_ves: number;
     retained_warranty_ves: number;
+    /** Fondo de garantía: porcentaje de cada venta retenido durante el plazo de reclamación. */
+    retained_reserve_ves: number;
     unvalued_usd: number;
     unvalued_count: number;
     tenant_id: string | null;
@@ -184,6 +186,7 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                 {(wallet.retained_ves > 0 ||
                     wallet.retained_delivery_ves > 0 ||
                     wallet.retained_warranty_ves > 0 ||
+                    wallet.retained_reserve_ves > 0 ||
                     wallet.unvalued_count > 0) && (
                     <div className="mb-4 space-y-2">
                         {wallet.retained_ves > 0 && (
@@ -213,6 +216,17 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                                 </span>{' '}
                                 en plazo de garantía: ya están entregados, y se liberan cuando pase el plazo en el que el
                                 cliente todavía puede pedir una devolución.
+                            </div>
+                        )}
+
+                        {wallet.retained_reserve_ves > 0 && (
+                            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300">
+                                <span className="font-black">
+                                    Bs. {wallet.retained_reserve_ves.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                                </span>{' '}
+                                en fondo de garantía: una parte de cada venta que se guarda durante el plazo de
+                                reclamación. Es tuyo y se libera solo — sirve para cubrir una devolución sin que tengas
+                                que devolver dinero ya cobrado.
                             </div>
                         )}
 

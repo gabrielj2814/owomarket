@@ -44,6 +44,11 @@ final class UpdateCentralPaymentSettingsUseCase
         // de la liberacion: este plazo es «cuanto esperamos a que el comprador diga que
         // llego», y aquel es «cuanto esperamos ya con la mercancia dada por recibida».
         'central_delivery_confirmation_days',
+        // Subsistema 4: el fondo de garantia. Porcentaje de la parte del comerciante que
+        // queda retenido al liberar una venta, y dias que sigue retenido. Es el colchon con
+        // el que se paga una reclamacion sin tener que perseguir a nadie.
+        'central_guarantee_reserve_percent',
+        'central_guarantee_reserve_days',
     ];
 
     /**

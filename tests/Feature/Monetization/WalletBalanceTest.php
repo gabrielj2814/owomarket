@@ -276,10 +276,17 @@ it('entregar el pedido libera su comisión, que entra en el plazo de garantía',
         ->and($desglose['retenido_garantia_bs'])->toBe(4600.0)
         ->and($this->balance->requestable($this->tenant->id))->toBe(0.0);
 
-    // Y cuando el plazo pasa, sí.
+    // Y cuando el plazo pasa, sí -- salvo el fondo de garantia.
     $comision->update(['released_at' => now()->subDays(2)]);
 
-    expect($this->balance->requestable($this->tenant->id))->toBe(4600.0);
+    // 4.140 y no 4.600 desde el subsistema 4: liberar aparta un 10% como fondo de garantia,
+    // que sigue retenido 60 dias mas. Este test decia 4.600 hasta el 11/09/2026 y el cambio
+    // de cifra ES la funcionalidad, no un ajuste para que pase: es lo que hace que la deuda
+    // de un reembolso tenga con que pagarse sin perseguir al comerciante.
+    //
+    // Que el fondo NO se pierde lo comprueba `GuaranteeReserveTest`, en «cumplido el plazo,
+    // el fondo vuelve al saldo».
+    expect($this->balance->requestable($this->tenant->id))->toBe(4140.0);
 });
 
 it('liberar dos veces no mueve la fecha de la primera vez', function () {
