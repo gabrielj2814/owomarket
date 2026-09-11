@@ -6,6 +6,7 @@ namespace Src\Marketplace\Infrastructure\Http\Controller;
 
 use Illuminate\Http\JsonResponse;
 use Src\Marketplace\Application\Service\CentralProductResolver;
+use Src\Monetization\Application\Service\TenantReputation;
 use Src\Product\Infrastructure\Eloquent\Models\CentralProduct;
 use Src\Shared\Helper\ApiResponse;
 
@@ -40,6 +41,15 @@ final class GetCentralProductDetailAPIController
             'description' => $tenant?->description,
             'logo' => $tenant?->logo,
             'banner' => $tenant?->banner,
+            /*
+             * Subsistema 5, fase C: el nivel de reputacion, visible para el comprador.
+             *
+             * Es lo que le da fuerza disuasoria real: una insignia que solo viera el
+             * administrador no cambiaria el comportamiento de nadie. Aqui, junto al nombre de
+             * la tienda y donde el comprador decide.
+             */
+            'reputation_level' => app(TenantReputation::class)
+                ->level($tenant?->id ?? $product->tenant_id),
         ];
 
         // Related products from same category or same store

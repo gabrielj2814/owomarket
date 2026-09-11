@@ -147,6 +147,8 @@ export interface TenantStoreItem {
     description?: string;
     logo?: string;
     banner?: string;
+    /** Nivel de reputacion de la tienda (subsistema 5). Solo llega en el detalle de producto. */
+    reputation_level?: 'alto' | 'medio' | 'bajo';
     products_count?: number;
 }
 

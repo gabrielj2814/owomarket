@@ -17,13 +17,28 @@ final class CreateCustomerReturnRequestUseCase
      */
     public function execute(string $customerId, array $data): CustomerReturnRequest
     {
-        $order = CentralOrder::with('items')
+        $order = CentralOrder::with(['items', 'customer:id,document_id'])
             ->where('id', $data['order_id'])
             ->where('customer_id', $customerId)
             ->first();
 
         if (! $order) {
             throw new Exception('El pedido no fue encontrado o no pertenece a tu cuenta.', 404);
+        }
+
+        /*
+         * Subsistema 1, fase D: KYC del comprador, exigido AL RECLAMAR.
+         *
+         * No al comprar -- pedir cedula para una compra mata la conversion, y la decision lo
+         * dice: «datos minimos para comprar, KYC completo para abrir una reclamacion». Aqui
+         * si: una reclamacion puede acabar moviendo dinero y, en el peor caso, en una
+         * denuncia, y ninguna de las dos cosas funciona contra alguien sin identificar.
+         */
+        if (trim((string) ($order->customer?->document_id ?? '')) === '') {
+            throw new Exception(
+                'Antes de abrir una reclamación necesitamos tu cédula. Complétala en tu perfil.',
+                422
+            );
         }
 
         $item = $order->items->firstWhere('product_id', $data['product_id']);

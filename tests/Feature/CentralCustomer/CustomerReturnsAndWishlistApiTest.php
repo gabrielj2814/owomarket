@@ -66,6 +66,10 @@ test('POST /api/central/customer/returns and GET /api/central/customer/returns m
         'id' => (string) Str::uuid(),
         'name' => 'Feature Return User',
         'email' => 'feat_ret_'.bin2hex(random_bytes(3)).'@example.com',
+        // Subsistema 5, fase D: sin cedula no se puede abrir una reclamacion. Una
+        // reclamacion puede acabar moviendo dinero y, en el peor caso, en una denuncia, y
+        // ninguna de las dos cosas funciona contra alguien sin identificar.
+        'document_id' => 'V-'.random_int(10000000, 29999999),
         'password' => 'secret',
     ]);
 

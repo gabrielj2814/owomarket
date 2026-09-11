@@ -228,11 +228,78 @@ que ninguna se termine. Cada una necesita su propio ciclo diseño → plan → i
 
 | # | Subsistema | Qué es | Depende de | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | 🟡 Comerciante hecho (11/09/2026) · cliente espera al 5 |
+| 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | ✅ **Hecho** (11/09/2026) |
 | 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — | ✅ **Hecho** (10/09/2026) |
 | 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ✅ **Hecho** (11/09/2026) |
-| 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | 🟡 Fondo hecho (11/09/2026) · reputación espera al 5 |
-| 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | 🟡 Fases A y B hechas (11/09/2026) · C y D por hacer |
+| 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje según nivel | 2 | ✅ **Hecho** (11/09/2026) |
+| 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | ✅ **Hecho** (11/09/2026) |
+
+### Subsistema 5, fases C y D — reputación y expediente
+
+#### La reputación no se guarda en ninguna columna
+
+Era lo primero que pedía el cuerpo, y es peor: un nivel almacenado necesita disparadores de
+recálculo, y **un nivel desfasado es un porcentaje de reserva equivocado** — o sea, dinero mal
+retenido a alguien que no se lo merece, en los dos sentidos.
+
+`TenantReputation` lo deriva de dos cuentas, y se usa justo donde eso es barato: al liberar una
+venta, una vez por pedido. Sin columna no hay estado que pueda mentir.
+
+`ponytail:` si algún día una pantalla lista doscientas tiendas con su nivel, eso es un N+1 y
+habrá que cachear o materializar.
+
+#### Las reglas
+
+| Nivel | Condición | Retiene |
+| :--- | :--- | :--- |
+| **bajo** | Algún silencio en los últimos 90 días | 20% |
+| **alto** | ≥10 entregas confirmadas, cero silencios, sin deuda | 5% |
+| **medio** | Todo lo demás, y donde entra cualquier tienda nueva | 10% |
+
+`medio` conserva el 10% que ya regía para todos, así que ninguna tienda nota un cambio salvo
+que se lo haya ganado — importa por la asimetría de siempre: bajar una retención es un regalo,
+subirla es una discusión con cada tienda.
+
+**La deuda entra en la condición de `alto`, no como un tope aparte.** Una tienda que debe dinero
+no llega arriba por bien que se porte, pero tampoco se hunde a `bajo` si no ha ignorado a nadie:
+la deuda se paga vendiendo, y para vender necesita poder cobrar.
+
+**Los silencios caducan a los 90 días.** Sin caducidad, una tienda que falló una vez quedaría en
+`bajo` para siempre — y una sanción de la que no se puede salir no corrige comportamiento, solo
+expulsa.
+
+El ajuste global `central_guarantee_reserve_percent` sigue ganando si está puesto: es la válvula
+para apagar el fondo o volver al comportamiento anterior sin tocar código.
+
+**Visible para el comprador** en la ficha de producto, junto al nombre de la tienda. Una
+insignia que solo viera el administrador no cambiaría el comportamiento de nadie.
+
+#### Lo que se dejó fuera
+
+**La velocidad de liberación por nivel.** La decisión menciona «rápida / estándar / lenta», pero
+el porcentaje ya hace el trabajo y variar también los días exige tocar `central_payout_hold_days`
+por otro camino. Dos palancas para el mismo efecto, y la segunda cuesta más de lo que añade.
+
+#### El expediente (fase D)
+
+`BuildClaimDossierUseCase` **no construye nada**: junta lo que los subsistemas 1, 3 y 5 ya
+guardaron — reclamación, cronología, identidad verificada de la tienda, evidencias de entrega y
+nivel de reputación. Que esto sea una simple lectura es la señal de que las piezas anteriores
+quedaron bien puestas.
+
+**La cédula y el RIF NO van en el expediente.** Quien tenga que verlos los pide expresamente.
+Meterlos en un payload que acaba en una captura de pantalla o en un ticket de soporte desharía
+el cifrado por la puerta de atrás. Hay un test que lo vigila.
+
+#### KYC del cliente, al reclamar
+
+Una línea en `CreateCustomerReturnRequestUseCase`: sin `document_id` no se abre reclamación. No
+al comprar —pedir cédula para una compra mata la conversión— sino aquí, donde puede acabar
+moviendo dinero y, en el peor caso, en una denuncia.
+
+Cubierto por `tests/Feature/Monetization/TenantReputationTest.php` y
+`tests/Feature/Admin/ClaimDossierTest.php`. Los que vigilan son «con entregas de sobra pero un
+silencio, cae a bajo» y «el expediente NO incluye la cédula ni el RIF».
 
 ### Subsistema 5, fases A y B — reclamaciones y su dinero
 

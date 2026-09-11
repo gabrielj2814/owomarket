@@ -198,6 +198,30 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                             {store.name}
                                             <HiOutlineCheckCircle className="h-4 w-4 text-green-500" />
                                         </h4>
+                                        {/*
+                                          * Subsistema 5: el nivel de reputacion, aqui y no en
+                                          * un panel interno. Una insignia que solo viera el
+                                          * administrador no cambiaria el comportamiento de
+                                          * nadie; esto lo ve quien decide la compra.
+                                          */}
+                                        {store.reputation_level && (
+                                            <span
+                                                data-testid="store-reputation"
+                                                className={`mt-1 inline-flex w-fit items-center rounded-md px-2 py-0.5 text-[10px] font-black uppercase ${
+                                                    store.reputation_level === 'alto'
+                                                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300'
+                                                        : store.reputation_level === 'bajo'
+                                                          ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                                                          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300'
+                                                }`}
+                                            >
+                                                {store.reputation_level === 'alto'
+                                                    ? 'Tienda destacada'
+                                                    : store.reputation_level === 'bajo'
+                                                      ? 'Reclamaciones sin responder'
+                                                      : 'Tienda verificada'}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
 

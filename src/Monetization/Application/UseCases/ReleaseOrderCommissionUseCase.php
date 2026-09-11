@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Monetization\Application\UseCases;
 
 use Illuminate\Support\Facades\Log;
+use Src\Monetization\Application\Service\TenantReputation;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Throwable;
@@ -25,7 +26,8 @@ use Throwable;
  * | `Release`  | ¿Llegó la mercancía? | El comprador confirma, o vence el plazo (subsistema 3) |
  *
  * **Subsistema 4:** liberar ya no es todo o nada. Al liberar se aparta una reserva —un
- * porcentaje de la parte del comerciante— que sigue retenida un tiempo más. Ese colchón es lo
+ * porcentaje de la parte del comerciante, que decide su nivel de reputación— y sigue retenida un
+ * tiempo más. Ese colchón es lo
  * que paga una reclamación posterior sin que la plataforma tenga que perseguir a nadie, y es
  * lo que convierte el hueco 2 en imposible por construcción en vez de gestionable.
  *
@@ -33,18 +35,12 @@ use Throwable;
  */
 class ReleaseOrderCommissionUseCase
 {
-    /**
-     * Porcentaje de la parte del comerciante que queda retenido como fondo de garantía.
-     *
-     * Diez por ciento: conservador sin asfixiar. Y conservador a propósito, por una asimetría
-     * que decide el asunto — bajar una retención después es un regalo que el comerciante
-     * celebra; subirla, al descubrir a los seis meses que el número se quedó corto, se vive
-     * como una traición y es una discusión con cada tienda.
-     */
-    private const PORCENTAJE_POR_DEFECTO = 10.0;
-
     /** Días que la reserva sigue retenida después de liberarse el resto de la venta. */
     private const DIAS_POR_DEFECTO = 60;
+
+    public function __construct(
+        private readonly TenantReputation $reputacion
+    ) {}
 
     /**
      * @param  string  $orderId  ID del pedido DE LA TIENDA, que es lo que guarda
@@ -65,7 +61,11 @@ class ReleaseOrderCommissionUseCase
                 return 0;
             }
 
-            $porcentaje = $this->porcentajeDeReserva();
+            // Subsistema 5, fase C: el porcentaje lo decide el NIVEL de la tienda. Es lo que
+            // convierte la reputacion en algo que el comerciante siente --su flujo de caja--
+            // en vez de una insignia que le da igual. Y la exposicion se auto-regula: se
+            // retiene mas de quien mas probablemente genere reclamaciones.
+            $porcentaje = $this->porcentajeDeReserva($comisiones->first()->tenant_id);
             $dias = $this->diasDeReserva();
             $ahora = now();
 
@@ -99,20 +99,21 @@ class ReleaseOrderCommissionUseCase
     }
 
     /**
-     * Configurable desde los ajustes de cobro, como el resto de las palancas de dinero.
+     * El porcentaje que retiene esta tienda.
      *
-     * Cero es legítimo —significa no retener nada— pero el tope es 100: una reserva mayor que
-     * la venta dejaría al comerciante con saldo negativo por vender.
+     * Manda el nivel de reputacion, salvo que haya un ajuste global puesto a mano -- que
+     * entonces gana y aplica a todos por igual. Es la valvula para apagar o forzar el fondo
+     * sin tocar codigo, y para volver al comportamiento anterior a la fase C si hiciera falta.
      */
-    private function porcentajeDeReserva(): float
+    private function porcentajeDeReserva(string $tenantId): float
     {
         $valor = $this->ajuste('central_guarantee_reserve_percent');
 
-        if ($valor === null) {
-            return self::PORCENTAJE_POR_DEFECTO;
+        if ($valor !== null) {
+            return max(0.0, min(100.0, (float) $valor));
         }
 
-        return max(0.0, min(100.0, (float) $valor));
+        return $this->reputacion->reservePercent($tenantId);
     }
 
     private function diasDeReserva(): int
