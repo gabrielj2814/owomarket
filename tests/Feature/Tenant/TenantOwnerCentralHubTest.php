@@ -118,6 +118,19 @@ test('Tenant Owner can view wallet summary and request payout', function () {
         'role' => 'owner',
     ]);
 
+    // Subsistema 1: sin identidad verificada el retiro se rechaza con 422. La tienda de este
+    // test cobra de verdad, asi que tiene su verificacion hecha como la tendria en produccion.
+    Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => 'wallet-store-test',
+        'user_id' => $user->id,
+        'legal_name' => 'Dueño Wallet',
+        'cedula' => 'V-19876543',
+        'phone' => '+58 412 3334455',
+        'address' => 'Caracas, Venezuela',
+        'status' => 'verified',
+    ]);
+
     // Ventas previas que respaldan el saldo disponible para el retiro.
     PlatformCommission::create([
         'id' => (string) Str::uuid(),

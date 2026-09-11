@@ -1,0 +1,179 @@
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+
+/**
+ * Verificación de identidad del comerciante (subsistema 1).
+ *
+ * Vive en la wallet a propósito: **es ahí donde el KYC se exige**. Sin identidad verificada el
+ * retiro se rechaza, así que la explicación tiene que estar donde aparece el botón que no
+ * funciona — no escondida en un ajuste que nadie visita.
+ *
+ * No muestra la cédula ni el RIF ya enviados. El backend no los devuelve, y aquí tampoco se
+ * piden: el comerciante ya los tiene, y tenerlos dando vueltas por la red y por el navegador
+ * solo multiplica los sitios de los que pueden escaparse.
+ */
+interface KycStatus {
+    status: 'missing' | 'pending' | 'verified' | 'rejected';
+    legal_name?: string | null;
+    phone?: string | null;
+    address?: string | null;
+    has_document: boolean;
+    rejection_reason?: string | null;
+}
+
+interface TenantKycCardProps {
+    tenantId: string;
+    onVerified?: () => void;
+}
+
+const TenantKycCard: React.FC<TenantKycCardProps> = ({ tenantId, onVerified }) => {
+    const [kyc, setKyc] = useState<KycStatus | null>(null);
+    const [form, setForm] = useState({ legal_name: '', cedula: '', rif: '', phone: '', address: '' });
+    const [document, setDocument] = useState<File | null>(null);
+    const [sending, setSending] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string[]>>({});
+    const [message, setMessage] = useState<string | null>(null);
+
+    const cargar = async () => {
+        try {
+            const res = await axios.get(`/owner/api/kyc/${tenantId}`);
+            const data: KycStatus = res.data?.data;
+            setKyc(data);
+            setForm((f) => ({
+                ...f,
+                legal_name: data?.legal_name ?? f.legal_name,
+                phone: data?.phone ?? f.phone,
+                address: data?.address ?? f.address,
+            }));
+        } catch {
+            setKyc(null);
+        }
+    };
+
+    useEffect(() => {
+        void cargar();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tenantId]);
+
+    if (kyc === null) return null;
+
+    if (kyc.status === 'verified') {
+        return (
+            <div
+                data-testid="kyc-verified"
+                className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
+            >
+                <span className="font-black">Identidad verificada.</span> Puedes solicitar retiros con normalidad.
+            </div>
+        );
+    }
+
+    if (kyc.status === 'pending') {
+        return (
+            <div
+                data-testid="kyc-pending"
+                className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
+            >
+                <span className="font-black">Verificación en revisión.</span> Te avisaremos en cuanto esté lista. Hasta
+                entonces no podrás solicitar retiros.
+            </div>
+        );
+    }
+
+    const enviar = async () => {
+        setSending(true);
+        setErrors({});
+        setMessage(null);
+
+        const datos = new FormData();
+        Object.entries(form).forEach(([k, v]) => v && datos.append(k, v));
+        if (document) datos.append('document', document);
+
+        try {
+            const res = await axios.post(`/owner/api/kyc/${tenantId}`, datos, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            setMessage(res.data?.message ?? 'Datos enviados.');
+            await cargar();
+            onVerified?.();
+        } catch (e: any) {
+            setErrors(e?.response?.data?.errors ?? {});
+            setMessage(e?.response?.data?.message ?? 'No se pudieron enviar los datos.');
+        } finally {
+            setSending(false);
+        }
+    };
+
+    const campo = (name: keyof typeof form, label: string, placeholder?: string) => (
+        <div>
+            <label htmlFor={`kyc-${name}`} className="mb-1 block text-xs font-bold text-gray-500 dark:text-gray-400">
+                {label}
+            </label>
+            <input
+                id={`kyc-${name}`}
+                type="text"
+                value={form[name]}
+                placeholder={placeholder}
+                onChange={(e) => setForm({ ...form, [name]: e.target.value })}
+                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
+            />
+            {errors[name] && <p className="mt-1 text-xs font-bold text-red-600">{errors[name][0]}</p>}
+        </div>
+    );
+
+    return (
+        <div
+            data-testid="kyc-form"
+            className="mb-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-4 text-xs text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200"
+        >
+            <h3 className="mb-1 text-sm font-black">Verifica tu identidad para poder retirar</h3>
+            <p className="mb-3 text-xs">
+                Necesitamos estos datos antes de enviarte dinero. Puedes seguir vendiendo mientras tanto.
+            </p>
+
+            {kyc.status === 'rejected' && kyc.rejection_reason && (
+                <p
+                    data-testid="kyc-rejection"
+                    className="mb-3 rounded-xl bg-red-50 px-3 py-2 font-bold text-red-700 dark:bg-red-950/40 dark:text-red-300"
+                >
+                    Tu verificación fue rechazada: {kyc.rejection_reason}
+                </p>
+            )}
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {campo('legal_name', 'Nombre como aparece en tu cédula')}
+                {campo('cedula', 'Cédula', 'V-12345678')}
+                {campo('rif', 'RIF (opcional)', 'J-401234567')}
+                {campo('phone', 'Teléfono', '+58 412 1234567')}
+            </div>
+
+            <div className="mt-3">{campo('address', 'Dirección completa')}</div>
+
+            <div className="mt-3">
+                <label htmlFor="kyc-document" className="mb-1 block text-xs font-bold text-gray-500 dark:text-gray-400">
+                    Foto de tu cédula (opcional)
+                </label>
+                <input
+                    id="kyc-document"
+                    type="file"
+                    accept="image/*,application/pdf"
+                    onChange={(e) => setDocument(e.target.files?.[0] ?? null)}
+                    className="block w-full text-xs text-gray-500"
+                />
+            </div>
+
+            {message && <p className="mt-3 text-xs font-bold">{message}</p>}
+
+            <button
+                type="button"
+                onClick={enviar}
+                disabled={sending}
+                className="mt-3 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-700 disabled:opacity-50"
+            >
+                {sending ? 'Enviando…' : 'Enviar para verificación'}
+            </button>
+        </div>
+    );
+};
+
+export default TenantKycCard;

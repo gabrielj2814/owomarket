@@ -11,6 +11,7 @@ use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
 use Throwable;
 
 final class CreateTenantOwnerPayoutRequestUseCase
@@ -37,6 +38,37 @@ final class CreateTenantOwnerPayoutRequestUseCase
 
         if ($data['amount'] <= 0) {
             throw new Exception('El monto a retirar debe ser mayor a 0.', 422);
+        }
+
+        /*
+         * 2. Subsistema 1: sin identidad verificada no sale dinero.
+         *
+         * Es la unica puerta donde el KYC se exige, y va aqui a proposito. Pedirlo en el alta
+         * pondria toda la friccion antes de que el comerciante haya visto ningun valor, y una
+         * plataforma que todavia tiene que llenarse de tiendas no se lo puede permitir. Aqui,
+         * en cambio, ya ha vendido: el incentivo para rellenar el formulario es su propio
+         * dinero.
+         *
+         * Y es lo que hace que las sanciones signifiquen algo. Sin una identidad verificada
+         * detras del dinero, una tienda que acumula deuda o cae a nivel bajo se registra otra
+         * vez con otro nombre y empieza limpia.
+         */
+        $kyc = TenantKycProfile::where('tenant_id', $data['tenant_id'])->first();
+
+        if ($kyc === null) {
+            throw new Exception(
+                'Antes de retirar necesitamos verificar tu identidad. Completa los datos de tu tienda en Verificación.',
+                422
+            );
+        }
+
+        if (! $kyc->isVerified()) {
+            throw new Exception(
+                $kyc->status === 'rejected'
+                    ? 'Tu verificación de identidad fue rechazada: '.($kyc->rejection_reason ?: 'revisa los datos enviados').'.'
+                    : 'Tu verificación de identidad está en revisión. Te avisaremos en cuanto esté lista.',
+                422
+            );
         }
 
         return DB::transaction(function () use ($userId, $data) {

@@ -166,6 +166,21 @@ function duenoDe(Tenant $tenant): Src\Tenant\Infrastructure\Eloquent\Models\User
     // La propiedad se resuelve por `tenant_users`, no por una columna en `tenants`.
     $tenant->users()->attach($user->id, ['id' => (string) Str::uuid(), 'role' => 'owner']);
 
+    // Subsistema 1: desde el KYC, un duenno sin identidad verificada no puede retirar. Va en
+    // este helper y no en cada test porque «el duenno de la tienda» ahora incluye eso: una
+    // tienda que opera de verdad tiene su identidad comprobada. Que la puerta funciona lo
+    // comprueba `TenantKycPayoutGateTest`, no estos.
+    Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => $tenant->id,
+        'user_id' => $user->id,
+        'legal_name' => 'Dueño Tienda',
+        'cedula' => 'V-'.random_int(10000000, 29999999),
+        'phone' => '+58 412 0000000',
+        'address' => 'Caracas',
+        'status' => 'verified',
+    ]);
+
     return $user;
 }
 

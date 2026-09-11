@@ -228,11 +228,61 @@ que ninguna se termine. Cada una necesita su propio ciclo diseño → plan → i
 
 | # | Subsistema | Qué es | Depende de | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | ⬜ Por hacer |
+| 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | 🟡 Comerciante hecho (11/09/2026) · cliente espera al 5 |
 | 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — | ✅ **Hecho** (10/09/2026) |
 | 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ✅ **Hecho** (11/09/2026) |
 | 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | 🟡 Fondo hecho (11/09/2026) · reputación espera al 5 |
 | 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | ⬜ Por hacer |
+
+### Subsistema 1 — KYC del comerciante
+
+**Se exige en un solo sitio: para retirar dinero.** No en el alta. Pedirlo antes pondría toda la
+fricción delante de un comerciante que todavía no ha visto ningún valor, y una plataforma que
+tiene que llenarse de tiendas no se lo puede permitir. En el retiro ya ha vendido, y el
+incentivo para rellenar el formulario es su propio dinero.
+
+**El KYC del cliente no se construyó**, y es deliberado: la decisión ya dice «datos mínimos para
+comprar, KYC completo para abrir una reclamación» — y las reclamaciones son el subsistema 5.
+`central_customers.document_id` ya cubre la compra.
+
+#### Por qué una tabla propia y no las columnas que ya existían
+
+`users` traía `cedula`, `nacionalidad` y `cedula_doc` desde la migración inicial, **muertas** —
+ninguna línea de la aplicación las tocaba. Revivirlas parecía lo natural y se descartó por un
+motivo concreto: **hay al menos dos modelos Eloquent leyendo esa misma tabla** (el de `Admin` y
+el de `User`), y el cast `encrypted` se declara por modelo. Uno escribiría cifrado y el otro
+texto plano en la misma columna, y nadie se enteraría hasta intentar descifrar un número que
+nunca se cifró. En una columna con documentos de identidad eso no es un bug, es una fuga.
+
+`tenant_kyc_profiles` tiene **un único modelo**, y eso hace ese fallo imposible.
+
+#### Cifrado y hash: los dos hacen falta
+
+Cédula y RIF se guardan **cifrados** (`encrypted`), porque son los identificadores con los que
+se suplanta a una persona. Pero la decisión exige poder **bloquear una identidad para que no
+abra otra tienda**, y **un dato cifrado no se puede buscar**: el IV es aleatorio, así que el
+mismo número cifrado dos veces da valores distintos.
+
+De ahí el par: **la columna cifrada para leer, el hash para buscar**. Sin el hash, la regla de
+«no puede reabrir con otro nombre» sería inaplicable — y esa regla es el valor principal que la
+decisión le atribuye al KYC.
+
+El hash normaliza a **solo dígitos**, porque si no el bloqueo se esquiva escribiendo el número
+con guiones, que es justo lo que haría quien intenta reabrir tras una sanción.
+
+`phone` y `address` quedan en claro: son datos de contacto que la pantalla necesita mostrar, y
+la aplicación ya los guarda así en otros sitios. Cifrarlos solo aquí sería teatro incoherente.
+
+#### Lo que se decidió no guardar
+
+**La foto del documento es opcional.** Exigirla convertiría a la plataforma en custodio de
+imágenes de identidad desde el primer día — con lo que eso implica de retención y de
+responsabilidad si hay una fuga. Los datos bastan para una denuncia y para detectar reaperturas;
+si no se guarda, no se puede filtrar.
+
+Cubierto por `tests/Feature/Tenant/TenantKycTest.php` (cifrado, hash y búsqueda por identidad) y
+`TenantKycPayoutGateTest.php`. El que vigila es «sin expediente de identidad no se puede
+retirar»: no comprueba un mensaje, comprueba que el dinero no sale.
 
 ### Subsistema 2 — lo que quedó construido
 

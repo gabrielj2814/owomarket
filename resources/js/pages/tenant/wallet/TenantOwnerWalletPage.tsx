@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TenantKycCard from '@/components/ui/TenantKycCard';
 import { Head } from '@inertiajs/react';
 import Dashboard from '@/components/layouts/Dashboard';
 import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
@@ -181,6 +182,13 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                         <span>{message.text}</span>
                     </div>
                 )}
+
+                {/*
+                  * Subsistema 1: la verificacion de identidad va AQUI, en la wallet, porque es
+                  * donde se exige -- sin ella el retiro se rechaza. Ponerla en un ajuste
+                  * aparte dejaria al comerciante con un boton que falla y ninguna pista.
+                  */}
+                {wallet.tenant_id && <TenantKycCard tenantId={wallet.tenant_id} />}
 
                 {/* KPI Cards */}
                 {(wallet.retained_ves > 0 ||

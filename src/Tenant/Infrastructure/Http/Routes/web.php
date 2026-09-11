@@ -153,6 +153,13 @@ Route::middleware(['auth', 'tenant_owner'])->group(function () {
     Route::post('/owner/api/payout-request', \Src\Tenant\Infrastructure\Http\Controller\CreateTenantOwnerPayoutRequestPOSTController::class);
 
     /*
+     * Subsistema 1: verificacion de identidad. Va pegado al retiro a proposito, porque es la
+     * unica puerta donde se exige -- sin identidad verificada, `payout-request` rechaza.
+     */
+    Route::get('/owner/api/kyc/{tenantId}', \Src\Tenant\Infrastructure\Http\Controller\GetTenantKycStatusGETController::class);
+    Route::post('/owner/api/kyc/{tenantId}', \Src\Tenant\Infrastructure\Http\Controller\SubmitTenantKycPOSTController::class);
+
+    /*
      * Hallazgo T3: solicitud de cambio de plan.
      *
      * Antes el boton «Mejorar Plan» de la pantalla de facturacion era un `alert()` que decia
