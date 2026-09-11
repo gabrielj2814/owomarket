@@ -185,7 +185,9 @@ Envía el comprobante por WhatsApp tras realizar la transferencia.",
                 'is_visible' => true,
                 'category' => 'calzado-urbano',
                 'brand' => 'nike',
-                'specifications' => ['Material' => 'Malla transpirable engineered mesh', 'Tipo de pisada' => 'Neutro', 'Peso aproximado' => '285g', 'Garantía' => '6 meses'],
+                'specifications' => ['Material' => 'Malla transpirable engineered mesh', 'Tipo de pisada' => 'Neutro', 'Peso aproximado' => '285g'],
+                // Los mismos 6 meses que antes solo decia la ficha en texto, ahora como dato.
+                'warranty_days' => 180,
                 'images' => [
                     'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&h=800&fit=crop',
                     'https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa?w=800&h=800&fit=crop',
@@ -320,6 +322,15 @@ Envía el comprobante por WhatsApp tras realizar la transferencia.",
                     'category_id' => $cat?->id,
                     'brand_id' => $brnd?->id,
                     'specifications' => $pData['specifications'],
+                    // Sin esto el marketplace central nace VACIO: el observador de producto
+                    // solo sincroniza lo publicado, asi que un entorno recien sembrado tenia
+                    // nueve tiendas con productos y `central_products` a cero. El checkout
+                    // central --el flujo que monetiza la plataforma-- no se podia ni probar.
+                    'is_published_central' => true,
+                    // Subsistema 2. La demo ya prometia garantia, pero como texto suelto
+                    // dentro de `specifications`; aqui va el dato con el que el subsistema 4
+                    // calculara la retencion.
+                    'warranty_days' => $pData['warranty_days'] ?? null,
                 ]
             );
 
