@@ -7,6 +7,7 @@ import CustomerPortalServices, {
     CustomerOrderData,
     OrderTrackingData,
 } from '@/Services/CustomerPortalServices';
+import DeliveryConfirmationPanel from '@/components/ui/customer/DeliveryConfirmationPanel';
 import OrderTrackingTimeline from '@/components/ui/storefront/OrderTrackingTimeline';
 import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
 import {
@@ -146,6 +147,28 @@ export const CustomerOrderDetailPage: React.FC = () => {
                             ))}
                         </div>
                     </div>
+
+                    {/*
+                      * Subsistema 3: la entrega se confirma POR TIENDA, no por pedido central.
+                      * Un carrito repartido entre tres tiendas muestra tres paneles, porque
+                      * cada una entrega por su cuenta y cada una cobra por su cuenta.
+                      *
+                      * Se deduplica por `tenant_order_id`: varios productos de la misma tienda
+                      * viajan en el mismo pedido de tienda y comparten un unico expediente.
+                      */}
+                    {Array.from(
+                        new Map(
+                            (order.items ?? [])
+                                .filter(item => item.tenant_order_id)
+                                .map(item => [item.tenant_order_id as string, item]),
+                        ).values(),
+                    ).map(item => (
+                        <DeliveryConfirmationPanel
+                            key={item.tenant_order_id as string}
+                            orderId={item.tenant_order_id as string}
+                            storeName={item.tenant_name ?? null}
+                        />
+                    ))}
                 </div>
 
                 {/* Shipping & Payment Summary */}

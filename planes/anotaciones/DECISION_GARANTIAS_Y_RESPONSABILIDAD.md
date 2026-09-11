@@ -230,7 +230,7 @@ que ninguna se termine. Cada una necesita su propio ciclo diseño → plan → i
 | :--- | :--- | :--- | :--- | :--- |
 | 1 | **KYC** | Identidad verificada de cliente y tienda, por niveles | — | ⬜ Por hacer |
 | 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — | ✅ **Hecho** (10/09/2026) |
-| 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ⬜ Por hacer |
+| 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ✅ **Hecho** (11/09/2026) |
 | 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | ⬜ Por hacer |
 | 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | ⬜ Por hacer |
 
@@ -252,6 +252,63 @@ y con `!== null` en otro.
 Cubierto por `tests/Feature/Product/CentralCatalogSyncTest.php` (propagación),
 `WarrantyDaysValidationTest.php` (la regla) y
 `tests/Frontend/Components/ProductWarrantyField.test.tsx` (el campo).
+
+### Subsistema 3, fase A — quién libera el dinero
+
+**El agujero era doble.** Había dos caminos a `delivered` —`DeliverOrderUseCase` y
+`MarkShipmentAsDeliveredUseCase`— y los dos están expuestos en `routes/tenantApi.php`. Es
+decir: el comerciante declaraba su propia entrega y con ello hacía retirable su propio importe.
+Tocar solo uno habría dejado el agujero abierto por el otro lado.
+
+Ahora declarar la entrega **solo arranca un reloj** (`DeclareOrderDeliveredUseCase`). Liberar
+tiene dos causas legítimas y ninguna es el comerciante:
+
+| Causa | Quién | `released_by` |
+| :--- | :--- | :--- |
+| Confirmación | El comprador, desde `POST /deliveries/{orderId}/confirm` | `customer` |
+| Vencimiento | Nadie: 7 días de silencio, configurables | `timeout` |
+
+La liberación por vencimiento no es un extra: **sin ella el subsistema sería una trampa**, porque
+un comprador que recibe su paquete y no vuelve a entrar dejaría el dinero de la tienda congelado
+para siempre.
+
+El expediente vive en la tabla central `order_delivery_confirmations`, uno por pedido **de
+tienda** —un carrito repartido entre tres tiendas se confirma tres veces— y no dentro de
+`shipments`, que es otra cosa: la logística del comerciante, con varios envíos posibles por
+pedido.
+
+`released_by` distingue las dos causas a propósito: es lo único que dirá, cuando haya datos, qué
+porcentaje de compradores confirma de verdad, y por tanto si siete días es el plazo correcto.
+
+**Sin pantalla de administrador**, deliberadamente: un humano aprobando cada liberación es el
+cuello de botella de la plataforma. El administrador entra solo cuando hay conflicto, y eso es
+el subsistema 5.
+
+Cubierto por `tests/Feature/Monetization/DeliveryConfirmationTest.php`. El que vigila es
+«declarar la entrega NO libera el dinero».
+
+### Subsistema 3, fase B — las evidencias
+
+La tienda adjunta fotos o vídeo al enviar (`POST order/{id}/shipment-evidence`) y el comprador
+puede adjuntar las suyas al confirmar. **Ninguna de las dos libera nada**: siguen liberando la
+confirmación o el plazo. Lo que cambian es la discusión — sin evidencia, «lo envié» contra «no
+me llegó» es la palabra de uno contra la del otro y la plataforma no tiene con qué decidir.
+
+Viven en el expediente central para que las vean las tres partes: en la base de la tienda ni
+el comprador ni el administrador podrían consultarlas, que es justo lo que las haría inútiles.
+Por el mismo motivo los dos lados ven **el mismo** expediente, con un solo caso de uso de
+proyección: una prueba solo zanja una discusión si ambas partes la tienen delante.
+
+La evidencia del comprador es **opcional** a propósito. Exigirle una foto para poder confirmar
+convertiría el trámite en un obstáculo, y quien no confirma libera por plazo igualmente: lo
+único que se lograría es que nadie confirmara nunca.
+
+Reutiliza `UploadSupportAttachmentService` —que ya validaba imágenes y vídeo con su límite de
+50MB— con un parámetro de carpeta añadido. Un segundo subidor solo habría creado dos sitios
+donde cambiar el mismo límite.
+
+Cubierto por `tests/Feature/Monetization/DeliveryEvidenceTest.php` y
+`tests/Frontend/Components/DeliveryConfirmationPanel.test.tsx`.
 
 ### Orden recomendado
 

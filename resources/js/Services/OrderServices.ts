@@ -190,6 +190,66 @@ const OrderServices = {
             );
         }
     },
+
+    /*
+     * Subsistema 3: evidencias de entrega. Adjuntar una foto NO libera dinero --eso lo hace
+     * el comprador al confirmar, o el plazo al vencer-- pero es lo que convierte «lo envie»
+     * contra «no me llego» en algo que la plataforma puede decidir.
+     */
+    getDeliveryStatus: async (orderId: string): Promise<Data<DeliveryStatus | null>> => {
+        try {
+            const response = await axiosOrder.get<Data<DeliveryStatus | null>>(`${orderId}/delivery-status`);
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error al consultar la entrega',
+                    data: null as any,
+                }
+            );
+        }
+    },
+
+    attachShipmentEvidence: async (orderId: string, files: File[]): Promise<Data<{ shipment_evidence: DeliveryEvidence[] }>> => {
+        const form = new FormData();
+        files.forEach((file) => form.append('evidence[]', file));
+
+        try {
+            const response = await axiosOrder.post(`${orderId}/shipment-evidence`, form, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return response.data;
+        } catch (error: any) {
+            return (
+                error.response?.data || {
+                    status: 'error',
+                    code: 500,
+                    message: 'Error al adjuntar la evidencia',
+                    data: null as any,
+                }
+            );
+        }
+    },
 };
+
+export interface DeliveryEvidence {
+    url: string;
+    type: 'image' | 'video' | 'file';
+    original_name?: string;
+}
+
+/** Expediente de entrega de un pedido (subsistema 3). */
+export interface DeliveryStatus {
+    order_id: string;
+    shipment_evidence: DeliveryEvidence[];
+    confirmation_evidence: DeliveryEvidence[];
+    declared_delivered_at?: string | null;
+    confirmed_at?: string | null;
+    released_at?: string | null;
+    released_by?: 'customer' | 'timeout' | null;
+    can_confirm: boolean;
+}
 
 export default OrderServices;

@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Src\CentralCustomer\Infrastructure\Http\Controller\AddCustomerAddressPOSTController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\CreateCustomerReturnPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\ConfirmOrderDeliveryPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\GetCustomerDeliveryStatusGETController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\CustomerLogoutCentralPOSTController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\DeleteCustomerAddressDELETEController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\DownloadCustomerInvoicePdfGETController;
@@ -86,6 +88,12 @@ Route::middleware('web')->group(function () {
         Route::get('/orders', ListCustomerOrdersGETController::class);
         Route::get('/orders/{id}', GetCustomerOrderDetailGETController::class);
         Route::get('/orders/{id}/tracking', GetCustomerOrderTrackingGETController::class);
+
+        // Subsistema 3: confirmar la recepcion. `{orderId}` es el pedido DE LA TIENDA --un
+        // carrito repartido entre tres tiendas se confirma tres veces--, y esta accion es la
+        // que libera el dinero del comerciante. Antes eso lo hacia el propio comerciante.
+        Route::get('/deliveries/{orderId}', GetCustomerDeliveryStatusGETController::class);
+        Route::post('/deliveries/{orderId}/confirm', ConfirmOrderDeliveryPOSTController::class);
 
         // Facturación Electrónica y Descarga PDF
         Route::get('/invoices', ListCustomerInvoicesGETController::class);

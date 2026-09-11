@@ -39,6 +39,11 @@ final class UpdateCentralPaymentSettingsUseCase
         // ventana en la que el comprador puede pedir una devolucion o reclamar garantia: si el
         // dinero ya salio, atenderla es perseguirlo.
         'central_payout_hold_days',
+        // Subsistema 3: dias que se espera la confirmacion del comprador antes de liberar el
+        // dinero igualmente. No confundir con `central_payout_hold_days`, que corre DESPUES
+        // de la liberacion: este plazo es «cuanto esperamos a que el comprador diga que
+        // llego», y aquel es «cuanto esperamos ya con la mercancia dada por recibida».
+        'central_delivery_confirmation_days',
     ];
 
     /**

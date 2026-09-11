@@ -137,12 +137,14 @@ it('ConfirmOrderUseCase, ProcessOrderUseCase, ShipOrderUseCase, DeliverOrderUseC
         ->and($order->shippingMethod())->toBe('Starken');
 
     // 4. Deliver
-    // Fase 4b: entregar libera la comision retenida. Aqui solo se comprueba que se invoque;
-    // su logica vive en tests/Feature/Monetization/WalletBalanceTest.php.
-    $liberar = m::mock(Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase::class);
-    $liberar->shouldReceive('execute')->once();
+    // Subsistema 3: entregar YA NO libera la comision -- solo declara la entrega, y eso
+    // arranca el reloj. Quien libera es el comprador al confirmar o el plazo al vencer. Aqui
+    // solo se comprueba que se invoque; la logica vive en
+    // tests/Feature/Monetization/DeliveryConfirmationTest.php.
+    $declarar = m::mock(Src\Monetization\Application\UseCases\DeclareOrderDeliveredUseCase::class);
+    $declarar->shouldReceive('execute')->once();
 
-    $deliverUseCase = new DeliverOrderUseCase($repository, $liberar);
+    $deliverUseCase = new DeliverOrderUseCase($repository, $declarar);
     $deliverUseCase->execute($order->id()->value());
     expect($order->status())->toBe(OrderStatus::DELIVERED);
 });

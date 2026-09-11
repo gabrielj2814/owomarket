@@ -22,9 +22,33 @@ export interface CustomerAddressData {
     is_default: boolean;
 }
 
+export interface DeliveryEvidenceFile {
+    url: string;
+    type: 'image' | 'video' | 'file';
+    original_name?: string;
+}
+
+/** Expediente de entrega de un pedido de tienda (subsistema 3). */
+export interface DeliveryStatusData {
+    order_id: string;
+    shipment_evidence: DeliveryEvidenceFile[];
+    confirmation_evidence: DeliveryEvidenceFile[];
+    declared_delivered_at?: string | null;
+    confirmed_at?: string | null;
+    released_at?: string | null;
+    released_by?: 'customer' | 'timeout' | null;
+    /** Lo calcula el backend para que comprador y tienda no lleguen a conclusiones distintas. */
+    can_confirm: boolean;
+}
+
 export interface CustomerOrderItemData {
     id: string;
     tenant_id: string;
+    /**
+     * Pedido DE LA TIENDA. Es la clave del expediente de entrega: un carrito repartido entre
+     * tres tiendas se confirma tres veces, una por tienda.
+     */
+    tenant_order_id?: string | null;
     /** Nombre real de la tienda; antes el frontend mostraba el UUID (hallazgo G15). */
     tenant_name?: string | null;
     product_id: string;
@@ -198,6 +222,23 @@ export const CustomerPortalServices = {
     async getOrderTracking(customerId: string, orderId: string) {
         const res = await axios.get(`/api/central/customer/orders/${orderId}/tracking`, {
             params: { customer_id: customerId },
+        });
+        return res.data;
+    },
+
+    // Entregas (subsistema 3). `orderId` aqui es el pedido DE LA TIENDA, no el central.
+    async getDeliveryStatus(orderId: string) {
+        const res = await axios.get(`/api/central/customer/deliveries/${orderId}`);
+        return res.data;
+    },
+
+    /** Confirma la recepcion. La evidencia es opcional: se pide, no se impone. */
+    async confirmDelivery(orderId: string, files: File[] = []) {
+        const form = new FormData();
+        files.forEach((file) => form.append('evidence[]', file));
+
+        const res = await axios.post(`/api/central/customer/deliveries/${orderId}/confirm`, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
         });
         return res.data;
     },

@@ -1,6 +1,7 @@
 import Dashboard from '@/components/layouts/Dashboard';
 import BillingServices from '@/Services/BillingServices';
 import OrderServices from '@/Services/OrderServices';
+import ShipmentEvidenceCard from '@/components/ui/ShipmentEvidenceCard';
 import ShipmentServices from '@/Services/ShipmentServices';
 import { FormDirectInvoice } from '@/types/FormDirectInvoice';
 import { FormCreateShipment, FormUpdateTracking } from '@/types/FormShipment';
@@ -671,6 +672,14 @@ export default function ShowOrderDetailPage({ title, user_id, order_id, host, us
                                         </div>
                                     ) : (
                                         <div className="space-y-4">
+                                            {/*
+                                              * Subsistema 3: la evidencia del envio. Adjuntarla
+                                              * NO libera el dinero --lo libera el comprador al
+                                              * confirmar, o el plazo al vencer-- pero es lo que
+                                              * permite decidir si algun dia hay discusion.
+                                              */}
+                                            <ShipmentEvidenceCard orderId={order_id} />
+
                                             {shipments.map((ship) => (
                                                 <div
                                                     key={ship.id}

@@ -28,11 +28,11 @@ vi.mock('@inertiajs/react', () => ({
 }));
 
 vi.mock('@/Services/CategoryServices', () => ({
-    default: { tree: vi.fn().mockResolvedValue([]), getAll: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
+    default: { tree: vi.fn().mockResolvedValue([]), listActive: vi.fn().mockResolvedValue([]), getAll: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
 }));
 
 vi.mock('@/Services/BrandServices', () => ({
-    default: { tree: vi.fn().mockResolvedValue([]), getAll: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
+    default: { tree: vi.fn().mockResolvedValue([]), listActive: vi.fn().mockResolvedValue([]), getAll: vi.fn().mockResolvedValue([]), list: vi.fn().mockResolvedValue([]) },
 }));
 
 vi.mock('@/Services/ProductServices', () => ({

@@ -23,6 +23,14 @@ Illuminate\Support\Facades\Schedule::command('exchange-rate:sync-bcv')
     ->timezone('America/Caracas')
     ->withoutOverlapping();
 
+// Subsistema 3: libera el dinero de las entregas que el comprador nunca confirmo. Una vez
+// al dia basta --el plazo se mide en dias-- y `withoutOverlapping` evita que dos pasadas
+// simultaneas intenten liberar el mismo expediente.
+Illuminate\Support\Facades\Schedule::command('deliveries:release-unconfirmed')
+    ->dailyAt('03:00')
+    ->timezone('America/Caracas')
+    ->withoutOverlapping();
+
 /*
 |--------------------------------------------------------------------------
 | La cola la trabaja Horizon (hallazgo N40)

@@ -18,5 +18,15 @@ final class OrderServiceProvider extends ServiceProvider
         );
     }
 
-    public function boot(): void {}
+    public function boot(): void
+    {
+        if ($this->app->runningInConsole()) {
+            // Vive aqui y no en un proveedor propio de Monetization porque registrar un
+            // comando no justifica un fichero nuevo mas una linea en `bootstrap/providers.php`.
+            // Es de pedidos entregados, asi que este es su sitio natural.
+            $this->commands([
+                \Src\Monetization\Infrastructure\Console\Commands\ReleaseUnconfirmedDeliveriesCommand::class,
+            ]);
+        }
+    }
 }

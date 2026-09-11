@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Src\Shipment\Application\UseCases;
 
 use DateTimeImmutable;
-use Src\Monetization\Application\UseCases\ReleaseOrderCommissionUseCase;
+use Src\Monetization\Application\UseCases\DeclareOrderDeliveredUseCase;
 use Src\Order\Application\Contracts\Repositories\OrderRepositoryInterface;
 use Src\Order\Domain\ValueObjects\OrderId;
 use Src\Shipment\Application\Repositories\ShipmentRepositoryInterface;
@@ -18,7 +18,7 @@ final class MarkShipmentAsDeliveredUseCase
     public function __construct(
         private readonly ShipmentRepositoryInterface $repository,
         private readonly OrderRepositoryInterface $orders,
-        private readonly ReleaseOrderCommissionUseCase $releaseCommission
+        private readonly DeclareOrderDeliveredUseCase $declareDelivered
     ) {}
 
     public function execute(string $shipmentId, ?string $deliveredAt = null): Shipment
@@ -38,12 +38,17 @@ final class MarkShipmentAsDeliveredUseCase
         // Fase 4b: entregar el envio puede llevar el pedido a `delivered` --lo decide la
         // guarda del dominio en el repositorio, hallazgo SH1-- y solo entonces se libera la
         // comision. Se pregunta por el estado real en vez de darlo por hecho: un pedido que
-        // ya estaba entregado por otro envio no vuelve a liberarse, y uno que la guarda no
-        // dejo avanzar no se libera.
+        // ya estaba entregado por otro envio no reabre el expediente, y uno que la guarda
+        // no dejo avanzar no lo abre.
+        //
+        // Subsistema 3: aqui se llamaba a la liberacion de la comision. Este es el segundo de
+        // los dos caminos por los que el comerciante liberaba su propio dinero, y por eso no
+        // bastaba con tocar `DeliverOrderUseCase`: quien no mira los dos deja el agujero
+        // abierto por el otro lado.
         $order = $this->orders->findById(new OrderId($shipment->orderId()));
 
         if ($order?->status()->isDelivered()) {
-            $this->releaseCommission->execute($shipment->orderId());
+            $this->declareDelivered->execute($shipment->orderId());
         }
 
         return $guardado;

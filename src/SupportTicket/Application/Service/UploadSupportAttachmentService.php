@@ -18,15 +18,22 @@ final class UploadSupportAttachmentService
     private const MAX_FILE_SIZE_KB = 51200; // 50MB
 
     /**
+     * Carpeta por defecto. Se puede pasar otra para reutilizar este servicio fuera del
+     * soporte --las evidencias de entrega del subsistema 3 lo hacen-- sin escribir un segundo
+     * subidor que haga exactamente lo mismo y que acabe divergiendo en los limites.
+     */
+    private const CARPETA_POR_DEFECTO = 'support-attachments';
+
+    /**
      * @param  array<UploadedFile>  $files
      * @return array<array{url: string, type: 'image'|'video'|'file', original_name: string, size_bytes: int, mime_type: string}>
      */
-    public function uploadMultiple(array $files): array
+    public function uploadMultiple(array $files, string $carpeta = self::CARPETA_POR_DEFECTO): array
     {
         $uploaded = [];
         foreach ($files as $file) {
             if ($file instanceof UploadedFile) {
-                $uploaded[] = $this->uploadSingle($file);
+                $uploaded[] = $this->uploadSingle($file, $carpeta);
             }
         }
 
@@ -36,7 +43,7 @@ final class UploadSupportAttachmentService
     /**
      * @return array{url: string, type: 'image'|'video'|'file', original_name: string, size_bytes: int, mime_type: string}
      */
-    public function uploadSingle(UploadedFile $file): array
+    public function uploadSingle(UploadedFile $file, string $carpeta = self::CARPETA_POR_DEFECTO): array
     {
         if (! $file->isValid()) {
             throw new Exception("El archivo subido no es válido: {$file->getClientOriginalName()}", 422);
@@ -53,8 +60,8 @@ final class UploadSupportAttachmentService
             $type = 'video';
         }
 
-        $fileName = 'support_'.date('Ymd_His').'_'.Str::random(12).'.'.$extension;
-        $path = $file->storeAs('support-attachments', $fileName, 'public');
+        $fileName = 'adj_'.date('Ymd_His').'_'.Str::random(12).'.'.$extension;
+        $path = $file->storeAs($carpeta, $fileName, 'public');
 
         $url = Storage::disk('public')->url($path);
 
