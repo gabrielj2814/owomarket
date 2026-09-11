@@ -49,6 +49,11 @@ final class UpdateCentralPaymentSettingsUseCase
         // el que se paga una reclamacion sin tener que perseguir a nadie.
         'central_guarantee_reserve_percent',
         'central_guarantee_reserve_days',
+        // Subsistema 5: dias que tiene la tienda para responder una reclamacion antes de que
+        // se resuelva sin ella, y tope en DOLARES de lo que la plataforma cubre por
+        // reclamacion cuando el saldo de la tienda no alcanza.
+        'central_claim_response_days',
+        'central_claim_coverage_cap',
     ];
 
     /**

@@ -165,6 +165,34 @@ final class TenantAvailableBalance
     }
 
     /**
+     * El saldo REAL de la tienda, sin recortar en cero. Puede ser negativo.
+     *
+     * `requestable()` y `settleable()` terminan en `max(0.0, ...)`, y eso esta bien para
+     * autorizar dinero --nadie retira un negativo-- pero **destruye el dato justo cuando
+     * importa**: una tienda que debe 4.600 Bs y una con saldo cero se ven identicas.
+     *
+     * Un negativo significa que la plataforma ya le pago mas de lo que resulto que le debia,
+     * normalmente porque se reembolso una venta cuyo importe ya habia retirado. Ese hueco es
+     * la deuda, y es lo que el subsistema 5 mide para saber cuanto pone la plataforma de su
+     * bolsillo en una reclamacion.
+     *
+     * No confundir con `settleable()`: aquella responde «cuanto puedo pagar», esta responde
+     * «cuanto vale realmente su posicion».
+     */
+    public function position(string $tenantId): float
+    {
+        return $this->netEarnings($tenantId) - $this->payouts($tenantId, ['settled'], false);
+    }
+
+    /**
+     * Lo que la tienda le debe a la plataforma, en bolivares. Cero si no debe nada.
+     */
+    public function debt(string $tenantId): float
+    {
+        return max(0.0, -$this->position($tenantId));
+    }
+
+    /**
      * El fondo de garantia todavia retenido, en bolivares (subsistema 4).
      *
      * Se resta de lo liberado en vez de vivir en una tabla aparte, y eso es deliberado: el

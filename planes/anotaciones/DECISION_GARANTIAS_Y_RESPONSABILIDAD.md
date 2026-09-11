@@ -232,7 +232,71 @@ que ninguna se termine. Cada una necesita su propio ciclo diseño → plan → i
 | 2 | **Garantía por producto** | Atributo de catálogo: si tiene garantía y de cuánto tiempo | — | ✅ **Hecho** (10/09/2026) |
 | 3 | **Entrega verificada** | Evidencia de envío, confirmación del comprador, liberación del dinero | — | ✅ **Hecho** (11/09/2026) |
 | 4 | **Fondo de garantía y reputación** | Reserva retenida por venta, con porcentaje y velocidad de liberación según nivel | 2 | 🟡 Fondo hecho (11/09/2026) · reputación espera al 5 |
-| 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | ⬜ Por hacer |
+| 5 | **Reclamaciones (RMA)** | Disputa, reloj, resolución, cobertura con tope, escalado | 2, 3, 4 | 🟡 Fases A y B hechas (11/09/2026) · C y D por hacer |
+
+### Subsistema 5, fases A y B — reclamaciones y su dinero
+
+`customer_return_requests` existía desde agosto y **el cliente ya creaba solicitudes que nadie
+resolvía**: entraban en la tabla y se quedaban ahí para siempre. No había ninguna ruta que
+cambiara su estado. Esto es lo que le faltaba para ser un expediente y no un buzón.
+
+#### El hallazgo que recortó el subsistema
+
+**La maquinaria del dinero ya estaba completa.** Aprobar una reclamación es *revertir la
+comisión*, y eso existe y está verificado desde `CreditNoteBalanceTest`: revertir saca la venta
+de `netEarnings` y deja el retiro ya pagado restándose. Esa resta huérfana **es la deuda**, y
+emerge de la aritmética sin registrarse en ninguna parte.
+
+El fondo de garantía tampoco se «cobra» aparte: al retener un porcentaje de cada venta reduce
+cuánto pudo llevarse el comerciante, y por tanto reduce el agujero. Por construcción.
+
+Así que la parte de dinero del subsistema 5 resultó ser **una llamada**, no un módulo.
+
+#### El reloj es lo que sostiene todo lo demás
+
+Una reclamación que la tienda no responde en 5 días (configurable) se resuelve a favor del
+comprador. **Sin esto el resto sobra**: si el silencio no cuesta nada, ignorar es la estrategia
+ganadora — el comerciante no responde, el comprador se cansa y no pasa nada.
+
+Resolver por silencio pasa por el **mismo** caso de uso que resolver a mano, con
+`resolved_by = 'timeout'`. Dos caminos hacia el mismo efecto acabarían divergiendo, y uno de
+ellos mueve dinero.
+
+Y esa distinción no es contabilidad ociosa: **`resolved_by` es exactamente la señal con la que
+la fase C calculará la reputación**. Sin separar «resuelta por silencio» de «atendida», la
+tienda que ignora y la que responde puntúan igual.
+
+#### Cuánto pone la plataforma: medido por la deuda que se crea
+
+El primer intento midió la cobertura con la caída de `settleable()`, y estaba mal: ese método
+recorta en cero, así que pierde justo lo que hay que medir —si la tienda ya estaba a cero, la
+caída visible es cero aunque la reversión la deje debiendo miles— y además se come la reserva y
+la comisión, que son dinero que la plataforma **sí** conserva.
+
+La medida honesta es **la deuda que la reversión crea**: lo que la plataforma le pagó al
+comerciante y resulta que no le debía. Para eso se añadió `TenantAvailableBalance::position()`
+—el saldo sin recortar, que puede ser negativo— y `debt()`.
+
+**Eso cierra de paso el «que el negativo se vea»** que quedó pendiente desde el hueco 2: el dato
+ya no se destruye antes de salir del método.
+
+El tope se configura en **dólares** —«cubrimos hasta $200 por pedido» es una regla publicable
+que no envejece con la tasa— y se convierte con la tasa congelada de esa venta, no con la de
+hoy.
+
+#### Lo que queda pendiente
+
+- **Pantalla del comerciante.** Los endpoints existen (`GET/POST owner/api/returns`), pero sin
+  interfaz el comerciante no puede resolver y el reloj aprobará todo por silencio.
+- **Reclamaciones del escaparate.** El modelo está listo —la reclamación se indexa por
+  `tenant_order_id`, que una venta de escaparate sí tiene— pero **no hay ninguna pantalla desde
+  la que un comprador de tienda vea sus pedidos**, así que no tiene dónde reclamar. Esa
+  superficie es un proyecto aparte.
+- **Fases C y D**: reputación (ya tiene su señal) y expediente de denuncia.
+
+Cubierto por `tests/Feature/CentralCustomer/ReturnResolutionTest.php`. Los que vigilan son «el
+silencio de la tienda resuelve a favor del comprador» y «si la tienda ya se llevó el dinero, la
+plataforma pone la diferencia».
 
 ### Subsistema 1 — KYC del comerciante
 

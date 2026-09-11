@@ -26,6 +26,7 @@ final class OrderServiceProvider extends ServiceProvider
             // Es de pedidos entregados, asi que este es su sitio natural.
             $this->commands([
                 \Src\Monetization\Infrastructure\Console\Commands\ReleaseUnconfirmedDeliveriesCommand::class,
+                \Src\CentralCustomer\Infrastructure\Console\Commands\AutoResolveStaleReturnsCommand::class,
             ]);
         }
     }

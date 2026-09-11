@@ -23,6 +23,13 @@ Illuminate\Support\Facades\Schedule::command('exchange-rate:sync-bcv')
     ->timezone('America/Caracas')
     ->withoutOverlapping();
 
+// Subsistema 5: el reloj de las reclamaciones. Resuelve a favor del comprador lo que la
+// tienda no respondio dentro del plazo -- sin esto, ignorar una reclamacion sale gratis.
+Illuminate\Support\Facades\Schedule::command('returns:auto-resolve')
+    ->dailyAt('03:30')
+    ->timezone('America/Caracas')
+    ->withoutOverlapping();
+
 // Subsistema 3: libera el dinero de las entregas que el comprador nunca confirmo. Una vez
 // al dia basta --el plazo se mide en dias-- y `withoutOverlapping` evita que dos pasadas
 // simultaneas intenten liberar el mismo expediente.

@@ -47,6 +47,10 @@ beforeEach(function () {
     }
     if (! Schema::hasTable('customer_return_requests')) {
         (require base_path('database/migrations/2026_08_19_000010_create_customer_return_requests_table.php'))->up();
+        // Subsistema 5: las columnas de resolucion, reloj y medicion. Este test monta su
+        // esquema a mano --los `Unit` no pasan por `RefreshDatabase`-- asi que cada migracion
+        // nueva sobre esta tabla hay que traerla aqui tambien.
+        (require base_path('database/migrations/2026_09_11_140000_add_resolution_to_customer_return_requests.php'))->up();
     }
 
     if (! ModelsTenant::where('id', 'store-returns')->exists()) {

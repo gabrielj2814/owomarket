@@ -28,21 +28,40 @@ class CustomerReturnRequest extends Model
         'id',
         'order_id',
         'order_number',
+        'tenant_order_id',
         'customer_id',
         'customer_email',
         'product_id',
         'product_name',
+        'amount',
+        'delivered_at',
         'tenant_id',
         'reason',
         'description',
         'photos',
         'status',
+        'resolved_at',
+        'resolved_by',
+        'resolution_notes',
+        'platform_covered_amount',
         'admin_notes',
     ];
 
     protected $casts = [
         'photos' => 'array',
+        'amount' => 'float',
+        'platform_covered_amount' => 'float',
+        'delivered_at' => 'datetime',
+        'resolved_at' => 'datetime',
     ];
+
+    /** Estados en los que la reclamacion sigue esperando a alguien. */
+    public const ABIERTAS = ['requested', 'in_review'];
+
+    public function isOpen(): bool
+    {
+        return in_array($this->status, self::ABIERTAS, true);
+    }
 
     public function customer(): BelongsTo
     {

@@ -156,6 +156,13 @@ Route::middleware(['auth', 'tenant_owner'])->group(function () {
      * Subsistema 1: verificacion de identidad. Va pegado al retiro a proposito, porque es la
      * unica puerta donde se exige -- sin identidad verificada, `payout-request` rechaza.
      */
+    /*
+     * Subsistema 5: reclamaciones. Sin estas rutas la tabla seguia siendo un buzon -- el
+     * cliente creaba solicitudes y no habia forma de resolverlas.
+     */
+    Route::get('/owner/api/returns/{tenantId}', \Src\Tenant\Infrastructure\Http\Controller\ListTenantReturnsGETController::class);
+    Route::post('/owner/api/returns/{returnId}/resolve', \Src\Tenant\Infrastructure\Http\Controller\ResolveTenantReturnPOSTController::class);
+
     Route::get('/owner/api/kyc/{tenantId}', \Src\Tenant\Infrastructure\Http\Controller\GetTenantKycStatusGETController::class);
     Route::post('/owner/api/kyc/{tenantId}', \Src\Tenant\Infrastructure\Http\Controller\SubmitTenantKycPOSTController::class);
 
