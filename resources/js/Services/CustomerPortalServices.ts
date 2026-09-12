@@ -143,7 +143,17 @@ export interface CustomerReturnRequestData {
     description: string;
     photos?: string[];
     status: 'requested' | 'in_review' | 'approved' | 'rejected' | 'refunded';
+    /** Nota del soporte de la plataforma. Distinta de `resolution_notes`: otra voz. */
     admin_notes?: string | null;
+    /**
+     * Quien resolvio: `merchant` si respondio la tienda, `timeout` si vencio el plazo y se
+     * resolvio a favor del comprador sin ella. No es lo mismo, y el comprador merece saber cual
+     * de las dos cosas paso.
+     */
+    resolved_by?: string | null;
+    /** Lo que la tienda escribio al resolver. En un rechazo, es el motivo. */
+    resolution_notes?: string | null;
+    resolved_at?: string | null;
     created_at: string;
 }
 

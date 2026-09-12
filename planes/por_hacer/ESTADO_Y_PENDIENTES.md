@@ -41,6 +41,11 @@ antes de poder probar un retiro.
 
 ## 🟡 Lo que queda por mirar
 
+**La migración a Flowbite del frontend está a medio camino**: 55 páginas de 81 lo usan. Lo
+pendiente, por zonas y con el orden de ataque, vive en
+[`PLAN_MIGRACION_FLOWBITE.md`](PLAN_MIGRACION_FLOWBITE.md). El portal del cliente ya tiene su
+tema (`portalTheme`), así que sus nueve pantallas restantes son mecánicas.
+
 **Los botones `color="failure"` y `color="success"` del backoffice no existen en esta versión de
 Flowbite.** Solo `red`, `green`, `light`, `blue`… — `success` y `failure` sí son válidos en las
 *insignias*, que es de donde viene la confusión. Un botón con un color inexistente **se pinta
@@ -80,12 +85,9 @@ De las seis vistas de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md) *
 
 | # | Vista | Qué le falta |
 | :--- | :--- | :--- |
-| 4 | Estado de la reclamación (comprador) | Solo pantalla; el endpoint ya devuelve `resolved_by` y `resolution_notes` |
+| ~~4~~ | ~~Estado de la reclamación (comprador)~~ ✅ | Hecha el 11/09/2026, sin tocar backend |
 | 5 | Expediente de reclamación (administrador) | `BuildClaimDossierUseCase` sigue sin controlador ni ruta |
 | 6 | Pedidos del comprador en el escaparate | Superficie nueva, con una decisión de autenticación por delante |
-
-La 4 es la barata y cierra el círculo del comprador: hoy ve su reclamación denegada sin saber
-por qué, teniendo el backend ese dato desde hace tiempo.
 
 ---
 

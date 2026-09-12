@@ -1,5 +1,7 @@
 import React from 'react';
 import { Link, usePage } from '@inertiajs/react';
+import { ThemeProvider } from 'flowbite-react';
+import portalTheme from '@/theme/portalTheme';
 import CentralLayout from './CentralLayout';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import {
@@ -132,6 +134,16 @@ export const CustomerAccountLayout: React.FC<CustomerAccountLayoutProps> = ({
 
     return (
         <CentralLayout>
+            {/*
+              * El aspecto del portal vive en `portalTheme`, no en cada pagina. Envolver aqui
+              * --y no pagina por pagina-- es lo que permite que las diez pantallas escriban
+              * `<Card>` y `<Button color="primary">` a secas y salgan iguales.
+              *
+              * Sin esto, migrar a Flowbite habria recreado el problema que venia a arreglar:
+              * el mismo `className` de tarjeta copiado en seis ficheros, solo que con otra
+              * etiqueta.
+              */}
+            <ThemeProvider theme={portalTheme}>
             <div className="bg-gray-50/60 dark:bg-gray-950/60 min-h-[calc(100vh-4rem)] py-8 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Banner */}
@@ -211,6 +223,7 @@ export const CustomerAccountLayout: React.FC<CustomerAccountLayoutProps> = ({
                     </div>
                 </div>
             </div>
+            </ThemeProvider>
         </CentralLayout>
     );
 };

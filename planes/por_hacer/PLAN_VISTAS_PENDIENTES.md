@@ -239,7 +239,25 @@ que acaba en una captura de pantalla o en un ticket desharía el cifrado por la 
 
 ---
 
-## Vista 5 — Estado de la reclamación (comprador)
+## Vista 5 — Estado de la reclamación (comprador) ✅ HECHA (11/09/2026)
+
+> **Lo entregado:** `CustomerReturnsPage` explica el estado con palabras, muestra
+> `resolution_notes` como respuesta de la tienda —aparte de `admin_notes`, que es otra voz— y
+> distingue una resolución por vencimiento de una respuesta real. Sin cédula, el botón abre un
+> aviso con enlace al perfil en vez del formulario.
+>
+> **Cero backend:** el endpoint ya devolvía el modelo entero sin `$hidden`, así que los tres
+> campos ya viajaban al navegador; solo faltaba declararlos en el tipo y pintarlos.
+>
+> De paso se migró a Flowbite, que es donde arrancó
+> [`PLAN_MIGRACION_FLOWBITE.md`](PLAN_MIGRACION_FLOWBITE.md).
+>
+> **Un fallo que solo se vio en el navegador:** la pantalla llegó a decir «La tienda aceptó tu
+> reclamación» justo encima de «la tienda no respondió dentro del plazo». Se contradecía, y
+> además le atribuía a la tienda una decisión que no tomó. El texto del estado depende ahora de
+> `resolved_by`, con su test.
+
+### Cómo era antes de existir
 
 **Dónde:** ampliar `resources/js/pages/customer/CustomerReturnsPage.tsx`
 
@@ -285,7 +303,7 @@ condiciona toda la vista, así que conviene tomarla antes de dibujar nada.
 | 1 | ~~**Revisión de KYC**~~ ✅ | Sin ella **nadie cobra**. Todo lo demás puede esperar; esto no |
 | 2 | ~~**Reclamaciones de la tienda**~~ ✅ | El reloj ya corre y aprueba solo. Cada día sin esto son ventas revertidas sin que nadie las mirara |
 | 3 | ~~**Reputación**~~ ✅ | Barata —el cálculo existe— y es lo que da sentido a la 2 |
-| 4 | **Estado de la reclamación (comprador)** | Cierra el círculo del comprador |
+| 4 | ~~**Estado de la reclamación (comprador)**~~ ✅ | Cierra el círculo del comprador |
 | 5 | **Expediente** | Solo se usa en el caso raro; puede esperar |
 | 6 | **Pedidos del escaparate** | Proyecto aparte, con una decisión de autenticación por delante |
 
