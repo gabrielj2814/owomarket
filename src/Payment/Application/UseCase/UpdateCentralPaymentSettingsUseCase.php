@@ -54,6 +54,14 @@ final class UpdateCentralPaymentSettingsUseCase
         // reclamacion cuando el saldo de la tienda no alcanza.
         'central_claim_response_days',
         'central_claim_coverage_cap',
+        // Subsistema 5, fase 2: dias que tiene el COMPRADOR para reclamar desde la entrega.
+        // No confundir con `central_claim_response_days`, que es el plazo de la TIENDA para
+        // contestar una reclamacion ya abierta.
+        'central_claim_window_days',
+        // El techo mensual de alarma, en DOLARES. Superarlo no corta ningun pago: dispara una
+        // revision. Si fuera un muro, los compradores del dia 21 al 30 descubririan que la
+        // garantia prometida no aplica por un motivo que no tiene nada que ver con su compra.
+        'central_claim_monthly_alarm_usd',
     ];
 
     /**

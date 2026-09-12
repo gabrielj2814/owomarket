@@ -29,7 +29,7 @@ final class ReleaseUnconfirmedDeliveriesUseCase
      * congelar el dinero del comerciante dos semanas --la queja numero uno de los vendedores
      * en cualquier marketplace--.
      */
-    private const DIAS_POR_DEFECTO = 7;
+    public const DIAS_POR_DEFECTO = 7;
 
     public function __construct(
         private readonly ReleaseOrderCommissionUseCase $release

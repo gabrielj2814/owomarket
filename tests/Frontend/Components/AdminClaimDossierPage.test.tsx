@@ -96,7 +96,12 @@ const pintar = (props: Record<string, unknown> = {}) =>
             user_id="admin-1"
             claims={[fila()] as never}
             pagination={{ total: 1, current_page: 1, per_page: 15, last_page: 1 }}
-            metrics={{ open_count: 1, timeout_count: 0, total_count: 1 }}
+            metrics={{
+                open_count: 1,
+                timeout_count: 0,
+                total_count: 1,
+                coverage_month: { month: '2026-09', spent_usd: 0, threshold_usd: 2000, over: false },
+            }}
             {...props}
         />,
     );
@@ -170,10 +175,7 @@ describe('Reclamaciones y expedientes del backoffice', () => {
         fireEvent.click(screen.getByRole('button', { name: 'Ver expediente' }));
 
         await screen.findByTestId('expediente');
-        expect(screen.getByRole('link', { name: /Descargar PDF/i })).toHaveAttribute(
-            'href',
-            '/admin/api/claims/c-1/dossier.pdf',
-        );
+        expect(screen.getByRole('link', { name: /Descargar PDF/i })).toHaveAttribute('href', '/admin/api/claims/c-1/dossier.pdf');
     });
 
     it('si el expediente falla, lo dice en vez de enseñar uno vacío', async () => {

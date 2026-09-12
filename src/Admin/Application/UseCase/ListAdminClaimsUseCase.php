@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Src\Admin\Application\UseCase;
 
+use Src\CentralCustomer\Application\Service\MonthlyCoverageSpend;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
@@ -33,9 +34,13 @@ final class ListAdminClaimsUseCase
 {
     private const POR_PAGINA = 15;
 
+    public function __construct(
+        private readonly MonthlyCoverageSpend $cobertura
+    ) {}
+
     /**
      * @param  array{status?: string|null, search?: string|null, page?: int, per_page?: int}  $filtros
-     * @return array{claims: array<int, array<string, mixed>>, pagination: array<string, int>, metrics: array<string, int>}
+     * @return array{claims: array<int, array<string, mixed>>, pagination: array<string, int>, metrics: array<string, mixed>}
      */
     public function execute(array $filtros = []): array
     {
@@ -100,7 +105,7 @@ final class ListAdminClaimsUseCase
     }
 
     /**
-     * @return array<string, int>
+     * @return array<string, mixed>
      */
     private function metricas(): array
     {
@@ -118,6 +123,14 @@ final class ListAdminClaimsUseCase
             // decisión de garantías pide vigilar, y aquí es donde se ve de un vistazo.
             'timeout_count' => (int) CustomerReturnRequest::where('resolved_by', 'timeout')->count(),
             'total_count' => (int) $porEstado->sum(),
+            /*
+             * El techo mensual de alarma, aqui y no solo en Reglas de garantia.
+             *
+             * Es la pantalla donde el administrador ya entra a mirar reclamaciones, asi que es
+             * donde el numero tiene alguna posibilidad de que lo vean. Una alarma que solo vive
+             * en la pantalla de ajustes solo la ve quien iba a cambiar un ajuste.
+             */
+            'coverage_month' => $this->cobertura->currentMonth(),
         ];
     }
 }

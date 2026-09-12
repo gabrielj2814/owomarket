@@ -34,10 +34,23 @@ use Throwable;
 final class ClaimWindow
 {
     /**
-     * Sesenta dias: el mismo numero que la reserva de garantia retiene hoy, de modo que toda
-     * reclamacion nace respaldada por dinero que la plataforma todavia tiene apartado.
+     * Catorce dias.
+     *
+     * Empezo en 60 --el mismo numero que retenia la reserva-- y bajo a dos semanas por una
+     * razon de exposicion, no de comodidad: **el reembolso al comprador se paga en bolivares
+     * nominales**, los que entraron. Cuanto mas tiempo pasa entre la compra y la devolucion,
+     * menos vale lo que se devuelve, y esa perdida se la come el comprador. Acortar la ventana
+     * es lo que hace que la promesa siga valiendo lo que decia.
+     *
+     * De rebote deja retirar antes: no tiene sentido retener el fondo de garantia meses
+     * despues de que reclamar sea imposible. Ver `ReleaseOrderCommissionUseCase`, que baja a
+     * 30 dias por esto mismo.
+     *
+     * Que dos semanas sea legal en Venezuela es pregunta de abogado, y esta anotada como tal.
+     * Si resulta que hace falta mas, se sube desde la pantalla de Reglas de garantia sin tocar
+     * codigo: para eso es un ajuste.
      */
-    private const DIAS_POR_DEFECTO = 60;
+    public const DIAS_POR_DEFECTO = 14;
 
     public function days(): int
     {

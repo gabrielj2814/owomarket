@@ -50,6 +50,17 @@ export interface ClaimMetrics {
     /** Cuántas resolvió el reloj porque la tienda no contestó. */
     timeout_count: number;
     total_count: number;
+    /**
+     * El techo mensual de alarma. Va en las métricas de esta pantalla --y no solo en Reglas de
+     * garantía-- porque es aquí donde el administrador ya entra a mirar reclamaciones. Una
+     * alarma que solo vive en la pantalla de ajustes solo la ve quien iba a cambiar un ajuste.
+     */
+    coverage_month: {
+        month: string;
+        spent_usd: number;
+        threshold_usd: number;
+        over: boolean;
+    };
 }
 
 export interface ClaimListResult {

@@ -1,11 +1,5 @@
 import Dashboard from '@/components/layouts/Dashboard';
-import AdminClaimServices, {
-    AdminClaimRow,
-    ClaimDossier,
-    ClaimListResult,
-    ClaimMetrics,
-    ClaimPagination,
-} from '@/Services/AdminClaimServices';
+import AdminClaimServices, { AdminClaimRow, ClaimDossier, ClaimListResult, ClaimMetrics, ClaimPagination } from '@/Services/AdminClaimServices';
 import { Head } from '@inertiajs/react';
 import {
     Badge,
@@ -28,9 +22,10 @@ import {
     TableRow,
     TextInput,
 } from 'flowbite-react';
-import React, { FC, useState } from 'react';
+import { FC, useState } from 'react';
 import {
     HiClock,
+    HiCurrencyDollar,
     HiDocumentDownload,
     HiExclamation,
     HiHome,
@@ -73,8 +68,7 @@ const ESTADO: Record<string, { texto: string; color: string }> = {
     refunded: { texto: 'Reembolsada', color: 'purple' },
 };
 
-const fecha = (iso: string | null | undefined) =>
-    iso ? new Date(iso).toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+const fecha = (iso: string | null | undefined) => (iso ? new Date(iso).toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' }) : '—');
 
 const dinero = (valor: number) => `${valor.toFixed(2)} USD`;
 
@@ -156,8 +150,8 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                     Reclamaciones y Expedientes
                 </h1>
                 <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                    El expediente reúne lo que la plataforma tiene guardado sobre una operación, para entregárselo a un
-                    comprador que quiere denunciar.
+                    El expediente reúne lo que la plataforma tiene guardado sobre una operación, para entregárselo a un comprador que quiere
+                    denunciar.
                 </p>
             </div>
 
@@ -171,7 +165,7 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                 </div>
             )}
 
-            <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <Card>
                     <div className="flex items-center gap-3">
                         <HiClock className="h-8 w-8 text-amber-500" />
@@ -190,9 +184,7 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                             <p data-testid="metrica-silencios" className="text-2xl font-black text-gray-900 dark:text-white">
                                 {metricas.timeout_count}
                             </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                resueltas por silencio de la tienda
-                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">resueltas por silencio de la tienda</p>
                         </div>
                     </div>
                 </Card>
@@ -202,6 +194,34 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                         <div>
                             <p className="text-2xl font-black text-gray-900 dark:text-white">{metricas.total_count}</p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">en total</p>
+                        </div>
+                    </div>
+                </Card>
+                {/*
+                 * El techo mensual de alarma. `platform_covered_amount` se escribía en cada
+                 * reclamación desde la fase B y nadie lo sumaba nunca: el mes se podía
+                 * descontrolar entero sin que hubiera dónde verlo.
+                 *
+                 * Superarlo NO corta ningún pago. Por eso la tarjeta cambia de color pero no
+                 * bloquea nada: lo que pide es que alguien mire la causa.
+                 */}
+                <Card>
+                    <div className="flex items-center gap-3">
+                        <HiCurrencyDollar className={`h-8 w-8 ${metricas.coverage_month?.over ? 'text-red-500' : 'text-emerald-500'}`} />
+                        <div>
+                            <p
+                                data-testid="metrica-cobertura"
+                                className={`text-2xl font-black ${
+                                    metricas.coverage_month?.over ? 'text-red-600 dark:text-red-500' : 'text-gray-900 dark:text-white'
+                                }`}
+                            >
+                                ${(metricas.coverage_month?.spent_usd ?? 0).toFixed(2)}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {metricas.coverage_month?.over
+                                    ? `puestos este mes — pasó del techo de $${(metricas.coverage_month?.threshold_usd ?? 0).toFixed(0)}`
+                                    : `puestos este mes, de $${(metricas.coverage_month?.threshold_usd ?? 0).toFixed(0)}`}
+                            </p>
                         </div>
                     </div>
                 </Card>
@@ -288,7 +308,7 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                                                 {r.resolved_by === 'timeout' && (
                                                     <div
                                                         data-testid={`silencio-${r.id}`}
-                                                        className="mt-1 text-[10px] font-bold uppercase text-red-600 dark:text-red-400"
+                                                        className="mt-1 text-[10px] font-bold text-red-600 uppercase dark:text-red-400"
                                                     >
                                                         por silencio
                                                     </div>
@@ -344,24 +364,17 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                     ) : (
                         <div className="space-y-5 text-sm" data-testid="expediente">
                             <section>
-                                <h3 className="mb-2 text-xs font-black uppercase tracking-wide text-gray-400">
-                                    La reclamación
-                                </h3>
+                                <h3 className="mb-2 text-xs font-black tracking-wide text-gray-400 uppercase">La reclamación</h3>
                                 <dl className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                                     <Dato k="Pedido" v={expediente.claim.order_number} />
                                     <Dato k="Producto" v={expediente.claim.product_name} />
                                     <Dato k="Importe" v={dinero(expediente.claim.amount)} />
                                     <Dato k="Motivo" v={expediente.claim.reason} />
-                                    <Dato
-                                        k="Cubierto por la plataforma"
-                                        v={dinero(expediente.claim.platform_covered_amount)}
-                                    />
+                                    <Dato k="Cubierto por la plataforma" v={dinero(expediente.claim.platform_covered_amount)} />
                                     <Dato k="Cómo se resolvió" v={comoSeResolvio(expediente.claim.resolved_by)} />
                                 </dl>
                                 {expediente.claim.description && (
-                                    <p className="mt-2 rounded-xl bg-gray-50 p-3 text-xs italic dark:bg-gray-800">
-                                        «{expediente.claim.description}»
-                                    </p>
+                                    <p className="mt-2 rounded-xl bg-gray-50 p-3 text-xs italic dark:bg-gray-800">«{expediente.claim.description}»</p>
                                 )}
                                 {expediente.claim.resolution_notes && (
                                     <p className="mt-2 rounded-xl bg-gray-50 p-3 text-xs dark:bg-gray-800">
@@ -371,34 +384,27 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                             </section>
 
                             {/*
-                              * La cronologia es la mitad del expediente: es lo que sostiene un
-                              * caso. Se presenta como secuencia y no como una tabla de campos
-                              * para que se lea en el orden en que ocurrio.
-                              */}
+                             * La cronologia es la mitad del expediente: es lo que sostiene un
+                             * caso. Se presenta como secuencia y no como una tabla de campos
+                             * para que se lea en el orden en que ocurrio.
+                             */}
                             <section data-testid="cronologia">
-                                <h3 className="mb-2 text-xs font-black uppercase tracking-wide text-gray-400">
-                                    Cronología
-                                </h3>
+                                <h3 className="mb-2 text-xs font-black tracking-wide text-gray-400 uppercase">Cronología</h3>
                                 <ol className="space-y-2 border-l-2 border-gray-200 pl-4 dark:border-gray-700">
                                     <li>
-                                        <span className="font-bold">{fecha(expediente.claim.delivered_at)}</span> —
-                                        Entrega registrada
+                                        <span className="font-bold">{fecha(expediente.claim.delivered_at)}</span> — Entrega registrada
                                     </li>
                                     <li>
-                                        <span className="font-bold">{fecha(expediente.claim.claimed_at)}</span> — El
-                                        comprador presenta la reclamación
+                                        <span className="font-bold">{fecha(expediente.claim.claimed_at)}</span> — El comprador presenta la reclamación
                                     </li>
                                     <li>
-                                        <span className="font-bold">{fecha(expediente.claim.resolved_at)}</span> —
-                                        Resolución
+                                        <span className="font-bold">{fecha(expediente.claim.resolved_at)}</span> — Resolución
                                     </li>
                                 </ol>
                             </section>
 
                             <section>
-                                <h3 className="mb-2 text-xs font-black uppercase tracking-wide text-gray-400">
-                                    El comprador
-                                </h3>
+                                <h3 className="mb-2 text-xs font-black tracking-wide text-gray-400 uppercase">El comprador</h3>
                                 <dl className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                                     <Dato k="Nombre" v={expediente.customer.name} />
                                     <Dato k="Documento" v={expediente.customer.document_id} />
@@ -408,53 +414,34 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                             </section>
 
                             <section data-testid="identidad-tienda">
-                                <h3 className="mb-2 text-xs font-black uppercase tracking-wide text-gray-400">
-                                    La tienda
-                                </h3>
+                                <h3 className="mb-2 text-xs font-black tracking-wide text-gray-400 uppercase">La tienda</h3>
                                 <dl className="grid grid-cols-1 gap-1 sm:grid-cols-2">
                                     <Dato k="Razón social" v={expediente.store.legal_name} />
                                     <Dato k="Documento" v={expediente.store.cedula} />
                                     <Dato k="RIF" v={expediente.store.rif} />
                                     <Dato k="Teléfono" v={expediente.store.phone} />
                                     <Dato k="Dirección" v={expediente.store.address} />
-                                    <Dato
-                                        k="Identidad verificada"
-                                        v={expediente.store.kyc_status === 'verified' ? 'Sí' : 'No'}
-                                    />
+                                    <Dato k="Identidad verificada" v={expediente.store.kyc_status === 'verified' ? 'Sí' : 'No'} />
                                     <Dato k="Nivel de reputación" v={expediente.store.reputation.level} />
-                                    <Dato
-                                        k="Reclamaciones sin responder"
-                                        v={String(expediente.store.reputation.unanswered_claims)}
-                                    />
+                                    <Dato k="Reclamaciones sin responder" v={String(expediente.store.reputation.unanswered_claims)} />
                                 </dl>
                                 <p className="mt-2 text-[11px] text-gray-400">
-                                    Estos datos de identidad salen en el expediente por una decisión de la fase de
-                                    desarrollo, pendiente de revisión legal.
+                                    Estos datos de identidad salen en el expediente por una decisión de la fase de desarrollo, pendiente de revisión
+                                    legal.
                                 </p>
                             </section>
 
                             <section>
-                                <h3 className="mb-2 text-xs font-black uppercase tracking-wide text-gray-400">
-                                    Evidencias de entrega
-                                </h3>
+                                <h3 className="mb-2 text-xs font-black tracking-wide text-gray-400 uppercase">Evidencias de entrega</h3>
                                 {expediente.delivery === null ? (
-                                    <p className="text-xs text-gray-500">
-                                        No consta ningún registro de entrega para este pedido.
-                                    </p>
+                                    <p className="text-xs text-gray-500">No consta ningún registro de entrega para este pedido.</p>
                                 ) : (
                                     <dl className="grid grid-cols-1 gap-1 sm:grid-cols-2">
-                                        <Dato
-                                            k="Entrega declarada"
-                                            v={fecha(expediente.delivery.declared_delivered_at)}
-                                        />
+                                        <Dato k="Entrega declarada" v={fecha(expediente.delivery.declared_delivered_at)} />
                                         <Dato k="Confirmada" v={fecha(expediente.delivery.confirmed_at)} />
                                         <Dato
                                             k="Liberada por"
-                                            v={
-                                                expediente.delivery.released_by === 'timeout'
-                                                    ? 'Vencimiento del plazo'
-                                                    : 'Confirmación del comprador'
-                                            }
+                                            v={expediente.delivery.released_by === 'timeout' ? 'Vencimiento del plazo' : 'Confirmación del comprador'}
                                         />
                                         <Dato
                                             k="Pruebas aportadas"
@@ -468,12 +455,7 @@ const AdminClaimDossierPage: FC<AdminClaimDossierPageProps> = ({
                 </ModalBody>
                 <ModalFooter>
                     {expediente && (
-                        <Button
-                            as="a"
-                            href={AdminClaimServices.urlDelPdf(expediente.claim.id)}
-                            color="blue"
-                            size="sm"
-                        >
+                        <Button as="a" href={AdminClaimServices.urlDelPdf(expediente.claim.id)} color="blue" size="sm">
                             <HiDocumentDownload className="mr-2 h-4 w-4" />
                             Descargar PDF
                         </Button>

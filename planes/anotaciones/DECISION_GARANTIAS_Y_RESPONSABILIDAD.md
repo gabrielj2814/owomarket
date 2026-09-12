@@ -484,11 +484,21 @@ y ya escribía en esa fila. Con una venta de $100 al 8%:
 
 | | Antes | Con el fondo |
 | :--- | :--- | :--- |
-| Al liberarse | $92 retirables | $82,80 retirables, $9,20 retenidos 60 días |
+| Al liberarse | $92 retirables | $82,80 retirables, $9,20 retenidos 30 días |
 
-**10% y 60 días, configurables** (`central_guarantee_reserve_percent` y
+**10% y 30 días, configurables** (`central_guarantee_reserve_percent` y
 `central_guarantee_reserve_days`). Conservador a propósito, por la asimetría ya anotada: bajar
 una retención después es un regalo, subirla es una discusión con cada tienda.
+
+> **Actualizado el 12/09/2026: los días bajaron de 60 a 30.** No es un cambio de criterio sobre
+> el fondo, es una consecuencia de acortar la ventana para reclamar a 14 días. La reserva existe
+> para pagar una reclamación posterior, así que solo tiene que cubrir el plazo de reclamar más
+> el de respuesta de la tienda: con 14 + 5, la última resolución posible cae sobre el día 19.
+> Retener 60 era quedarse el dinero del comerciante unos 40 días **después de que reclamar ya
+> fuera imposible**, que no protege a nadie.
+>
+> Ambos números se cambian ahora desde **Reglas de garantía** en el backoffice. Hasta esa fecha
+> los ocho ajustes de esta decisión no tenían pantalla y se escribían a mano en la base de datos.
 
 Dos detalles que no son cosméticos:
 

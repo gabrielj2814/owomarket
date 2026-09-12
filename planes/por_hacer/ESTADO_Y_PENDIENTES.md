@@ -93,14 +93,25 @@ De las seis vistas de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md) *
 
 ## Decisiones tomadas que todavía no se han aplicado
 
-### El techo mensual de alarma
+### ~~El techo mensual de alarma~~ ✅ HECHO el 12/09/2026
 
-La decisión dice que superar un gasto mensual en coberturas **no corta los pagos**: dispara una
-revisión. Hoy se registra cuánto pone la plataforma en cada reclamación
-(`platform_covered_amount`) pero **nadie suma ni avisa**.
+`MonthlyCoverageSpend` suma lo que ha puesto la plataforma, mes a mes, y lo enseña en **Reglas
+de garantía** y en las métricas de Reclamaciones. Umbral configurable
+(`central_claim_monthly_alarm_usd`, $2.000 por defecto).
 
-Falta un umbral configurable y algo que notifique al superarlo. Sin esto, el mes se descontrola
-antes de que nadie lo mire.
+**En dólares, y convertido fila a fila con la tasa congelada de cada venta.**
+`platform_covered_amount` está en bolívares, y eso rompía el techo dos veces: un umbral en
+bolívares se desactiva solo con la inflación, y sumar bolívares de tasas distintas da un total
+que **se queda corto siempre** —las ventas viejas tienen tasa más baja—. Un termómetro sesgado
+hacia no avisar.
+
+**Sin comando, sin tabla y sin aviso guardado.** Se deriva de datos que ya no se mueven, así que
+un mes que se pasó sigue viéndose meses después aunque nadie mirara ese día. Guardar el aviso
+habría añadido un programador de tareas y un estado que puede desincronizarse, para contar lo
+mismo peor.
+
+**Lo que sigue faltando:** empujar. Hoy el número está donde el administrador ya entra, pero
+nada obliga a mirarlo. Eso llega con [`PLAN_NOTIFICACIONES.md`](../futuros/PLAN_NOTIFICACIONES.md).
 
 ### La velocidad de liberación por nivel
 

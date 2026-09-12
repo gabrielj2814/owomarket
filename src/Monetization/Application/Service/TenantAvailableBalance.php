@@ -48,7 +48,7 @@ final class TenantAvailableBalance
      * devolucion o reclamar. Entregar y pagar en el mismo instante deja a la plataforma sin
      * margen para atender esa reclamacion con el dinero todavia en su cuenta.
      */
-    private const DIAS_DE_RETENCION_POR_DEFECTO = 1;
+    public const DIAS_DE_RETENCION_POR_DEFECTO = 1;
 
     /**
      * Cuanto puede PEDIR ahora el comerciante.

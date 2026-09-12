@@ -42,7 +42,7 @@ final class ResolveReturnRequestUseCase
      * porque es la unidad en la que se ponen los precios y no envejece con la tasa; se convierte
      * a bolívares con la tasa congelada de cada venta al aplicarlo.
      */
-    private const TOPE_POR_DEFECTO = 200.0;
+    public const TOPE_POR_DEFECTO = 200.0;
 
     public function __construct(
         private readonly ReverseOrderCommissionUseCase $reverse,

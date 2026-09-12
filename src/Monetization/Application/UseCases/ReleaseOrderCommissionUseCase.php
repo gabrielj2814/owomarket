@@ -35,8 +35,19 @@ use Throwable;
  */
 class ReleaseOrderCommissionUseCase
 {
-    /** Días que la reserva sigue retenida después de liberarse el resto de la venta. */
-    private const DIAS_POR_DEFECTO = 60;
+    /**
+     * Días que la reserva sigue retenida después de liberarse el resto de la venta.
+     *
+     * Treinta, no sesenta. La reserva existe para pagar una reclamación posterior, así que su
+     * plazo solo tiene sentido si cubre el de reclamar: con la ventana en **14 días**
+     * (`ClaimWindow`) y **5** para que la tienda responda, la última resolución posible cae
+     * sobre el día 19. Treinta deja margen de sobra.
+     *
+     * Retener 60 sería quedarse el dinero del comerciante unos 40 días **después de que
+     * reclamar ya fuera imposible**, que no protege a nadie: solo le estropea el flujo de caja
+     * a quien vendió bien.
+     */
+    public const DIAS_POR_DEFECTO = 30;
 
     public function __construct(
         private readonly TenantReputation $reputacion

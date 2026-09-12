@@ -1,7 +1,7 @@
 # Qué falta en OwoMarket
 
 > **Última actualización:** 12/09/2026 · Rama `moduleProduct`
-> **Estado de la suite:** 876 tests de backend, 96 de frontend, `tsc --noEmit` limpio.
+> **Estado de la suite:** 891 tests de backend, 103 de frontend, `tsc --noEmit` limpio.
 > **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
@@ -25,19 +25,6 @@ acaso — y el reloj de reclamaciones corre igual.
 
 ---
 
-## 🔴 Lo que deja un flujo a medias
-
-### El techo mensual de alarma no existe
-
-La decisión de garantías dice que superar un gasto mensual en coberturas **no corta los pagos**:
-dispara una revisión. Se registra cuánto pone la plataforma en cada reclamación
-(`platform_covered_amount`) pero **nadie suma ni avisa**. Sin un umbral configurable, el mes se
-descontrola antes de que alguien lo mire.
-
-→ [`planes/por_hacer/ESTADO_Y_PENDIENTES.md`](planes/por_hacer/ESTADO_Y_PENDIENTES.md)
-
----
-
 ## 🟡 Deuda con fecha de caducidad
 
 ### Los datos de identidad del expediente, pendientes del abogado
@@ -58,12 +45,42 @@ La segunda pregunta para el abogado sigue abierta y sin nada construido encima: 
 ley venezolana sobre la responsabilidad solidaria de un marketplace** que cobra todas las
 ventas.
 
+Y hay una tercera desde el 12/09/2026: la ventana para reclamar bajó a **14 días**, y hace falta
+saber **si la ley exige un plazo mínimo mayor**. Si lo exige, se sube desde Reglas de garantía
+sin tocar código — para eso es un ajuste.
+
 ### Los pedidos de invitado anteriores al 12/09/2026 son huérfanos
 
 Nadie puede demostrar que son suyos, así que ni se ven, ni se confirman, ni se reclamarán. Los
 nuevos sí quedan enlazados si se compra con sesión, y el checkout lo advierte antes de pagar.
 
 En desarrollo da igual. **Antes de que haya compras reales, no.**
+
+---
+
+## ✅ El techo mensual, y los ocho ajustes que gobiernan el dinero
+
+El techo existe: `MonthlyCoverageSpend` suma lo que ha puesto la plataforma mes a mes, **en
+dólares y convertido fila a fila** con la tasa congelada de cada venta. En bolívares el umbral
+se habría desactivado solo con la inflación, y la suma se habría quedado corta siempre.
+
+No hay comando ni tabla: se deriva de datos que ya no se mueven, así que **un mes que se pasó
+sigue viéndose después aunque nadie mirara ese día**.
+
+Y al ir a añadir su ajuste apareció algo más grande: **ninguno de los ocho números que gobiernan
+el dinero tenía campo en ninguna pantalla**. Se cambiaban escribiendo en la base de datos, sin
+validación. El peor era `central_guarantee_reserve_percent`: con solo existir esa fila, el
+sistema de reputación deja de aplicarse a todas las tiendas — y no había dónde verlo. Ahora hay
+pantalla (**Reglas de garantía**), validación, y ese aviso escrito junto al campo.
+
+De paso cambiaron dos valores por defecto: **ventana para reclamar 60 → 14 días** y **fondo
+retenido 60 → 30**. La reserva solo tiene que cubrir el plazo de reclamar más el de respuesta;
+retener más era quedarse el dinero del comerciante cuando reclamar ya era imposible.
+
+→ [`planes/por_hacer/ESTADO_Y_PENDIENTES.md`](planes/por_hacer/ESTADO_Y_PENDIENTES.md)
+
+**Lo que no hace:** empujar. El número está donde el administrador ya entra, pero nada obliga a
+mirarlo. Eso es de las notificaciones.
 
 ---
 

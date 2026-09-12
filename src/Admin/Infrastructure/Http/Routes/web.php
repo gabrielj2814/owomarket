@@ -138,6 +138,11 @@ Route::middleware(['auth', 'staff:manage_support'])->group(function () {
     | dato de identidad y se consulta muchas veces; el expediente es una petición deliberada.
     */
     Route::get('/backoffice/{user_uuid}/claims', [\Src\Admin\Infrastructure\Http\Controller\ViewAdminClaimsPageGETController::class, 'index'])->name('central.backoffice.web.admin.claims');
+
+    // Las reglas del dinero en transito (subsistemas 3, 4 y 5). Los ocho ajustes estaban
+    // en la lista blanca del backend y ninguno tenia campo en ninguna pantalla: se cambiaban
+    // escribiendo en la base a mano.
+    Route::get('/backoffice/{user_uuid}/guarantee-rules', \Src\Admin\Infrastructure\Http\Controller\ViewAdminGuaranteeRulesPageGETController::class)->name('central.backoffice.web.admin.guarantee_rules');
     Route::get('/api/claims', \Src\Admin\Infrastructure\Http\Controller\ListAdminClaimsGETController::class);
     Route::get('/api/claims/{claimId}/dossier', \Src\Admin\Infrastructure\Http\Controller\GetAdminClaimDossierGETController::class);
     Route::get('/api/claims/{claimId}/dossier.pdf', \Src\Admin\Infrastructure\Http\Controller\DownloadAdminClaimDossierPdfGETController::class);

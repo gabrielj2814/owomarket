@@ -33,7 +33,7 @@ final class ClaimResponseWindow
      * comprador no espere semanas. Cero no es válido — resolver en el acto no le daría a la
      * tienda ninguna oportunidad de responder, que es justo lo que el reloj quiere provocar.
      */
-    private const DIAS_POR_DEFECTO = 5;
+    public const DIAS_POR_DEFECTO = 5;
 
     public function days(): int
     {

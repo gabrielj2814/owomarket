@@ -80,6 +80,12 @@ const SidebarDashboardComponent = () => {
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/claims`} icon={HiScale}>
                             Reclamaciones
                         </SidebarItem>
+                        {/* Mismo motivo que la de arriba: los ocho ajustes que gobiernan el
+                            dinero existian en el backend y no habia pantalla, asi que se
+                            cambiaban escribiendo en la base a mano. */}
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/guarantee-rules`} icon={HiShieldCheck}>
+                            Reglas de Garantía
+                        </SidebarItem>
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/exchange-rates`} icon={HiCurrencyDollar}>
                             Tasa BCV / Monedas
                         </SidebarItem>
