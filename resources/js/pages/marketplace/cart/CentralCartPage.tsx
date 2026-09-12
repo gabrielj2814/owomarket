@@ -1,3 +1,4 @@
+import { Alert, Button, Card } from 'flowbite-react';
 import React, { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
@@ -43,7 +44,7 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
 
             <div className="space-y-8">
                 {revalidationNotices.length > 0 && (
-                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20">
+                    <Alert color="warning">
                         <div className="flex items-start justify-between gap-3">
                             <div className="space-y-1">
                                 <p className="text-xs font-bold text-amber-900 dark:text-amber-200">
@@ -55,15 +56,11 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
                                     ))}
                                 </ul>
                             </div>
-                            <button
-                                type="button"
-                                onClick={dismissRevalidationNotices}
-                                className="shrink-0 text-xs font-bold text-amber-900 hover:underline dark:text-amber-200"
-                            >
+                            <Button color="subtle" size="xs" onClick={dismissRevalidationNotices}>
                                 Cerrar
-                            </button>
+                            </Button>
                         </div>
-                    </div>
+                    </Alert>
                 )}
 
                 {/* Header */}
@@ -112,9 +109,10 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
                         {/* Store Groups Column */}
                         <div className="lg:col-span-8 space-y-6">
                             {storeGroups.map(group => (
-                                <div
+                                <Card
                                     key={group.tenant_id}
-                                    className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden shadow-sm"
+                                    className="overflow-hidden"
+                                    theme={{ root: { children: 'flex h-full flex-col' } }}
                                 >
                                     {/* Store Group Header */}
                                     <div className="p-4 bg-gray-50 dark:bg-gray-800/60 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between">
@@ -218,13 +216,13 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </Card>
                             ))}
                         </div>
 
                         {/* Order Summary Column */}
                         <div className="lg:col-span-4 space-y-6">
-                            <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 space-y-6 shadow-sm sticky top-24">
+                            <Card className="sticky top-24" theme={{ root: { children: 'flex h-full flex-col gap-6 p-6' } }}>
                                 <h3 className="text-base font-black text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-3">
                                     Resumen de la Orden
                                 </h3>
@@ -255,19 +253,24 @@ const CentralCartPageContent: React.FC<CentralCartPageProps> = ({ domain }) => {
                                     </span>
                                 </div>
 
-                                <Link
+                                {/* El degradado se conserva: es la accion principal de toda la
+                                    superficie publica y su peso visual esta puesto a proposito.
+                                    `className` sobre el componente, no en lugar de el. */}
+                                <Button
+                                    as={Link}
                                     href="/checkout"
-                                    className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-sm shadow-lg shadow-blue-500/20 transition flex items-center justify-center gap-2"
+                                    size="lg"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700"
                                 >
                                     Proceder al Checkout Unificado
-                                    <HiArrowRight className="w-4 h-4" />
-                                </Link>
+                                    <HiArrowRight className="ml-2 h-4 w-4" />
+                                </Button>
 
                                 <div className="pt-2 flex items-center justify-center gap-2 text-[11px] text-gray-400 text-center">
                                     <HiOutlineShieldCheck className="w-4 h-4 text-green-500 inline" />
                                     <span>Garantía de compra protegida OwOMarket</span>
                                 </div>
-                            </div>
+                            </Card>
                         </div>
                     </div>
                 )}

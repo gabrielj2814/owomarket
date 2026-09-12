@@ -6,6 +6,8 @@ import MiniCartDrawer from '@/components/ui/storefront/MiniCartDrawer';
 import StorefrontNavbar from '@/components/ui/storefront/StorefrontNavbar';
 import StorefrontFooter from '@/components/ui/storefront/StorefrontFooter';
 import { Head } from '@inertiajs/react';
+import { ThemeProvider } from 'flowbite-react';
+import storefrontTheme from '@/theme/storefrontTheme';
 
 export interface StorefrontLayoutProps {
     children?: React.ReactNode;
@@ -42,6 +44,9 @@ export default function StorefrontLayout({
     const pageTitle = title ? `${title} | ${storeName}` : storeSettings?.seo_title || storeName;
 
     return (
+        /* El escaparate de una tienda comparte el aspecto del marketplace central: es la misma
+           superficie publica, solo que con la marca del comerciante encima. */
+        <ThemeProvider theme={storefrontTheme}>
         <CustomerAuthProvider>
             <CartProvider currency={currency} domain={domain}>
                 <Head>
@@ -92,5 +97,6 @@ export default function StorefrontLayout({
                 </div>
             </CartProvider>
         </CustomerAuthProvider>
+        </ThemeProvider>
     );
 }

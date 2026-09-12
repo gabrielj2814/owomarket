@@ -2,9 +2,10 @@ import React, { FC, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import { CentralCartProvider, useCentralCart } from '@/contexts/CentralCartContext';
 import { CustomerAuthProvider, useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem } from 'flowbite-react';
+import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem, ThemeProvider } from 'flowbite-react';
 import CentralCartDrawer from '../ui/marketplace/CentralCartDrawer';
 import CustomerAuthModal from '@/components/ui/storefront/CustomerAuthModal';
+import storefrontTheme from '@/theme/storefrontTheme';
 import {
     HiOutlineShoppingBag,
     HiOutlineMagnifyingGlass,
@@ -270,13 +271,22 @@ const CentralLayoutContent: React.FC<CentralLayoutProps> = ({ children }) => {
     );
 };
 
+/*
+ * El tema del escaparate se aplica AQUI, en la raiz de todo lo publico.
+ *
+ * `CustomerAccountLayout` --el portal del cliente-- se construye encima de este layout, asi que
+ * heredaria este tema. No lo hace: su `<ThemeProvider>` lleva `root`, que corta la herencia.
+ * Son dos superficies distintas y el portal tiene el suyo.
+ */
 const CentralLayout: FC<CentralLayoutProps> = ({ children }) => {
     return (
+        <ThemeProvider theme={storefrontTheme}>
         <CustomerAuthProvider>
             <CentralCartProvider>
                 <CentralLayoutContent>{children}</CentralLayoutContent>
             </CentralCartProvider>
         </CustomerAuthProvider>
+        </ThemeProvider>
     );
 };
 

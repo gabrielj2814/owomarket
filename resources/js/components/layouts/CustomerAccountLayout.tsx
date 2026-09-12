@@ -143,7 +143,12 @@ export const CustomerAccountLayout: React.FC<CustomerAccountLayoutProps> = ({
               * el mismo `className` de tarjeta copiado en seis ficheros, solo que con otra
               * etiqueta.
               */}
-            <ThemeProvider theme={portalTheme}>
+            {/*
+              * `root` corta la herencia del tema del escaparate: este layout se construye sobre
+              * `CentralLayout`, que aplica `storefrontTheme`. Sin `root` los dos se fusionarian
+              * y el portal heredaria valores que no le corresponden.
+              */}
+            <ThemeProvider root theme={portalTheme}>
             <div className="bg-gray-50/60 dark:bg-gray-950/60 min-h-[calc(100vh-4rem)] py-8 transition-colors">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     {/* Header Banner */}
