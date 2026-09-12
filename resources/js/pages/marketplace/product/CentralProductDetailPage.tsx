@@ -3,6 +3,7 @@ import CurrencyPriceDisplay from '@/components/ui/CurrencyPriceDisplay';
 import { useCentralCart } from '@/contexts/CentralCartContext';
 import CentralMarketplaceServices, { CentralProductItem, TenantStoreItem } from '@/Services/CentralMarketplaceServices';
 import { Head, Link } from '@inertiajs/react';
+import { Button, Card, Label } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import {
     HiOutlineArrowLeft,
@@ -155,13 +156,16 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                 <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
                     {/* Left Images Column */}
                     <div className="space-y-4 lg:col-span-6">
-                        <div className="flex aspect-square items-center justify-center overflow-hidden rounded-3xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                        <Card
+                            className="aspect-square"
+                            theme={{ root: { children: 'flex h-full w-full items-center justify-center overflow-hidden' } }}
+                        >
                             {mainImage ? (
                                 <img src={mainImage} alt={product.name} className="h-full w-full object-cover" />
                             ) : (
                                 <div className="text-xl font-bold text-gray-400">OwOMarket</div>
                             )}
-                        </div>
+                        </Card>
 
                         {/* Image Gallery Thumbnails */}
                         {product.images && product.images.length > 1 && (
@@ -334,8 +338,12 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                         {/* Quantity Selector & Action Buttons */}
                         <div className="space-y-4 border-t border-gray-200 pt-4 dark:border-gray-800">
                             <div className="flex items-center gap-4">
-                                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Cantidad:</label>
-                                <div className="flex items-center rounded-xl border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900">
+                                <Label htmlFor="producto-cantidad" className="mb-0">
+                                    Cantidad:
+                                </Label>
+                                {/* Selector de cantidad: Flowbite no tiene stepper, asi que se
+                                    queda en Tailwind (`reglas.md` §1.3). */}
+                                <div id="producto-cantidad" className="flex items-center rounded-xl border border-gray-300 bg-white dark:border-gray-700 dark:bg-gray-900">
                                     <button
                                         type="button"
                                         onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -357,23 +365,30 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                             </div>
 
                             <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
-                                <button
+                                {/* Dos acciones y una jerarquia: «Comprar Ahora» lleva el
+                                    degradado y «Anadir al Carrito» va en contorno. Si las dos
+                                    pesaran igual, ninguna seria la principal. */}
+                                <Button
                                     type="button"
+                                    size="lg"
+                                    outline
+                                    color="blue"
+                                    className="w-full"
                                     onClick={handleAddToCart}
                                     disabled={isOutOfStock}
-                                    className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-blue-600 px-6 py-3.5 text-sm font-bold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-40 dark:text-blue-400 dark:hover:bg-blue-900/30"
                                 >
-                                    <HiOutlineShoppingBag className="h-5 w-5" />
+                                    <HiOutlineShoppingBag className="mr-2 h-5 w-5" />
                                     Añadir al Carrito
-                                </button>
-                                <button
+                                </Button>
+                                <Button
                                     type="button"
+                                    size="lg"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700"
                                     onClick={handleBuyNow}
                                     disabled={isOutOfStock}
-                                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-700 hover:to-indigo-700 disabled:cursor-not-allowed disabled:opacity-40"
                                 >
                                     Comprar Ahora
-                                </button>
+                                </Button>
                             </div>
                         </div>
 
@@ -397,11 +412,11 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                         <h2 className="text-xl font-black text-gray-900 dark:text-white">Productos Relacionados</h2>
                         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                             {related.map((rel) => (
-                                <Link
-                                    key={rel.id}
-                                    href={`/product/${rel.id}`}
-                                    className="group space-y-2 rounded-2xl border border-gray-200 bg-white p-3 transition hover:shadow-lg dark:border-gray-800 dark:bg-gray-900"
-                                >
+                                <Link key={rel.id} href={`/product/${rel.id}`} className="group">
+                                    <Card
+                                        className="h-full transition hover:shadow-lg"
+                                        theme={{ root: { children: 'flex h-full flex-col gap-2 p-3' } }}
+                                    >
                                     <div className="aspect-square overflow-hidden rounded-xl bg-gray-100 dark:bg-gray-800">
                                         {rel.images && rel.images.length > 0 ? (
                                             <img
@@ -415,6 +430,7 @@ const CentralProductDetailPageContent: React.FC<CentralProductDetailPageProps> =
                                     </div>
                                     <h4 className="truncate text-xs font-bold text-gray-900 dark:text-white">{rel.name}</h4>
                                     <p className="text-xs font-black text-blue-600 dark:text-blue-400">${rel.price.toFixed(2)}</p>
+                                    </Card>
                                 </Link>
                             ))}
                         </div>

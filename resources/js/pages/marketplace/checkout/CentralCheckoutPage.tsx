@@ -3,6 +3,7 @@ import { useCentralCart } from '@/contexts/CentralCartContext';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import CentralMarketplaceServices, { CentralOrderQuote, CreateCentralOrderPayload } from '@/Services/CentralMarketplaceServices';
 import { Head, Link } from '@inertiajs/react';
+import { Button, Card, Label, Select, Textarea, TextInput } from 'flowbite-react';
 import React, { useEffect, useRef, useState } from 'react';
 import {
     HiOutlineArrowPath,
@@ -297,7 +298,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                     {/* Left Forms Column */}
                     <div className="space-y-6 lg:col-span-7">
                         {/* 1. Customer Information */}
-                        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                        <Card theme={{ root: { children: 'flex h-full flex-col gap-4 p-6' } }}>
                             <div className="flex items-center justify-between border-b border-gray-100 pb-3 dark:border-gray-800">
                                 <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
@@ -315,55 +316,45 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Nombre y Apellido *</label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="co-nombre-y-apellido">Nombre y Apellido *</Label>
+                                    <TextInput id="co-nombre-y-apellido"
                                         required
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
-                                        placeholder="Ej: Gabriel Martínez"
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="Ej: Gabriel Martínez" />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Correo Electrónico *</label>
-                                    <input
+                                    <Label htmlFor="co-correo-electronico">Correo Electrónico *</Label>
+                                    <TextInput id="co-correo-electronico"
                                         type="email"
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="gabriel@ejemplo.com"
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="gabriel@ejemplo.com" />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Teléfono Celular</label>
-                                    <input
+                                    <Label htmlFor="co-telefono-celular">Teléfono Celular</Label>
+                                    <TextInput id="co-telefono-celular"
                                         type="tel"
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
-                                        placeholder="0412-1234567"
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="0412-1234567" />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Cédula / DNI</label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="co-cedula-dni">Cédula / DNI</Label>
+                                    <TextInput id="co-cedula-dni"
                                         value={documentId}
                                         onChange={(e) => setDocumentId(e.target.value)}
-                                        placeholder="V-12345678"
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="V-12345678" />
                                 </div>
                             </div>
-                        </div>
+                        </Card>
 
                         {/* 2. Shipping Address */}
-                        <div className="space-y-4 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                        <Card theme={{ root: { children: 'flex h-full flex-col gap-4 p-6' } }}>
                             <div className="border-b border-gray-100 pb-3 dark:border-gray-800">
                                 <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
@@ -375,55 +366,44 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
                             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                 <div className="space-y-1 sm:col-span-2">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Dirección Exacta *</label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="co-direccion-exacta">Dirección Exacta *</Label>
+                                    <TextInput id="co-direccion-exacta"
                                         required
                                         value={address}
                                         onChange={(e) => setAddress(e.target.value)}
-                                        placeholder="Av. Principal, Edificio, Apartamento..."
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="Av. Principal, Edificio, Apartamento..." />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Ciudad *</label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="co-ciudad">Ciudad *</Label>
+                                    <TextInput id="co-ciudad"
                                         required
                                         value={city}
                                         onChange={(e) => setCity(e.target.value)}
-                                        placeholder="Caracas"
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="Caracas" />
                                 </div>
 
                                 <div className="space-y-1">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Estado / Región</label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="co-estado-region">Estado / Región</Label>
+                                    <TextInput id="co-estado-region"
                                         value={state}
                                         onChange={(e) => setState(e.target.value)}
-                                        placeholder="Miranda"
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="Miranda" />
                                 </div>
 
                                 <div className="space-y-1 sm:col-span-2">
-                                    <label className="text-xs font-semibold text-gray-700 dark:text-gray-300">Notas de entrega (Opcional)</label>
-                                    <textarea
+                                    <Label htmlFor="co-notas-de-entrega-opcional">Notas de entrega (Opcional)</Label>
+                                    <Textarea id="co-notas-de-entrega-opcional"
                                         value={notes}
                                         onChange={(e) => setNotes(e.target.value)}
                                         rows={2}
-                                        placeholder="Punto de referencia o instrucciones especiales..."
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
-                                    />
+                                        placeholder="Punto de referencia o instrucciones especiales..." />
                                 </div>
                             </div>
-                        </div>
+                        </Card>
 
                         {/* 3. Payment Gateway Selection */}
-                        <div className="space-y-5 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+                        <Card theme={{ root: { children: 'flex h-full flex-col gap-5 p-6' } }}>
                             <div className="border-b border-gray-100 pb-3 dark:border-gray-800">
                                 <h3 className="flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white">
                                     <span className="flex h-5 w-5 items-center justify-center rounded-full bg-blue-600 text-[10px] font-black text-white">
@@ -510,35 +490,26 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Banco Emisor</label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="co-banco-emisor">Banco Emisor</Label>
+                                    <TextInput id="co-banco-emisor"
                                                 value={bankOrigin}
                                                 onChange={(e) => setBankOrigin(e.target.value)}
-                                                placeholder="Mercantil, Banesco..."
-                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
-                                            />
+                                                placeholder="Mercantil, Banesco..." />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Teléfono Emisor</label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="co-telefono-emisor">Teléfono Emisor</Label>
+                                    <TextInput id="co-telefono-emisor"
                                                 value={phoneOrigin}
                                                 onChange={(e) => setPhoneOrigin(e.target.value)}
-                                                placeholder="0414-0000000"
-                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
-                                            />
+                                                placeholder="0414-0000000" />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Nro. Referencia *</label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="co-nro-referencia">Nro. Referencia *</Label>
+                                    <TextInput id="co-nro-referencia"
                                                 required
                                                 value={referenceNumber}
                                                 onChange={(e) => setReferenceNumber(e.target.value)}
-                                                placeholder="Últimos 6 u 8 dígitos"
-                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
-                                            />
+                                                placeholder="Últimos 6 u 8 dígitos" />
                                         </div>
                                     </div>
                                 </div>
@@ -558,32 +529,24 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
 
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">
-                                                Tu Binance ID / Nickname
-                                            </label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="co-tu-binance-id-nickname">Tu Binance ID / Nickname</Label>
+                                    <TextInput id="co-tu-binance-id-nickname"
                                                 value={binanceId}
                                                 onChange={(e) => setBinanceId(e.target.value)}
-                                                placeholder="Ej: 123456789"
-                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
-                                            />
+                                                placeholder="Ej: 123456789" />
                                         </div>
                                         <div className="space-y-1">
-                                            <label className="text-[11px] font-semibold text-gray-700 dark:text-gray-300">Order ID / Tx Hash *</label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="co-order-id-tx-hash">Order ID / Tx Hash *</Label>
+                                    <TextInput id="co-order-id-tx-hash"
                                                 required
                                                 value={transactionHash}
                                                 onChange={(e) => setTransactionHash(e.target.value)}
-                                                placeholder="Código de transacción Binance"
-                                                className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
-                                            />
+                                                placeholder="Código de transacción Binance" />
                                         </div>
                                     </div>
                                 </div>
                             )}
-                        </div>
+                        </Card>
                     </div>
 
                     {/* Right Summary Column */}
@@ -663,10 +626,14 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                 </div>
                             </div>
 
-                            <button
+                            {/* La accion que cobra. Conserva su degradado y su peso: es el
+                                final de todo el embudo y no debe competir con nada de la
+                                pantalla. */}
+                            <Button
                                 type="submit"
+                                size="lg"
                                 disabled={submitting || bcvRate === null}
-                                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 text-sm font-black text-white shadow-lg shadow-blue-500/20 transition hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50"
+                                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 py-1 text-sm font-black text-white shadow-lg shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700"
                             >
                                 {submitting ? (
                                     <>
@@ -679,7 +646,7 @@ const CentralCheckoutPageContent: React.FC<CentralCheckoutPageProps> = ({ domain
                                         <span>Confirmar y Pagar Orden</span>
                                     </>
                                 )}
-                            </button>
+                            </Button>
 
                             <div className="flex items-center justify-center gap-2 text-center text-[11px] text-gray-400">
                                 <HiOutlineShieldCheck className="inline h-4 w-4 text-green-500" />
