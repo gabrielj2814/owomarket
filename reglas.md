@@ -16,6 +16,10 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 
 3. **Librería de Componentes**:
    * Usar componentes de **Flowbite React** (`Card`, `Button`, `Avatar`, `TextInput`, `FileInput`, `Label`, `Badge`, `Spinner`, `Modal`, `Breadcrumb`, etc.) para mantener coherencia visual y responsive.
+   * **Flowbite en todas las vistas. Tailwind puro SOLO para lo que Flowbite no cubra**: un componente que la librería no trae, o un remate que ningún componente resuelve. Un `className` para ajustar un margen es normal; un `className` que **reconstruye** algo que Flowbite ya trae —una tarjeta, un modal, un botón— no lo es.
+   * **El aspecto de una zona se declara en un tema, no en cada pantalla.** Ver `resources/js/theme/portalTheme.ts` y su `<ThemeProvider>` en `CustomerAccountLayout`: las páginas escriben `<Card>` y `<Button color="primary">` a secas y salen con el aspecto de su zona. Si una pantalla necesita un `className` para parecerse a sus hermanas, el sitio de arreglarlo es el tema. Sin esto, migrar a Flowbite solo cambia la etiqueta con la que se duplica el mismo estilo.
+   * **Los colores válidos dependen del componente.** En `flowbite-react` 0.12 los BOTONES aceptan `red`, `green`, `blue`, `light`, `dark`… pero **no** `success` ni `failure` (que sí valen en las insignias). Un color inexistente deja el botón sin relleno, sin ningún error: se ve como texto plano y nadie lo reporta.
+   * Lo pendiente de migrar está inventariado en `planes/por_hacer/PLAN_MIGRACION_FLOWBITE.md`.
 
 4. **Diseño Responsivo y Scroll**:
    * Las vistas de administración que se renderizan dentro del layout `<Dashboard>` deben utilizar los contenedores con scroll vertical interno (`overflow-y-auto`) para garantizar que ningún formulario o botón se corte en dispositivos móviles ni en pantallas de escritorio.
