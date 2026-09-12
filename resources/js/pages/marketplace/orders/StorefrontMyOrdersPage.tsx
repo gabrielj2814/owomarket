@@ -2,6 +2,7 @@ import DeliveryConfirmationPanel from '@/components/ui/customer/DeliveryConfirma
 import StorefrontLayout, { StorefrontLayoutProps } from '@/components/layouts/StorefrontLayout';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import StorefrontOrderServices, { StorefrontOrder } from '@/Services/StorefrontOrderServices';
+import { Alert, Button, Card, Spinner } from 'flowbite-react';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
     HiOutlineArchiveBox,
@@ -101,22 +102,18 @@ export default function StorefrontMyOrdersPage({
                 </header>
 
                 {error && (
-                    <div
-                        data-testid="pedidos-error"
-                        role="alert"
-                        className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
-                    >
+                    <Alert data-testid="pedidos-error" color="failure" role="alert" className="mb-6">
                         {error}
-                    </div>
+                    </Alert>
                 )}
 
                 {loading ? (
-                    <p className="py-16 text-center text-sm text-gray-400">Cargando tus pedidos…</p>
+                    <div className="py-16 text-center">
+                        <Spinner aria-label="Cargando tus pedidos" />
+                        <p className="mt-2 text-sm text-gray-400">Cargando tus pedidos…</p>
+                    </div>
                 ) : needsLogin ? (
-                    <div
-                        data-testid="pedidos-sin-sesion"
-                        className="rounded-3xl border border-gray-200/80 bg-white p-10 text-center dark:border-gray-800/80 dark:bg-gray-900"
-                    >
+                    <Card data-testid="pedidos-sin-sesion" theme={{ root: { children: 'flex h-full flex-col gap-0 p-10 text-center' } }}>
                         <HiOutlineShieldCheck className="mx-auto mb-3 h-12 w-12 text-blue-600" />
                         <h2 className="mb-1 text-base font-bold text-gray-900 dark:text-white">
                             Entra para ver tus pedidos
@@ -124,13 +121,10 @@ export default function StorefrontMyOrdersPage({
                         <p className="mx-auto mb-6 max-w-sm text-sm text-gray-500 dark:text-gray-400">
                             Con tu OwO Pass puedes seguir tus compras en {storeName} y confirmar cuando te lleguen.
                         </p>
-                        <button
-                            onClick={() => openAuthModal('login')}
-                            className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition hover:bg-blue-700"
-                        >
+                        <Button color="primary" size="md" className="mx-auto w-fit" onClick={() => openAuthModal('login')}>
                             Entrar con OwO Pass
-                        </button>
-                    </div>
+                        </Button>
+                    </Card>
                 ) : error ? (
                     /*
                       * Un fallo de red NO puede caer en el vacio de abajo. Es el hallazgo N35
@@ -141,10 +135,7 @@ export default function StorefrontMyOrdersPage({
                       */
                     null
                 ) : orders.length === 0 ? (
-                    <div
-                        data-testid="pedidos-vacio"
-                        className="rounded-3xl border border-gray-200/80 bg-white p-10 text-center dark:border-gray-800/80 dark:bg-gray-900"
-                    >
+                    <Card data-testid="pedidos-vacio" theme={{ root: { children: 'flex h-full flex-col gap-0 p-10 text-center' } }}>
                         <HiOutlineArchiveBox className="mx-auto mb-3 h-12 w-12 text-gray-300 dark:text-gray-700" />
                         <h2 className="mb-1 text-base font-bold text-gray-900 dark:text-white">
                             Todavía no hay pedidos aquí
@@ -153,24 +144,21 @@ export default function StorefrontMyOrdersPage({
                             Aparecerán en cuanto compres en {storeName} con la sesión iniciada. Si compraste como
                             invitado, esos pedidos no se pueden mostrar: no hay forma de comprobar que son tuyos.
                         </p>
-                    </div>
+                    </Card>
                 ) : (
                     <div className="space-y-4">
                         <div className="flex justify-end">
-                            <button
-                                onClick={() => void cargar()}
-                                className="inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold text-gray-500 transition hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-gray-800"
-                            >
-                                <HiOutlineArrowPath className="h-4 w-4" />
+                            <Button color="subtle" size="xs" onClick={() => void cargar()}>
+                                <HiOutlineArrowPath className="mr-1.5 h-4 w-4" />
                                 Actualizar
-                            </button>
+                            </Button>
                         </div>
 
                         {orders.map((order) => (
-                            <article
+                            <Card
                                 key={order.id}
                                 data-testid={`pedido-${order.id}`}
-                                className="rounded-3xl border border-gray-200/80 bg-white p-6 dark:border-gray-800/80 dark:bg-gray-900"
+                                theme={{ root: { children: 'flex h-full flex-col gap-0 p-6' } }}
                             >
                                 <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-gray-100 pb-3 dark:border-gray-800">
                                     <div>
@@ -225,7 +213,7 @@ export default function StorefrontMyOrdersPage({
                                         onConfirmed={() => void cargar()}
                                     />
                                 )}
-                            </article>
+                            </Card>
                         ))}
                     </div>
                 )}

@@ -1,3 +1,4 @@
+import { Button, Card, Label, Select, TextInput } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
@@ -138,58 +139,54 @@ const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, 
                     </div>
 
                     <div className="flex items-center gap-3">
-                        <select
+                        <Select
                             value={sortBy}
-                            onChange={e => setSortBy(e.target.value as any)}
-                            className="text-xs font-semibold bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-gray-700 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                            onChange={(e) => setSortBy(e.target.value as any)}
                         >
                             <option value="newest">Más recientes</option>
                             <option value="price_asc">Menor precio</option>
                             <option value="price_desc">Mayor precio</option>
                             <option value="name">Nombre (A-Z)</option>
-                        </select>
+                        </Select>
                     </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Left Sidebar Filters */}
                     <div className="space-y-6">
-                        <form onSubmit={handleFilterSubmit} className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 space-y-5">
+                        {/* El `<form>` va DENTRO del Card y no al reves: `Card` no acepta `as`,
+                            y envolverlo por fuera dejaria el borde de la tarjeta separado del
+                            area que el formulario ocupa. */}
+                        <Card theme={{ root: { children: 'flex h-full flex-col p-5' } }}>
+                        <form onSubmit={handleFilterSubmit} className="space-y-5">
                             <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3">
                                 <span className="font-bold text-sm text-gray-900 dark:text-white flex items-center gap-2">
                                     <HiOutlineFunnel className="w-4 h-4 text-blue-600" /> Filtros
                                 </span>
-                                <button
-                                    type="button"
-                                    onClick={handleResetFilters}
-                                    className="text-xs text-gray-400 hover:text-red-500 font-semibold"
-                                >
+                                <Button type="button" color="subtle" size="xs" onClick={handleResetFilters}>
                                     Limpiar
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Search Filter */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Búsqueda</label>
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={search}
-                                        onChange={e => setSearch(e.target.value)}
-                                        placeholder="Nombre, SKU o marca..."
-                                        className="w-full pl-8 pr-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                    />
-                                    <HiOutlineMagnifyingGlass className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" />
-                                </div>
+                                <Label htmlFor="cat-busqueda">Búsqueda</Label>
+                                <TextInput
+                                    id="cat-busqueda"
+                                    icon={HiOutlineMagnifyingGlass}
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    placeholder="Nombre, SKU o marca..."
+                                />
                             </div>
 
                             {/* Store Filter */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Tienda / Vendedor</label>
-                                <select
+                                <Label htmlFor="cat-tienda">Tienda / Vendedor</Label>
+                                <Select
+                                    id="cat-tienda"
                                     value={selectedTenant}
-                                    onChange={e => setSelectedTenant(e.target.value)}
-                                    className="w-full py-2 px-3 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
+                                    onChange={(e) => setSelectedTenant(e.target.value)}
                                 >
                                     <option value="">Todas las tiendas</option>
                                     {stores.map(st => (
@@ -197,37 +194,34 @@ const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, 
                                             {st.name}
                                         </option>
                                     ))}
-                                </select>
+                                </Select>
                             </div>
 
                             {/* Price Range */}
                             <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">Rango de Precio ($)</label>
+                                <Label htmlFor="cat-precio-min">Rango de Precio ($)</Label>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <input
+                                    <TextInput
+                                        id="cat-precio-min"
                                         type="number"
                                         value={minPrice}
-                                        onChange={e => setMinPrice(e.target.value)}
+                                        onChange={(e) => setMinPrice(e.target.value)}
                                         placeholder="Min"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
                                     />
-                                    <input
+                                    <TextInput
                                         type="number"
                                         value={maxPrice}
-                                        onChange={e => setMaxPrice(e.target.value)}
+                                        onChange={(e) => setMaxPrice(e.target.value)}
                                         placeholder="Max"
-                                        className="w-full px-3 py-2 text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>
 
-                            <button
-                                type="submit"
-                                className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition shadow-sm"
-                            >
+                            <Button type="submit" color="primary" size="sm" className="w-full">
                                 Aplicar Filtros
-                            </button>
+                            </Button>
                         </form>
+                        </Card>
                     </div>
 
                     {/* Products Grid / Results */}
@@ -255,9 +249,10 @@ const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, 
                                             : null;
 
                                     return (
-                                        <div
+                                        <Card
                                             key={product.id}
-                                            className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                                            className="group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                            theme={{ root: { children: 'flex h-full flex-col justify-between' } }}
                                         >
                                             <Link
                                                 href={`/product/${product.id}`}
@@ -314,7 +309,7 @@ const CentralCatalogPageContent: React.FC<CentralCatalogPageProps> = ({ domain, 
                                                     </button>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </Card>
                                     );
                                 })}
                             </div>

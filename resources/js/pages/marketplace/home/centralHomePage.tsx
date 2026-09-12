@@ -1,3 +1,4 @@
+import { Button, Card, TextInput } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
@@ -114,25 +115,27 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
 
                         {/* Search in Hero */}
                         <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row gap-2 pt-2">
-                            <div className="relative flex-1">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                                    <HiOutlineMagnifyingGlass className="w-5 h-5" />
-                                </div>
-                                <input
-                                    type="text"
+                            <div className="flex-1">
+                                {/* Sobre el degradado del hero: fondo claro y sin borde, que no
+                                   es el campo por defecto del tema. Va en `className` porque es
+                                   UNA excepcion de una pantalla, no un patron del escaparate. */}
+                                <TextInput
+                                    icon={HiOutlineMagnifyingGlass}
+                                    sizing="lg"
                                     value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="¿Qué estás buscando hoy? Zapatos, laptops, ropa..."
-                                    className="w-full pl-12 pr-4 py-3.5 bg-white/95 text-gray-900 placeholder-gray-500 rounded-2xl border-0 shadow-lg focus:ring-2 focus:ring-blue-400 text-sm font-medium"
+                                    className="[&_input]:border-0 [&_input]:bg-white/95 [&_input]:text-gray-900 [&_input]:shadow-lg"
                                 />
                             </div>
-                            <button
+                            <Button
                                 type="submit"
-                                className="px-8 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/30 transition text-sm flex items-center justify-center gap-2"
+                                size="lg"
+                                className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 text-white shadow-lg shadow-blue-500/30 hover:from-blue-600 hover:to-indigo-700"
                             >
-                                <HiOutlineMagnifyingGlass className="w-4 h-4" />
+                                <HiOutlineMagnifyingGlass className="mr-2 h-4 w-4" />
                                 Explorar
-                            </button>
+                            </Button>
                         </form>
 
                         {/* Quick category badges */}
@@ -176,9 +179,10 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {data.featured_stores.map(store => (
-                                <div
+                                <Card
                                     key={store.id}
-                                    className="group relative rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col justify-between"
+                                    className="group relative overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                    theme={{ root: { children: 'flex h-full flex-col justify-between p-4' } }}
                                 >
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-3">
@@ -220,7 +224,7 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
                                             <HiOutlineArrowTopRightOnSquare className="w-3.5 h-3.5" />
                                         </Link>
                                     </div>
-                                </div>
+                                </Card>
                             ))}
                         </div>
                     </div>
@@ -234,12 +238,9 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
                                 Filtrar por Categoría
                             </h2>
                             {selectedCategory && (
-                                <button
-                                    onClick={() => setSelectedCategory(null)}
-                                    className="text-xs text-red-500 font-semibold hover:underline"
-                                >
+                                <Button color="subtle" size="xs" onClick={() => setSelectedCategory(null)}>
                                     Limpiar filtro
-                                </button>
+                                </Button>
                             )}
                         </div>
 
@@ -312,9 +313,10 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
                                         : null;
 
                                 return (
-                                    <div
+                                    <Card
                                         key={product.id}
-                                        className="group rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between"
+                                        className="group overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                        theme={{ root: { children: 'flex h-full flex-col justify-between' } }}
                                     >
                                         {/* Image Container */}
                                         <Link
@@ -375,7 +377,7 @@ const CentralHomePageContent: React.FC<CentralHomePageProps> = ({ domain, initia
                                                 </button>
                                             </div>
                                         </div>
-                                    </div>
+                                    </Card>
                                 );
                             })}
                         </div>

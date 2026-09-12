@@ -1,3 +1,4 @@
+import { Alert, Button, Card } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
@@ -53,15 +54,12 @@ const CentralOrderConfirmationPageContent: React.FC<CentralOrderConfirmationPage
     if (error || !order) {
         return (
             <div className="py-20 text-center space-y-4">
-                <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 max-w-md mx-auto text-sm font-bold">
+                <Alert color="failure" className="mx-auto max-w-md text-sm font-bold">
                     {error || 'Orden no encontrada'}
-                </div>
-                <Link
-                    href="/"
-                    className="inline-flex items-center gap-2 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-xs"
-                >
+                </Alert>
+                <Button as={Link} href="/" color="primary" size="sm" className="mx-auto w-fit">
                     Volver a la Portada
-                </Link>
+                </Button>
             </div>
         );
     }
@@ -85,7 +83,10 @@ const CentralOrderConfirmationPageContent: React.FC<CentralOrderConfirmationPage
                 </div>
 
                 {/* Printable Invoice Container */}
-                <div className="rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 sm:p-10 space-y-8 shadow-sm print:border-none print:shadow-none">
+                <Card
+                    className="print:border-none print:shadow-none"
+                    theme={{ root: { children: 'flex h-full flex-col gap-8 p-6 sm:p-10' } }}
+                >
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-200 dark:border-gray-800 pb-6">
                         <div className="flex items-center gap-3">
@@ -205,25 +206,19 @@ const CentralOrderConfirmationPageContent: React.FC<CentralOrderConfirmationPage
                             </div>
                         </div>
                     </div>
-                </div>
+                </Card>
 
                 {/* Bottom Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4 print:hidden">
-                    <button
-                        onClick={handlePrint}
-                        className="w-full sm:w-auto px-6 py-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-bold text-xs hover:bg-gray-50 flex items-center justify-center gap-2 transition"
-                    >
-                        <HiOutlinePrinter className="w-4 h-4" />
+                    <Button color="light" size="md" className="w-full sm:w-auto" onClick={handlePrint}>
+                        <HiOutlinePrinter className="mr-2 h-4 w-4" />
                         Imprimir / Guardar Factura
-                    </button>
+                    </Button>
 
-                    <Link
-                        href="/marketplace"
-                        className="w-full sm:w-auto px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 transition"
-                    >
-                        <HiOutlineShoppingBag className="w-4 h-4" />
+                    <Button as={Link} href="/marketplace" color="primary" size="md" className="w-full sm:w-auto">
+                        <HiOutlineShoppingBag className="mr-2 h-4 w-4" />
                         Continuar Comprando
-                    </Link>
+                    </Button>
                 </div>
             </div>
         </>
