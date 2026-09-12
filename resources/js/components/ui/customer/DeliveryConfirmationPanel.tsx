@@ -15,10 +15,25 @@ import React, { useEffect, useState } from 'react';
  * convertiría el trámite en un obstáculo, y un comprador que no confirma libera por plazo
  * igualmente: lo único que se lograría es que nadie confirmara nunca.
  */
+/**
+ * Las dos llamadas que el panel necesita.
+ *
+ * Se inyectan porque el MISMO panel sirve al portal central y al escaparate de una tienda, y
+ * la diferencia entre los dos es solo de donde sale la identidad del comprador: el guard
+ * `central_customer` en uno, la sesion del SSO en el otro. Copiar el componente para cambiar
+ * dos URLs habria dejado dos versiones que se separan en cuanto alguien toque una.
+ */
+export interface DeliveryApi {
+    getDeliveryStatus: (orderId: string) => Promise<{ data?: DeliveryStatusData | null } | null>;
+    confirmDelivery: (orderId: string, files: File[]) => Promise<unknown>;
+}
+
 interface DeliveryConfirmationPanelProps {
     orderId: string;
     storeName?: string | null;
     onConfirmed?: () => void;
+    /** Por defecto, el portal central. El escaparate pasa el suyo. */
+    api?: DeliveryApi;
 }
 
 function EvidenceGallery({ files, emptyLabel }: { files: DeliveryEvidenceFile[]; emptyLabel: string }) {
@@ -50,7 +65,12 @@ function EvidenceGallery({ files, emptyLabel }: { files: DeliveryEvidenceFile[];
     );
 }
 
-const DeliveryConfirmationPanel: React.FC<DeliveryConfirmationPanelProps> = ({ orderId, storeName, onConfirmed }) => {
+const DeliveryConfirmationPanel: React.FC<DeliveryConfirmationPanelProps> = ({
+    orderId,
+    storeName,
+    onConfirmed,
+    api = CustomerPortalServices,
+}) => {
     const [status, setStatus] = useState<DeliveryStatusData | null>(null);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
@@ -60,7 +80,7 @@ const DeliveryConfirmationPanel: React.FC<DeliveryConfirmationPanelProps> = ({ o
     useEffect(() => {
         let cancelled = false;
 
-        CustomerPortalServices.getDeliveryStatus(orderId)
+        api.getDeliveryStatus(orderId)
             .then((res) => {
                 if (!cancelled) setStatus(res?.data ?? null);
             })
@@ -76,7 +96,7 @@ const DeliveryConfirmationPanel: React.FC<DeliveryConfirmationPanelProps> = ({ o
         return () => {
             cancelled = true;
         };
-    }, [orderId]);
+    }, [orderId, api]);
 
     if (loading || status === null) {
         return null;
@@ -87,8 +107,8 @@ const DeliveryConfirmationPanel: React.FC<DeliveryConfirmationPanelProps> = ({ o
         setError(null);
 
         try {
-            await CustomerPortalServices.confirmDelivery(orderId, files);
-            const res = await CustomerPortalServices.getDeliveryStatus(orderId);
+            await api.confirmDelivery(orderId, files);
+            const res = await api.getDeliveryStatus(orderId);
             setStatus(res?.data ?? null);
             setFiles([]);
             onConfirmed?.();

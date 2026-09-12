@@ -89,6 +89,32 @@ final class CreateStorefrontOrderPOSTController extends Controller
                     ]
                 );
 
+                /*
+                 * El enlace con la cuenta central del comprador, si compra con sesion abierta.
+                 *
+                 * **Sin esto el subsistema 3 esta roto en el escaparate y no lo nota nadie.**
+                 * `DeclareOrderDeliveredUseCase::compradorDe()` resuelve al comprador de una
+                 * venta de tienda leyendo justo esta columna; como nunca se rellenaba, TODA
+                 * venta de escaparate nacia con `customer_id = null` en su expediente de
+                 * entrega, y por tanto nadie podia confirmar la recepcion: todas se liberaban
+                 * por silencio al vencer el plazo.
+                 *
+                 * El identificador sale de la SESION, nunca del cuerpo de la peticion. El
+                 * correo se escribe a mano en el formulario, asi que aceptarlo como prueba de
+                 * identidad dejaria que cualquiera se apropiara de los pedidos de otro --y con
+                 * ellos de su direccion y de la posibilidad de confirmarle una entrega--.
+                 *
+                 * Se compra como invitado igual que siempre: sin sesion, esto no hace nada y
+                 * el pedido sigue liberandose por plazo. Ese pedido no se podra seguir ni
+                 * confirmar, y el checkout lo advierte antes de pagar.
+                 */
+                $centralCustomerId = session('central_customer_id');
+
+                if ($centralCustomerId !== null && $customer->central_uuid !== $centralCustomerId) {
+                    $customer->central_uuid = (string) $centralCustomerId;
+                    $customer->save();
+                }
+
                 // 3. Process items and calculate subtotal
                 $rawItems = $request->input('items', []);
                 $orderItemsDto = [];

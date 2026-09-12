@@ -397,8 +397,19 @@ function CheckoutPageContent({
                                                 <p className="text-xs font-bold text-gray-900 dark:text-white">
                                                     ¿Tienes una cuenta en OwOMarket?
                                                 </p>
+                                                {/*
+                                                  * Lo que se pierde comprando como invitado no
+                                                  * es comodidad: es poder seguir el pedido y
+                                                  * confirmar la entrega. Sin cuenta no hay forma
+                                                  * de comprobar que el pedido es tuyo, asi que
+                                                  * queda fuera de «Mis pedidos» para siempre.
+                                                  * Decirlo ANTES de pagar es la diferencia entre
+                                                  * una eleccion y una sorpresa.
+                                                  */}
                                                 <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                                                    Inicia sesión con OwO Pass para autocompletar tus datos y direcciones.
+                                                    Inicia sesión con OwO Pass para autocompletar tus datos y seguir
+                                                    este pedido desde «Mis pedidos». Comprando como invitado no podrás
+                                                    consultarlo después ni confirmar la entrega.
                                                 </p>
                                             </div>
                                         </div>

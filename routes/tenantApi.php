@@ -122,3 +122,12 @@ Route::middleware(['auth', 'tenant_active'])->group(function () {
 Route::prefix('customer')->group(callback: base_path('src/Customer/Infrastructure/Http/Routes/apiTenant.php'));
 Route::prefix('coupon')->group(callback: base_path('src/Coupon/Infrastructure/Http/Routes/apiTenant.php'));
 Route::prefix('review')->group(callback: base_path('src/Review/Infrastructure/Http/Routes/apiTenant.php'));
+
+/*
+| El comprador del escaparate: sus pedidos y la confirmacion de entrega.
+|
+| Fuera de cualquier grupo 'auth' a proposito --ese guard es el del personal de la tienda,
+| y un comprador no es personal de nadie--. La identidad sale de la sesion del SSO y la
+| resuelve cada controlador; sin ella responden 401.
+*/
+Route::prefix('storefront')->group(callback: base_path('src/Marketplace/Infrastructure/Http/Routes/apiTenant.php'));

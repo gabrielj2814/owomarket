@@ -87,7 +87,7 @@ De las seis vistas de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md) *
 | :--- | :--- | :--- |
 | ~~4~~ | ~~Estado de la reclamación (comprador)~~ ✅ | Hecha el 11/09/2026, sin tocar backend |
 | ~~5~~ | ~~Expediente de reclamación (administrador)~~ ✅ | Hecha el 12/09/2026, con su PDF |
-| 6 | Pedidos del comprador en el escaparate | **La única que queda.** Superficie nueva, con una decisión de autenticación por delante |
+| 6 | Pedidos del comprador en el escaparate | **Fase 1 hecha** el 12/09/2026: ver pedidos y confirmar entrega. Queda la fase 2 —reclamar—, que exige generalizar `CreateCustomerReturnRequestUseCase`. Ver [`PLAN_PEDIDOS_ESCAPARATE.md`](PLAN_PEDIDOS_ESCAPARATE.md) |
 
 ---
 
@@ -159,8 +159,14 @@ N+1 y habrá que cachear. Anotado en el código con `ponytail:`.
 y crea liquidaciones en USD que el saldo no cuenta. No mueve dinero hoy; si alguna vez se
 unifica la moneda de las liquidaciones, hay que resolverlo antes.
 
-**Las reclamaciones del escaparate están modeladas pero son inalcanzables.** Sin vista de pedidos
-para el comprador de tienda, no tiene dónde reclamar. Es la puerta trasera que quedó entornada.
+**Las reclamaciones del escaparate siguen sin poder abrirse.** Ya hay pantalla de pedidos y se
+puede confirmar la entrega (fase 1), pero `CreateCustomerReturnRequestUseCase` está atado a
+`CentralOrder` y un pedido de tienda vive en la base del inquilino. Es la fase 2 de
+[`PLAN_PEDIDOS_ESCAPARATE.md`](PLAN_PEDIDOS_ESCAPARATE.md).
+
+**Los pedidos de invitado del escaparate no tienen dueño demostrable**: ni se ven, ni se
+confirman, ni se reclamarán. Desde el 12/09/2026 los nuevos SÍ quedan enlazados si se compra con
+sesión, y el checkout lo advierte antes de pagar. Los anteriores se quedan huérfanos.
 
 ---
 
