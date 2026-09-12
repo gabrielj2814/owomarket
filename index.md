@@ -98,7 +98,7 @@ dentro del caso de uso que crea la reclamación, y salió con un localizador y d
 De paso se cerró **un agujero que estaba abierto en el portal central**: el filtro que solo
 ofrecía pedidos completados vivía en el navegador, así que contra la API se podía reclamar un
 pedido recién creado y sin pagar. Ahora reclamar exige entrega declarada y estar dentro de una
-ventana de 60 días (`central_claim_window_days`).
+ventana configurable (`central_claim_window_days`, hoy 14 días).
 
 → [`planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`](planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md)
 
