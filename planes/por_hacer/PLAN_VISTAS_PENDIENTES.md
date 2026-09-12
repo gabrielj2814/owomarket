@@ -1,6 +1,6 @@
 # Plan — Las vistas que faltan por diseñar
 
-> **Estado:** ⬜ Por hacer · Redactado el 11/09/2026
+> **Estado:** 🟨 En curso · Redactado el 11/09/2026 · **Vistas 1, 2 y 3 implementadas el 11/09/2026**
 >
 > Los cinco subsistemas de [`DECISION_GARANTIAS_Y_RESPONSABILIDAD.md`](../anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md)
 > están completos **por detrás**. Este documento recoge la interfaz que les falta, con lo que
@@ -13,7 +13,17 @@
 
 ## ⚠️ Léase esto antes de elegir por dónde empezar
 
-Hay **dos cosas rotas ahora mismo en producción**, y no son cuestión de estética:
+> **Los dos bloqueos de esta sección están CERRADOS.** Se dejan escritos porque explican por
+> qué las vistas 1 y 2 existen y qué no hay que deshacer. Lo que sigue describe el estado
+> anterior al 11/09/2026.
+>
+> Apareció además **un tercer bloqueo, por el otro extremo**: `TenantKycCard` pedía
+> `/owner/api/kyc/{id}` sin el prefijo `tenant` de la ruta real, así que devolvía 404 siempre,
+> el componente lo tragaba en su `catch` y la tarjeta no se pintaba nunca. **Ningún comerciante
+> podía enviar su identidad**, de modo que darle al administrador una pantalla para verificar no
+> habría servido de nada. Arreglado moviendo la URL a `TenantKycServices`, con un test que mira
+> a dónde apunta de verdad — los tests del componente no podían verlo porque doblaban axios, y
+> un doble de axios responde a cualquier URL.
 
 ### 1. Ninguna tienda puede retirar dinero. Nunca.
 
@@ -55,7 +65,26 @@ expediente. Si una vista necesita decidir algo, primero mirar si el endpoint ya 
 
 ---
 
-## Vista 1 — Revisión de KYC (administrador) 🔴 BLOQUEANTE
+## Vista 1 — Revisión de KYC (administrador) ✅ HECHA (11/09/2026)
+
+> **Lo entregado:** `ListTenantKycProfilesUseCase`, cuatro controladores y sus rutas bajo
+> `staff:manage_tenants` —junto al expediente 360° y el estado de gobernanza, porque es la misma
+> clase de decisión: «quién es esta tienda»—, más `AdminKycReviewPage.tsx` con `AdminKycServices`.
+>
+> **Una desviación deliberada del plan.** La búsqueda por identidad NO es el
+> `kyc/identity-search` de texto libre que se proponía aquí, sino
+> `GET /admin/api/kyc/profiles/{id}/identity-matches`. Motivo: **la pantalla no tiene el
+> número**. Está cifrado y el listado no lo devuelve, así que un buscador donde el administrador
+> escriba la cédula sería una caja que nadie puede rellenar — y habría obligado a traer el
+> documento al navegador para poder escribirlo, deshaciendo el cifrado por la puerta de atrás.
+> Yendo por `id` de expediente, el número se descifra, se convierte en hash y se compara sin
+> salir del servidor.
+>
+> La carga inicial filtra por `pending`, igual que el selector que la pantalla trae
+> seleccionado: si no lo hiciera, la primera vista mostraría todos los expedientes bajo una
+> etiqueta que dice «Pendientes».
+
+### Cómo era antes de existir
 
 **Dónde:** `resources/js/pages/admin/kyc/AdminKycReviewPage.tsx`
 
@@ -95,7 +124,19 @@ de acceso — y una decisión que conviene tomar despacio, no un campo más en u
 
 ---
 
-## Vista 2 — Reclamaciones de la tienda (comerciante) 🔴 URGENTE
+## Vista 2 — Reclamaciones de la tienda (comerciante) ✅ HECHA (11/09/2026)
+
+> **Lo entregado:** `TenantReturnsPage.tsx` con `TenantReturnServices`, su ruta
+> `/tenant/owner/backoffice/{user}/returns` y una pestaña en la barra del propietario.
+>
+> **Hizo falta tocar el backend**, aunque el plan lo daba por listo: el listado no devolvía el
+> plazo. `days_left` y `deadline_at` viajan ahora con cada reclamación abierta, calculados por
+> `ClaimResponseWindow` — un servicio nuevo que `AutoResolveStaleReturnsUseCase` también usa,
+> en lugar de su copia privada del plazo. **Si divergieran, la pantalla prometería días que el
+> comando no respeta** y el comerciante perdería la venta después de que le dijéramos que tenía
+> tiempo; una cuenta atrás en la que no se puede confiar es peor que no tener ninguna.
+
+### Cómo era antes de existir
 
 **Dónde:** `resources/js/pages/tenant/modules/returns/TenantReturnsPage.tsx`
 
@@ -131,7 +172,16 @@ el comerciante no sabe que tiene un plazo corriendo.
 
 ---
 
-## Vista 3 — Reputación de la tienda (comerciante)
+## Vista 3 — Reputación de la tienda (comerciante) ✅ HECHA (11/09/2026)
+
+> **Lo entregado:** `progress()` expuesto en `GET /tenant/owner/api/wallet-summary` y el
+> componente `TenantReputationCard`, pegado a la retención que explica.
+>
+> `reserve_percent` viaja **con** el nivel en vez de traducirlo la pantalla: mantener la tabla
+> de porcentajes en dos sitios significaría que, el día que cambie, el comerciante lea un número
+> que no es el que se le aplica — y ese número es dinero suyo retenido.
+
+### Cómo era antes de existir
 
 **Dónde:** ampliar `resources/js/pages/tenant/wallet/TenantOwnerWalletPage.tsx`
 
@@ -232,9 +282,9 @@ condiciona toda la vista, así que conviene tomarla antes de dibujar nada.
 
 | # | Vista | Por qué en ese puesto |
 | :--- | :--- | :--- |
-| 1 | **Revisión de KYC** | Sin ella **nadie cobra**. Todo lo demás puede esperar; esto no |
-| 2 | **Reclamaciones de la tienda** | El reloj ya corre y aprueba solo. Cada día sin esto son ventas revertidas sin que nadie las mirara |
-| 3 | **Reputación** | Barata —el cálculo existe— y es lo que da sentido a la 2 |
+| 1 | ~~**Revisión de KYC**~~ ✅ | Sin ella **nadie cobra**. Todo lo demás puede esperar; esto no |
+| 2 | ~~**Reclamaciones de la tienda**~~ ✅ | El reloj ya corre y aprueba solo. Cada día sin esto son ventas revertidas sin que nadie las mirara |
+| 3 | ~~**Reputación**~~ ✅ | Barata —el cálculo existe— y es lo que da sentido a la 2 |
 | 4 | **Estado de la reclamación (comprador)** | Cierra el círculo del comprador |
 | 5 | **Expediente** | Solo se usa en el caso raro; puede esperar |
 | 6 | **Pedidos del escaparate** | Proyecto aparte, con una decisión de autenticación por delante |

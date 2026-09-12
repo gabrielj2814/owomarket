@@ -60,7 +60,15 @@ services:
       - .:/var/www
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
     networks:
-      - owomarket_net
+      # El backend se llama a si mismo por su dominio publico --el login resuelve el usuario
+      # contra su propia API-- y dentro de la red de Docker ese nombre no existia: la peticion
+      # moria con "Could not connect to server" y era imposible entrar en la aplicacion desde
+      # el entorno contenedorizado. El alias hace que `owomarket.local` apunte a nginx tambien
+      # desde dentro. El comodin de subdominios de tienda se anade aqui segun haga falta:
+      # Docker no admite comodines en los alias.
+      owomarket_net:
+        aliases:
+          - owomarket.local
     depends_on:
       - app
 

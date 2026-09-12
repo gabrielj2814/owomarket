@@ -25,7 +25,11 @@ final class ViewAdminKycPageGETController
     public function index(Request $request, string $user_uuid): Response
     {
         $filtros = [
-            'status' => $request->query('status'),
+            // Por defecto, lo pendiente. La pantalla arranca con ese filtro seleccionado, y si
+            // aquí no se aplicara el mismo, la primera carga mostraría TODOS los expedientes
+            // bajo una etiqueta que dice «Pendientes»: el selector mentiría hasta que alguien
+            // lo tocara.
+            'status' => $request->query('status', 'pending'),
             'search' => $request->query('search'),
             'page' => (int) $request->query('page', 1),
         ];

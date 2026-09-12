@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import TenantKycCard from '@/components/ui/TenantKycCard';
+import TenantReputationCard, { TenantReputationProgress } from '@/components/ui/TenantReputationCard';
 import { Head } from '@inertiajs/react';
 import Dashboard from '@/components/layouts/Dashboard';
 import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
@@ -35,6 +36,11 @@ interface WalletData {
     pending_payouts: number;
     settled_payouts: number;
     tenants_count: number;
+    /**
+     * Subsistema 5: el nivel de reputacion y que le falta para subir. Va aqui y no en un
+     * perfil porque el nivel NO es una insignia -- decide cuanto se retiene de cada venta.
+     */
+    reputation: TenantReputationProgress | null;
     settlements: Array<{
         id: string;
         settlement_number: string;
@@ -189,6 +195,14 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                   * aparte dejaria al comerciante con un boton que falla y ninguna pista.
                   */}
                 {wallet.tenant_id && <TenantKycCard tenantId={wallet.tenant_id} />}
+
+                {/*
+                  * Subsistema 5: el nivel de reputacion, pegado a la retencion que explica.
+                  * Sin esto el comerciante veia bajar su saldo disponible sin saber por que --
+                  * y un nivel que baja sin decir como se recupera empuja a abrir otra tienda
+                  * con otro nombre, que es justo lo que el sistema intenta evitar.
+                  */}
+                <TenantReputationCard reputation={wallet.reputation ?? null} />
 
                 {/* KPI Cards */}
                 {(wallet.retained_ves > 0 ||

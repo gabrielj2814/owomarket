@@ -90,7 +90,12 @@ final class TenantReputation
      * La decisión insiste en que el progreso sea visible: un nivel que baja sin decir por qué
      * ni cómo se recupera no corrige a nadie — empuja a abrir otra tienda con otro nombre.
      *
-     * @return array{level: string, deliveries: int, deliveries_for_next: int, unanswered_claims: int, has_debt: bool}
+     * `reserve_percent` viaja con el nivel a proposito: el nivel NO es una insignia, es lo que
+     * decide cuanto se retiene de cada venta. Que la pantalla tenga que traducirlo de su lado
+     * significaria mantener la tabla de porcentajes en dos sitios, y el dia que cambie uno el
+     * comerciante leeria un numero que no es el que se le aplica.
+     *
+     * @return array{level: string, reserve_percent: float, deliveries: int, deliveries_for_next: int, unanswered_claims: int, has_debt: bool}
      */
     public function progress(string $tenantId): array
     {
@@ -98,6 +103,7 @@ final class TenantReputation
 
         return [
             'level' => $nivel,
+            'reserve_percent' => self::RESERVA[$nivel],
             'deliveries' => $this->entregasConfirmadas($tenantId),
             'deliveries_for_next' => self::ENTREGAS_PARA_ALTO,
             'unanswered_claims' => $this->silenciosRecientes($tenantId),

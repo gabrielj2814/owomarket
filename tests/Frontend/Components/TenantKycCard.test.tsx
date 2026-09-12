@@ -15,16 +15,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const get = vi.fn();
 const post = vi.fn();
 
-vi.mock('axios', () => ({
+/*
+ * Se dobla el SERVICIO, no axios. El componente llamaba a axios directamente con
+ * `/owner/api/kyc/...` --sin el prefijo `tenant` de la ruta real--, asi que en la aplicacion
+ * devolvia 404 siempre y la tarjeta no se pintaba nunca: ningun comerciante podia enviar su
+ * identidad. Estos tests pasaban igualmente porque el doble de axios respondia a cualquier URL.
+ *
+ * Doblar el servicio deja la URL en un solo sitio, donde un prefijo equivocado se ve.
+ */
+vi.mock('@/Services/TenantKycServices', () => ({
     default: {
-        get: (...args: unknown[]) => get(...args),
-        post: (...args: unknown[]) => post(...args),
+        estado: (...args: unknown[]) => get(...args),
+        enviar: (...args: unknown[]) => post(...args),
     },
 }));
 
 import TenantKycCard from '@/components/ui/TenantKycCard';
 
-const estado = (data: Record<string, unknown>) => ({ data: { data } });
+const estado = (data: Record<string, unknown>) => ({ data });
 
 describe('Verificación de identidad del comerciante', () => {
     beforeEach(() => {

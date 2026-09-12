@@ -1,4 +1,4 @@
-import axios from 'axios';
+import TenantKycServices from '@/Services/TenantKycServices';
 import React, { useEffect, useState } from 'react';
 
 /**
@@ -36,8 +36,12 @@ const TenantKycCard: React.FC<TenantKycCardProps> = ({ tenantId, onVerified }) =
 
     const cargar = async () => {
         try {
-            const res = await axios.get(`/owner/api/kyc/${tenantId}`);
-            const data: KycStatus = res.data?.data;
+            // Antes esto era `axios.get('/owner/api/kyc/...')`, sin el prefijo `tenant` de la
+            // ruta real: devolvia 404 SIEMPRE, el `catch` lo tragaba y la tarjeta se pintaba
+            // como `null`. Resultado: ningun comerciante podia enviar su identidad, y el
+            // cobro quedaba bloqueado desde este extremo.
+            const res = await TenantKycServices.estado(tenantId);
+            const data = res?.data as KycStatus;
             setKyc(data);
             setForm((f) => ({
                 ...f,
@@ -90,10 +94,8 @@ const TenantKycCard: React.FC<TenantKycCardProps> = ({ tenantId, onVerified }) =
         if (document) datos.append('document', document);
 
         try {
-            const res = await axios.post(`/owner/api/kyc/${tenantId}`, datos, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            });
-            setMessage(res.data?.message ?? 'Datos enviados.');
+            const res = await TenantKycServices.enviar(tenantId, datos);
+            setMessage(res?.message ?? 'Datos enviados.');
             await cargar();
             onVerified?.();
         } catch (e: any) {

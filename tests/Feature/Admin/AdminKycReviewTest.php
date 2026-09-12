@@ -172,6 +172,24 @@ it('un expediente que no existe responde 404 y no 500', function () {
         ->assertStatus(404);
 });
 
+it('la pantalla arranca filtrando por pendientes, como dice su selector', function () {
+    // Si la carga inicial no aplicara el mismo filtro que el selector trae seleccionado, la
+    // primera pantalla mostraría TODOS los expedientes bajo una etiqueta que dice
+    // «Pendientes»: el selector mentiría hasta que alguien lo tocara.
+    tiendaConKyc();
+    $verificada = tiendaConKyc();
+    $verificada->forceFill(['status' => 'verified'])->saveQuietly();
+
+    $props = $this->actingAs($this->adminUser)
+        ->get("/admin/backoffice/{$this->adminUser->id}/kyc")
+        ->assertOk()
+        ->viewData('page')['props'];
+
+    expect($props['filters']['status'])->toBe('pending')
+        ->and($props['profiles'])->toHaveCount(1)
+        ->and($props['profiles'][0]['status'])->toBe('pending');
+});
+
 it('sin sesión no se revisa nada', function () {
     $perfil = tiendaConKyc();
 

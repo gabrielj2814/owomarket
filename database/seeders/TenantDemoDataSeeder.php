@@ -17,6 +17,7 @@ use Src\Product\Infrastructure\Eloquent\Models\ProductImage;
 use Src\Product\Infrastructure\Eloquent\Models\ProductVariant;
 use Src\Review\Infrastructure\Eloquent\Models\ProductReview;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
+use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
 use Src\TenantSettings\Infrastructure\Eloquent\Models\TenantSetting;
 
 final class TenantDemoDataSeeder extends Seeder
@@ -40,6 +41,11 @@ final class TenantDemoDataSeeder extends Seeder
 
         foreach ($tenants as $tenant) {
             $this->command->info("🌱 Sembrando datos de demostración para el tenant: {$tenant->name} ({$tenant->slug})");
+
+            // ANTES de entrar en el contexto del inquilino: el expediente de identidad vive en
+            // la base CENTRAL, no en la de la tienda.
+            $this->seedKycProfile($tenant);
+
             tenancy()->initialize($tenant);
 
             try {
@@ -48,6 +54,51 @@ final class TenantDemoDataSeeder extends Seeder
                 tenancy()->end();
             }
         }
+    }
+
+    /**
+     * El expediente de identidad de una tienda de demostración, ya verificado (subsistema 1).
+     *
+     * **Sin esto un entorno recién sembrado no puede probar el retiro.** El KYC exige identidad
+     * verificada para solicitar un pago, así que sin perfiles ninguna de las tiendas sembradas
+     * puede cobrar y la mitad del flujo de dinero queda inalcanzable en desarrollo.
+     *
+     * Se siembra en `verified` a propósito: es dato de demostración, y dejarlo en `pending`
+     * obligaría a pasar por el backoffice antes de poder probar nada. Quien quiera ejercitar la
+     * pantalla de revisión tiene el botón de rechazar, que devuelve el expediente a un estado
+     * revisable.
+     *
+     * Las cédulas son inventadas y el modelo las cifra al guardarlas, igual que en producción:
+     * un seeder que escribiera en texto plano dejaría datos que no se parecen a los reales
+     * justo en la columna donde la diferencia importa.
+     */
+    private function seedKycProfile(Tenant $tenant): void
+    {
+        if (TenantKycProfile::where('tenant_id', $tenant->id)->exists()) {
+            return;
+        }
+
+        // El responsable es el dueño de la tienda. Si la tienda sembrada no tiene ninguno
+        // asociado, el expediente se queda sin `user_id` -- es opcional -- en vez de inventar
+        // una persona que no existe.
+        $userId = $tenant->users()->first()?->id;
+
+        $digitos = random_int(10_000_000, 29_999_999);
+
+        TenantKycProfile::create([
+            'id' => (string) Str::uuid(),
+            'tenant_id' => $tenant->id,
+            'user_id' => $userId,
+            'legal_name' => $tenant->name.' C.A.',
+            'cedula' => 'V-'.$digitos,
+            'nationality' => 'V',
+            'rif' => 'J-'.random_int(40_000_000, 49_999_999).'-'.random_int(0, 9),
+            'phone' => '+58 412 '.random_int(1_000_000, 9_999_999),
+            'address' => 'Av. Principal, Caracas, Venezuela',
+            'status' => 'verified',
+            'reviewed_at' => now(),
+            'reviewed_by' => 'seeder',
+        ]);
     }
 
     public function seedTenantData(?string $storeName = 'OwoStore'): void

@@ -6,6 +6,7 @@ namespace Src\Tenant\Application\UseCase;
 
 use Illuminate\Support\Facades\Schema;
 use Src\Monetization\Application\Service\TenantAvailableBalance;
+use Src\Monetization\Application\Service\TenantReputation;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
@@ -16,7 +17,8 @@ final class GetTenantOwnerWalletSummaryUseCase
 {
     public function __construct(
         private readonly TenantOwnershipVerifier $ownership,
-        private readonly TenantAvailableBalance $balance
+        private readonly TenantAvailableBalance $balance,
+        private readonly TenantReputation $reputacion
     ) {}
 
     /**
@@ -142,6 +144,24 @@ final class GetTenantOwnerWalletSummaryUseCase
             'platform_bank' => $ajustes['central_pago_movil_bank_name'] ?? null,
             'interbank_transfer_fee' => (float) ($ajustes['central_interbank_transfer_fee'] ?? 0.0),
             'tenants_count' => count($tenantIds),
+            /*
+             * Subsistema 5, fase C: el nivel de reputacion y que le falta para subir.
+             *
+             * `TenantReputation::progress()` existia sin que nadie lo expusiera, asi que el
+             * comerciante veia bajar su saldo disponible sin poder saber que el motivo era su
+             * nivel. La decision de garantias insiste en esto: «un nivel que baja sin decir
+             * por que ni como se recupera no corrige a nadie -- empuja a abrir otra tienda con
+             * otro nombre».
+             *
+             * Va en `wallet-summary` y no en un endpoint propio porque el nivel NO es una
+             * insignia: decide cuanto se retiene de cada venta, asi que pertenece a la
+             * pantalla donde el comerciante mira su dinero.
+             *
+             * Solo de la primera tienda, la misma de `tenant_id`. `progress()` cuesta dos
+             * COUNT y el propio servicio avisa de que listarlo para muchas tiendas seria un
+             * N+1; hoy ninguna pantalla lo necesita para mas de una.
+             */
+            'reputation' => $tenantIds === [] ? null : $this->reputacion->progress($tenantIds[0]),
             'settlements' => $settlements,
         ];
     }

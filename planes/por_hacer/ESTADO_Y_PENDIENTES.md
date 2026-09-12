@@ -1,44 +1,59 @@
 # Estado del proyecto y lo que falta
 
-> **Fecha:** 11/09/2026 · Tras cerrar los cinco subsistemas de
+> **Fecha:** 11/09/2026 · Actualizado el 11/09/2026 tras implementar las vistas 1, 2 y 3
+> · Tras cerrar los cinco subsistemas de
 > [`DECISION_GARANTIAS_Y_RESPONSABILIDAD.md`](../anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md)
 >
 > Escrito para retomar sin contexto previo. Lo urgente va primero y separado de lo importante.
 
 ---
 
-## 🔴 Roto ahora mismo
+## ✅ Lo que estaba roto y ya no
 
-### 1. Ninguna tienda puede retirar dinero
+### 1. ~~Ninguna tienda puede retirar dinero~~ — cerrado
 
-El KYC exige verificación para solicitar un retiro, y **no existe ninguna forma de verificar a
-nadie**: `ReviewTenantKycUseCase` no tiene controlador ni ruta. Todos los expedientes se quedan
-en `pending`.
+`ReviewTenantKycUseCase` ya tiene controlador y ruta: `/admin/backoffice/{user}/kyc`, bajo
+`staff:manage_tenants`. Un administrador puede verificar o rechazar, y el rechazo exige motivo.
 
-**Arreglo definitivo:** vista 1 de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md).
+**Estaba roto por los DOS extremos, y el segundo no figuraba en ningún plan.** `TenantKycCard`
+—la tarjeta con la que el comerciante *envía* su identidad— pedía `/owner/api/kyc/{id}` sin el
+prefijo `tenant` de la ruta real: 404 siempre, tragado por su propio `catch`, y la tarjeta no se
+pintaba nunca. De modo que aunque hubiera existido la pantalla del administrador, no habría
+habido nada que verificar.
 
-**Mitigación inmediata**, si hace falta que alguien cobre antes:
+La URL vive ahora en `TenantKycServices`, con un test que mira a dónde apunta. Los tests del
+componente no podían cazarlo porque doblaban axios, y un doble de axios responde a cualquier URL.
 
-```bash
-docker compose exec -T app php artisan tinker --execute="
-Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile::where('tenant_id','EL_TENANT')
-  ->update(['status'=>'verified','reviewed_at'=>now(),'reviewed_by'=>'manual']);"
-```
+### 2. ~~El reloj de reclamaciones aprueba todo por silencio~~ — cerrado
 
-### 2. El reloj de reclamaciones aprueba todo por silencio
+`/tenant/owner/backoffice/{user}/returns` es donde el comerciante responde. Cada reclamación
+abierta muestra **cuántos días le quedan**, calculados por `ClaimResponseWindow` — el mismo
+servicio que usa `returns:auto-resolve`, para que la pantalla no pueda prometer un plazo que el
+comando no respeta.
 
-`returns:auto-resolve` corre a diario y resuelve a favor del comprador lo que la tienda no
-responde en 5 días. **No hay pantalla donde responder**, así que toda reclamación se aprueba
-sola y revierte la venta.
+### 3. ~~Las tiendas sembradas no tienen KYC~~ — cerrado
 
-**Mitigación:** subir `central_claim_response_days` en los ajustes de cobro hasta que exista la
-vista 2.
+`TenantDemoDataSeeder` crea un expediente verificado por tienda. Verificado y no `pending` a
+propósito: es dato de demostración, y dejarlo pendiente obligaría a pasar por el backoffice
+antes de poder probar un retiro.
 
-### 3. Las tiendas sembradas no tienen KYC
+---
 
-`TenantDemoDataSeeder` no crea perfiles de verificación, así que en un entorno recién sembrado
-**ninguna de las nueve tiendas puede retirar**. Conviene añadirlos al seeder, ya verificados: es
-dato de demostración y el flujo de retiro no se puede probar sin ellos.
+## 🟡 Lo que queda por mirar
+
+**Los botones `color="failure"` y `color="success"` del backoffice no existen en esta versión de
+Flowbite.** Solo `red`, `green`, `light`, `blue`… — `success` y `failure` sí son válidos en las
+*insignias*, que es de donde viene la confusión. Un botón con un color inexistente **se pinta
+sin relleno**, de modo que la acción primaria acaba pareciendo menos importante que «Cancelar».
+
+Corregido en las pantallas nuevas. Sigue presente al menos en `AdminMasterBrandsPage`,
+`AdminMasterCategoriesPage` y `AdminHomeBannersPage`, donde el botón de borrar se ve como texto
+plano. No es urgente, pero es exactamente el tipo de fallo que nadie reporta y todos sufren.
+
+**El contenedor `app` no resolvía su propio dominio.** El backend se llama a sí mismo por
+`owomarket.local` —el login resuelve el usuario contra su propia API— y dentro de la red de
+Docker ese nombre no existía: **era imposible entrar en la aplicación desde el entorno
+contenedorizado**. Resuelto con un alias de red en el servicio `web` de `docker-compose.yml`.
 
 ---
 
@@ -52,7 +67,7 @@ dato de demostración y el flujo de retiro no se puede probar sin ellos.
 | 4 | **Fondo de garantía** | 10% retenido 60 días, visible en la wallet, variable por reputación |
 | 5 | **Reclamaciones** | Resolución, reloj, cobertura con tope, reputación y expediente |
 
-**826 tests de backend, 33 de frontend**, `tsc --noEmit` limpio.
+**Tests al cerrar las vistas 1–3: 846 de backend, 59 de frontend**, `tsc --noEmit` limpio.
 
 El **hueco 2** que abrió toda esta línea de trabajo —la deuda irrecuperable de un reembolso tras
 un retiro pagado— queda cerrado: el fondo hace que no pueda existir por construcción.
@@ -61,12 +76,16 @@ un retiro pagado— queda cerrado: el fondo hace que no pueda existir por constr
 
 ## Falta interfaz, no lógica
 
-Seis vistas, detalladas en [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md). Tres de
-ellas necesitan además su controlador y su ruta, que tampoco existen:
+De las seis vistas de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md) **quedan tres**:
 
-- `ReviewTenantKycUseCase` y `FindTenantsByIdentityUseCase` (administrador)
-- `BuildClaimDossierUseCase` (administrador)
-- `TenantReputation::progress()` (comerciante, añadir a `wallet-summary`)
+| # | Vista | Qué le falta |
+| :--- | :--- | :--- |
+| 4 | Estado de la reclamación (comprador) | Solo pantalla; el endpoint ya devuelve `resolved_by` y `resolution_notes` |
+| 5 | Expediente de reclamación (administrador) | `BuildClaimDossierUseCase` sigue sin controlador ni ruta |
+| 6 | Pedidos del comprador en el escaparate | Superficie nueva, con una decisión de autenticación por delante |
+
+La 4 es la barata y cierra el círculo del comprador: hoy ve su reclamación denegada sin saber
+por qué, teniendo el backend ese dato desde hace tiempo.
 
 ---
 

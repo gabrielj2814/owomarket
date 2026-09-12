@@ -335,10 +335,10 @@ const TenantReturnsPage: FC<TenantReturnsPageProps> = ({
 
                                         {reclamacion.is_open ? (
                                             <div className="flex gap-2 sm:justify-end">
-                                                <Button size="xs" color="failure" onClick={() => abrir(reclamacion, true)}>
+                                                <Button size="xs" color="red" onClick={() => abrir(reclamacion, true)}>
                                                     Aprobar
                                                 </Button>
-                                                <Button size="xs" color="success" onClick={() => abrir(reclamacion, false)}>
+                                                <Button size="xs" color="green" onClick={() => abrir(reclamacion, false)}>
                                                     Rechazar
                                                 </Button>
                                             </div>
@@ -414,7 +414,9 @@ const TenantReturnsPage: FC<TenantReturnsPageProps> = ({
                 </ModalBody>
                 <ModalFooter>
                     <Button
-                        color={aprobando ? 'failure' : 'success'}
+                        // `success`/`failure` no existen como color de BOTON en esta version
+                        // de Flowbite (si en las insignias): dejarian el primario sin relleno.
+                        color={aprobando ? 'red' : 'green'}
                         onClick={() => void confirmar()}
                         disabled={enviando}
                     >

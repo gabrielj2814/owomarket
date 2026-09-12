@@ -374,14 +374,14 @@ const AdminKycReviewPage: FC<AdminKycReviewPageProps> = ({
                                                     <div className="flex gap-2">
                                                         <Button
                                                             size="xs"
-                                                            color="success"
+                                                            color="green"
                                                             onClick={() => void abrirRevision(perfil, false)}
                                                         >
                                                             Verificar
                                                         </Button>
                                                         <Button
                                                             size="xs"
-                                                            color="failure"
+                                                            color="red"
                                                             onClick={() => void abrirRevision(perfil, true)}
                                                         >
                                                             Rechazar
@@ -511,7 +511,10 @@ const AdminKycReviewPage: FC<AdminKycReviewPageProps> = ({
                 </ModalBody>
                 <ModalFooter>
                     <Button
-                        color={rechazando ? 'failure' : 'success'}
+                        // Esta version de Flowbite NO tiene los colores `success`/`failure`
+                        // en botones --solo en insignias--: usarlos deja el boton sin relleno,
+                        // y el primario acaba pareciendo menos importante que «Cancelar».
+                        color={rechazando ? 'red' : 'green'}
                         onClick={() => void confirmar()}
                         disabled={enviando}
                     >
