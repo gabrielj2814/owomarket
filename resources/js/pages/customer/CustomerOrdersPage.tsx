@@ -1,4 +1,5 @@
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
+import { Badge, Button, Card, Spinner, TextInput } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -72,19 +73,28 @@ export const CustomerOrdersPage: React.FC = () => {
         setIsDrawerOpen(true);
     };
 
+    /**
+     * El estado, como insignia del portal.
+     *
+     * Antes eran seis `<span>` con la misma pastilla copiada. Ahora el aspecto lo pone
+     * `portalTheme` y aqui solo queda la correspondencia estado -> color, que es la unica
+     * decision que pertenece a esta pantalla.
+     */
+    const ESTADO: Record<string, { texto: string; color: string }> = {
+        completed: { texto: 'Entregado', color: 'success' },
+        processing: { texto: 'En Preparación', color: 'blue' },
+        paid: { texto: 'Pagado / Verificado', color: 'indigo' },
+        cancelled: { texto: 'Cancelado', color: 'failure' },
+    };
+
     const statusBadge = (status: string) => {
-        switch (status) {
-            case 'completed':
-                return <span className="px-2.5 py-1 bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-300 rounded-full text-[10px] font-black uppercase tracking-wider">Entregado</span>;
-            case 'processing':
-                return <span className="px-2.5 py-1 bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300 rounded-full text-[10px] font-black uppercase tracking-wider">En Preparación</span>;
-            case 'paid':
-                return <span className="px-2.5 py-1 bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 rounded-full text-[10px] font-black uppercase tracking-wider">Pagado / Verificado</span>;
-            case 'cancelled':
-                return <span className="px-2.5 py-1 bg-red-100 dark:bg-red-950 text-red-700 dark:text-red-300 rounded-full text-[10px] font-black uppercase tracking-wider">Cancelado</span>;
-            default:
-                return <span className="px-2.5 py-1 bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-full text-[10px] font-black uppercase tracking-wider">Pendiente de Pago</span>;
-        }
+        const { texto, color } = ESTADO[status] ?? { texto: 'Pendiente de Pago', color: 'warning' };
+
+        return (
+            <Badge color={color} size="xs" className="w-fit">
+                {texto}
+            </Badge>
+        );
     };
 
     return (
@@ -97,7 +107,7 @@ export const CustomerOrdersPage: React.FC = () => {
             <Head title="Mis Pedidos - OwOMarket" />
 
             {/* Filter Tabs & Search Bar */}
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-4 mb-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <Card className="mb-6" theme={{ root: { children: 'flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4' } }}>
                 {/* Tabs */}
                 <div className="flex items-center gap-1 overflow-x-auto pb-2 md:pb-0">
                     {[
@@ -122,47 +132,44 @@ export const CustomerOrdersPage: React.FC = () => {
                 </div>
 
                 {/* Search */}
-                <form onSubmit={handleSearch} className="relative min-w-[240px]">
-                    <HiOutlineMagnifyingGlass className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                    <input
-                        type="text"
+                <form onSubmit={handleSearch} className="min-w-[240px]">
+                    <TextInput
+                        id="pedidos-busqueda"
+                        icon={HiOutlineMagnifyingGlass}
                         value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Buscar por N° orden o producto..."
-                        className="w-full pl-9 pr-4 py-2 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                     />
                 </form>
-            </div>
+            </Card>
 
             {/* Orders Listing */}
             {loading ? (
-                <div className="text-center py-16 text-gray-400">
-                    <HiOutlineArrowPath className="w-8 h-8 mx-auto mb-2 animate-spin text-blue-600" />
-                    <p className="text-xs font-medium">Cargando pedidos...</p>
+                <div className="py-16 text-center">
+                    <Spinner aria-label="Cargando pedidos" />
+                    <p className="mt-2 text-xs font-medium text-gray-400">Cargando pedidos...</p>
                 </div>
             ) : orders.length === 0 ? (
-                <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 text-center border border-gray-200/80 dark:border-gray-800/80">
-                    <HiOutlineShoppingBag className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
-                    <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">
-                        No se encontraron pedidos
-                    </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
-                        {filterStatus !== 'all' ? 'No hay pedidos con el estado seleccionado.' : 'Aún no has realizado compras en el marketplace.'}
-                    </p>
-                    <Link
-                        href="/marketplace"
-                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition"
-                    >
-                        Explorar Catálogo de Productos
-                    </Link>
-                </div>
+                <Card>
+                    <div data-testid="pedidos-vacio" className="py-6 text-center">
+                        <HiOutlineShoppingBag className="mx-auto mb-3 h-12 w-12 text-gray-300 dark:text-gray-700" />
+                        <h4 className="mb-1 text-base font-bold text-gray-900 dark:text-white">
+                            No se encontraron pedidos
+                        </h4>
+                        <p className="mb-6 text-xs text-gray-500 dark:text-gray-400">
+                            {filterStatus !== 'all'
+                                ? 'No hay pedidos con el estado seleccionado.'
+                                : 'Aún no has realizado compras en el marketplace.'}
+                        </p>
+                        <Button as={Link} href="/marketplace" color="primary" size="sm" className="mx-auto w-fit">
+                            Explorar Catálogo de Productos
+                        </Button>
+                    </div>
+                </Card>
             ) : (
                 <div className="space-y-4">
                     {orders.map(order => (
-                        <div
-                            key={order.id}
-                            className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80 hover:border-blue-500/50 transition"
-                        >
+                        <Card key={order.id} className="transition hover:border-blue-500/50">
                             {/* Order Header */}
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-gray-100 dark:border-gray-800 gap-3">
                                 <div>
@@ -208,13 +215,10 @@ export const CustomerOrdersPage: React.FC = () => {
                             {/* Order Actions */}
                             <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
                                 <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => handleReorder(order)}
-                                        className="px-3.5 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-xl flex items-center gap-1.5 transition"
-                                    >
-                                        <HiOutlineArrowPath className="w-3.5 h-3.5 text-blue-600" />
+                                    <Button color="light" size="xs" onClick={() => handleReorder(order)}>
+                                        <HiOutlineArrowPath className="mr-1.5 h-3.5 w-3.5 text-blue-600" />
                                         Volver a Comprar (1-Clic)
-                                    </button>
+                                    </Button>
 
                                     {order.status === 'completed' && (
                                         <Link
@@ -236,17 +240,14 @@ export const CustomerOrdersPage: React.FC = () => {
                                     >
                                         Descargar Factura PDF
                                     </a>
-                                    <Link
-                                        href={`/account/orders/${order.id}`}
-                                        className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1 transition"
-                                    >
-                                        <HiOutlineTruck className="w-4 h-4" />
+                                    <Button as={Link} href={`/account/orders/${order.id}`} color="primary" size="xs">
+                                        <HiOutlineTruck className="mr-1 h-4 w-4" />
                                         Ver Tracking & Detalle
-                                        <HiOutlineChevronRight className="w-3.5 h-3.5" />
-                                    </Link>
+                                        <HiOutlineChevronRight className="ml-1 h-3.5 w-3.5" />
+                                    </Button>
                                 </div>
                             </div>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             )}

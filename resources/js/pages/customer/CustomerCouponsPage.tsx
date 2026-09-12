@@ -1,16 +1,24 @@
-import PortalLoadError from '@/components/ui/customer/PortalLoadError';
-import React, { useEffect, useState } from 'react';
-import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
-import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import CustomerPortalServices, { CustomerCouponData } from '@/Services/CustomerPortalServices';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { Head } from '@inertiajs/react';
+import { Badge, Button, Card } from 'flowbite-react';
+import React, { useEffect, useState } from 'react';
 import {
-    HiOutlineTicket,
     HiOutlineClipboardDocumentCheck,
-    HiOutlineSparkles,
     HiOutlineClock,
+    HiOutlineSparkles,
+    HiOutlineTicket,
 } from 'react-icons/hi2';
 
+/**
+ * Cupones del comprador.
+ *
+ * El aspecto lo pone `portalTheme` desde `CustomerAccountLayout`: aquí se escribe `<Card>` y
+ * `<Button color="primary">` a secas. Si algo necesitara un `className` para parecerse a sus
+ * hermanas, el sitio de arreglarlo es el tema.
+ */
 export const CustomerCouponsPage: React.FC = () => {
     const { customer } = useCustomerAuth();
     const [coupons, setCoupons] = useState<CustomerCouponData[]>([]);
@@ -20,7 +28,7 @@ export const CustomerCouponsPage: React.FC = () => {
 
     useEffect(() => {
         CustomerPortalServices.getCoupons()
-            .then(res => {
+            .then((res) => {
                 if (res?.data) {
                     setCoupons(res.data);
                 }
@@ -36,7 +44,7 @@ export const CustomerCouponsPage: React.FC = () => {
     const copyCode = (code: string) => {
         void navigator.clipboard.writeText(code);
         setCopiado(code);
-        setTimeout(() => setCopiado(prev => (prev === code ? null : prev)), 2500);
+        setTimeout(() => setCopiado((prev) => (prev === code ? null : prev)), 2500);
     };
 
     return (
@@ -48,15 +56,18 @@ export const CustomerCouponsPage: React.FC = () => {
 
             <Head title="Mis Cupones - OwOMarket" />
 
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
-                    <HiOutlineTicket className="w-5 h-5 text-emerald-600" />
+            <div className="mb-6 flex items-center justify-between">
+                <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
+                    <HiOutlineTicket className="h-5 w-5 text-emerald-600" />
                     Cupones Disponibles ({coupons.length})
                 </h3>
             </div>
 
             {copiado && (
-                <div role="status" className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold">
+                <div
+                    role="status"
+                    className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-bold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300"
+                >
                     Cupón {copiado} copiado. Aplícalo en el carrito de compras.
                 </div>
             )}
@@ -68,58 +79,60 @@ export const CustomerCouponsPage: React.FC = () => {
               * (0)» sobre un hueco en blanco, que parece una página rota.
               */}
             {!loading && !loadError && coupons.length === 0 && (
-                <div className="p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 text-center">
-                    <HiOutlineTicket className="w-10 h-10 mx-auto text-gray-300 dark:text-gray-700 mb-3" />
-                    <p className="text-sm font-bold text-gray-900 dark:text-white mb-1">No hay cupones disponibles</p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                        Cuando haya promociones activas aparecerán aquí.
-                    </p>
-                </div>
+                <Card>
+                    <div className="py-2 text-center">
+                        <HiOutlineTicket className="mx-auto mb-3 h-10 w-10 text-gray-300 dark:text-gray-700" />
+                        <p className="mb-1 text-sm font-bold text-gray-900 dark:text-white">
+                            No hay cupones disponibles
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Cuando haya promociones activas aparecerán aquí.
+                        </p>
+                    </div>
+                </Card>
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {coupons.map(coupon => (
-                    <div
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {coupons.map((coupon) => (
+                    <Card
                         key={coupon.id}
-                        className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80 relative overflow-hidden flex flex-col justify-between"
+                        /*
+                          * El tema centra el contenido de una tarjeta; estas van en rejilla y
+                          * necesitan que el código quede pegado abajo para que dos cupones de
+                          * distinto largo no descoloquen sus botones.
+                          */
+                        theme={{ root: { children: 'flex h-full flex-col justify-between gap-4 p-6' } }}
                     >
-                        {/* Discount Banner */}
                         <div>
-                            <div className="flex items-center justify-between mb-3">
-                                <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-full text-xs font-black">
-                                    <HiOutlineSparkles className="w-3.5 h-3.5" /> {coupon.badge}
-                                </span>
-                                <span className="text-[11px] font-semibold text-gray-400 flex items-center gap-1">
-                                    <HiOutlineClock className="w-3.5 h-3.5" /> Vence: {coupon.valid_until}
+                            <div className="mb-3 flex items-center justify-between">
+                                <Badge color="success" size="xs" icon={HiOutlineSparkles}>
+                                    {coupon.badge}
+                                </Badge>
+                                <span className="flex items-center gap-1 text-[11px] font-semibold text-gray-400">
+                                    <HiOutlineClock className="h-3.5 w-3.5" /> Vence: {coupon.valid_until}
                                 </span>
                             </div>
 
-                            <h4 className="text-sm font-black text-gray-900 dark:text-white mb-1">
-                                {coupon.title}
-                            </h4>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 leading-relaxed">
+                            <h4 className="mb-1 text-sm font-black text-gray-900 dark:text-white">{coupon.title}</h4>
+                            <p className="text-xs leading-relaxed text-gray-500 dark:text-gray-400">
                                 {coupon.description}
                             </p>
                         </div>
 
-                        {/* Coupon Code Box */}
-                        <div className="flex items-center justify-between p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-dashed border-gray-300 dark:border-gray-700">
+                        <div className="flex items-center justify-between rounded-2xl border border-dashed border-gray-300 bg-gray-50 p-3 dark:border-gray-700 dark:bg-gray-800/60">
                             <div>
-                                <span className="text-[10px] uppercase font-bold text-gray-400 block">Código:</span>
-                                <span className="font-mono text-sm font-black text-blue-600 dark:text-blue-400 tracking-wider">
+                                <span className="block text-[10px] font-bold uppercase text-gray-400">Código:</span>
+                                <span className="font-mono text-sm font-black tracking-wider text-blue-600 dark:text-blue-400">
                                     {coupon.code}
                                 </span>
                             </div>
 
-                            <button
-                                onClick={() => copyCode(coupon.code)}
-                                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition"
-                            >
-                                <HiOutlineClipboardDocumentCheck className="w-4 h-4" />
+                            <Button color="primary" size="xs" onClick={() => copyCode(coupon.code)}>
+                                <HiOutlineClipboardDocumentCheck className="mr-1.5 h-4 w-4" />
                                 Copiar
-                            </button>
+                            </Button>
                         </div>
-                    </div>
+                    </Card>
                 ))}
             </div>
         </CustomerAccountLayout>

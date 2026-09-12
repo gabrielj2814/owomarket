@@ -112,6 +112,24 @@ export const portalTheme = createTheme({
         },
     },
 
+    table: {
+        // Las tablas del portal son de texto pequeno, con cabecera en gris tenue y
+        // mayúsculas diminutas. Flowbite trae `text-sm` y `px-6 py-4`, que aquí se ve
+        // enorme al lado de las tarjetas.
+        root: { base: 'w-full text-left text-xs text-gray-500 dark:text-gray-400' },
+        head: {
+            base: 'group/head text-[11px] font-black uppercase tracking-wider text-gray-400',
+            cell: {
+                base: 'bg-gray-50 px-4 py-3 group-first/head:first:rounded-l-xl group-first/head:last:rounded-r-xl dark:bg-gray-800/50',
+            },
+        },
+        body: { cell: { base: 'px-4 py-4' } },
+        row: {
+            base: 'group/row',
+            hovered: 'hover:bg-gray-50/50 dark:hover:bg-gray-800/30',
+        },
+    },
+
     badge: {
         root: {
             // Las insignias de estado del portal son pastilla completa, diminutas y en

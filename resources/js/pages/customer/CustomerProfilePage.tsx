@@ -1,3 +1,4 @@
+import { Alert, Button, Card, Label, TextInput } from 'flowbite-react';
 import React, { useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -84,19 +85,17 @@ export const CustomerProfilePage: React.FC = () => {
         >
             <Head title="Mi Perfil - OwOMarket" />
 
-            <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
+            <Card>
                 {/* Feedback Alerts */}
                 {successMsg && (
-                    <div className="mb-6 p-4 rounded-2xl bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 text-xs font-bold flex items-center gap-2">
-                        <HiOutlineCheckCircle className="w-5 h-5 flex-shrink-0" />
+                    <Alert color="success" icon={HiOutlineCheckCircle} className="rounded-2xl text-xs font-bold">
                         {successMsg}
-                    </div>
+                    </Alert>
                 )}
                 {errorMsg && (
-                    <div className="mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800 text-xs font-bold flex items-center gap-2">
-                        <HiOutlineExclamationCircle className="w-5 h-5 flex-shrink-0" />
+                    <Alert color="failure" icon={HiOutlineExclamationCircle} className="rounded-2xl text-xs font-bold">
                         {errorMsg}
-                    </div>
+                    </Alert>
                 )}
 
                 <form onSubmit={handleUpdateProfile} className="space-y-8">
@@ -109,54 +108,23 @@ export const CustomerProfilePage: React.FC = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Nombre Completo
-                                </label>
-                                <input
-                                    type="text"
-                                    value={name}
-                                    onChange={e => setName(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                />
+                                <Label htmlFor="perfil-nombre">Nombre Completo</Label>
+                                <TextInput id="perfil-nombre" type="text" value={name} onChange={(e) => setName(e.target.value)} required />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Correo Electrónico (OwO Pass)
-                                </label>
-                                <input
-                                    type="email"
-                                    value={customer?.email || ''}
-                                    disabled
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 text-gray-400 cursor-not-allowed"
-                                />
+                                <Label htmlFor="perfil-correo">Correo Electrónico (OwO Pass)</Label>
+                                <TextInput id="perfil-correo" type="email" value={customer?.email || ''} disabled />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Teléfono / WhatsApp
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={phone}
-                                    onChange={e => setPhone(e.target.value)}
-                                    placeholder="0412-1234567"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                />
+                                <Label htmlFor="perfil-telefono">Teléfono / WhatsApp</Label>
+                                <TextInput id="perfil-telefono" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0412-1234567" />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Cédula o RIF (Para Facturación)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={documentId}
-                                    onChange={e => setDocumentId(e.target.value)}
-                                    placeholder="V-12345678 o J-12345678-0"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                />
+                                <Label htmlFor="perfil-documento">Cédula o RIF (Para Facturación)</Label>
+                                <TextInput id="perfil-documento" type="text" value={documentId} onChange={(e) => setDocumentId(e.target.value)} placeholder="V-12345678 o J-12345678-0" />
                             </div>
                         </div>
                     </div>
@@ -172,58 +140,30 @@ export const CustomerProfilePage: React.FC = () => {
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Contraseña Actual
-                                </label>
-                                <input
-                                    type="password"
-                                    value={currentPassword}
-                                    onChange={e => setCurrentPassword(e.target.value)}
-                                    placeholder="••••••••"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                />
+                                <Label htmlFor="perfil-pass-actual">Contraseña Actual</Label>
+                                <TextInput id="perfil-pass-actual" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} placeholder="••••••••" />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Nueva Contraseña
-                                </label>
-                                <input
-                                    type="password"
-                                    value={newPassword}
-                                    onChange={e => setNewPassword(e.target.value)}
-                                    placeholder="Mínimo 8 caracteres"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                />
+                                <Label htmlFor="perfil-pass-nueva">Nueva Contraseña</Label>
+                                <TextInput id="perfil-pass-nueva" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Mínimo 8 caracteres" />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Confirmar Nueva Contraseña
-                                </label>
-                                <input
-                                    type="password"
-                                    value={confirmPassword}
-                                    onChange={e => setConfirmPassword(e.target.value)}
-                                    placeholder="Repite la contraseña"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                />
+                                <Label htmlFor="perfil-pass-confirmar">Confirmar Nueva Contraseña</Label>
+                                <TextInput id="perfil-pass-confirmar" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repite la contraseña" />
                             </div>
                         </div>
                     </div>
 
                     {/* Submit Button */}
                     <div className="flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="px-6 py-3 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-lg shadow-blue-500/25 transition disabled:opacity-50"
-                        >
+                        <Button type="submit" color="primary" disabled={saving}>
                             {saving ? 'Guardando cambios...' : 'Guardar Datos del Perfil'}
-                        </button>
+                        </Button>
                     </div>
                 </form>
-            </div>
+            </Card>
         </CustomerAccountLayout>
     );
 };

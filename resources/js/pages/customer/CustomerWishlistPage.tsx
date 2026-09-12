@@ -1,5 +1,6 @@
 import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
+import { Button, Card } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -90,27 +91,30 @@ export const CustomerWishlistPage: React.FC = () => {
             </div>
 
             {wishlist.length === 0 ? (
-                <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 text-center border border-gray-200/80 dark:border-gray-800/80">
-                    <HiOutlineHeart className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
-                    <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">
-                        Tu lista de deseos está vacía
-                    </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
-                        Explora los productos de las tiendas y haz clic en el ícono de corazón para guardarlos aquí.
-                    </p>
-                    <Link
-                        href="/marketplace"
-                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition"
-                    >
-                        Explorar Catálogo
-                    </Link>
-                </div>
+                <Card>
+                    <div data-testid="wishlist-vacio" className="py-6 text-center">
+                        <HiOutlineHeart className="mx-auto mb-3 h-12 w-12 text-gray-300 dark:text-gray-700" />
+                        <h4 className="mb-1 text-base font-bold text-gray-900 dark:text-white">
+                            Tu lista de deseos está vacía
+                        </h4>
+                        <p className="mb-6 text-xs text-gray-500 dark:text-gray-400">
+                            Explora los productos de las tiendas y haz clic en el ícono de corazón para guardarlos
+                            aquí.
+                        </p>
+                        <Button as={Link} href="/marketplace" color="primary" size="sm" className="mx-auto w-fit">
+                            Explorar Catálogo
+                        </Button>
+                    </div>
+                </Card>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {wishlist.map(item => (
-                        <div
+                        <Card
                             key={item.id}
-                            className="bg-white dark:bg-gray-900 rounded-3xl p-4 shadow-sm border border-gray-200/80 dark:border-gray-800/80 flex flex-col justify-between group"
+                            className="group"
+                            /* En rejilla, el pie tiene que quedar abajo aunque los nombres de
+                               producto ocupen distinto: el tema centra por defecto. */
+                            theme={{ root: { children: 'flex h-full flex-col justify-between gap-3 p-4' } }}
                         >
                             <div>
                                 {item.product_image ? (
@@ -141,22 +145,19 @@ export const CustomerWishlistPage: React.FC = () => {
                             </div>
 
                             <div className="flex items-center gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">
-                                <button
-                                    onClick={() => handleAddToCart(item)}
-                                    className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 flex items-center justify-center gap-1.5 transition"
-                                >
-                                    <HiOutlineShoppingCart className="w-4 h-4" />
+                                <Button color="primary" size="xs" className="flex-1" onClick={() => handleAddToCart(item)}>
+                                    <HiOutlineShoppingCart className="mr-1.5 h-4 w-4" />
                                     Al Carrito
-                                </button>
+                                </Button>
                                 <button
                                     onClick={() => handleRemove(item)}
-                                    className="p-2 text-gray-400 hover:text-red-600 rounded-xl hover:bg-red-50 dark:hover:bg-red-950/40 transition"
+                                    className="rounded-xl p-2 text-gray-400 transition hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/40"
                                     title="Eliminar de favoritos"
                                 >
-                                    <HiOutlineTrash className="w-4 h-4" />
+                                    <HiOutlineTrash className="h-4 w-4" />
                                 </button>
                             </div>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             )}
