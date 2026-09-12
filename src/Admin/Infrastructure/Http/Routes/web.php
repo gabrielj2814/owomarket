@@ -170,6 +170,23 @@ Route::middleware(['auth', 'staff:manage_orders'])->group(function () {
 Route::middleware(['auth', 'staff:manage_tenants'])->group(function () {
     Route::get('/api/tenants/{id}/360-data', \Src\Tenant\Infrastructure\Http\Controller\GetAdminTenant360DataGETController::class);
     Route::patch('/api/tenants/{id}/governance-status', \Src\Tenant\Infrastructure\Http\Controller\UpdateTenantGovernanceStatusPATCHController::class);
+
+    /*
+    | Verificación de identidad del comerciante (subsistema 1).
+    |
+    | Va bajo `manage_tenants` --y no bajo `manage_payouts`, que también se defendía-- porque
+    | es gobernanza de la tienda: decide si el negocio está identificado, no si un retiro
+    | concreto se paga. Comparte grupo con el expediente 360° y el estado de gobernanza, que
+    | son las otras dos decisiones sobre "quién es esta tienda".
+    |
+    | Hasta que estas rutas existieron, `ReviewTenantKycUseCase` era código inalcanzable y
+    | NINGUNA tienda podía retirar dinero: el KYC exige verificación y no había forma de
+    | verificar a nadie.
+    */
+    Route::get('/backoffice/{user_uuid}/kyc', [\Src\Admin\Infrastructure\Http\Controller\ViewAdminKycPageGETController::class, 'index'])->name('central.backoffice.web.admin.kyc');
+    Route::get('/api/kyc/profiles', \Src\Admin\Infrastructure\Http\Controller\ListAdminKycProfilesGETController::class);
+    Route::post('/api/kyc/profiles/{profileId}/review', \Src\Admin\Infrastructure\Http\Controller\ReviewTenantKycPOSTController::class);
+    Route::get('/api/kyc/profiles/{profileId}/identity-matches', \Src\Admin\Infrastructure\Http\Controller\FindTenantsByKycIdentityGETController::class);
 });
 
 // La impersonación de una tienda es una operación de máximo privilegio: emite un token

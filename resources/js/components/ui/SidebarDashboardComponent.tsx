@@ -100,6 +100,11 @@ const SidebarDashboardComponent = () => {
                             <SidebarItem icon={LuUserRoundSearch} href={`/tenant/backoffice/${state.authUser.user_id}/module/suspended`}>
                                 Suspendidas
                             </SidebarItem>
+                            {/* Sin esta pantalla ninguna tienda puede retirar dinero: el KYC exige
+                                identidad verificada y no había forma de verificar a nadie. */}
+                            <SidebarItem icon={HiIdentification} href={`/admin/backoffice/${state.authUser.user_id}/kyc`}>
+                                Verificación KYC
+                            </SidebarItem>
                         </SidebarCollapse>
 
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/cms/banners`} icon={HiViewBoards}>
