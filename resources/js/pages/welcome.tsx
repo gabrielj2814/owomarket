@@ -3,6 +3,11 @@ import storage from '@/routes/storage';
 import { Head } from '@inertiajs/react';
 import React from 'react';
 
+/*
+ * Pagina de andamiaje de Laravel. No se migra porque no hay nada que migrar: un titulo, una
+ * imagen y un parrafo. Flowbite no tiene --ni necesita-- un componente para eso.
+ */
+
 
 interface props {
     domain?: string;

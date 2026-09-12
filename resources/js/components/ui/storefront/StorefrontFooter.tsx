@@ -1,5 +1,22 @@
 import React from 'react';
 import {
+
+/*
+ * NO se migra al componente `Footer` de Flowbite, y es deliberado (`reglas.md` §1.3 admite
+ * Tailwind puro para lo que la libreria no cubra).
+ *
+ * Dos razones, y ninguna es pereza:
+ *
+ * 1. **Sus partes distintivas no existen en Flowbite**: el bloque de metodos de pago con sus
+ *    tarjetas, las insignias de garantia y el bloque de marca de la tienda. El `Footer` de
+ *    Flowbite modela un pie de enlaces y copyright, no esto.
+ * 2. **Lo que si encajaria son las columnas de enlaces, que son `<ul><li><a>` planos.** Eso no
+ *    es reinventar un componente: es HTML. Y `FooterLink` trae sus propios colores pensados
+ *    para fondo claro, asi que meterlo en este pie oscuro significaria pelearse con el a base
+ *    de `className` para acabar exactamente donde ya estamos.
+ *
+ * Si algun dia el pie se simplifica a enlaces y copyright, entonces si.
+ */
     HiCreditCard,
     HiLockClosed,
     HiMail,

@@ -1,3 +1,4 @@
+import { Button } from 'flowbite-react';
 import React from 'react';
 import {
     HiOutlineDocumentText,
@@ -68,23 +69,25 @@ export const OrderTrackingTimeline: React.FC<OrderTrackingTimelineProps> = ({
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
-                        <button
-                            onClick={copyTracking}
-                            className="px-3 py-1.5 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-xs font-bold rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-1.5 transition"
-                        >
-                            <HiOutlineClipboardDocumentCheck className="w-4 h-4 text-blue-600" />
+                        {/* `light` y `blue` de Flowbite, no colores del tema: la linea de tiempo
+                            se pinta en el portal del cliente Y en el escaparate, cada uno con el
+                            suyo. */}
+                        <Button color="light" size="xs" onClick={copyTracking}>
+                            <HiOutlineClipboardDocumentCheck className="mr-1.5 h-4 w-4 text-blue-600" />
                             Copiar Guía
-                        </button>
+                        </Button>
                         {trackingUrl && (
-                            <a
+                            <Button
+                                as="a"
                                 href={trackingUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-lg shadow-sm shadow-blue-500/20 flex items-center gap-1.5 transition"
+                                color="blue"
+                                size="xs"
                             >
                                 <HiOutlineArrowTopRightOnSquare className="w-4 h-4" />
                                 Rastrear en Vivo
-                            </a>
+                            </Button>
                         )}
                     </div>
                 </div>

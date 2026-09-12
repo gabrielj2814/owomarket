@@ -1,3 +1,4 @@
+import { Button, Card } from 'flowbite-react';
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { useCentralCart } from '@/contexts/CentralCartContext';
@@ -66,9 +67,10 @@ const CentralCartDrawer: React.FC = () => {
                             </div>
                         ) : (
                             storeGroups.map(group => (
-                                <div
+                                <Card
                                     key={group.tenant_id}
-                                    className="rounded-2xl border border-gray-200 dark:border-gray-800 p-4 bg-gray-50/50 dark:bg-gray-800/40 space-y-3"
+                                    className="bg-gray-50/50 dark:bg-gray-800/40"
+                                    theme={{ root: { children: 'flex h-full flex-col gap-3 p-4' } }}
                                 >
                                     {/* Store Header */}
                                     <div className="flex items-center justify-between border-b border-gray-200/60 dark:border-gray-700/60 pb-2">
@@ -145,7 +147,7 @@ const CentralCartDrawer: React.FC = () => {
                                             </div>
                                         ))}
                                     </div>
-                                </div>
+                                </Card>
                             ))
                         )}
                     </div>
@@ -161,21 +163,26 @@ const CentralCartDrawer: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-2 gap-2">
-                                <Link
+                                <Button
+                                    as={Link}
                                     href="/cart"
+                                    color="light"
+                                    size="sm"
+                                    className="w-full"
                                     onClick={() => setIsDrawerOpen(false)}
-                                    className="w-full text-center py-2.5 px-4 rounded-xl border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-200 text-xs font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 transition"
                                 >
                                     Ver Carrito Completo
-                                </Link>
-                                <Link
+                                </Button>
+                                <Button
+                                    as={Link}
                                     href="/checkout"
+                                    size="sm"
+                                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-500/20 hover:from-blue-700 hover:to-indigo-700"
                                     onClick={() => setIsDrawerOpen(false)}
-                                    className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition"
                                 >
                                     Pagar Ahora
-                                    <HiArrowRight className="w-3.5 h-3.5" />
-                                </Link>
+                                    <HiArrowRight className="ml-1.5 h-3.5 w-3.5" />
+                                </Button>
                             </div>
                         </div>
                     )}

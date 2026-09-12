@@ -1,3 +1,4 @@
+import { Button, Card } from 'flowbite-react';
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
@@ -115,14 +116,18 @@ const MerchantLandingPageContent: React.FC<MerchantLandingPageProps> = ({
                         </p>
 
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-                            <Link
+                            {/* El CTA de toda la captacion de comerciantes. Su degradado y su
+                                escala al pasar el raton son deliberados y se conservan. */}
+                            <Button
+                                as={Link}
                                 href="/tenant/create/account"
-                                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-600 text-white font-black text-sm sm:text-base shadow-xl shadow-blue-500/30 hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2 text-center"
+                                size="lg"
+                                className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 px-8 font-black text-white shadow-xl shadow-blue-500/30 transition hover:scale-[1.02] hover:from-blue-500 hover:to-indigo-600 active:scale-[0.98]"
                             >
-                                <HiOutlineBuildingStorefront className="w-5 h-5" />
+                                <HiOutlineBuildingStorefront className="mr-2 h-5 w-5" />
                                 <span>Abrir mi Tienda Gratis</span>
-                                <HiOutlineArrowRight className="w-4 h-4" />
-                            </Link>
+                                <HiOutlineArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
 
                             <a
                                 href="#planes"
@@ -527,9 +532,10 @@ const MerchantLandingPageContent: React.FC<MerchantLandingPageProps> = ({
                             const isOpen = openFaqIndex === index;
 
                             return (
-                                <div
+                                <Card
                                     key={index}
-                                    className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/80 overflow-hidden transition"
+                                    className="overflow-hidden transition"
+                                    theme={{ root: { children: 'flex h-full flex-col' } }}
                                 >
                                     <button
                                         onClick={() => toggleFaq(index)}
@@ -551,7 +557,7 @@ const MerchantLandingPageContent: React.FC<MerchantLandingPageProps> = ({
                                             {faq.a}
                                         </div>
                                     )}
-                                </div>
+                                </Card>
                             );
                         })}
                     </div>
@@ -569,14 +575,18 @@ const MerchantLandingPageContent: React.FC<MerchantLandingPageProps> = ({
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-                        <Link
+                        {/* Sobre fondo de marca: blanco sobre azul, al reves que el CTA de
+                            arriba. Es el mismo destino visto desde otro fondo. */}
+                        <Button
+                            as={Link}
                             href="/tenant/create/account"
-                            className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-gray-50 text-blue-700 font-black text-sm rounded-2xl shadow-xl hover:scale-[1.02] active:scale-[0.98] transition flex items-center justify-center gap-2"
+                            size="lg"
+                            className="w-full bg-white px-8 font-black text-blue-700 shadow-xl transition hover:scale-[1.02] hover:bg-gray-50 active:scale-[0.98] sm:w-auto"
                         >
-                            <HiOutlineBuildingStorefront className="w-5 h-5" />
+                            <HiOutlineBuildingStorefront className="mr-2 h-5 w-5" />
                             <span>Crear Mi Tienda Ahora</span>
-                            <HiOutlineArrowRight className="w-4 h-4" />
-                        </Link>
+                            <HiOutlineArrowRight className="ml-2 h-4 w-4" />
+                        </Button>
                     </div>
                 </section>
             </div>

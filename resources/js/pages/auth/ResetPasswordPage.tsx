@@ -1,3 +1,4 @@
+import { Alert, Button, Label, TextInput } from 'flowbite-react';
 import React, { useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CentralLayout from '@/components/layouts/CentralLayout';
@@ -85,16 +86,17 @@ export const ResetPasswordPage: React.FC = () => {
 
                     {successMsg ? (
                         <div className="space-y-4">
-                            <div className="p-4 rounded-2xl bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border border-green-200 dark:border-green-800 text-xs font-bold flex items-center gap-2">
-                                <HiOutlineCheckCircle className="w-5 h-5 flex-shrink-0" />
+                            <Alert color="success" icon={HiOutlineCheckCircle} className="text-xs font-bold">
                                 {successMsg}
-                            </div>
-                            <button
+                            </Alert>
+                            <Button
+                                color="primary"
+                                size="md"
+                                className="w-full"
                                 onClick={() => openAuthModal('login')}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 text-center block transition"
                             >
                                 Iniciar Sesión con Nueva Contraseña
-                            </button>
+                            </Button>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="space-y-4">
@@ -106,81 +108,49 @@ export const ResetPasswordPage: React.FC = () => {
                             )}
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Correo Electrónico
-                                </label>
-                                <div className="relative">
-                                    <HiOutlineEnvelope className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                                    <input
+                                <Label htmlFor="reset-correo-electronico">Correo Electrónico</Label>
+                                <TextInput id="reset-correo-electronico" icon={HiOutlineEnvelope}
                                         type="email"
                                         value={email}
                                         onChange={e => setEmail(e.target.value)}
                                         required
-                                        placeholder="tu@email.com"
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
+                                        placeholder="tu@email.com" />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Código PIN (6 Dígitos)
-                                </label>
-                                <div className="relative">
-                                    <HiOutlineKey className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                                    <input
+                                <Label htmlFor="reset-codigo-pin-6-digitos">Código PIN (6 Dígitos)</Label>
+                                <TextInput id="reset-codigo-pin-6-digitos" icon={HiOutlineKey}
                                         type="text"
                                         maxLength={6}
                                         value={pinCode}
                                         onChange={e => setPinCode(e.target.value)}
                                         required
-                                        placeholder="123456"
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-widest bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
+                                        placeholder="123456" />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Nueva Contraseña
-                                </label>
-                                <div className="relative">
-                                    <HiOutlineLockClosed className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                                    <input
+                                <Label htmlFor="reset-nueva-contrasena">Nueva Contraseña</Label>
+                                <TextInput id="reset-nueva-contrasena" icon={HiOutlineLockClosed}
                                         type="password"
                                         value={password}
                                         onChange={e => setPassword(e.target.value)}
                                         required
-                                        placeholder="Mínimo 8 caracteres"
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
+                                        placeholder="Mínimo 8 caracteres" />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Confirmar Nueva Contraseña
-                                </label>
-                                <div className="relative">
-                                    <HiOutlineLockClosed className="w-4 h-4 text-gray-400 absolute left-3 top-3 pointer-events-none" />
-                                    <input
+                                <Label htmlFor="reset-confirmar-nueva-contrase">Confirmar Nueva Contraseña</Label>
+                                <TextInput id="reset-confirmar-nueva-contrase" icon={HiOutlineLockClosed}
                                         type="password"
                                         value={confirmPassword}
                                         onChange={e => setConfirmPassword(e.target.value)}
                                         required
-                                        placeholder="Repite la contraseña"
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
-                                    />
-                                </div>
+                                        placeholder="Repite la contraseña" />
                             </div>
 
-                            <button
-                                type="submit"
-                                disabled={loading}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 transition disabled:opacity-50"
-                            >
+                            <Button type="submit" color="primary" size="md" className="w-full" disabled={loading}>
                                 {loading ? 'Restableciendo...' : 'Restablecer Contraseña'}
-                            </button>
+                            </Button>
                         </form>
                     )}
 

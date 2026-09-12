@@ -1,3 +1,6 @@
+/*
+ * Un `<h1>` y nada mas. No hay ningun control que migrar a Flowbite.
+ */
 
 
 const InicialPage = () => {
