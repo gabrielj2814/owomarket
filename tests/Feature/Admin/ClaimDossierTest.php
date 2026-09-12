@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\Admin\Application\UseCase\BuildClaimDossierUseCase;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
@@ -81,16 +82,40 @@ it('el expediente junta reclamación, identidad y entrega', function () {
         ->and($dossier['delivery']['shipment_evidence'])->toHaveCount(1);
 });
 
-it('el expediente NO incluye la cédula ni el RIF', function () {
-    // EL TEST QUE IMPORTA de la fase D. Meterlos en un payload que acaba en una captura de
-    // pantalla o en un ticket de soporte desharía el cifrado por la puerta de atrás. Quien
-    // tenga que verlos los pide expresamente.
+it('el expediente entrega la identidad completa del comerciante', function () {
+    /*
+     * pendiente-abogado: ESTE TEST SUSTITUYE A SU CONTRARIO, Y ESO NO ES UN DESCUIDO.
+     *
+     * Hasta el 11/09/2026 aquí se comprobaba que la cédula y el RIF NO salieran del
+     * expediente. La decisión de esa fecha, con el proyecto en desarrollo y sin usuarios
+     * reales, fue entregar todo lo que hay: sin identidad completa, una denuncia no tiene
+     * contra quién dirigirse.
+     *
+     * La pregunta de qué se le puede entregar legalmente a un comprador que denuncia SIGUE
+     * ABIERTA. Cuando llegue la respuesta del abogado como una lista de campos a quitar, el
+     * único sitio que tocar es el bloque `store` de `BuildClaimDossierUseCase`, y este test
+     * se ajusta con él.
+     *
+     * Se deja escrito aquí y no solo en el código porque **un test que se invierte sin
+     * explicación es indistinguible de uno que alguien rompió y "arregló"**.
+     */
     $dossier = app(BuildClaimDossierUseCase::class)->execute($this->claim->id);
 
-    expect(json_encode($dossier))->not->toContain('12345678')
-        ->and(json_encode($dossier))->not->toContain('401234567')
-        ->and($dossier['store'])->not->toHaveKey('cedula')
-        ->and($dossier['store'])->not->toHaveKey('rif');
+    expect($dossier['store']['cedula'])->toBe('V-12345678')
+        ->and($dossier['store']['rif'])->toBe('J-401234567')
+        ->and($dossier['store']['legal_name'])->toBe('María Pérez')
+        ->and($dossier['store']['phone'])->toBe('+58 412 1234567')
+        ->and($dossier['store']['address'])->toBe('Av. Principal, Caracas');
+});
+
+it('el documento del comerciante sigue cifrado en la base de datos', function () {
+    // Que el expediente lo ENTREGUE no significa que se guarde en claro. El cifrado en reposo
+    // no se toca: lo que cambió es quién puede leerlo a través de una puerta con permiso, no
+    // cómo está escrito en disco. Si este test se pone rojo, hay cédulas en texto plano.
+    $crudo = DB::table('tenant_kyc_profiles')->where('tenant_id', $this->tenant->id)->first();
+
+    expect($crudo->cedula)->not->toContain('12345678')
+        ->and($crudo->rif)->not->toContain('401234567');
 });
 
 it('el expediente trae la cronología completa', function () {

@@ -124,6 +124,23 @@ Route::middleware(['auth', 'staff:manage_support'])->group(function () {
     Route::post('/api/support/tickets/filter', FilterAdminSupportTicketsPOSTController::class);
     Route::post('/api/support/tickets/{id}/reply', AdminReplySupportTicketPOSTController::class);
     Route::patch('/api/support/tickets/{id}/status', UpdateAdminSupportTicketStatusPATCHController::class);
+
+    /*
+    | Reclamaciones y sus expedientes (subsistema 5, fase D).
+    |
+    | Va con soporte y no con pedidos porque es la mesa que atiende a quien reclama: el
+    | expediente existe para entregárselo a un comprador que quiere denunciar.
+    |
+    | Hasta que existió el listado, `BuildClaimDossierUseCase` era código inalcanzable --pedía
+    | un `claimId` y ninguna pantalla central listaba reclamaciones--.
+    |
+    | El expediente y el PDF van SEPARADOS del listado a propósito: el listado no lleva ningún
+    | dato de identidad y se consulta muchas veces; el expediente es una petición deliberada.
+    */
+    Route::get('/backoffice/{user_uuid}/claims', [\Src\Admin\Infrastructure\Http\Controller\ViewAdminClaimsPageGETController::class, 'index'])->name('central.backoffice.web.admin.claims');
+    Route::get('/api/claims', \Src\Admin\Infrastructure\Http\Controller\ListAdminClaimsGETController::class);
+    Route::get('/api/claims/{claimId}/dossier', \Src\Admin\Infrastructure\Http\Controller\GetAdminClaimDossierGETController::class);
+    Route::get('/api/claims/{claimId}/dossier.pdf', \Src\Admin\Infrastructure\Http\Controller\DownloadAdminClaimDossierPdfGETController::class);
 });
 
 // ---------------------------------------------------------------------------

@@ -12,6 +12,7 @@ import {
     HiIdentification,
     HiKey,
     HiReceiptTax,
+    HiScale,
     HiShieldCheck,
     HiShoppingBag,
     HiShoppingCart,
@@ -73,6 +74,11 @@ const SidebarDashboardComponent = () => {
                         </SidebarItem>
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/support`} icon={HiChatAlt2}>
                             Mesa de Soporte
+                        </SidebarItem>
+                        {/* Subsistema 5, fase D: sin esta entrada el expediente de reclamacion
+                            era inalcanzable, aunque su caso de uso existiera. */}
+                        <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/claims`} icon={HiScale}>
+                            Reclamaciones
                         </SidebarItem>
                         <SidebarItem href={`/admin/backoffice/${state.authUser.user_id}/exchange-rates`} icon={HiCurrencyDollar}>
                             Tasa BCV / Monedas

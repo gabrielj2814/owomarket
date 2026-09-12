@@ -214,7 +214,36 @@ sepa qué hacer, no que se sienta castigado.
 
 ---
 
-## Vista 4 — Expediente de reclamación (administrador)
+## Vista 4 — Expediente de reclamación (administrador) ✅ HECHA (12/09/2026)
+
+> **Lo entregado:** `ListAdminClaimsUseCase` (nuevo), tres controladores y sus rutas bajo
+> `staff:manage_support`, `AdminClaimDossierPage.tsx` con su servicio, y el PDF por dompdf
+> —el mismo camino que las facturas—.
+>
+> **Hizo falta un listado, y no estaba en el plan.** `BuildClaimDossierUseCase` pide un
+> `claimId` y ninguna pantalla central listaba reclamaciones, así que era código inalcanzable
+> por partida doble: sin ruta y sin forma de obtener el identificador.
+>
+> El listado y el expediente son **dos peticiones separadas** a propósito: la lista se consulta
+> muchas veces y no lleva ningún dato de identidad; el expediente es un clic deliberado. Esa
+> separación es lo que hace que el dato sensible viaje solo cuando alguien va a usarlo.
+>
+> ### ⚠️ El expediente SÍ incluye la cédula y el RIF de la tienda
+>
+> **Esto invierte lo que decía este plan**, y no es un descuido. Decisión del 11/09/2026, con el
+> proyecto en desarrollo y sin usuarios reales: se entrega todo lo que hay, porque sin identidad
+> completa una denuncia no tiene contra quién dirigirse. La pregunta legal sigue abierta y la
+> respuesta llegará como una lista de campos a quitar.
+>
+> Por eso los campos se arman en **un solo sitio** —el bloque `store` de
+> `BuildClaimDossierUseCase`, con su nota `pendiente-abogado:`— y ni el controlador, ni la
+> pantalla, ni el PDF filtran por su cuenta: dos sitios decidiendo qué sale acaban divergiendo.
+> Quitar un campo será borrar una línea.
+>
+> El cifrado en reposo **no se tocó**: hay un test que lo vigila. Lo que cambió es quién puede
+> leerlo a través de una puerta con permiso, no cómo está escrito en disco.
+
+### Cómo era antes de existir
 
 **Dónde:** `resources/js/pages/admin/support/AdminClaimDossierPage.tsx`
 
@@ -304,7 +333,7 @@ condiciona toda la vista, así que conviene tomarla antes de dibujar nada.
 | 2 | ~~**Reclamaciones de la tienda**~~ ✅ | El reloj ya corre y aprueba solo. Cada día sin esto son ventas revertidas sin que nadie las mirara |
 | 3 | ~~**Reputación**~~ ✅ | Barata —el cálculo existe— y es lo que da sentido a la 2 |
 | 4 | ~~**Estado de la reclamación (comprador)**~~ ✅ | Cierra el círculo del comprador |
-| 5 | **Expediente** | Solo se usa en el caso raro; puede esperar |
+| 5 | ~~**Expediente**~~ ✅ | Solo se usa en el caso raro; puede esperar |
 | 6 | **Pedidos del escaparate** | Proyecto aparte, con una decisión de autenticación por delante |
 
 ---

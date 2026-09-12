@@ -86,8 +86,8 @@ De las seis vistas de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md) *
 | # | Vista | Qué le falta |
 | :--- | :--- | :--- |
 | ~~4~~ | ~~Estado de la reclamación (comprador)~~ ✅ | Hecha el 11/09/2026, sin tocar backend |
-| 5 | Expediente de reclamación (administrador) | `BuildClaimDossierUseCase` sigue sin controlador ni ruta |
-| 6 | Pedidos del comprador en el escaparate | Superficie nueva, con una decisión de autenticación por delante |
+| ~~5~~ | ~~Expediente de reclamación (administrador)~~ ✅ | Hecha el 12/09/2026, con su PDF |
+| 6 | Pedidos del comprador en el escaparate | **La única que queda.** Superficie nueva, con una decisión de autenticación por delante |
 
 ---
 
@@ -170,6 +170,13 @@ Dos preguntas concretas, sin respuesta y sin las cuales no conviene publicar té
 
 1. **¿Qué datos de identidad de un comerciante se le pueden entregar a un comprador** que
    denuncia, y cuáles solo a la autoridad?
+
+   > **Mientras tanto se entregan TODOS**, cédula y RIF incluidos. Decisión del 11/09/2026, con
+   > el proyecto en desarrollo y sin usuarios reales: sin identidad completa una denuncia no
+   > tiene contra quién dirigirse. **La respuesta del abogado se espera como una lista de campos
+   > a quitar**, y por eso todos salen de un único sitio —el bloque `store` de
+   > `BuildClaimDossierUseCase`, marcado con `pendiente-abogado:`—. Quitar uno es borrar una
+   > línea. **Esto hay que resolverlo antes de producción.**
 2. **¿Qué dice la ley venezolana sobre la responsabilidad solidaria de un marketplace** que cobra
    todas las ventas? Ofrecer cobertura propia con tope acerca todavía más a la figura de
    vendedor.

@@ -23,6 +23,10 @@ use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
  *
  * No construye nada: junta lo que los subsistemas 1, 3 y 5 ya guardaron por su cuenta. Que eso
  * sea una simple lectura es la señal de que las piezas anteriores quedaron bien puestas.
+ *
+ * **Ojo con el bloque `store`:** es el único sitio que decide qué datos de identidad del
+ * comerciante salen del servidor, y hoy salen TODOS por una decisión explícita de fase de
+ * desarrollo. Lleva su propia nota `pendiente-abogado:`; léela antes de tocarlo.
  */
 final class BuildClaimDossierUseCase
 {
@@ -78,14 +82,34 @@ final class BuildClaimDossierUseCase
              * La identidad de la tienda: sin esto una denuncia no tiene contra quien
              * dirigirse, que es el valor principal que la decision le atribuye al KYC.
              *
-             * **La cedula y el RIF NO van aqui.** El modelo los oculta al serializar y este
-             * expediente no los desentierra: quien tenga que verlos los pide expresamente, con
-             * su registro. Meterlos en un payload que acaba en una captura de pantalla o en un
-             * ticket de soporte desharia el cifrado por la puerta de atras.
+             * =====================================================================
+             * pendiente-abogado: ESTE BLOQUE ES EL UNICO SITIO DONDE SE DECIDE QUE
+             * DATOS DE IDENTIDAD DEL COMERCIANTE SALEN DEL SERVIDOR.
+             * =====================================================================
+             *
+             * Decision del 11/09/2026, con el proyecto todavia EN DESARROLLO y sin usuarios
+             * reales: se entrega **todo lo que hay**, cedula y RIF incluidos. La pregunta de
+             * que puede entregarsele legalmente a un comprador que denuncia sigue abierta
+             * --es una de las dos pendientes con abogado en `ESTADO_Y_PENDIENTES.md`-- y la
+             * respuesta llegara como una lista de campos a quitar.
+             *
+             * Por eso los campos se arman AQUI y solo aqui: quitar uno tiene que ser borrar
+             * una linea, no una excavacion por el controlador, la pantalla y el PDF.
+             *
+             * **Lo que esto revierte, para que nadie lo deshaga sin saberlo:** `cedula` y
+             * `rif` estan cifrados en reposo y el modelo los oculta al serializar,
+             * precisamente para que no salgan nunca. Leerlos aqui los descifra y los manda al
+             * navegador y a un PDF descargable. Es deliberado y es temporal.
+             *
+             * ANTES DE PRODUCCION: revisar este bloque con la respuesta del abogado en la
+             * mano. Si llega y dice «ninguno», este bloque vuelve a lo que era.
              */
             'store' => [
                 'tenant_id' => $reclamacion->tenant_id,
                 'legal_name' => $kyc?->legal_name,
+                'cedula' => $kyc?->cedula,
+                'nationality' => $kyc?->nationality,
+                'rif' => $kyc?->rif,
                 'phone' => $kyc?->phone,
                 'address' => $kyc?->address,
                 'kyc_status' => $kyc?->status ?? 'missing',
