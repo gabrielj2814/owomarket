@@ -124,6 +124,13 @@ Route::get('/owner/backoffice/{user_uuid}/dashboard', [ViewDashboardCentralTenan
 Route::get('/owner/backoffice/{user_uuid}/wallet', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerWalletGETController::class)->name('central.backoffice.web.tenant.owner.wallet')->middleware(['auth', 'own_user']);
 Route::get('/owner/backoffice/{user_uuid}/catalog', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerCentralCatalogGETController::class)->name('central.backoffice.web.tenant.owner.catalog')->middleware(['auth', 'own_user']);
 Route::get('/owner/backoffice/{user_uuid}/billing', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerBillingGETController::class)->name('central.backoffice.web.tenant.owner.billing')->middleware(['auth', 'own_user']);
+/*
+ * Subsistema 5: donde el comerciante responde a una reclamación.
+ *
+ * Sin esta pantalla el reloj `returns:auto-resolve` aprobaba TODO por silencio: resuelve a
+ * favor del comprador lo que la tienda no contesta en plazo, y no había dónde contestar.
+ */
+Route::get('/owner/backoffice/{user_uuid}/returns', \Src\Tenant\Infrastructure\Http\Controller\ViewTenantOwnerReturnsGETController::class)->name('central.backoffice.web.tenant.owner.returns')->middleware(['auth', 'own_user']);
 
 // A6: el hermano de /create/account. Tiene sesion, pero 'auth' no es un tope: un
 // propietario podia crear tiendas —y bases de datos— en bucle igual que un anonimo.

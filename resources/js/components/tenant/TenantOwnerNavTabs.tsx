@@ -6,11 +6,12 @@ import {
     HiOutlineCurrencyDollar,
     HiOutlineCube,
     HiOutlineChatBubbleLeftRight,
+    HiOutlineReceiptRefund,
 } from 'react-icons/hi2';
 
 interface TenantOwnerNavTabsProps {
     userId: string;
-    activeTab: 'dashboard' | 'wallet' | 'catalog' | 'billing' | 'support';
+    activeTab: 'dashboard' | 'wallet' | 'catalog' | 'billing' | 'returns' | 'support';
 }
 
 export const TenantOwnerNavTabs: React.FC<TenantOwnerNavTabsProps> = ({ userId, activeTab }) => {
@@ -38,6 +39,14 @@ export const TenantOwnerNavTabs: React.FC<TenantOwnerNavTabsProps> = ({ userId, 
             label: 'Suscripciones & Facturas B2B',
             href: `/tenant/owner/backoffice/${userId}/billing`,
             icon: HiOutlineCreditCard,
+        },
+        {
+            // Subsistema 5. Va antes de soporte a proposito: una reclamacion tiene un reloj
+            // corriendo y soporte no, asi que es lo que hay que mirar primero.
+            id: 'returns',
+            label: 'Reclamaciones',
+            href: `/tenant/owner/backoffice/${userId}/returns`,
+            icon: HiOutlineReceiptRefund,
         },
         {
             id: 'support',

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\CentralCustomer\Application\UseCases;
 
+use Src\CentralCustomer\Application\Service\ClaimResponseWindow;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
-use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Throwable;
 
 /**
@@ -24,16 +24,15 @@ use Throwable;
 final class AutoResolveStaleReturnsUseCase
 {
     /**
-     * Dias que tiene la tienda para responder antes de que se resuelva sin ella.
-     *
-     * Cinco: suficiente para atender un caso en dias laborables, corto para que el comprador
-     * no se quede semanas esperando. Cero no es valido -- resolver en el acto no le daria a la
-     * tienda ninguna oportunidad de responder, que es justo lo que el reloj quiere provocar.
+     * El plazo NO se calcula aqui: lo dice `ClaimResponseWindow`, el mismo servicio que lee la
+     * pantalla del comerciante para mostrar la cuenta atras. Si cada uno tuviera su copia,
+     * podrian decir cosas distintas -- y entonces la pantalla prometeria dias que este comando
+     * no respeta, y el comerciante perderia la venta despues de que le dijeramos que tenia
+     * tiempo.
      */
-    private const DIAS_POR_DEFECTO = 5;
-
     public function __construct(
-        private readonly ResolveReturnRequestUseCase $resolver
+        private readonly ResolveReturnRequestUseCase $resolver,
+        private readonly ClaimResponseWindow $plazo
     ) {}
 
     /**
@@ -41,7 +40,7 @@ final class AutoResolveStaleReturnsUseCase
      */
     public function execute(): int
     {
-        $limite = now()->subDays($this->diasDeEspera());
+        $limite = now()->subDays($this->plazo->days());
 
         $vencidas = CustomerReturnRequest::whereIn('status', CustomerReturnRequest::ABIERTAS)
             ->where('created_at', '<=', $limite)
@@ -67,21 +66,5 @@ final class AutoResolveStaleReturnsUseCase
         }
 
         return $resueltas;
-    }
-
-    private function diasDeEspera(): int
-    {
-        try {
-            $valor = CentralSetting::query()
-                ->where('group', 'payment')
-                ->where('key', 'central_claim_response_days')
-                ->value('value');
-        } catch (Throwable) {
-            return self::DIAS_POR_DEFECTO;
-        }
-
-        return $valor === null || trim((string) $valor) === ''
-            ? self::DIAS_POR_DEFECTO
-            : max(1, (int) $valor);
     }
 }
