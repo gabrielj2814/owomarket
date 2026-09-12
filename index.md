@@ -16,10 +16,17 @@
 El subsistema 5 quedó cerrado el 12/09/2026: un comprador de tienda ya puede reclamar. Lo que
 falta ahora no es una pieza del flujo, es que **alguien se entere** de que el flujo ocurrió.
 
-Los cinco subsistemas de garantías están construidos y todos dependen de eso: que la tienda sepa
-que tiene una reclamación con un reloj corriendo, que el comprador sepa que le respondieron, que
-el comerciante sepa que le verificaron el KYC. Hoy cada actor tiene que entrar a mirar por si
-acaso — y el reloj de reclamaciones corre igual.
+Los cinco subsistemas de garantías están construidos y todos dependen de eso. **Dos de los
+silencios no son comodidad, son dinero que se mueve solo:**
+
+- Se abre una reclamación contra una tienda y **el comerciante no se entera**. El reloj resuelve
+  a favor del comprador a los 5 días: pierde la venta sin haber sabido que tenía que contestar.
+- La tienda declara la entrega y **el comprador no se entera**. Confirmar es lo que libera el
+  dinero, así que la venta se libera por plazo y él pierde su ventana para reclamar sin saberlo.
+
+El plan está **reescrito el 12/09/2026 con el código delante**, en cuatro fases y con las
+trampas anotadas antes de caer en ellas — entre ellas las cuatro clases `User` sobre la misma
+tabla, que sin normalizar harían desaparecer avisos sin dar ningún error.
 
 → [`planes/futuros/PLAN_NOTIFICACIONES.md`](planes/futuros/PLAN_NOTIFICACIONES.md)
 
