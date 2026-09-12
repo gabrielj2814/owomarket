@@ -2,6 +2,7 @@
 
 > **Última actualización:** 12/09/2026 · Rama `moduleProduct`
 > **Estado de la suite:** 863 tests de backend, 87 de frontend, `tsc --noEmit` limpio.
+> **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
 > Está ordenado por lo que conviene hacer antes, no por tamaño.
@@ -76,21 +77,20 @@ En desarrollo da igual. **Antes de que haya compras reales, no.**
 
 ---
 
-## 🟡 Migración a Flowbite
+## ✅ Migración a Flowbite — terminada
 
-**56 páginas de 83 ya lo usan**, y 21 componentes de 33. `reglas.md` §1.3 lo exige.
+**81 de 83 páginas y 30 de 34 componentes.** Las tres zonas tienen su propio tema
+(`portalTheme`, `tenantPanelTheme`, `storefrontTheme`) y el aspecto no cambió en ninguna.
 
-El portal del cliente ya tiene su tema (`portalTheme`), así que sus 9 pantallas restantes son
-mecánicas. **El escaparate y el panel del comerciante necesitan decidir su tema antes de
-tocarlos** — si no, cada pantalla se migrará con su propio `className` y habremos repetido el
-problema que el tema viene a resolver. Y el escaparate es la cara pública: cómo se ve es una
-decisión de producto.
-
-Aparte: `AdminMasterBrandsPage`, `AdminMasterCategoriesPage` y `AdminHomeBannersPage` tienen el
-botón de borrar **sin relleno** por usar `color="failure"`, que no existe como color de botón en
-esta versión de Flowbite. Un minuto cada uno.
+Lo que queda fuera lo está a propósito, con la razón escrita en cada fichero. Los seis botones
+de borrar del backoffice que se veían como texto plano —por usar un color que no existe— están
+arreglados.
 
 → [`planes/por_hacer/PLAN_MIGRACION_FLOWBITE.md`](planes/por_hacer/PLAN_MIGRACION_FLOWBITE.md)
+
+**Lo que sí queda:** el escaparate se migró conservando su aspecto. El **refresco de diseño**
+que se decidió hacer encima está pendiente, y necesita dirección: «refrescar» puede ser desde
+afinar espaciados hasta una identidad visual nueva, y es la cara pública.
 
 ---
 

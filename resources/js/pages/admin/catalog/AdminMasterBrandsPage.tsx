@@ -415,7 +415,7 @@ const AdminMasterBrandsPage: FC<AdminMasterBrandsPageProps> = ({
                                                     <Button size="xs" color="light" onClick={() => handleOpenEdit(b)}>
                                                         <HiPencilAlt className="w-4 h-4 text-blue-600" />
                                                     </Button>
-                                                    <Button size="xs" color="failure" onClick={() => {
+                                                    <Button size="xs" color="red" onClick={() => {
                                                         setBrandToDelete(b);
                                                         setDeleteModalOpen(true);
                                                     }}>
@@ -542,7 +542,7 @@ const AdminMasterBrandsPage: FC<AdminMasterBrandsPageProps> = ({
                             <Button color="gray" onClick={() => setDeleteModalOpen(false)} disabled={deleting}>
                                 Cancelar
                             </Button>
-                            <Button color="failure" type="submit" disabled={deleting}>
+                            <Button color="red" type="submit" disabled={deleting}>
                                 {deleting ? <Spinner size="sm" className="mr-2" /> : <HiTrash className="w-4 h-4 mr-2" />}
                                 Confirmar Eliminación
                             </Button>

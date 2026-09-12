@@ -242,7 +242,7 @@ const AdminMasterCategoriesPage: FC<AdminMasterCategoriesPageProps> = ({
                             <Button size="xs" color="light" onClick={() => handleOpenEdit(c)}>
                                 <HiPencilAlt className="w-3.5 h-3.5 text-blue-600" />
                             </Button>
-                            <Button size="xs" color="failure" onClick={() => {
+                            <Button size="xs" color="red" onClick={() => {
                                 setCategoryToDelete(c);
                                 setDeleteModalOpen(true);
                             }}>
@@ -525,7 +525,7 @@ const AdminMasterCategoriesPage: FC<AdminMasterCategoriesPageProps> = ({
                             <Button color="gray" onClick={() => setDeleteModalOpen(false)} disabled={deleting}>
                                 Cancelar
                             </Button>
-                            <Button color="failure" type="submit" disabled={deleting}>
+                            <Button color="red" type="submit" disabled={deleting}>
                                 {deleting ? <Spinner size="sm" className="mr-2" /> : <HiTrash className="w-4 h-4 mr-2" />}
                                 Confirmar Eliminación
                             </Button>

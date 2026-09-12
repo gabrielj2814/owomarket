@@ -1,6 +1,6 @@
 # Plan — Migrar el frontend a Flowbite
 
-> **Estado:** 🟨 En curso · Redactado el 11/09/2026
+> **Estado:** ✅ TERMINADA el 12/09/2026 · Redactada el 11/09/2026
 >
 > `reglas.md` §1.3 ya exige componentes de Flowbite React. Este documento no cambia la regla:
 > recoge **dónde no se está cumpliendo** y cómo cerrarlo sin romper el aspecto de nada.
@@ -43,89 +43,67 @@ Dos consecuencias que conviene tener presentes:
 
 ---
 
-## ✅ Hecho
+## ✅ Terminada
 
-| Pantalla | Nota |
+**81 de 83 páginas y 30 de 34 componentes** usan Flowbite. Lo que falta está fuera a
+propósito, y cada fichero lleva escrito el porqué (ver más abajo).
+
+Se empezó en 55/81. Las tres zonas quedaron con **su propio tema**, y son deliberadamente
+distintos: son tres productos con tres audiencias.
+
+| Zona | Tema | Dónde se aplica |
+| :--- | :--- | :--- |
+| Portal del cliente | `portalTheme` | `CustomerAccountLayout`, con `root` para cortar la herencia |
+| Panel del comerciante | `tenantPanelTheme` | `TenantOwnerShell` |
+| Escaparate y marketplace | `storefrontTheme` | `CentralLayout` y `StorefrontLayout` |
+
+### Por qué el panel no cuelga su tema de `Dashboard`
+
+Sería el sitio obvio, pero `Dashboard` lo comparten el panel del comerciante Y el backoffice
+del administrador, que usa el aspecto por defecto. Colgarlo ahí habría repintado el backoffice
+entero de rebote. Lo aplica `TenantOwnerShell`, que además recoge lo que esas pantallas ya
+repetían: layout, `<Head>` y pestañas.
+
+### Por qué el portal corta la herencia
+
+`CustomerAccountLayout` se construye sobre `CentralLayout`, que aplica `storefrontTheme`. Sin
+`root` en su `<ThemeProvider>` los dos temas se fusionarían y el portal acabaría con valores que
+no le corresponden — **sin dar ningún error**.
+
+---
+
+## Lo que queda fuera a propósito
+
+`reglas.md` §1.3 admite Tailwind puro para lo que Flowbite no cubra. Estos son esos casos, y
+cada uno lleva la razón escrita en su propio fichero para que nadie los "arregle":
+
+| Fichero | Por qué |
 | :--- | :--- |
-| `CustomerReturnsPage` | La primera. Sirvió de prueba del tema y además incorporó la vista del comprador del subsistema 5 |
-| `CustomerAccountLayout` | Envuelve el portal en `<ThemeProvider theme={portalTheme}>` |
+| `CurrencyPriceDisplay` | Primitiva tipográfica con su propia escala de tamaños, usada en las TRES zonas. Un componente tematizado se vería distinto en cada una |
+| `TenantOwnerNavTabs` | Es navegación: cada pestaña es un `<Link>` de Inertia. El `Tabs` de Flowbite gestiona su propio estado y renderiza paneles |
+| `StorefrontFooter` | Sus partes distintivas (métodos de pago, garantías, marca) no existen en el `Footer` de Flowbite, y sus columnas son `<ul><li><a>` planos — eso es HTML, no un componente reinventado |
+| `OrderTrackingTimeline` | Sus botones SÍ se migraron; la línea de tiempo no tiene equivalente |
+| `welcome.tsx`, `InicialPage.tsx` | Un título, una imagen y un párrafo |
+
+También se conservan en Tailwind, dentro de pantallas ya migradas: los selectores de cantidad
+(Flowbite no tiene stepper), las zonas de arrastrar ficheros con sus miniaturas, y los
+selectores de método de pago —que son tarjetas grandes con icono y descripción, no botones—.
 
 ---
 
-## ⬜ Portal del cliente — lo que queda
+## Tres trampas que costó descubrir
 
-El tema ya está puesto, así que estas nueve son mecánicas: sustituir marcado por componentes y
-**borrar** el `className` que el tema ya cubre.
+**Colores que no existen.** En flowbite-react 0.12, `success` y `failure` valen en insignias
+pero **no en botones**; `warning` tampoco. Un color inexistente deja el elemento **sin relleno,
+sin error y sin que nadie lo reporte**. Los que hacían falta viven ahora en los temas.
 
-| Pantalla | Líneas | Qué tiene dentro |
-| :--- | ---: | :--- |
-| `CustomerAddressesPage` | 335 | Modal a mano, formulario |
-| `CustomerOrdersPage` | 257 | Tarjetas, insignias de estado |
-| `CustomerReviewsPage` | 255 | Modal a mano, formulario |
-| `CustomerOrderDetailPage` | 255 | Tarjetas, cronología |
-| `CustomerDashboardPage` | 246 | Tarjetas de resumen |
-| `CustomerProfilePage` | 231 | Formulario |
-| `CustomerWishlistPage` | 167 | Tarjetas de producto |
-| `CustomerInvoicesPage` | 130 | Tabla |
-| `CustomerCouponsPage` | 129 | Tarjetas |
-| `CustomerSupportPage` | 576 | Vive en `customer/support/`; la mayor del portal |
+**Un componente compartido no puede usar colores de un tema.** `DeliveryConfirmationPanel` se
+pinta en el portal y en el escaparate; `OrderTrackingTimeline` y `TenantKycCard`, en dos sitios
+cada uno. Todos usan colores de Flowbite (`blue`, `green`, `light`), porque un color propio de
+un tema saldría sin relleno en la otra zona.
 
-Y dos componentes que el portal usa: `DeliveryConfirmationPanel` (163).
-
----
-
-## ⬜ Fuera del portal del cliente
-
-Estas **no** están cubiertas por `portalTheme` y cada grupo necesita decidir su propio aspecto
-antes de tocarlas. No conviene empezarlas sin esa decisión.
-
-### Escaparate y marketplace central
-
-Es la cara pública: cambiar cómo se ve es una decisión de producto, no de refactor.
-
-| Pantalla | Líneas |
-| :--- | ---: |
-| `marketplace/checkout/CentralCheckoutPage` | 704 |
-| `marketplace/landing/MerchantLandingPage` | 595 |
-| `marketplace/home/centralHomePage` | 447 |
-| `marketplace/product/CentralProductDetailPage` | 436 |
-| `marketplace/catalog/CentralCatalogPage` | 360 |
-| `marketplace/cart/CentralCartPage` | 287 |
-| `marketplace/checkout/CentralOrderConfirmationPage` | 241 |
-
-Con sus componentes: `StorefrontFooter` (222), `CentralCartDrawer` (188),
-`OrderTrackingTimeline` (148), `StorefrontLayout` (96).
-
-### Panel del comerciante
-
-| Pantalla | Líneas |
-| :--- | ---: |
-| `tenant/support/TenantOwnerSupportPage` | 709 |
-| `tenant/support/TenantStoreSupportPage` | 605 |
-| `tenant/wallet/TenantOwnerWalletPage` | 552 |
-| `tenant/catalog/TenantOwnerCentralCatalogPage` | 312 |
-| `tenant/billing/TenantOwnerBillingPage` | 282 |
-
-Con sus componentes: `TenantKycCard` (181), `TenantReputationCard` (116),
-`ShipmentEvidenceCard` (113), `CurrencyPriceDisplay` (174), `TenantOwnerNavTabs` (84).
-
-> `TenantReputationCard` es de 11/09/2026 y se escribió con Tailwind para no desentonar con la
-> billetera que la rodea, que tampoco usa Flowbite. Se migra **con** esa pantalla, no antes:
-> migrarla sola la dejaría siendo la única distinta.
-
-### Autenticación y sueltas
-
-`auth/ResetPasswordPage` (201), `auth/ForgotPasswordPage` (118), `InicialPage` (14),
-`welcome.tsx` (31).
-
----
-
-## Dónde se está
-
-| | Con Flowbite | Total |
-| :--- | ---: | ---: |
-| Páginas | 55 | 81 |
-| Componentes | 21 | 33 |
+**`Card` no acepta `as`.** Un formulario va DENTRO del `Card`, no al revés: envolverlo por fuera
+deja el borde de la tarjeta separado del área que el formulario ocupa.
 
 ---
 
@@ -143,15 +121,7 @@ Con sus componentes: `TenantKycCard` (181), `TenantReputationCard` (116),
 
 ---
 
-## Dos trampas ya pisadas
+## Y una del `<form>` en los modales
 
-**`color="success"` y `color="failure"` NO existen como color de botón** en flowbite-react
-0.12.10 — solo `red`, `green`, `blue`, `light`, `dark`… Sí son válidos en las **insignias**, que
-es de donde viene la confusión. Un color inexistente deja el botón **sin relleno**, así que la
-acción primaria acaba pareciendo menos importante que «Cancelar», y nadie lo reporta.
-
-Sigue presente en `AdminMasterBrandsPage`, `AdminMasterCategoriesPage` y `AdminHomeBannersPage`,
-donde el botón de borrar se ve como texto plano.
-
-**Un `<form>` alrededor de `ModalBody` + `ModalFooter`**, no dentro de cada uno: el botón de
+Un `<form>` va alrededor de `ModalBody` + `ModalFooter`, no dentro de cada uno: el botón de
 enviar vive en el pie y necesita estar dentro del formulario para que `type="submit"` funcione.
