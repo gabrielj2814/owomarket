@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Head } from '@inertiajs/react';
-import Dashboard from '@/components/layouts/Dashboard';
+import TenantOwnerShell from '@/components/tenant/TenantOwnerShell';
+import { Button, Label, Modal, ModalBody, ModalFooter, ModalHeader, Select, Textarea, TextInput } from 'flowbite-react';
 import {
     HiOutlineChatBubbleLeftRight,
     HiOutlinePlus,
@@ -221,8 +221,7 @@ export const TenantStoreSupportPage: React.FC<TenantStoreSupportPageProps> = ({
     };
 
     return (
-        <Dashboard user_uuid={user_id}>
-            <Head title={`Soporte Técnico - ${store_name}`} />
+        <TenantOwnerShell userId={user_id} title={`Soporte Técnico - ${store_name}`}>
 
             <div className="p-4 sm:p-6 space-y-6">
                 {/* Header */}
@@ -423,12 +422,11 @@ export const TenantStoreSupportPage: React.FC<TenantStoreSupportPageProps> = ({
                                     >
                                         <HiOutlinePaperClip className="w-5 h-5" />
                                     </button>
-                                    <input
-                                        type="text"
+                                    <TextInput
+                                        className="flex-1"
                                         placeholder="Escribe una respuesta o aclaratoria..."
                                         value={replyText}
                                         onChange={(e) => setReplyText(e.target.value)}
-                                        className="flex-1 p-3 rounded-2xl border text-xs bg-gray-50 dark:bg-gray-900"
                                     />
                                     <button
                                         type="submit"
@@ -445,76 +443,67 @@ export const TenantStoreSupportPage: React.FC<TenantStoreSupportPageProps> = ({
             </div>
 
             {/* Modal Crear Ticket Tienda */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-xl w-full p-6 space-y-4 shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between pb-3 border-b">
-                            <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-500" />
-                                Reportar Incidencia en {store_name}
-                            </h3>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400">
-                                <HiOutlineXMark className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateTicket} className="space-y-3">
-                            <div>
-                                <label className="block text-xs font-bold mb-1">Título del Reporte *</label>
-                                <input
-                                    type="text"
-                                    placeholder="Ej: Error al calcular tasa de cambio en envíos"
-                                    value={subject}
-                                    onChange={(e) => setSubject(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border text-xs bg-gray-50 dark:bg-gray-900"
-                                    required
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-3">
+            {(
+                <Modal show={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} size="xl">
+                    <ModalHeader>Reportar Incidencia en {store_name}</ModalHeader>
+                    <form onSubmit={handleCreateTicket}>
+                        <ModalBody>
+                            <div className="space-y-3">
                                 <div>
-                                    <label className="block text-xs font-bold mb-1">Categoría</label>
-                                    <select
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border text-xs bg-gray-50 dark:bg-gray-900"
-                                    >
-                                        <option value="technical_error">Fallo Técnico en Backoffice</option>
-                                        <option value="products_stock">Catálogo y Stock</option>
-                                        <option value="billing_taxes">Facturación e Impuestos</option>
-                                        <option value="shipping">Envíos y Logística</option>
-                                        <option value="other">Otro</option>
-                                    </select>
+                                    <Label htmlFor="inc-titulo">Título del Reporte *</Label>
+                                    <TextInput
+                                        id="inc-titulo"
+                                        placeholder="Ej: Error al calcular tasa de cambio en envíos"
+                                        value={subject}
+                                        onChange={(e) => setSubject(e.target.value)}
+                                        required
+                                    />
                                 </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <Label htmlFor="inc-categoria">Categoría</Label>
+                                        <Select
+                                            id="inc-categoria"
+                                            value={category}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                        >
+                                            <option value="technical_error">Fallo Técnico en Backoffice</option>
+                                            <option value="products_stock">Catálogo y Stock</option>
+                                            <option value="billing_taxes">Facturación e Impuestos</option>
+                                            <option value="shipping">Envíos y Logística</option>
+                                            <option value="other">Otro</option>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="inc-prioridad">Prioridad</Label>
+                                        <Select
+                                            id="inc-prioridad"
+                                            value={priority}
+                                            onChange={(e) => setPriority(e.target.value as any)}
+                                        >
+                                            <option value="low">Baja</option>
+                                            <option value="medium">Media</option>
+                                            <option value="high">Alta</option>
+                                            <option value="urgent">Urgente</option>
+                                        </Select>
+                                    </div>
+                                </div>
+
                                 <div>
-                                    <label className="block text-xs font-bold mb-1">Prioridad</label>
-                                    <select
-                                        value={priority}
-                                        onChange={(e) => setPriority(e.target.value as any)}
-                                        className="w-full p-2.5 rounded-xl border text-xs bg-gray-50 dark:bg-gray-900"
-                                    >
-                                        <option value="low">Baja</option>
-                                        <option value="medium">Media</option>
-                                        <option value="high">Alta</option>
-                                        <option value="urgent">Urgente</option>
-                                    </select>
+                                    <Label htmlFor="inc-descripcion">Descripción del Fallo *</Label>
+                                    <Textarea
+                                        id="inc-descripcion"
+                                        rows={4}
+                                        placeholder="Describe qué ocurrió y cómo reproducir el error..."
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        required
+                                    />
                                 </div>
-                            </div>
 
                             <div>
-                                <label className="block text-xs font-bold mb-1">Descripción del Fallo *</label>
-                                <textarea
-                                    rows={4}
-                                    placeholder="Describe qué ocurrió y cómo reproducir el error..."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border text-xs bg-gray-50 dark:bg-gray-900"
-                                    required
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold mb-1">Fotos o Videos de Evidencia</label>
+                                <Label htmlFor="inc-evidencia">Fotos o Videos de Evidencia</Label>
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -557,25 +546,18 @@ export const TenantStoreSupportPage: React.FC<TenantStoreSupportPageProps> = ({
                                 )}
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-3 border-t">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-500"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20"
-                                >
-                                    {loading ? 'Enviando...' : 'Generar Ticket'}
-                                </button>
                             </div>
-                        </form>
-                    </div>
-                </div>
+                        </ModalBody>
+                        <ModalFooter>
+                            <Button type="submit" color="primary" size="sm" disabled={loading}>
+                                <span>{loading ? 'Enviando...' : 'Enviar Reporte'}</span>
+                            </Button>
+                            <Button type="button" color="subtle" size="sm" onClick={() => setIsCreateModalOpen(false)}>
+                                Cancelar
+                            </Button>
+                        </ModalFooter>
+                    </form>
+                </Modal>
             )}
 
             {/* Visor Multimedia Modal */}
@@ -598,7 +580,7 @@ export const TenantStoreSupportPage: React.FC<TenantStoreSupportPageProps> = ({
                     </div>
                 </div>
             )}
-        </Dashboard>
+        </TenantOwnerShell>
     );
 };
 

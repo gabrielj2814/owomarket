@@ -1,4 +1,5 @@
 import TenantKycServices from '@/Services/TenantKycServices';
+import { Alert, Button, FileInput, Label, TextInput } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 
 /**
@@ -63,24 +64,18 @@ const TenantKycCard: React.FC<TenantKycCardProps> = ({ tenantId, onVerified }) =
 
     if (kyc.status === 'verified') {
         return (
-            <div
-                data-testid="kyc-verified"
-                className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300"
-            >
+            <Alert data-testid="kyc-verified" color="success" className="mb-4">
                 <span className="font-black">Identidad verificada.</span> Puedes solicitar retiros con normalidad.
-            </div>
+            </Alert>
         );
     }
 
     if (kyc.status === 'pending') {
         return (
-            <div
-                data-testid="kyc-pending"
-                className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300"
-            >
+            <Alert data-testid="kyc-pending" color="warning" className="mb-4">
                 <span className="font-black">Verificación en revisión.</span> Te avisaremos en cuanto esté lista. Hasta
                 entonces no podrás solicitar retiros.
-            </div>
+            </Alert>
         );
     }
 
@@ -108,26 +103,20 @@ const TenantKycCard: React.FC<TenantKycCardProps> = ({ tenantId, onVerified }) =
 
     const campo = (name: keyof typeof form, label: string, placeholder?: string) => (
         <div>
-            <label htmlFor={`kyc-${name}`} className="mb-1 block text-xs font-bold text-gray-500 dark:text-gray-400">
-                {label}
-            </label>
-            <input
+            <Label htmlFor={`kyc-${name}`}>{label}</Label>
+            <TextInput
                 id={`kyc-${name}`}
-                type="text"
                 value={form[name]}
                 placeholder={placeholder}
+                color={errors[name] ? 'failure' : undefined}
                 onChange={(e) => setForm({ ...form, [name]: e.target.value })}
-                className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs dark:border-gray-700 dark:bg-gray-900"
             />
             {errors[name] && <p className="mt-1 text-xs font-bold text-red-600">{errors[name][0]}</p>}
         </div>
     );
 
     return (
-        <div
-            data-testid="kyc-form"
-            className="mb-4 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-4 text-xs text-sky-900 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-200"
-        >
+        <Alert data-testid="kyc-form" color="info" className="mb-4">
             <h3 className="mb-1 text-sm font-black">Verifica tu identidad para poder retirar</h3>
             <p className="mb-3 text-xs">
                 Necesitamos estos datos antes de enviarte dinero. Puedes seguir vendiendo mientras tanto.
@@ -152,29 +141,23 @@ const TenantKycCard: React.FC<TenantKycCardProps> = ({ tenantId, onVerified }) =
             <div className="mt-3">{campo('address', 'Dirección completa')}</div>
 
             <div className="mt-3">
-                <label htmlFor="kyc-document" className="mb-1 block text-xs font-bold text-gray-500 dark:text-gray-400">
-                    Foto de tu cédula (opcional)
-                </label>
-                <input
+                <Label htmlFor="kyc-document">Foto de tu cédula (opcional)</Label>
+                <FileInput
                     id="kyc-document"
-                    type="file"
                     accept="image/*,application/pdf"
                     onChange={(e) => setDocument(e.target.files?.[0] ?? null)}
-                    className="block w-full text-xs text-gray-500"
                 />
             </div>
 
             {message && <p className="mt-3 text-xs font-bold">{message}</p>}
 
-            <button
-                type="button"
-                onClick={enviar}
-                disabled={sending}
-                className="mt-3 rounded-xl bg-sky-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-sky-700 disabled:opacity-50"
-            >
+            {/* `blue` y no `primary`: esta tarjeta se pinta en la billetera, dentro del tema
+                del panel, pero tambien podria usarse fuera de el. Un color de Flowbite funciona
+                en los dos sitios. */}
+            <Button type="button" color="blue" size="xs" className="mt-3" onClick={enviar} disabled={sending}>
                 {sending ? 'Enviando…' : 'Enviar para verificación'}
-            </button>
-        </div>
+            </Button>
+        </Alert>
     );
 };
 

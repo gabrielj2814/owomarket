@@ -1,4 +1,5 @@
 import OrderServices, { DeliveryStatus } from '@/Services/OrderServices';
+import { Button, FileInput, Label } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 
 /**
@@ -82,28 +83,23 @@ const ShipmentEvidenceCard: React.FC<ShipmentEvidenceCardProps> = ({ orderId, on
                 </p>
             ) : (
                 <div className="space-y-2">
-                    <label htmlFor={`shipment-evidence-${orderId}`} className="sr-only">
+                    <Label htmlFor={`shipment-evidence-${orderId}`} className="sr-only">
                         Adjuntar evidencia del envío
-                    </label>
-                    <input
+                    </Label>
+                    <FileInput
                         id={`shipment-evidence-${orderId}`}
-                        type="file"
                         multiple
                         accept="image/*,video/*"
                         onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-                        className="block w-full text-xs text-gray-500"
                     />
 
                     {error && <p className="text-xs font-bold text-red-600">{error}</p>}
 
-                    <button
-                        type="button"
-                        onClick={subir}
-                        disabled={sending || files.length === 0}
-                        className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-blue-700 disabled:opacity-50"
-                    >
+                    {/* `blue` de Flowbite y no `primary` del tema: este componente se usa desde
+                        el backoffice de la tienda, que no esta envuelto en el tema del panel. */}
+                    <Button type="button" color="blue" size="xs" onClick={subir} disabled={sending || files.length === 0}>
                         {sending ? 'Subiendo…' : 'Adjuntar evidencia'}
-                    </button>
+                    </Button>
                 </div>
             )}
         </div>

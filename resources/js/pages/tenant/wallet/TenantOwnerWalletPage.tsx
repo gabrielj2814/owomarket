@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import TenantKycCard from '@/components/ui/TenantKycCard';
 import TenantReputationCard, { TenantReputationProgress } from '@/components/ui/TenantReputationCard';
-import { Head } from '@inertiajs/react';
-import Dashboard from '@/components/layouts/Dashboard';
-import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
+import TenantOwnerShell from '@/components/tenant/TenantOwnerShell';
+import { Button, Label, Modal, ModalBody, ModalFooter, ModalHeader, TextInput } from 'flowbite-react';
 import {
     HiOutlineCurrencyDollar,
     HiOutlineArrowDownTray,
@@ -20,7 +19,7 @@ interface WalletData {
     gross_sales: number;
     total_commissions: number;
     // EN BOLIVARES. El dolar es la unidad en la que se pone el precio; el comprador paga
-    // bolivares y el comerciante retira bolivares. `gross_sales` sigue en USD como
+    // bolívares y el comerciante retira bolívares. `gross_sales` sigue en USD como
     // referencia, pero el dinero disponible no.
     available_balance: number;
     retained_ves: number;
@@ -149,11 +148,9 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
     };
 
     return (
-        <Dashboard user_uuid={user_id}>
-            <Head title="Billetera Central & Liquidaciones - OwOMarket" />
+        <TenantOwnerShell userId={user_id} title="Billetera Central & Liquidaciones - OwOMarket" activeTab="wallet">
 
             <div className="p-4 sm:p-6 space-y-6">
-                <TenantOwnerNavTabs userId={user_id} activeTab="wallet" />
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -167,14 +164,14 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
                         </p>
                     </div>
 
-                    <button
+                    <Button
+                        color="green"
                         onClick={() => setPayoutModalOpen(true)}
                         disabled={wallet.available_balance <= 0}
-                        className="px-5 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-emerald-500/20 transition flex items-center justify-center gap-2"
                     >
-                        <HiOutlineArrowDownTray className="w-4 h-4" />
+                        <HiOutlineArrowDownTray className="mr-2 h-4 w-4" />
                         <span>Solicitar Retiro de Fondos</span>
-                    </button>
+                    </Button>
                 </div>
 
                 {message && (
@@ -382,170 +379,136 @@ export const TenantOwnerWalletPage: React.FC<TenantOwnerWalletPageProps> = ({
             </div>
 
             {/* Modal de Solicitud de Retiro */}
-            {payoutModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 space-y-6 shadow-2xl border border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
-                            <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                <HiOutlineArrowDownTray className="w-5 h-5 text-emerald-600" />
-                                Solicitar Liquidación de Fondos
-                            </h3>
-                            <button
-                                onClick={() => setPayoutModalOpen(false)}
-                                className="text-gray-400 hover:text-gray-600 text-sm font-bold"
-                            >
-                                ✕
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleRequestPayout} className="space-y-4">
+            <Modal show={payoutModalOpen} onClose={() => setPayoutModalOpen(false)} size="lg">
+                <ModalHeader>Solicitar Liquidación de Fondos</ModalHeader>
+                <form onSubmit={handleRequestPayout}>
+                    <ModalBody>
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Método de Recepción
-                                </label>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        type="button"
-                                        onClick={() => setPayoutMethod('pago_movil')}
-                                        className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 justify-center transition ${
-                                            payoutMethod === 'pago_movil'
-                                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                                                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
-                                        }`}
-                                    >
-                                        <HiOutlineBuildingLibrary className="w-4 h-4" />
-                                        Pago Móvil (Bs. BCV)
-                                    </button>
+                                <Label htmlFor="retiro-metodo">Método de Recepción</Label>
+                                <div id="retiro-metodo">
+                            <div className="grid grid-cols-2 gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setPayoutMethod('pago_movil')}
+                                    className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 justify-center transition ${
+                                        payoutMethod === 'pago_movil'
+                                            ? 'border-blue-600 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
+                                            : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+                                    }`}
+                                >
+                                    <HiOutlineBuildingLibrary className="w-4 h-4" />
+                                    Pago Móvil (Bs. BCV)
+                                </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={() => setPayoutMethod('binance_pay')}
-                                        className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 justify-center transition ${
-                                            payoutMethod === 'binance_pay'
-                                                ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/60 text-yellow-600 dark:text-yellow-400'
-                                                : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
-                                        }`}
-                                    >
-                                        <HiOutlineQrCode className="w-4 h-4" />
-                                        Binance Pay (USDT)
-                                    </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setPayoutMethod('binance_pay')}
+                                    className={`p-3 rounded-2xl border text-xs font-bold flex items-center gap-2 justify-center transition ${
+                                        payoutMethod === 'binance_pay'
+                                            ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950/60 text-yellow-600 dark:text-yellow-400'
+                                            : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300'
+                                    }`}
+                                >
+                                    <HiOutlineQrCode className="w-4 h-4" />
+                                    Binance Pay (USDT)
+                                </button>
+                            </div>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Monto a Retirar (Bs.)
-                                </label>
+                                <Label htmlFor="retiro-monto">Monto a Retirar (Bs.)</Label>
                                 {/* En bolívares, igual que el saldo. Antes el saldo se mostraba
                                     en Bs y este campo pedía USD: el comerciante veía una unidad
                                     y escribía en otra. */}
-                                <input
+                                <TextInput
+                                    id="retiro-monto"
                                     type="number"
                                     min="1"
                                     max={wallet.available_balance}
                                     step="0.01"
                                     value={amount}
-                                    onChange={e => setAmount(e.target.value)}
-                                    className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs font-bold text-gray-900 dark:text-white"
+                                    onChange={(e) => setAmount(e.target.value)}
                                     required
                                 />
-                                <span className="text-[11px] text-gray-400 mt-1 block">
-                                    Máximo disponible: Bs. {wallet.available_balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
+                                <span className="mt-1 block text-[11px] text-gray-400">
+                                    Máximo disponible: Bs.{' '}
+                                    {wallet.available_balance.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                                 </span>
 
-                                {comisionTransferencia > 0 && importePedido > 0 && (
-                                    <span className="mt-2 block rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
-                                        Recibirás{' '}
-                                        <span className="font-black">
-                                            Bs. {importeRecibido.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
-                                        </span>
-                                        : se descuentan Bs.{' '}
-                                        {comisionTransferencia.toLocaleString('es-VE', { minimumFractionDigits: 2 })} por
-                                        transferir a un banco distinto
-                                        {wallet.platform_bank ? ` de ${wallet.platform_bank}` : ''}.
+                            {comisionTransferencia > 0 && importePedido > 0 && (
+                                <span className="mt-2 block rounded-xl bg-amber-50 px-3 py-2 text-[11px] text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                                    Recibirás{' '}
+                                    <span className="font-black">
+                                        Bs. {importeRecibido.toLocaleString('es-VE', { minimumFractionDigits: 2 })}
                                     </span>
-                                )}
+                                    : se descuentan Bs.{' '}
+                                    {comisionTransferencia.toLocaleString('es-VE', { minimumFractionDigits: 2 })} por
+                                    transferir a un banco distinto
+                                    {wallet.platform_bank ? ` de ${wallet.platform_bank}` : ''}.
+                                </span>
+                            )}
                             </div>
 
                             {payoutMethod === 'pago_movil' ? (
                                 <>
                                     <div className="grid grid-cols-2 gap-3">
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                                Banco de Destino
-                                            </label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="retiro-banco">Banco de Destino</Label>
+                                            <TextInput
+                                                id="retiro-banco"
                                                 value={bankName}
-                                                onChange={e => setBankName(e.target.value)}
-                                                className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white"
+                                                onChange={(e) => setBankName(e.target.value)}
                                                 required
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                                Cédula / RIF
-                                            </label>
-                                            <input
-                                                type="text"
+                                            <Label htmlFor="retiro-documento">Cédula / RIF</Label>
+                                            <TextInput
+                                                id="retiro-documento"
                                                 value={documentId}
-                                                onChange={e => setDocumentId(e.target.value)}
-                                                className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white"
+                                                onChange={(e) => setDocumentId(e.target.value)}
                                                 required
                                             />
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                            Teléfono Pago Móvil
-                                        </label>
-                                        <input
-                                            type="text"
+                                        <Label htmlFor="retiro-telefono">Teléfono Pago Móvil</Label>
+                                        <TextInput
+                                            id="retiro-telefono"
                                             value={phoneNumber}
-                                            onChange={e => setPhoneNumber(e.target.value)}
-                                            className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white"
+                                            onChange={(e) => setPhoneNumber(e.target.value)}
                                             required
                                         />
                                     </div>
                                 </>
                             ) : (
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                        Binance Pay ID / Pay Email
-                                    </label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="retiro-binance">Binance Pay ID / Pay Email</Label>
+                                    <TextInput
+                                        id="retiro-binance"
                                         placeholder="Ej: 123456789 o correo@binance.com"
                                         value={binancePayId}
-                                        onChange={e => setBinancePayId(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white"
+                                        onChange={(e) => setBinancePayId(e.target.value)}
                                         required
                                     />
                                 </div>
                             )}
-
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <button
-                                    type="button"
-                                    onClick={() => setPayoutModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md shadow-emerald-500/20 transition flex items-center gap-2"
-                                >
-                                    {loading && <HiOutlineArrowPath className="w-4 h-4 animate-spin" />}
-                                    <span>Confirmar Retiro</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
-        </Dashboard>
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button type="submit" color="green" size="sm" disabled={loading}>
+                            {loading && <HiOutlineArrowPath className="mr-2 h-4 w-4 animate-spin" />}
+                            <span>Confirmar Retiro</span>
+                        </Button>
+                        <Button type="button" color="subtle" size="sm" onClick={() => setPayoutModalOpen(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </form>
+            </Modal>
+        </TenantOwnerShell>
     );
 };
 

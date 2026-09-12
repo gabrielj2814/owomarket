@@ -1,6 +1,17 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import {
+
+/*
+ * NO se migra al componente `Tabs` de Flowbite, y es deliberado.
+ *
+ * `Tabs` gestiona su propio estado activo y renderiza paneles debajo: sirve para alternar
+ * contenido dentro de una pagina. Esto es NAVEGACION --cada pestana es un `<Link>` de Inertia a
+ * otra ruta-- y forzarlo dentro de `Tabs` significaria pelearse con su estado interno para
+ * acabar en el mismo sitio.
+ *
+ * `reglas.md` §1.3 admite Tailwind puro justo para esto: lo que la libreria no cubre.
+ */
     HiOutlineBuildingStorefront,
     HiOutlineCreditCard,
     HiOutlineCurrencyDollar,

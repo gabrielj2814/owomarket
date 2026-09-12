@@ -1,3 +1,4 @@
+import { Alert } from 'flowbite-react';
 import React from 'react';
 import { HiOutlineShieldCheck } from 'react-icons/hi2';
 
@@ -32,22 +33,14 @@ interface TenantReputationCardProps {
     reputation: TenantReputationProgress | null;
 }
 
-const APARIENCIA: Record<string, { titulo: string; clases: string; icono: string }> = {
-    alto: {
-        titulo: 'Nivel alto',
-        clases: 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-300',
-        icono: 'text-emerald-600 dark:text-emerald-400',
-    },
-    medio: {
-        titulo: 'Nivel medio',
-        clases: 'border-sky-200 bg-sky-50 text-sky-800 dark:border-sky-900 dark:bg-sky-950/40 dark:text-sky-300',
-        icono: 'text-sky-600 dark:text-sky-400',
-    },
-    bajo: {
-        titulo: 'Nivel bajo',
-        clases: 'border-amber-200 bg-amber-50 text-amber-800 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-300',
-        icono: 'text-amber-600 dark:text-amber-400',
-    },
+/*
+ * El color NO es decoracion: codifica el nivel, y con el la retencion. Los tonos exactos viven
+ * en `tenantPanelTheme.alert`, para que otra pantalla que muestre lo mismo no invente los suyos.
+ */
+const APARIENCIA: Record<string, { titulo: string; color: string; icono: string }> = {
+    alto: { titulo: 'Nivel alto', color: 'success', icono: 'text-emerald-600 dark:text-emerald-400' },
+    medio: { titulo: 'Nivel medio', color: 'info', icono: 'text-sky-600 dark:text-sky-400' },
+    bajo: { titulo: 'Nivel bajo', color: 'warning', icono: 'text-amber-600 dark:text-amber-400' },
 };
 
 const TenantReputationCard: React.FC<TenantReputationCardProps> = ({ reputation }) => {
@@ -57,7 +50,7 @@ const TenantReputationCard: React.FC<TenantReputationCardProps> = ({ reputation 
     const faltan = Math.max(0, reputation.deliveries_for_next - reputation.deliveries);
 
     return (
-        <div data-testid="reputacion-card" className={`mb-4 rounded-2xl border px-4 py-3 text-xs ${apariencia.clases}`}>
+        <Alert data-testid="reputacion-card" color={apariencia.color} className="mb-4">
             <div className="flex items-start gap-3">
                 <HiOutlineShieldCheck className={`mt-0.5 h-5 w-5 shrink-0 ${apariencia.icono}`} />
                 <div className="min-w-0">
@@ -109,7 +102,7 @@ const TenantReputationCard: React.FC<TenantReputationCardProps> = ({ reputation 
                     )}
                 </div>
             </div>
-        </div>
+        </Alert>
     );
 };
 

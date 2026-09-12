@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
-import Dashboard from '@/components/layouts/Dashboard';
-import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
+import TenantOwnerShell from '@/components/tenant/TenantOwnerShell';
+import { Button, Select, TextInput } from 'flowbite-react';
 import {
     HiOutlineCube,
     HiOutlineEye,
@@ -112,11 +111,9 @@ export const TenantOwnerCentralCatalogPage: React.FC<TenantOwnerCentralCatalogPa
     };
 
     return (
-        <Dashboard user_uuid={user_id}>
-            <Head title="Publicador de Catálogo Central - OwOMarket" />
+        <TenantOwnerShell userId={user_id} title="Publicador de Catálogo Central - OwOMarket" activeTab="catalog">
 
             <div className="p-4 sm:p-6 space-y-6">
-                <TenantOwnerNavTabs userId={user_id} activeTab="catalog" />
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -170,33 +167,31 @@ export const TenantOwnerCentralCatalogPage: React.FC<TenantOwnerCentralCatalogPa
 
                 {/* Filters */}
                 <div className="flex flex-col sm:flex-row items-center gap-3 bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700">
-                    <div className="relative flex-1 w-full">
-                        <HiOutlineMagnifyingGlass className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                        <input
-                            type="text"
+                    <div className="w-full flex-1">
+                        <TextInput
+                            icon={HiOutlineMagnifyingGlass}
                             placeholder="Buscar por nombre, código SKU o slug..."
                             value={searchQuery}
-                            onChange={e => {
+                            onChange={(e) => {
                                 setSearchQuery(e.target.value);
                                 handleFilterChange(selectedTenant, e.target.value);
                             }}
-                            className="w-full pl-9 pr-4 py-2 rounded-xl text-xs border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white"
                         />
                     </div>
 
-                    <select
+                    <Select
+                        className="w-full sm:w-64"
                         value={selectedTenant}
-                        onChange={e => {
+                        onChange={(e) => {
                             setSelectedTenant(e.target.value);
                             handleFilterChange(e.target.value, searchQuery);
                         }}
-                        className="w-full sm:w-64 p-2 rounded-xl text-xs border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white font-medium"
                     >
                         <option value="">Todas las Tiendas ({catalog.tenants.length})</option>
                         {catalog.tenants.map(t => (
                             <option key={t.id} value={t.id}>{t.name}</option>
                         ))}
-                    </select>
+                    </Select>
                 </div>
 
                 {/* Products Table */}
@@ -272,14 +267,16 @@ export const TenantOwnerCentralCatalogPage: React.FC<TenantOwnerCentralCatalogPa
                                                     )}
                                                 </td>
                                                 <td className="py-4 px-4 text-center">
-                                                    <button
+                                                    {/* Ambar cuando esta publicado --la accion
+                                                        es RETIRARLO-- y azul cuando no. El color
+                                                        dice que pasa al pulsar, no en que estado
+                                                        esta. */}
+                                                    <Button
+                                                        color={product.is_visible ? 'warning' : 'primary'}
+                                                        size="xs"
                                                         onClick={() => handleTogglePublication(product.id, product.is_visible)}
                                                         disabled={isToggling}
-                                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-[11px] transition shadow-sm ${
-                                                            product.is_visible
-                                                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-800 dark:bg-amber-950/80 dark:hover:bg-amber-900 dark:text-amber-300'
-                                                                : 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-500/20'
-                                                        }`}
+                                                        className="mx-auto w-fit"
                                                     >
                                                         {isToggling ? (
                                                             <HiOutlineArrowPath className="w-3.5 h-3.5 animate-spin" />
@@ -294,7 +291,7 @@ export const TenantOwnerCentralCatalogPage: React.FC<TenantOwnerCentralCatalogPa
                                                                 <span>Publicar en Central</span>
                                                             </>
                                                         )}
-                                                    </button>
+                                                    </Button>
                                                 </td>
                                             </tr>
                                         );
@@ -305,7 +302,7 @@ export const TenantOwnerCentralCatalogPage: React.FC<TenantOwnerCentralCatalogPa
                     )}
                 </div>
             </div>
-        </Dashboard>
+        </TenantOwnerShell>
     );
 };
 

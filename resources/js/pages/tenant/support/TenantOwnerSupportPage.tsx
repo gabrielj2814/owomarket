@@ -1,7 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { Head } from '@inertiajs/react';
-import Dashboard from '@/components/layouts/Dashboard';
-import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
+import TenantOwnerShell from '@/components/tenant/TenantOwnerShell';
+import { Button, Label, Modal, ModalBody, ModalFooter, ModalHeader, Select, Textarea, TextInput } from 'flowbite-react';
 import {
     HiOutlineChatBubbleLeftRight,
     HiOutlinePlus,
@@ -230,11 +229,9 @@ export const TenantOwnerSupportPage: React.FC<TenantOwnerSupportPageProps> = ({
     };
 
     return (
-        <Dashboard user_uuid={user_id}>
-            <Head title="Centro de Soporte & Reporte de Incidencias - OwOMarket" />
+        <TenantOwnerShell userId={user_id} title="Centro de Soporte & Reporte de Incidencias - OwOMarket" activeTab="support">
 
             <div className="p-4 sm:p-6 space-y-6">
-                <TenantOwnerNavTabs userId={user_id} activeTab="support" />
 
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 p-6 rounded-3xl border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -498,43 +495,29 @@ export const TenantOwnerSupportPage: React.FC<TenantOwnerSupportPageProps> = ({
             </div>
 
             {/* Modal: Crear Nuevo Ticket con Adjuntos Multimedia */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-xl w-full p-6 space-y-5 shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-gray-700">
-                            <h3 className="text-base font-black text-gray-900 dark:text-white flex items-center gap-2">
-                                <HiOutlineExclamationTriangle className="w-5 h-5 text-amber-500" />
-                                Reportar Error o Solicitar Soporte
-                            </h3>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                                <HiOutlineXMark className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateTicket} className="space-y-4">
+            <Modal show={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} size="xl">
+                <ModalHeader>Reportar Error o Solicitar Soporte</ModalHeader>
+                <form onSubmit={handleCreateTicket}>
+                    <ModalBody>
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Título o Asunto del Reporte *
-                                </label>
-                                <input
-                                    type="text"
+                                <Label htmlFor="ticket-asunto">Título o Asunto del Reporte *</Label>
+                                <TextInput
+                                    id="ticket-asunto"
                                     placeholder="Ej: Error al sincronizar stock o fallo en pasarela"
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs font-medium text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                        Categoría de Incidencia
-                                    </label>
-                                    <select
+                                    <Label htmlFor="ticket-categoria">Categoría de Incidencia</Label>
+                                    <Select
+                                        id="ticket-categoria"
                                         value={category}
                                         onChange={(e) => setCategory(e.target.value)}
-                                        className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white font-medium"
                                     >
                                         <option value="technical_error">Fallo Técnico en Backoffice / Tienda</option>
                                         <option value="billing_payout">Liquidación / Billetera / Facturación</option>
@@ -542,52 +525,48 @@ export const TenantOwnerSupportPage: React.FC<TenantOwnerSupportPageProps> = ({
                                         <option value="account_access">Acceso a Cuenta / Credenciales</option>
                                         <option value="feature_request">Sugerencia de Nueva Funcionalidad</option>
                                         <option value="other">Otra Consulta</option>
-                                    </select>
+                                    </Select>
                                 </div>
 
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                        Prioridad
-                                    </label>
-                                    <select
+                                    <Label htmlFor="ticket-prioridad">Prioridad</Label>
+                                    <Select
+                                        id="ticket-prioridad"
                                         value={priority}
                                         onChange={(e) => setPriority(e.target.value as any)}
-                                        className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white font-medium"
                                     >
                                         <option value="low">Baja (Consulta general)</option>
                                         <option value="medium">Media (Fallo menor)</option>
                                         <option value="high">Alta (Impacto en ventas)</option>
                                         <option value="urgent">Urgente (Tienda no accesible)</option>
-                                    </select>
+                                    </Select>
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Tienda Afectada (Opcional)
-                                </label>
-                                <select
+                                <Label htmlFor="ticket-tienda">Tienda Afectada (Opcional)</Label>
+                                <Select
+                                    id="ticket-tienda"
                                     value={selectedTenantId}
                                     onChange={(e) => setSelectedTenantId(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white font-medium"
                                 >
                                     <option value="">Aplica a todas / General</option>
-                                    {tenants.map(t => (
-                                        <option key={t.id} value={t.id}>{t.name}</option>
+                                    {tenants.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.name}
+                                        </option>
                                     ))}
-                                </select>
+                                </Select>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Descripción Detallada del Error *
-                                </label>
-                                <textarea
+                                <Label htmlFor="ticket-descripcion">Descripción Detallada del Error *</Label>
+                                <Textarea
+                                    id="ticket-descripcion"
                                     rows={4}
                                     placeholder="Describe qué estabas haciendo, qué mensaje de error apareció y los pasos para reproducirlo..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full p-3 rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-xs text-gray-900 dark:text-white"
                                     required
                                 />
                             </div>
@@ -650,27 +629,19 @@ export const TenantOwnerSupportPage: React.FC<TenantOwnerSupportPageProps> = ({
                                 )}
                             </div>
 
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition flex items-center gap-2"
-                                >
-                                    {loading && <HiOutlineArrowPath className="w-4 h-4 animate-spin" />}
-                                    <span>Generar Ticket de Soporte</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button type="submit" color="primary" size="sm" disabled={loading}>
+                            {loading && <HiOutlineArrowPath className="mr-2 h-4 w-4 animate-spin" />}
+                            <span>Generar Ticket de Soporte</span>
+                        </Button>
+                        <Button type="button" color="subtle" size="sm" onClick={() => setIsCreateModalOpen(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </form>
+            </Modal>
 
             {/* Modal: Visor Multimedia de Imágenes y Videos */}
             {previewMediaUrl && (
@@ -702,7 +673,7 @@ export const TenantOwnerSupportPage: React.FC<TenantOwnerSupportPageProps> = ({
                     </div>
                 </div>
             )}
-        </Dashboard>
+        </TenantOwnerShell>
     );
 };
 

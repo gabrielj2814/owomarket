@@ -1,6 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { getSharedActiveRate } from '@/Services/ExchangeRateServices';
 
+/*
+ * NO se migra a Flowbite, y es deliberado (`reglas.md` §1.3 admite Tailwind puro para lo que la
+ * libreria no cubra).
+ *
+ * Esto es una PRIMITIVA TIPOGRAFICA: un precio en dos monedas con su propia escala de tamanos
+ * (`sm`/`md`/`lg`), y Flowbite no tiene nada equivalente. La unica pieza que se le parece --la
+ * pastilla del BCV-- comparte esa escala, asi que convertirla en `<Badge>` la sacaria del
+ * sistema de tamanos del componente para ganar nada.
+ *
+ * Ademas se usa en las TRES zonas --portal, escaparate y panel--, cada una con su tema. Un
+ * componente tematizado se veria distinto en cada una; asi se ve igual en todas, que es lo que
+ * un precio necesita.
+ */
+
 export interface CurrencyPriceDisplayProps {
     priceUsd: number;
     comparePriceUsd?: number;

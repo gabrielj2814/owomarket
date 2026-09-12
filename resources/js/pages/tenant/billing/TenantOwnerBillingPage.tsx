@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { Head } from '@inertiajs/react';
 import TenantServices from '@/Services/TenantServices';
-import Dashboard from '@/components/layouts/Dashboard';
-import TenantOwnerNavTabs from '@/components/tenant/TenantOwnerNavTabs';
+import TenantOwnerShell from '@/components/tenant/TenantOwnerShell';
+import { Alert, Button, Select } from 'flowbite-react';
 import {
     HiOutlineCreditCard,
     HiOutlineCheck,
@@ -92,25 +91,19 @@ export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
     };
 
     return (
-        <Dashboard user_uuid={user_id}>
-            <Head title="Suscripciones & Facturas B2B - OwOMarket" />
-
-            <div className="p-4 sm:p-6 space-y-6">
-                <TenantOwnerNavTabs userId={user_id} activeTab="billing" />
+        <TenantOwnerShell userId={user_id} title="Suscripciones & Facturas B2B - OwOMarket" activeTab="billing">
+            <div className="space-y-6 p-4 sm:p-6">
 
                 {/* Hallazgo T3: el resultado de la solicitud, en linea. Antes era un alert()
                     que mentia sobre lo que habia pasado. */}
                 {aviso && (
-                    <div
+                    <Alert
+                        color={aviso.type === 'error' ? 'failure' : 'success'}
                         role={aviso.type === 'error' ? 'alert' : 'status'}
-                        className={`p-3 rounded-2xl text-xs font-bold border ${
-                            aviso.type === 'error'
-                                ? 'bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200 dark:border-red-800'
-                                : 'bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
-                        }`}
+                        className="rounded-2xl text-xs font-bold"
                     >
                         {aviso.text}
-                    </div>
+                    </Alert>
                 )}
 
                 {/* Header */}
@@ -175,10 +168,9 @@ export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            <select
+                                            <Select
                                                 value={planElegido[tenant.id] ?? ''}
-                                                onChange={(e) => setPlanElegido(prev => ({ ...prev, [tenant.id]: e.target.value }))}
-                                                className="w-full text-xs rounded-xl border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white py-2 px-3"
+                                                onChange={(e) => setPlanElegido((prev) => ({ ...prev, [tenant.id]: e.target.value }))}
                                             >
                                                 <option value="">Cambiar a otro plan…</option>
                                                 {available_plans
@@ -188,16 +180,18 @@ export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
                                                             {p.name} — {p.commission_rate}% de comisión
                                                         </option>
                                                     ))}
-                                            </select>
+                                            </Select>
 
-                                            <button
+                                            <Button
+                                                color="light"
+                                                size="xs"
+                                                className="w-full"
                                                 onClick={() => solicitarCambio(tenant.id, planElegido[tenant.id])}
                                                 disabled={!planElegido[tenant.id] || enviando === tenant.id}
-                                                className="w-full py-2 px-3 rounded-xl bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400 text-xs font-bold transition flex items-center justify-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
-                                                <HiOutlineSparkles className="w-3.5 h-3.5" />
+                                                <HiOutlineSparkles className="mr-1.5 h-3.5 w-3.5" />
                                                 <span>{enviando === tenant.id ? 'Enviando…' : 'Solicitar cambio de plan'}</span>
-                                            </button>
+                                            </Button>
                                         </div>
                                     )}
                                 </div>
@@ -275,7 +269,7 @@ export const TenantOwnerBillingPage: React.FC<TenantOwnerBillingPageProps> = ({
                     </div>
                 </div>
             </div>
-        </Dashboard>
+        </TenantOwnerShell>
     );
 };
 
