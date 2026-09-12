@@ -1,7 +1,7 @@
 # Qué falta en OwoMarket
 
 > **Última actualización:** 12/09/2026 · Rama `moduleProduct`
-> **Estado de la suite:** 863 tests de backend, 87 de frontend, `tsc --noEmit` limpio.
+> **Estado de la suite:** 876 tests de backend, 96 de frontend, `tsc --noEmit` limpio.
 > **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
@@ -11,31 +11,21 @@
 
 ## Por dónde seguir mañana
 
-**Lo que más rinde ahora son las notificaciones**, y no es la tarea más vistosa.
+**Lo que más rinde ahora son las notificaciones**, y ya no compite con nada.
 
-Los cinco subsistemas de garantías están construidos y **todos dependen de que alguien se
-entere**: que la tienda sepa que tiene una reclamación con un reloj corriendo, que el comprador
-sepa que le respondieron, que el comerciante sepa que le verificaron el KYC. Hoy cada actor
-tiene que entrar a mirar por si acaso — y el reloj de reclamaciones corre igual.
+El subsistema 5 quedó cerrado el 12/09/2026: un comprador de tienda ya puede reclamar. Lo que
+falta ahora no es una pieza del flujo, es que **alguien se entere** de que el flujo ocurrió.
+
+Los cinco subsistemas de garantías están construidos y todos dependen de eso: que la tienda sepa
+que tiene una reclamación con un reloj corriendo, que el comprador sepa que le respondieron, que
+el comerciante sepa que le verificaron el KYC. Hoy cada actor tiene que entrar a mirar por si
+acaso — y el reloj de reclamaciones corre igual.
 
 → [`planes/futuros/PLAN_NOTIFICACIONES.md`](planes/futuros/PLAN_NOTIFICACIONES.md)
-
-La alternativa razonable es cerrar el subsistema 5 del todo con la fase 2 del escaparate, que
-es lo único que impide a un comprador de tienda reclamar.
 
 ---
 
 ## 🔴 Lo que deja un flujo a medias
-
-### Fase 2 del escaparate: el comprador de una tienda no puede reclamar
-
-Desde el 12/09/2026 ya ve sus pedidos y confirma la entrega. **Reclamar, no.**
-`CreateCustomerReturnRequestUseCase` busca el pedido en `CentralOrder`, y un pedido de
-escaparate vive en la base del inquilino.
-
-Es un cambio en el corazón del subsistema 5, así que merece su propio ciclo de diseño.
-
-→ [`planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`](planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md)
 
 ### El techo mensual de alarma no existe
 
@@ -74,6 +64,26 @@ Nadie puede demostrar que son suyos, así que ni se ven, ni se confirman, ni se 
 nuevos sí quedan enlazados si se compra con sesión, y el checkout lo advierte antes de pagar.
 
 En desarrollo da igual. **Antes de que haya compras reales, no.**
+
+---
+
+## ✅ Subsistema 5, cerrado — el comprador de una tienda ya reclama
+
+Era el último flujo cortado: desde la fase 1 el comprador veía su pedido y confirmaba la
+entrega, y ahí se le acababa el camino. Podía dar por recibido un producto roto y no tenía
+dónde decirlo.
+
+El plan decía que generalizarlo era «un cambio en el corazón del subsistema 5». **No lo era.**
+Nada aguas abajo vuelve a buscar el pedido central: la reversión de comisión, la cobertura, el
+expediente y la reputación trabajan todos sobre `tenant_order_id`. Todo el acoplamiento vivía
+dentro del caso de uso que crea la reclamación, y salió con un localizador y dos adaptadores.
+
+De paso se cerró **un agujero que estaba abierto en el portal central**: el filtro que solo
+ofrecía pedidos completados vivía en el navegador, así que contra la API se podía reclamar un
+pedido recién creado y sin pagar. Ahora reclamar exige entrega declarada y estar dentro de una
+ventana de 60 días (`central_claim_window_days`).
+
+→ [`planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`](planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md)
 
 ---
 
@@ -120,6 +130,10 @@ y resumidas en [`ESTADO_Y_PENDIENTES.md`](planes/por_hacer/ESTADO_Y_PENDIENTES.m
   alguna pantalla llega a listar doscientas tiendas.
 - **El camino `payout` de `GenerateTenantCommissionSettlementUseCase`** sigue con su
   `max(0.0, …)` y crea liquidaciones en USD que el saldo no cuenta. No mueve dinero hoy.
+- **Una reclamación sobre un pedido sin comisión registrada se resuelve cubriendo cero, en
+  silencio.** La tasa congelada sale de `platform_commissions`; sin fila, el tope en bolívares
+  es cero. Los pedidos reales sí registran comisión, así que hoy solo se ve en datos sembrados
+  a mano — pero conviene que falle ruidosamente el día que importe.
 
 Los atajos deliberados están marcados en el código:
 

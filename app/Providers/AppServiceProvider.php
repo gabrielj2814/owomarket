@@ -12,6 +12,12 @@ use Src\Authentication\Application\Contracts\AuthServices;
 use Src\Authentication\Application\Contracts\UserServices;
 use Src\Authentication\Infrastructure\Eloquent\Models\PersonalAccessToken;
 use Src\Authentication\Infrastructure\Services\UserApiClient;
+use Src\CentralCustomer\Application\Contracts\ClaimableOrderLocator;
+use Src\CentralCustomer\Application\Service\ClaimWindow;
+use Src\CentralCustomer\Application\UseCases\CreateCustomerReturnRequestUseCase;
+use Src\CentralCustomer\Infrastructure\Eloquent\Repositories\CentralClaimableOrderLocator;
+use Src\Marketplace\Infrastructure\Eloquent\Repositories\StorefrontClaimableOrderLocator;
+use Src\Marketplace\Infrastructure\Http\Controller\CreateStorefrontReturnPOSTController;
 use Stancl\Tenancy\Events\TenancyBootstrapped;
 use Stancl\Tenancy\Events\TenancyEnded;
 
@@ -24,6 +30,39 @@ class AppServiceProvider extends ServiceProvider
     {
         $this->app->bind(UserServices::class, UserApiClient::class);
         $this->app->bind(AuthServices::class, AuthApiClient::class);
+
+        /*
+        |----------------------------------------------------------------------
+        | De donde sale el pedido que se reclama (subsistema 5, fase 2)
+        |----------------------------------------------------------------------
+        |
+        | `CreateCustomerReturnRequestUseCase` es UNO para los dos origenes: solo cambia
+        | quien le encuentra el pedido. El del marketplace central lo busca en
+        | `central_orders`; el de una tienda, en las tablas de ese inquilino.
+        |
+        | Es un unico caso de uso y no dos porque lo que pasa despues --revertir la
+        | comision, calcular la cobertura, mover la reputacion-- es identico, y dos copias
+        | de eso acabarian divergiendo. Una de ellas mueve dinero.
+        |
+        | **El enlace contextual se declara sobre el CASO DE USO, no sobre el localizador.**
+        | El contenedor de Laravel resuelve lo contextual mirando solo al padre inmediato
+        | que esta construyendo: `when(Controlador)->needs(Localizador)` no llegaria nunca,
+        | porque para entonces el padre en la pila ya es el caso de uso y no el controlador.
+        | Lo silencioso de ese fallo es que el escaparate seguiria funcionando -- con el
+        | adaptador central, que nunca encuentra un pedido de tienda.
+        |
+        | El adaptador central queda de enlace por defecto a proposito: una tercera puerta
+        | que alguien olvide declarar aqui fallara buscando donde no esta, en vez de
+        | saltarse la comprobacion de propiedad.
+        */
+        $this->app->bind(ClaimableOrderLocator::class, CentralClaimableOrderLocator::class);
+
+        $this->app->when(CreateStorefrontReturnPOSTController::class)
+            ->needs(CreateCustomerReturnRequestUseCase::class)
+            ->give(fn ($app) => new CreateCustomerReturnRequestUseCase(
+                $app->make(StorefrontClaimableOrderLocator::class),
+                $app->make(ClaimWindow::class)
+            ));
     }
 
     /**

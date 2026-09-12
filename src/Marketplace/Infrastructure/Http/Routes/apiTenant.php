@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Src\Marketplace\Infrastructure\Http\Controller\ConfirmStorefrontDeliveryPOSTController;
+use Src\Marketplace\Infrastructure\Http\Controller\CreateStorefrontReturnPOSTController;
 use Src\Marketplace\Infrastructure\Http\Controller\GetStorefrontDeliveryStatusGETController;
 use Src\Marketplace\Infrastructure\Http\Controller\ListStorefrontMyOrdersGETController;
 
@@ -30,3 +31,10 @@ use Src\Marketplace\Infrastructure\Http\Controller\ListStorefrontMyOrdersGETCont
 Route::get('/my-orders', ListStorefrontMyOrdersGETController::class);
 Route::get('/deliveries/{orderId}', GetStorefrontDeliveryStatusGETController::class);
 Route::post('/deliveries/{orderId}/confirm', ConfirmStorefrontDeliveryPOSTController::class);
+
+/*
+| Fase 2: reclamar. Cierra el camino que la fase 1 dejaba a medias --se podia dar por
+| recibido un producto roto y no habia donde decirlo--. Misma frontera de confianza: la
+| identidad sale de la sesion del SSO, nunca del cuerpo.
+*/
+Route::post('/returns', CreateStorefrontReturnPOSTController::class);

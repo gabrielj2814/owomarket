@@ -27,6 +27,9 @@ class CustomerReturnRequest extends Model
     protected $fillable = [
         'id',
         'order_id',
+        // 'central' | 'storefront': a que base apunta `order_id`. Ver la migracion
+        // `add_order_source_to_customer_return_requests`.
+        'order_source',
         'order_number',
         'tenant_order_id',
         'customer_id',
@@ -57,6 +60,26 @@ class CustomerReturnRequest extends Model
 
     /** Estados en los que la reclamacion sigue esperando a alguien. */
     public const ABIERTAS = ['requested', 'in_review'];
+
+    /**
+     * Estados que impiden abrir OTRA reclamacion sobre el mismo articulo.
+     *
+     * No es lo mismo que `ABIERTAS` --una aprobada ya no espera a nadie, pero tampoco admite
+     * que se reclame el mismo articulo otra vez-- y por eso es su propia lista.
+     *
+     * Vive aqui, y no repetida, porque la usan dos sitios con papeles opuestos:
+     * `CreateCustomerReturnRequestUseCase` la aplica al RECHAZAR una solicitud nueva, y
+     * `ListStorefrontCustomerOrdersUseCase` al decidir si enseña el boton de reclamar. Si
+     * divergieran, la pantalla ofreceria un boton que el backend rechaza --o escondería uno
+     * que si funciona, que es la misma clase de mentira--.
+     */
+    public const BLOQUEAN_NUEVA = ['requested', 'in_review', 'approved'];
+
+    /** Si esta reclamacion impide abrir otra sobre el mismo articulo. */
+    public function bloqueaNueva(): bool
+    {
+        return in_array($this->status, self::BLOQUEAN_NUEVA, true);
+    }
 
     public function isOpen(): bool
     {

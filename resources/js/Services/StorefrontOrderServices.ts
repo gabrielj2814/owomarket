@@ -19,12 +19,30 @@ const axiosStorefront = axios.create({
     },
 });
 
+/** Lo que el comprador ya reclamó de un artículo, si reclamó algo. */
+export interface StorefrontItemClaim {
+    id: string;
+    status: 'requested' | 'in_review' | 'approved' | 'rejected' | 'refunded' | string;
+    reason: string;
+    resolved_by: string | null;
+    resolution_notes: string | null;
+    created_at: string | null;
+}
+
 export interface StorefrontOrderItem {
     id: string;
     product_id: string;
     product_name: string;
     quantity: number;
     price: number;
+    /** La reclamación más reciente de este artículo. Se enseña EN LUGAR del botón. */
+    claim: StorefrontItemClaim | null;
+    /**
+     * Si se puede abrir una reclamación nueva. Lo decide el servidor con las mismas reglas
+     * que aplicará al recibirla —entrega declarada, dentro de plazo, ninguna viva—, así que
+     * calcularlo aquí acabaría ofreciendo un botón que el backend rechaza.
+     */
+    can_claim: boolean;
 }
 
 export interface StorefrontOrder {
@@ -53,6 +71,18 @@ interface StorefrontApiResponse<T = unknown> {
     code: number;
     message: string;
     data: T;
+    /**
+     * `has_document_id` dice si el comprador tiene cédula en su cuenta central. Va aquí y no
+     * dentro de cada pedido porque es una condición de la PERSONA, no de la compra.
+     */
+    meta?: { has_document_id?: boolean } | null;
+}
+
+export interface CrearReclamacionPayload {
+    order_id: string;
+    product_id: string;
+    reason: string;
+    description: string;
 }
 
 const StorefrontOrderServices = {
@@ -64,6 +94,19 @@ const StorefrontOrderServices = {
 
     getDeliveryStatus: async (orderId: string) => {
         const response = await axiosStorefront.get(`/deliveries/${orderId}`);
+
+        return response.data;
+    },
+
+    /**
+     * Abrir una reclamación sobre un artículo de un pedido de esta tienda (fase 2).
+     *
+     * No lleva identificador de comprador, igual que el resto: quién reclama lo decide el
+     * servidor leyendo la sesión del SSO. Es el hallazgo A3 de este repositorio, que ya dejó
+     * una vez registrar una devolución sobre el pedido de otro.
+     */
+    crearReclamacion: async (payload: CrearReclamacionPayload) => {
+        const response = await axiosStorefront.post<StorefrontApiResponse>('/returns', payload);
 
         return response.data;
     },

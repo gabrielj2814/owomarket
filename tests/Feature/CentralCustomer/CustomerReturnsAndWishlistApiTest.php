@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Src\Coupon\Application\UseCase\ValidateCouponUseCase;
+use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrderItem;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant as ModelsTenant;
@@ -85,15 +86,31 @@ test('POST /api/central/customer/returns and GET /api/central/customer/returns m
         'payment_status' => 'paid',
     ]);
 
+    $tenantOrderId = (string) Str::uuid();
+
     CentralOrderItem::create([
         'id' => (string) Str::uuid(),
         'central_order_id' => $order->id,
         'tenant_id' => 'tienda-ret-wish',
+        'tenant_order_id' => $tenantOrderId,
         'product_id' => 'p-ret-55',
         'product_name' => 'Teclado Mecánico RGB',
         'price' => 60.00,
         'quantity' => 1,
         'total' => 60.00,
+    ]);
+
+    /*
+     * Desde la fase 2 del escaparate, reclamar exige que la tienda haya declarado la entrega.
+     * El expediente es lo que lo acredita --solo lo crea `DeclareOrderDeliveredUseCase`-- y
+     * montarlo aqui no es decorar el fixture: es reproducir lo que de verdad pasa antes de que
+     * un comprador tenga motivo para reclamar.
+     */
+    OrderDeliveryConfirmation::create([
+        'id' => (string) Str::uuid(),
+        'tenant_id' => 'tienda-ret-wish',
+        'order_id' => $tenantOrderId,
+        'declared_delivered_at' => now()->subDays(3),
     ]);
 
     // 1. Create return request

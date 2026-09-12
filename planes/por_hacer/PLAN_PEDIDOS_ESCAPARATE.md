@@ -1,6 +1,6 @@
 # Plan — Los pedidos del comprador en el escaparate
 
-> **Estado:** 🟨 Fase 1 HECHA · Fase 2 pendiente · Redactado el 12/09/2026
+> **Estado:** ✅ TERMINADO el 12/09/2026 · Redactado el 12/09/2026
 >
 > Última vista pendiente de [`PLAN_VISTAS_PENDIENTES.md`](PLAN_VISTAS_PENDIENTES.md).
 > Escrito para retomarlo sin contexto previo.
@@ -107,14 +107,95 @@ Hoy la diferencia es invisible hasta que importa.
 
 ---
 
-## Fase 2 — Reclamar desde el escaparate ⬜
+## Fase 2 — Reclamar desde el escaparate ✅ (12/09/2026)
 
-`CreateCustomerReturnRequestUseCase` está atado a `CentralOrder`: busca el pedido en la base
-central. Un pedido de escaparate vive en la base del inquilino, así que **hoy no se puede
-reclamar aunque tenga pantalla**.
+> **Verificado en la tienda real**, no solo en tests: un comprador entró por SSO en
+> `tecs.owomarket.local`, pulsó «Tengo un problema» sobre su pedido, escribió el motivo y la
+> reclamación quedó en la tabla **central** con `order_source = storefront`. El panel del
+> comerciante la ve como abierta y el reloj de respuesta arrancó con sus 5 días.
 
-Generalizarlo es un cambio en el corazón del subsistema 5 y merece ir solo, después de ver la
-fase 1 funcionando.
+### Este plan también exageraba su propio obstáculo
+
+Decía que generalizarlo era «un cambio en el corazón del subsistema 5». No lo era. Al rastrear
+quién lee `order_id` **después** de crear la reclamación:
+
+| Consumidor | Qué usa de verdad |
+| :--- | :--- |
+| `ResolveReturnRequestUseCase` (revierte comisión, calcula cobertura) | `tenant_order_id` |
+| `BuildClaimDossierUseCase` (expediente + PDF) | `tenant_order_id` y `order_number` |
+| `ListTenantReturnsGETController` / `ListCustomerReturnRequestsUseCase` | `tenant_id` / `customer_id` |
+| `AutoResolveStaleReturnsUseCase` | solo `status` |
+
+**Nadie aguas abajo vuelve a buscar el `CentralOrder`.** Y `order_id` es un `string` suelto en
+la migración, sin clave foránea. Todo el acoplamiento vivía dentro del caso de uso que crea la
+reclamación. La maquinaria que mueve el dinero funcionó sin tocar una línea.
+
+### Un localizador, dos adaptadores
+
+`ClaimableOrderLocator` devuelve un `ClaimableOrderData` —número de pedido, correo, `tenant_id`,
+`tenant_order_id`, el artículo y su importe— y **comprueba la propiedad dentro**. No hay una
+versión que devuelva el pedido «sin comprobar»: esa firma permitiría olvidarse, y el precio de
+olvidarlo es que alguien reclame el pedido de otro.
+
+Cada adaptador sabe qué significa «es tuyo» en su mundo: en el central lo dice
+`central_orders.customer_id`; en una tienda, `customers.central_uuid`. **Nunca el correo.**
+
+El caso de uso se quedó solo con las reglas, y eso las volvió probables sin base de datos de
+pedidos: antes, para probar «sin cédula no se reclama» había que crear un pedido entero.
+
+### El enlace contextual va sobre el CASO DE USO, no sobre el localizador
+
+El contenedor de Laravel resuelve lo contextual mirando solo al **padre inmediato** que está
+construyendo. `when(Controlador)->needs(Localizador)` no llega nunca, porque para entonces el
+padre en la pila ya es el caso de uso. Lo peligroso es que no falla: el escaparate seguiría
+funcionando con el adaptador central, que jamás encuentra un pedido de tienda.
+
+### Dos reglas que se cerraron de paso, para los dos caminos
+
+La pantalla del portal solo ofrecía pedidos `completed`, pero **ese filtro vivía solo en el
+navegador**: contra la API se podía abrir una reclamación sobre un pedido recién creado y sin
+pagar. Al escribir la segunda puerta había que elegir entre replicar el agujero o cerrarlo.
+
+1. **Entregado.** Un `OrderDeliveryConfirmation` solo nace en `DeclareOrderDeliveredUseCase`,
+   así que su mera existencia ya significa que la tienda declaró la entrega. No hizo falta
+   inventar ningún estado.
+2. **Dentro de plazo.** `ClaimWindow`: 60 días desde la entrega, configurables en
+   `central_claim_window_days`.
+
+Es un cambio de comportamiento **también para el portal central**, y es deliberado.
+
+### Por qué la ventana tiene su propio ajuste
+
+La tentación era leer `central_guarantee_reserve_days` —la reserva del subsistema 4, que es el
+colchón que paga una reclamación— para que no puedan divergir. No se hizo: son dos preguntas de
+negocio distintas. Bajar la reserva a 30 días para mejorar el flujo de caja de los comerciantes
+le recortaría al comprador la mitad de su plazo sin que nadie lo hubiera decidido.
+
+Empiezan valiendo lo mismo. Si divergen será porque alguien lo quiso.
+
+**Y la que NO sirve como ancla:** `central_payout_hold_days` vale **1 día por defecto y cero es
+legítimo** («lo entregado se puede retirar en el acto»). Atar la ventana ahí daría un día para
+reclamar, o ninguno.
+
+### La pantalla
+
+Cada artículo de `/mis-pedidos` lleva su botón, con `can_claim` decidido **por el servidor** con
+las mismas condiciones que aplicará al recibir la reclamación. Si ya hay una viva, se enseña su
+estado **en lugar** del botón: dejarlo puesto haría que el comprador lo pulsara para recibir un
+«ya existe una solicitud activa» que no tenía forma de prever.
+
+Una rechazada sí deja volver a reclamar mientras siga el plazo, igual que en el backend. La
+lista que bloquea vive en `CustomerReturnRequest::BLOQUEAN_NUEVA` y la usan los dos sitios: si
+divergieran, la pantalla ofrecería un botón que el backend rechaza —o escondería uno que sí
+funciona, que es la misma clase de mentira—.
+
+Las frases de estado se mudaron a `resources/js/utils/claims.ts`, compartidas con el portal. Las
+dos pantallas pintan la MISMA fila, y dos redacciones distintas serían la plataforma diciéndole
+dos cosas al mismo comprador sobre el mismo caso.
+
+**Lo que el navegador vio y los tests no:** el botón salía con `color="subtle"`, que en el tema
+del escaparate es transparente a propósito. Sobre el fondo oscuro se leía como texto muerto.
+Pasó a `light`: sigue siendo secundario —no se invita a reclamar— pero con borde.
 
 ---
 
@@ -123,3 +204,10 @@ fase 1 funcionando.
 **Los pedidos de invitado ya existentes se quedan huérfanos**: nadie puede demostrar que son
 suyos, así que ni se ven ni se confirman ni se reclaman. En desarrollo da igual. **Antes de que
 haya compras reales, no.**
+
+**Una reclamación sobre un pedido sin comisión registrada se resuelve cubriendo cero, en
+silencio.** `ResolveReturnRequestUseCase` saca la tasa congelada de `platform_commissions`; si
+no hay fila, la tasa es 0, el tope en bolívares es 0 y la cobertura sale 0. No lo provoca esta
+fase y no se toca aquí: los pedidos reales SÍ registran comisión —`CreateStorefrontOrderPOSTController`
+la crea— y solo se ve en pedidos sembrados a mano. Pero conviene que falle ruidosamente el día
+que importe.

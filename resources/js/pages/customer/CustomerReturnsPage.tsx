@@ -2,23 +2,10 @@ import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
 import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import CustomerPortalServices, {
-    CustomerOrderData,
-    CustomerReturnRequestData,
-} from '@/Services/CustomerPortalServices';
+import CustomerPortalServices, { CustomerOrderData, CustomerReturnRequestData } from '@/Services/CustomerPortalServices';
+import { comoSeResolvio, explicacionDe, INSIGNIA_DE_RECLAMACION, MOTIVOS_DE_RECLAMACION } from '@/utils/claims';
 import { Head, Link } from '@inertiajs/react';
-import {
-    Badge,
-    Button,
-    Card,
-    Label,
-    Modal,
-    ModalBody,
-    ModalFooter,
-    ModalHeader,
-    Select,
-    Textarea,
-} from 'flowbite-react';
+import { Badge, Button, Card, Label, Modal, ModalBody, ModalFooter, ModalHeader, Select, Textarea } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import {
     HiOutlineArrowPathRoundedSquare,
@@ -57,62 +44,18 @@ import {
  * `CustomerAccountLayout`. Si algo aquí necesitara un `className` para parecerse a sus
  * hermanas, el sitio de arreglarlo es el tema, no esta página.
  */
-const MOTIVOS = [
-    'Producto dañado o roto',
-    'Producto no coincide con la descripción',
-    'Talla o variante incorrecta',
-    'Defecto de fábrica',
-    'Otro motivo',
-];
 
 /**
- * La insignia dice el estado; esta frase dice qué significa.
- *
- * Depende de `resolved_by` y no solo del estado, porque **una aprobación por silencio no la
- * aprobó la tienda**. Decir «la tienda aceptó tu reclamación» cuando la tienda no contestó es
- * atribuirle una decisión que no tomó, y encima contradice la línea de debajo, que explica que
- * venció el plazo. Una pantalla que se contradice a sí misma no se cree.
+ * El texto y el color salen de `utils/claims`, compartidos con `/mis-pedidos` del escaparate:
+ * pintan la MISMA fila y dos redacciones distintas serían la plataforma diciéndole dos cosas
+ * al mismo comprador. El icono se queda aquí porque es decoración de esta pantalla.
  */
-const explicacionDe = (status: string, resolvedBy: string | null | undefined): string => {
-    if (status === 'approved') {
-        return resolvedBy === 'merchant'
-            ? 'La tienda aceptó tu reclamación: se te devuelve el importe.'
-            : 'Tu reclamación se aprobó: se te devuelve el importe.';
-    }
-
-    const fijas: Record<string, string> = {
-        requested: 'La tienda todavía no ha respondido.',
-        in_review: 'La tienda está revisando tu reclamación.',
-        rejected: 'La tienda rechazó tu reclamación.',
-        refunded: 'El importe ya se te devolvió.',
-    };
-
-    return fijas[status] ?? 'Tu reclamación está en curso.';
-};
-
-const INSIGNIA: Record<string, { texto: string; color: string; Icono: typeof HiOutlineClock }> = {
-    approved: { texto: 'Aprobada', color: 'success', Icono: HiOutlineCheckCircle },
-    refunded: { texto: 'Reembolsada', color: 'purple', Icono: HiOutlineCheckCircle },
-    rejected: { texto: 'Rechazada', color: 'failure', Icono: HiOutlineXCircle },
-    in_review: { texto: 'En revisión', color: 'blue', Icono: HiOutlineClock },
-    requested: { texto: 'Solicitada', color: 'warning', Icono: HiOutlineClock },
-};
-
-/**
- * Cómo se resolvió, en palabras del comprador.
- *
- * `resolved_by` vale `merchant` o `timeout`. Cualquier otra cosa cae en una frase neutra a
- * propósito: si algún día se guardara ahí un identificador interno, no debe acabar en la
- * pantalla de un cliente.
- */
-const comoSeResolvio = (resolvedBy: string | null | undefined): string | null => {
-    if (!resolvedBy) return null;
-    if (resolvedBy === 'timeout') {
-        return 'La tienda no respondió dentro del plazo, así que se resolvió a tu favor.';
-    }
-    if (resolvedBy === 'merchant') return 'Respondió la tienda.';
-
-    return 'La resolvió el equipo de OwOMarket.';
+const ICONO_DE_ESTADO: Record<string, typeof HiOutlineClock> = {
+    approved: HiOutlineCheckCircle,
+    refunded: HiOutlineCheckCircle,
+    rejected: HiOutlineXCircle,
+    in_review: HiOutlineClock,
+    requested: HiOutlineClock,
 };
 
 export const CustomerReturnsPage: React.FC = () => {
@@ -129,7 +72,7 @@ export const CustomerReturnsPage: React.FC = () => {
     const [showCedulaAviso, setShowCedulaAviso] = useState(false);
     const [selectedOrderId, setSelectedOrderId] = useState('');
     const [selectedProductId, setSelectedProductId] = useState('');
-    const [reason, setReason] = useState(MOTIVOS[0]);
+    const [reason, setReason] = useState<string>(MOTIVOS_DE_RECLAMACION[0]);
     const [description, setDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
     // Hallazgo C2: el resultado de cada accion, en linea en vez de un alert().
@@ -140,10 +83,7 @@ export const CustomerReturnsPage: React.FC = () => {
     const loadData = () => {
         if (!customer?.id) return;
         setLoading(true);
-        Promise.all([
-            CustomerPortalServices.getReturns(customer.id),
-            CustomerPortalServices.getOrders(customer.id, { status: 'completed' }),
-        ])
+        Promise.all([CustomerPortalServices.getReturns(customer.id), CustomerPortalServices.getOrders(customer.id, { status: 'completed' })])
             .then(([returnsRes, ordersRes]) => {
                 if (returnsRes?.data) setReturns(returnsRes.data);
                 if (ordersRes?.data) setOrders(ordersRes.data);
@@ -212,7 +152,7 @@ export const CustomerReturnsPage: React.FC = () => {
             <Head title="Devoluciones - OwOMarket" />
 
             <div className="mb-6 flex items-center justify-between">
-                <h3 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
+                <h3 className="flex items-center gap-2 text-sm font-black tracking-wider text-gray-900 uppercase dark:text-white">
                     <HiOutlineArrowPathRoundedSquare className="h-5 w-5 text-blue-600" />
                     Mis Reclamos ({returns.length})
                 </h3>
@@ -226,9 +166,7 @@ export const CustomerReturnsPage: React.FC = () => {
                 <Card>
                     <div data-testid="returns-vacio" className="py-6 text-center">
                         <HiOutlineArrowPathRoundedSquare className="mx-auto mb-3 h-12 w-12 text-gray-300 dark:text-gray-700" />
-                        <h4 className="mb-1 text-base font-bold text-gray-900 dark:text-white">
-                            No tienes devoluciones en curso
-                        </h4>
+                        <h4 className="mb-1 text-base font-bold text-gray-900 dark:text-white">No tienes devoluciones en curso</h4>
                         <p className="mb-6 text-xs text-gray-500 dark:text-gray-400">
                             Si tuviste algún inconveniente con un producto recibido, puedes iniciar un reclamo aquí.
                         </p>
@@ -240,19 +178,17 @@ export const CustomerReturnsPage: React.FC = () => {
             ) : (
                 <div className="space-y-4">
                     {returns.map((ret) => {
-                        const insignia = INSIGNIA[ret.status] ?? INSIGNIA.requested;
-                        const Icono = insignia.Icono;
+                        const insignia = INSIGNIA_DE_RECLAMACION[ret.status] ?? INSIGNIA_DE_RECLAMACION.requested;
+                        const Icono = ICONO_DE_ESTADO[ret.status] ?? HiOutlineClock;
                         const resolucion = comoSeResolvio(ret.resolved_by);
                         const cerrada = ret.status !== 'requested' && ret.status !== 'in_review';
 
                         return (
                             <Card key={ret.id} data-testid={`reclamo-${ret.id}`}>
-                                <div className="flex flex-col gap-2 border-b border-gray-100 pb-3 dark:border-gray-800 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="flex flex-col gap-2 border-b border-gray-100 pb-3 sm:flex-row sm:items-center sm:justify-between dark:border-gray-800">
                                     <div>
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span className="text-xs font-bold text-gray-900 dark:text-white">
-                                                Orden: {ret.order_number}
-                                            </span>
+                                            <span className="text-xs font-bold text-gray-900 dark:text-white">Orden: {ret.order_number}</span>
                                             <Badge color={insignia.color} size="xs" icon={Icono}>
                                                 {insignia.texto}
                                             </Badge>
@@ -264,25 +200,18 @@ export const CustomerReturnsPage: React.FC = () => {
                                 </div>
 
                                 <div className="py-1">
-                                    <h4 className="mb-1 text-xs font-bold text-gray-900 dark:text-white">
-                                        Producto: {ret.product_name}
-                                    </h4>
+                                    <h4 className="mb-1 text-xs font-bold text-gray-900 dark:text-white">Producto: {ret.product_name}</h4>
                                     <p className="text-xs text-gray-600 dark:text-gray-400">
                                         <strong>Motivo:</strong> {ret.reason}
                                     </p>
-                                    <p className="mt-1 text-xs italic text-gray-500 dark:text-gray-400">
-                                        "{ret.description}"
-                                    </p>
+                                    <p className="mt-1 text-xs text-gray-500 italic dark:text-gray-400">"{ret.description}"</p>
 
                                     {/*
-                                      * El estado en palabras. Antes solo estaba el color de la
-                                      * insignia, y un color no le dice a nadie si aun tiene que
-                                      * esperar o si el asunto ya termino.
-                                      */}
-                                    <p
-                                        data-testid={`estado-${ret.id}`}
-                                        className="mt-3 text-xs font-bold text-gray-700 dark:text-gray-300"
-                                    >
+                                     * El estado en palabras. Antes solo estaba el color de la
+                                     * insignia, y un color no le dice a nadie si aun tiene que
+                                     * esperar o si el asunto ya termino.
+                                     */}
+                                    <p data-testid={`estado-${ret.id}`} className="mt-3 text-xs font-bold text-gray-700 dark:text-gray-300">
                                         {explicacionDe(ret.status, ret.resolved_by)}
                                     </p>
 
@@ -293,12 +222,12 @@ export const CustomerReturnsPage: React.FC = () => {
                                     )}
 
                                     {/*
-                                      * Lo que escribio la TIENDA al resolver. En un rechazo es el
-                                      * motivo, y es lo unico que el comprador tendra para
-                                      * entender la decision. Va aparte de `admin_notes` porque
-                                      * son dos voces distintas: fundirlas dejaria al comprador
-                                      * sin saber quien le contesto.
-                                      */}
+                                     * Lo que escribio la TIENDA al resolver. En un rechazo es el
+                                     * motivo, y es lo unico que el comprador tendra para
+                                     * entender la decision. Va aparte de `admin_notes` porque
+                                     * son dos voces distintas: fundirlas dejaria al comprador
+                                     * sin saber quien le contesto.
+                                     */}
                                     {ret.resolution_notes && (
                                         <div
                                             data-testid={`notas-tienda-${ret.id}`}
@@ -327,9 +256,8 @@ export const CustomerReturnsPage: React.FC = () => {
                     <div data-testid="aviso-cedula" className="flex gap-3 text-xs text-gray-600 dark:text-gray-300">
                         <HiOutlineIdentification className="h-6 w-6 shrink-0 text-blue-600" />
                         <p>
-                            Para abrir una reclamación necesitamos tu cédula en el perfil. Una reclamación puede acabar
-                            moviendo dinero, y eso no funciona con alguien sin identificar. Es un minuto y solo hay que
-                            hacerlo una vez.
+                            Para abrir una reclamación necesitamos tu cédula en el perfil. Una reclamación puede acabar moviendo dinero, y eso no
+                            funciona con alguien sin identificar. Es un minuto y solo hay que hacerlo una vez.
                         </p>
                     </div>
                 </ModalBody>
@@ -389,13 +317,8 @@ export const CustomerReturnsPage: React.FC = () => {
 
                             <div>
                                 <Label htmlFor="return-reason">Motivo del Reclamo</Label>
-                                <Select
-                                    id="return-reason"
-                                    value={reason}
-                                    onChange={(e) => setReason(e.target.value)}
-                                    required
-                                >
-                                    {MOTIVOS.map((m) => (
+                                <Select id="return-reason" value={reason} onChange={(e) => setReason(e.target.value)} required>
+                                    {MOTIVOS_DE_RECLAMACION.map((m) => (
                                         <option key={m} value={m}>
                                             {m}
                                         </option>
