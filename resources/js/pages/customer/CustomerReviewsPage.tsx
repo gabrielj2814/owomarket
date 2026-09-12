@@ -1,16 +1,31 @@
+import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
 import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
-import React, { useEffect, useState } from 'react';
-import { Head } from '@inertiajs/react';
-import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
-import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
 import CustomerPortalServices from '@/Services/CustomerPortalServices';
+import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
+import { Head } from '@inertiajs/react';
 import {
-    HiOutlineStar,
-    HiStar,
-    HiOutlineCheckCircle,
-} from 'react-icons/hi2';
+    Button,
+    Card,
+    Label,
+    Modal,
+    ModalBody,
+    ModalFooter,
+    ModalHeader,
+    Textarea,
+    TextInput,
+} from 'flowbite-react';
+import React, { useEffect, useState } from 'react';
+import { HiOutlineCheckCircle, HiOutlineStar, HiStar } from 'react-icons/hi2';
 
+/**
+ * Reseñas del comprador.
+ *
+ * El botón de calificar usa `color="accent"` —el ámbar del tema— y no el azul: no es la acción
+ * principal de la página ni una alerta, es algo que el portal pide sin exigir. Que el color
+ * viva en el tema y no aquí es lo que evita que la próxima pantalla que pida algo parecido
+ * invente su propio ámbar.
+ */
 export const CustomerReviewsPage: React.FC = () => {
     const { customer } = useCustomerAuth();
     const [pending, setPending] = useState<any[]>([]);
@@ -19,7 +34,6 @@ export const CustomerReviewsPage: React.FC = () => {
     // Hallazgo N35: un error de red era indistinguible de «no tienes nada».
     const [loadError, setLoadError] = useState(false);
 
-    // Modal state
     const [showModal, setShowModal] = useState(false);
     const [selectedItem, setSelectedItem] = useState<any | null>(null);
     const [rating, setRating] = useState(5);
@@ -33,7 +47,7 @@ export const CustomerReviewsPage: React.FC = () => {
         if (!customer?.id) return;
         setLoading(true);
         CustomerPortalServices.getPendingReviews(customer.id)
-            .then(res => {
+            .then((res) => {
                 if (res?.data) {
                     setPending(res.data.pending || []);
                     setReviewed(res.data.reviewed || []);
@@ -80,6 +94,18 @@ export const CustomerReviewsPage: React.FC = () => {
         }
     };
 
+    /** Las cinco estrellas, en lectura o en selección. */
+    const Estrellas = ({ valor, tamano = 'h-4 w-4' }: { valor: number; tamano?: string }) => (
+        <>
+            {[...Array(5)].map((_, i) => (
+                <HiStar
+                    key={i}
+                    className={`${tamano} ${i < valor ? 'text-amber-400' : 'text-gray-300 dark:text-gray-700'}`}
+                />
+            ))}
+        </>
+    );
+
     return (
         <CustomerAccountLayout
             title="Mis Reseñas & Calificaciones"
@@ -90,25 +116,26 @@ export const CustomerReviewsPage: React.FC = () => {
 
             <Head title="Mis Reseñas - OwOMarket" />
 
-            {/* Pending Reviews */}
-            <div className="mb-8">
-                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <HiOutlineStar className="w-5 h-5 text-amber-500" />
+            <section className="mb-8">
+                <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
+                    <HiOutlineStar className="h-5 w-5 text-amber-500" />
                     Productos Pendientes por Calificar ({pending.length})
                 </h3>
 
-                {pending.length === 0 ? (
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 text-center border border-gray-200/80 dark:border-gray-800/80 text-gray-400 text-xs">
-                        No tienes productos pendientes por calificar.
-                    </div>
+                {!loading && pending.length === 0 ? (
+                    <Card>
+                        <p data-testid="resenas-pendientes-vacio" className="text-center text-xs text-gray-400">
+                            No tienes productos pendientes por calificar.
+                        </p>
+                    </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         {pending.map((item, idx) => (
-                            <div
+                            <Card
                                 key={idx}
-                                className="bg-white dark:bg-gray-900 rounded-3xl p-5 shadow-sm border border-gray-200/80 dark:border-gray-800/80 flex items-center justify-between gap-4"
+                                theme={{ root: { children: 'flex h-full flex-row items-center justify-between gap-4 p-5' } }}
                             >
-                                <div>
+                                <div className="min-w-0">
                                     <h4 className="text-xs font-bold text-gray-900 dark:text-white">
                                         {item.product_name}
                                     </h4>
@@ -116,138 +143,113 @@ export const CustomerReviewsPage: React.FC = () => {
                                         Orden {item.order_number} • Comprado el {item.purchased_at}
                                     </span>
                                 </div>
-                                <button
+                                <Button
+                                    color="accent"
+                                    size="xs"
+                                    className="shrink-0"
                                     onClick={() => openReviewModal(item)}
-                                    className="px-3.5 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-500/20 whitespace-nowrap transition"
                                 >
                                     Calificar
-                                </button>
-                            </div>
+                                </Button>
+                            </Card>
                         ))}
                     </div>
                 )}
-            </div>
+            </section>
 
-            {/* Reviewed Products */}
-            <div>
-                <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
-                    <HiOutlineCheckCircle className="w-5 h-5 text-green-600" />
+            <section>
+                <h3 className="mb-4 flex items-center gap-2 text-sm font-black uppercase tracking-wider text-gray-900 dark:text-white">
+                    <HiOutlineCheckCircle className="h-5 w-5 text-green-600" />
                     Reseñas Publicadas ({reviewed.length})
                 </h3>
 
-                {reviewed.length === 0 ? (
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl p-8 text-center border border-gray-200/80 dark:border-gray-800/80 text-gray-400 text-xs">
-                        Aún no has publicado reseñas.
-                    </div>
+                {!loading && reviewed.length === 0 ? (
+                    <Card>
+                        <p data-testid="resenas-publicadas-vacio" className="text-center text-xs text-gray-400">
+                            Aún no has publicado reseñas.
+                        </p>
+                    </Card>
                 ) : (
                     <div className="space-y-3">
                         {reviewed.map((r, idx) => (
-                            <div
-                                key={idx}
-                                className="bg-white dark:bg-gray-900 rounded-3xl p-5 shadow-sm border border-gray-200/80 dark:border-gray-800/80"
-                            >
-                                <div className="flex items-center justify-between mb-2">
+                            <Card key={idx} theme={{ root: { children: 'flex h-full flex-col gap-2 p-5' } }}>
+                                <div className="flex items-center justify-between">
                                     <h4 className="text-xs font-bold text-gray-900 dark:text-white">
                                         {r.product_name}
                                     </h4>
-                                    <div className="flex items-center gap-0.5 text-amber-400">
-                                        {[...Array(5)].map((_, i) => (
-                                            <HiStar
-                                                key={i}
-                                                className={`w-4 h-4 ${i < r.rating ? 'text-amber-400' : 'text-gray-300 dark:text-gray-700'}`}
-                                            />
-                                        ))}
+                                    <div className="flex items-center gap-0.5">
+                                        <Estrellas valor={r.rating} />
                                     </div>
                                 </div>
                                 {r.title && (
-                                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                                    <h5 className="text-xs font-semibold text-gray-800 dark:text-gray-200">
                                         {r.title}
                                     </h5>
                                 )}
-                                <p className="text-xs text-gray-600 dark:text-gray-400 italic">
-                                    "{r.comment}"
-                                </p>
-                            </div>
+                                <p className="text-xs italic text-gray-600 dark:text-gray-400">«{r.comment}»</p>
+                            </Card>
                         ))}
                     </div>
                 )}
-            </div>
+            </section>
 
-            {/* Submit Review Modal */}
-            {showModal && selectedItem && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-md w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800">
-                        <h3 className="text-base font-black text-gray-900 dark:text-white mb-2">
-                            Calificar {selectedItem.product_name}
-                        </h3>
-
-                        <form onSubmit={handleSubmitReview} className="space-y-4">
-                            {/* Stars selector */}
+            <Modal show={showModal && selectedItem !== null} onClose={() => setShowModal(false)} size="md">
+                <ModalHeader>Calificar {selectedItem?.product_name}</ModalHeader>
+                <form onSubmit={handleSubmitReview}>
+                    <ModalBody>
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
-                                    Puntuación
-                                </label>
-                                <div className="flex items-center gap-2">
+                                <Label htmlFor="resena-puntuacion">Puntuación</Label>
+                                <div id="resena-puntuacion" className="flex items-center gap-2">
                                     {[1, 2, 3, 4, 5].map((star) => (
                                         <button
                                             type="button"
                                             key={star}
                                             onClick={() => setRating(star)}
-                                            className="p-1 text-2xl focus:outline-none transition hover:scale-110"
+                                            aria-label={`${star} ${star === 1 ? 'estrella' : 'estrellas'}`}
+                                            className="p-1 transition hover:scale-110 focus:outline-none focus:ring-2 focus:ring-amber-300"
                                         >
-                                            <HiStar className={`w-8 h-8 ${star <= rating ? 'text-amber-400' : 'text-gray-300 dark:text-gray-700'}`} />
+                                            <HiStar
+                                                className={`h-8 w-8 ${star <= rating ? 'text-amber-400' : 'text-gray-300 dark:text-gray-700'}`}
+                                            />
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Título de tu Reseña (Opcional)
-                                </label>
-                                <input
-                                    type="text"
+                                <Label htmlFor="resena-titulo">Título de tu Reseña (Opcional)</Label>
+                                <TextInput
+                                    id="resena-titulo"
                                     value={title}
-                                    onChange={e => setTitle(e.target.value)}
+                                    onChange={(e) => setTitle(e.target.value)}
                                     placeholder="ej. Excelente calidad y envío rápido"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Tu Comentario
-                                </label>
-                                <textarea
+                                <Label htmlFor="resena-comentario">Tu Comentario</Label>
+                                <Textarea
+                                    id="resena-comentario"
                                     value={comment}
-                                    onChange={e => setComment(e.target.value)}
+                                    onChange={(e) => setComment(e.target.value)}
                                     required
                                     rows={3}
                                     placeholder="¿Qué te pareció el producto? ¿Cumplió con tus expectativas?"
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                                 />
                             </div>
-
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 rounded-xl hover:bg-gray-100 transition"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={submitting}
-                                    className="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow-md shadow-amber-500/20 transition disabled:opacity-50"
-                                >
-                                    {submitting ? 'Publicando...' : 'Publicar Reseña'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button type="submit" color="accent" size="sm" disabled={submitting}>
+                            {submitting ? 'Publicando...' : 'Publicar Reseña'}
+                        </Button>
+                        <Button type="button" color="subtle" size="sm" onClick={() => setShowModal(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </form>
+            </Modal>
         </CustomerAccountLayout>
     );
 };

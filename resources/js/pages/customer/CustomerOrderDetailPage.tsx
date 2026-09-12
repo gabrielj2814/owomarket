@@ -1,4 +1,5 @@
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
+import { Button, Card } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link, usePage } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -63,17 +64,16 @@ export const CustomerOrderDetailPage: React.FC = () => {
     if (!order) {
         return (
             <CustomerAccountLayout title="Pedido no encontrado">
-                <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 text-center border border-gray-200 dark:border-gray-800">
-                    <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">
-                        No se pudo encontrar el pedido especificado
-                    </h3>
-                    <Link
-                        href="/account/orders"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold"
-                    >
-                        <HiOutlineArrowLeft className="w-4 h-4" /> Volver a mis pedidos
-                    </Link>
-                </div>
+                <Card>
+                    <div className="py-6 text-center">
+                        <h3 className="mb-4 text-base font-bold text-gray-900 dark:text-white">
+                            No se pudo encontrar el pedido especificado
+                        </h3>
+                        <Button as={Link} href="/account/orders" color="primary" size="sm" className="mx-auto w-fit">
+                            <HiOutlineArrowLeft className="mr-1.5 h-4 w-4" /> Volver a mis pedidos
+                        </Button>
+                    </div>
+                </Card>
             </CustomerAccountLayout>
         );
     }
@@ -123,7 +123,7 @@ export const CustomerOrderDetailPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Items List */}
                 <div className="lg:col-span-2 space-y-4">
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
+                    <Card theme={{ root: { children: 'flex h-full flex-col gap-3 p-6' } }}>
                         <h3 className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-2">
                             <HiOutlineBuildingStorefront className="w-4 h-4 text-blue-600" />
                             Productos Comprados ({order.items?.length || 0})
@@ -146,7 +146,7 @@ export const CustomerOrderDetailPage: React.FC = () => {
                                 </div>
                             ))}
                         </div>
-                    </div>
+                    </Card>
 
                     {/*
                       * Subsistema 3: la entrega se confirma POR TIENDA, no por pedido central.
@@ -174,7 +174,7 @@ export const CustomerOrderDetailPage: React.FC = () => {
                 {/* Shipping & Payment Summary */}
                 <div className="space-y-4">
                     {/* Shipping info */}
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
+                    <Card theme={{ root: { children: 'flex h-full flex-col gap-3 p-6' } }}>
                         <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                             <HiOutlineMapPin className="w-4 h-4 text-blue-600" />
                             Dirección de Envío
@@ -193,10 +193,10 @@ export const CustomerOrderDetailPage: React.FC = () => {
                                 Tel: {order.customer_phone}
                             </p>
                         )}
-                    </div>
+                    </Card>
 
                     {/* Payment Info */}
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
+                    <Card theme={{ root: { children: 'flex h-full flex-col gap-3 p-6' } }}>
                         <h3 className="text-xs font-black text-gray-900 dark:text-white uppercase tracking-wider mb-3 flex items-center gap-2">
                             <HiOutlineCreditCard className="w-4 h-4 text-blue-600" />
                             Detalle del Pago
@@ -245,7 +245,7 @@ export const CustomerOrderDetailPage: React.FC = () => {
                                 <CurrencyPriceDisplay priceUsd={order.total} size="md" showVes={true} showBcvLabel={true} />
                             </div>
                         </div>
-                    </div>
+                    </Card>
                 </div>
             </div>
         </CustomerAccountLayout>

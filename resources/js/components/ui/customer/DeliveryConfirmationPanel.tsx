@@ -1,4 +1,5 @@
 import CustomerPortalServices, { DeliveryEvidenceFile, DeliveryStatusData } from '@/Services/CustomerPortalServices';
+import { Button, FileInput, Label } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 
 /**
@@ -147,29 +148,25 @@ const DeliveryConfirmationPanel: React.FC<DeliveryConfirmationPanelProps> = ({
                     </p>
 
                     <div>
-                        <label htmlFor={`evidence-${orderId}`} className="mb-1 block text-xs font-bold text-gray-500 dark:text-gray-400">
-                            Adjuntar fotos o video (opcional)
-                        </label>
-                        <input
+                        <Label htmlFor={`evidence-${orderId}`}>Adjuntar fotos o video (opcional)</Label>
+                        <FileInput
                             id={`evidence-${orderId}`}
-                            type="file"
                             multiple
                             accept="image/*,video/*"
                             onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-                            className="block w-full text-xs text-gray-500"
                         />
                     </div>
 
                     {error && <p className="text-xs font-bold text-red-600">{error}</p>}
 
-                    <button
-                        type="button"
-                        onClick={confirmar}
-                        disabled={sending}
-                        className="rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white transition hover:bg-emerald-700 disabled:opacity-50"
-                    >
+                    {/*
+                      * `green` y no `primary`: este panel se pinta TAMBIEN en el escaparate,
+                      * que no esta envuelto en el tema del portal. Un color propio del tema
+                      * saldria sin relleno alli, y nadie lo reportaria.
+                      */}
+                    <Button type="button" color="green" size="xs" onClick={confirmar} disabled={sending}>
                         {sending ? 'Confirmando…' : 'Confirmar que lo recibí'}
-                    </button>
+                    </Button>
                 </div>
             ) : (
                 <p className="text-xs text-gray-500 dark:text-gray-400">

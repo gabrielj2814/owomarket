@@ -1,5 +1,6 @@
 import PortalActionFeedback, { PortalFeedback } from '@/components/ui/customer/PortalActionFeedback';
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
+import { Badge, Button, Card, Checkbox, Label, Modal, ModalBody, ModalFooter, ModalHeader, Textarea, TextInput } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -149,51 +150,44 @@ export const CustomerAddressesPage: React.FC = () => {
                     <HiOutlineMapPin className="w-5 h-5 text-blue-600" />
                     Direcciones Guardadas ({addresses.length})
                 </h3>
-                <button
-                    onClick={openCreateModal}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 flex items-center gap-1.5 transition"
-                >
-                    <HiOutlinePlus className="w-4 h-4" />
+                <Button color="primary" size="sm" onClick={openCreateModal}>
+                    <HiOutlinePlus className="mr-1.5 h-4 w-4" />
                     Nueva Dirección
-                </button>
+                </Button>
             </div>
 
             {/* Address Cards Grid */}
             {addresses.length === 0 ? (
-                <div className="bg-white dark:bg-gray-900 rounded-3xl p-12 text-center border border-gray-200/80 dark:border-gray-800/80">
-                    <HiOutlineMapPin className="w-12 h-12 text-gray-300 dark:text-gray-700 mx-auto mb-3" />
-                    <h4 className="text-base font-bold text-gray-900 dark:text-white mb-1">
-                        No tienes direcciones registradas
-                    </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-6">
-                        Agrega tu primera dirección de entrega para recibir tus pedidos de forma rápida.
-                    </p>
-                    <button
-                        onClick={openCreateModal}
-                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition"
-                    >
-                        Agregar Dirección
-                    </button>
-                </div>
+                <Card>
+                    <div data-testid="direcciones-vacio" className="py-6 text-center">
+                        <HiOutlineMapPin className="mx-auto mb-3 h-12 w-12 text-gray-300 dark:text-gray-700" />
+                        <h4 className="mb-1 text-base font-bold text-gray-900 dark:text-white">
+                            No tienes direcciones registradas
+                        </h4>
+                        <p className="mb-6 text-xs text-gray-500 dark:text-gray-400">
+                            Agrega tu primera dirección de entrega para recibir tus pedidos de forma rápida.
+                        </p>
+                        <Button color="primary" size="sm" className="mx-auto w-fit" onClick={openCreateModal}>
+                            Agregar Dirección
+                        </Button>
+                    </div>
+                </Card>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {addresses.map(addr => (
-                        <div
+                        <Card
                             key={addr.id}
-                            className={`p-5 rounded-3xl bg-white dark:bg-gray-900 border transition ${
-                                addr.is_default
-                                    ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md shadow-blue-500/10'
-                                    : 'border-gray-200/80 dark:border-gray-800/80'
-                            }`}
+                            className={addr.is_default ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md shadow-blue-500/10' : undefined}
+                            theme={{ root: { children: 'flex h-full flex-col gap-3 p-5' } }}
                         >
                             <div className="flex items-center justify-between mb-3">
-                                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs font-bold">
+                                <Badge color="gray" size="xs">
                                     {addr.label}
-                                </span>
+                                </Badge>
                                 {addr.is_default ? (
-                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 dark:bg-blue-950/50 px-2 py-0.5 rounded-full">
-                                        <HiOutlineStar className="w-3.5 h-3.5" /> Predeterminada
-                                    </span>
+                                    <Badge color="blue" size="xs" icon={HiOutlineStar}>
+                                        Predeterminada
+                                    </Badge>
                                 ) : (
                                     <button
                                         onClick={() => handleSetDefault(addr.id)}
@@ -227,107 +221,82 @@ export const CustomerAddressesPage: React.FC = () => {
                                     <HiOutlineTrash className="w-4 h-4" />
                                 </button>
                             </div>
-                        </div>
+                        </Card>
                     ))}
                 </div>
             )}
 
             {/* Create/Edit Address Modal */}
-            {showModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white dark:bg-gray-900 rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-gray-200 dark:border-gray-800 animate-in fade-in zoom-in-95">
-                        <h3 className="text-base font-black text-gray-900 dark:text-white mb-4">
-                            {editingAddress ? 'Editar Dirección' : 'Nueva Dirección de Entrega'}
-                        </h3>
-
-                        <form onSubmit={handleSaveAddress} className="space-y-4">
+            <Modal show={showModal} onClose={() => setShowModal(false)} size="lg">
+                <ModalHeader>{editingAddress ? 'Editar Dirección' : 'Nueva Dirección de Entrega'}</ModalHeader>
+                <form onSubmit={handleSaveAddress}>
+                    <ModalBody>
+                        <div className="space-y-4">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Etiqueta (ej. Casa, Oficina, Apartamento)
-                                </label>
-                                <input
-                                    type="text"
+                                <Label htmlFor="dir-etiqueta">Etiqueta (ej. Casa, Oficina, Apartamento)</Label>
+                                <TextInput
+                                    id="dir-etiqueta"
                                     value={label}
-                                    onChange={e => setLabel(e.target.value)}
+                                    onChange={(e) => setLabel(e.target.value)}
                                     required
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Dirección Detallada (Calle, Edificio, Casa, Nro)
-                                </label>
-                                <textarea
+                                <Label htmlFor="dir-direccion">Dirección Detallada (Calle, Edificio, Casa, Nro)</Label>
+                                <Textarea
+                                    id="dir-direccion"
                                     value={addressText}
-                                    onChange={e => setAddressText(e.target.value)}
+                                    onChange={(e) => setAddressText(e.target.value)}
                                     required
                                     rows={2}
-                                    className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                                 />
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                        Ciudad
-                                    </label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="dir-ciudad">Ciudad</Label>
+                                    <TextInput
+                                        id="dir-ciudad"
                                         value={city}
-                                        onChange={e => setCity(e.target.value)}
+                                        onChange={(e) => setCity(e.target.value)}
                                         required
                                         placeholder="Caracas"
-                                        className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                        Estado
-                                    </label>
-                                    <input
-                                        type="text"
+                                    <Label htmlFor="dir-estado">Estado</Label>
+                                    <TextInput
+                                        id="dir-estado"
                                         value={state}
-                                        onChange={e => setState(e.target.value)}
+                                        onChange={(e) => setState(e.target.value)}
                                         placeholder="Miranda / Dtto Capital"
-                                        className="w-full px-4 py-2.5 rounded-xl text-xs bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white"
                                     />
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2 pt-2">
-                                <input
-                                    type="checkbox"
+                                <Checkbox
                                     id="isDefault"
                                     checked={isDefault}
-                                    onChange={e => setIsDefault(e.target.checked)}
-                                    className="rounded text-blue-600 focus:ring-blue-500"
+                                    onChange={(e) => setIsDefault(e.target.checked)}
                                 />
-                                <label htmlFor="isDefault" className="text-xs font-semibold text-gray-700 dark:text-gray-300">
+                                <Label htmlFor="isDefault" className="mb-0">
                                     Establecer como dirección predeterminada
-                                </label>
+                                </Label>
                             </div>
-
-                            <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowModal(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-500 hover:text-gray-700 rounded-xl hover:bg-gray-100 transition"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition disabled:opacity-50"
-                                >
-                                    {saving ? 'Guardando...' : 'Guardar Dirección'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button type="submit" color="primary" size="sm" disabled={saving}>
+                            {saving ? 'Guardando...' : 'Guardar Dirección'}
+                        </Button>
+                        <Button type="button" color="subtle" size="sm" onClick={() => setShowModal(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </form>
+            </Modal>
         </CustomerAccountLayout>
     );
 };

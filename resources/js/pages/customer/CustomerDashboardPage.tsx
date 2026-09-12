@@ -1,4 +1,5 @@
 import PortalLoadError from '@/components/ui/customer/PortalLoadError';
+import { Card } from 'flowbite-react';
 import React, { useEffect, useState } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -58,47 +59,29 @@ export const CustomerDashboardPage: React.FC = () => {
 
             <Head title="Mi Cuenta - Resumen" />
 
-            {/* Quick Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="p-5 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-blue-100 dark:bg-blue-950/60 text-blue-600 flex items-center justify-center">
-                        <HiOutlineShoppingBag className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium block">Total Pedidos</span>
-                        <span className="text-xl font-black text-gray-900 dark:text-white">{orders.length}</span>
-                    </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
-                        <HiOutlineTicket className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium block">Cupones Disponibles</span>
-                        <span className="text-xl font-black text-gray-900 dark:text-white">{coupons.length}</span>
-                    </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
-                        <HiOutlineHeart className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium block">Favoritos Guardados</span>
-                        <span className="text-xl font-black text-gray-900 dark:text-white">{wishlist.length}</span>
-                    </div>
-                </div>
-
-                <div className="p-5 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-purple-100 dark:bg-purple-950/60 text-purple-600 flex items-center justify-center">
-                        <HiOutlineSparkles className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400 font-medium block">Estado OwO Pass</span>
-                        <span className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wide">Activo Global</span>
-                    </div>
-                </div>
+            {/*
+              * Las cuatro metricas eran el mismo bloque de marcado copiado cuatro veces, con
+              * el color como unica diferencia. Ahora son datos.
+              */}
+            <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[
+                    { Icono: HiOutlineShoppingBag, tono: 'bg-blue-100 text-blue-600 dark:bg-blue-950/60', etiqueta: 'Total Pedidos', valor: String(orders.length) },
+                    { Icono: HiOutlineTicket, tono: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60', etiqueta: 'Cupones Disponibles', valor: String(coupons.length) },
+                    { Icono: HiOutlineHeart, tono: 'bg-rose-100 text-rose-600 dark:bg-rose-950/60', etiqueta: 'Favoritos Guardados', valor: String(wishlist.length) },
+                    { Icono: HiOutlineSparkles, tono: 'bg-purple-100 text-purple-600 dark:bg-purple-950/60', etiqueta: 'Estado OwO Pass', valor: 'Activo Global' },
+                ].map(({ Icono, tono, etiqueta, valor }) => (
+                    <Card key={etiqueta} theme={{ root: { children: 'flex h-full flex-row items-center gap-4 p-5' } }}>
+                        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${tono}`}>
+                            <Icono className="h-6 w-6" />
+                        </div>
+                        <div className="min-w-0">
+                            <span className="block text-xs font-medium text-gray-500 dark:text-gray-400">
+                                {etiqueta}
+                            </span>
+                            <span className="text-xl font-black text-gray-900 dark:text-white">{valor}</span>
+                        </div>
+                    </Card>
+                ))}
             </div>
 
             {/* Active Order Spotlight */}
@@ -173,8 +156,8 @@ export const CustomerDashboardPage: React.FC = () => {
             {/* Recent Orders & Wishlist Section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Recent Purchases */}
-                <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
-                    <div className="flex items-center justify-between mb-4">
+                <Card theme={{ root: { children: 'flex h-full flex-col gap-4 p-6' } }}>
+                    <div className="flex items-center justify-between">
                         <h3 className="text-sm font-black text-gray-900 dark:text-white">
                             Compras Recientes
                         </h3>
@@ -207,11 +190,11 @@ export const CustomerDashboardPage: React.FC = () => {
                             ))}
                         </div>
                     )}
-                </div>
+                </Card>
 
                 {/* Favorite Products */}
-                <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 shadow-sm border border-gray-200/80 dark:border-gray-800/80">
-                    <div className="flex items-center justify-between mb-4">
+                <Card theme={{ root: { children: 'flex h-full flex-col gap-4 p-6' } }}>
+                    <div className="flex items-center justify-between">
                         <h3 className="text-sm font-black text-gray-900 dark:text-white">
                             Favoritos Guardados
                         </h3>
@@ -237,7 +220,7 @@ export const CustomerDashboardPage: React.FC = () => {
                             ))}
                         </div>
                     )}
-                </div>
+                </Card>
             </div>
         </CustomerAccountLayout>
     );

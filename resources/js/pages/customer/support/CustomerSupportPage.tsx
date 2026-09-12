@@ -1,3 +1,4 @@
+import { Alert, Button, Label, Modal, ModalBody, ModalFooter, ModalHeader, Select, Textarea, TextInput } from 'flowbite-react';
 import React, { useEffect, useRef, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
@@ -257,23 +258,16 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
                         </p>
                     </div>
 
-                    <button
-                        onClick={() => setIsCreateModalOpen(true)}
-                        className="px-5 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center gap-2"
-                    >
-                        <HiOutlinePlus className="w-4 h-4" />
+                    <Button color="primary" onClick={() => setIsCreateModalOpen(true)}>
+                        <HiOutlinePlus className="mr-2 h-4 w-4" />
                         <span>Nueva Consulta / Reportar Error</span>
-                    </button>
+                    </Button>
                 </div>
 
                 {feedback && (
-                    <div className={`p-4 rounded-2xl text-xs font-semibold ${
-                        feedback.type === 'success'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-red-50 text-red-700 border border-red-200'
-                    }`}>
+                    <Alert color={feedback.type === 'success' ? 'success' : 'failure'} className="rounded-2xl text-xs font-semibold">
                         {feedback.text}
-                    </div>
+                    </Alert>
                 )}
 
                 {/* Main Content */}
@@ -423,60 +417,45 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
             </div>
 
             {/* Modal: Nuevo Ticket Cliente */}
-            {isCreateModalOpen && (
-                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 space-y-4 shadow-2xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
-                        <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-700">
-                            <h3 className="text-base font-black text-gray-900 dark:text-white">
-                                Nueva Solicitud de Ayuda
-                            </h3>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="text-gray-400">
-                                <HiOutlineXMark className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <form onSubmit={handleCreateTicket} className="space-y-3">
+            <Modal show={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} size="lg">
+                <ModalHeader>Nueva Solicitud de Ayuda</ModalHeader>
+                <form onSubmit={handleCreateTicket}>
+                    <ModalBody>
+                        <div className="space-y-3">
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Asunto o Motivo *
-                                </label>
-                                <input
-                                    type="text"
+                                <Label htmlFor="ticket-asunto">Asunto o Motivo *</Label>
+                                <TextInput
+                                    id="ticket-asunto"
                                     placeholder="Ej: Problema con el pago de mi pedido #ORD-1234"
                                     value={subject}
                                     onChange={(e) => setSubject(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-xs font-medium bg-gray-50 dark:bg-gray-900"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Categoría
-                                </label>
-                                <select
+                                <Label htmlFor="ticket-categoria">Categoría</Label>
+                                <Select
+                                    id="ticket-categoria"
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900"
                                 >
                                     <option value="order_issue">Incidencia con un Pedido / Envío</option>
                                     <option value="payment_issue">Problema con Pago Móvil / Binance Pay</option>
                                     <option value="technical_error">Fallo en la Página / App</option>
                                     <option value="account">Mi Cuenta / Datos Personales</option>
                                     <option value="other">Otra Consulta</option>
-                                </select>
+                                </Select>
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                                    Detalle del Problema *
-                                </label>
-                                <textarea
+                                <Label htmlFor="ticket-detalle">Detalle del Problema *</Label>
+                                <Textarea
+                                    id="ticket-detalle"
                                     rows={4}
                                     placeholder="Explícanos lo ocurrido con el mayor detalle posible..."
                                     value={description}
                                     onChange={(e) => setDescription(e.target.value)}
-                                    className="w-full p-2.5 rounded-xl border border-gray-300 dark:border-gray-700 text-xs bg-gray-50 dark:bg-gray-900"
                                     required
                                 />
                             </div>
@@ -527,27 +506,18 @@ export const CustomerSupportPage: React.FC<CustomerSupportPageProps> = ({
                                     </div>
                                 )}
                             </div>
-
-                            <div className="flex justify-end gap-2 pt-3 border-t">
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCreateModalOpen(false)}
-                                    className="px-4 py-2 text-xs font-bold text-gray-500"
-                                >
-                                    Cancelar
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20"
-                                >
-                                    {loading ? 'Enviando...' : 'Enviar Reporte'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        </div>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button type="submit" color="primary" size="sm" disabled={loading}>
+                            {loading ? 'Enviando...' : 'Enviar Reporte'}
+                        </Button>
+                        <Button type="button" color="subtle" size="sm" onClick={() => setIsCreateModalOpen(false)}>
+                            Cancelar
+                        </Button>
+                    </ModalFooter>
+                </form>
+            </Modal>
 
             {/* Visor Multimedia Modal */}
             {previewMediaUrl && (

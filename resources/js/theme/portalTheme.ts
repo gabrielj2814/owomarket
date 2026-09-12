@@ -50,6 +50,9 @@ export const portalTheme = createTheme({
             primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-300 shadow-md shadow-blue-500/20 dark:focus:ring-blue-800',
             // Secundario: el «Cancelar» de los modales, que no debe competir con la acción.
             subtle: 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+            // Ámbar: lo que el portal pide sin exigir —calificar un producto, sobre todo—. No
+            // es una alerta ni la acción principal de la página, y por eso no es el azul.
+            accent: 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-300 shadow-md shadow-amber-500/20 dark:focus:ring-amber-900',
         },
         size: {
             xs: 'h-8 px-3 text-xs',

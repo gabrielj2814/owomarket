@@ -1,5 +1,5 @@
 import { Alert, Button, Card, Label, TextInput } from 'flowbite-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import CustomerAccountLayout from '@/components/layouts/CustomerAccountLayout';
 import { useCustomerAuth } from '@/contexts/CustomerAuthContext';
@@ -24,6 +24,26 @@ export const CustomerProfilePage: React.FC = () => {
     const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+
+    /*
+     * El perfil llega DESPUES del primer render: `CustomerAuthContext` lo pide al servidor.
+     * Sin esto los campos se quedaban con el valor inicial --vacio-- aunque el nombre ya
+     * estuviera en pantalla arriba, en la cabecera.
+     *
+     * No era solo cosmetico: `phone` y `document_id` no son obligatorios, asi que pulsar
+     * «Guardar Datos del Perfil» con los campos en blanco **borraba el telefono y la cedula**
+     * del cliente. Y sin cedula no se puede abrir una reclamacion.
+     *
+     * Solo sincroniza cuando cambia el cliente, no en cada render: si no, pisaria lo que el
+     * usuario esta escribiendo.
+     */
+    useEffect(() => {
+        if (!customer) return;
+        setName(customer.name || '');
+        setPhone(customer.phone || '');
+        setDocumentId(customer.document_id || '');
+        setAvatar(customer.avatar || '');
+    }, [customer?.id]);
 
     const [saving, setSaving] = useState(false);
     const [successMsg, setSuccessMsg] = useState<string | null>(null);
