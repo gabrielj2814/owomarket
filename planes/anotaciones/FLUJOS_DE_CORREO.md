@@ -19,22 +19,22 @@ Si esto falla, no hace falta probar ningún flujo — no va a salir ninguno.
 docker compose exec app php artisan tinker --execute="Illuminate\Support\Facades\Mail::raw('prueba', fn(\$m) => \$m->to('prueba@owomarket.local')->subject('Prueba OwOMarket')); echo 'enviado';"
 ```
 
-**Comprobado el 13/09/2026 y falló** con `Connection could not be established … Operation timed
-out`. El diagnóstico descarta la configuración:
+**Con el VPN activo no sale ningún correo.** Los cuatro puertos SMTP (2525, 587, 465 y 25) salen
+bloqueados aunque el DNS resuelva bien — y cuatro puertos caídos a la vez no es Mailtrap, es la
+red.
 
-| Comprobación | Resultado |
-| :--- | :--- |
-| DNS de `sandbox.smtp.mailtrap.io` desde el contenedor | resuelve bien |
-| Puertos 2525, 587, 465 y 25 | **los cuatro bloqueados** |
+**Con el VPN apagado sí sale.** Verificado el 13/09/2026 contra Mailtrap real: nueve de los once
+flujos comprobados uno a uno, incluidas las tres validaciones que más importaban —que el aviso de
+KYC no lleve la cédula, que aprobar un retiro diga «pagado», y que una reclamación ganada por
+silencio no le atribuya la decisión a la tienda—.
 
-Cuatro puertos caídos a la vez no es Mailtrap: es la red. **Con el VPN activo, el correo saliente
-no funciona.** Hay que probar con el VPN apagado.
+→ El informe completo y el guion están en [`PRUEBA_MANUAL_CORREO.md`](PRUEBA_MANUAL_CORREO.md).
 
-### Un detalle de configuración que sí conviene cambiar
+### ~~Un detalle de configuración que sí conviene cambiar~~ ✅ ARREGLADO el 13/09/2026
 
-`MAIL_FROM_ADDRESS="hello@example.com"` es el valor de ejemplo que trae Laravel. Sale como
-remitente en los tres correos de abajo, y muchos servidores lo puntúan como spam. Debería ser un
-buzón del dominio, por ejemplo `no-responder@owomarket.com`.
+El remitente era `hello@example.com`, el valor de ejemplo de Laravel — que muchos servidores
+puntúan como spam. La prueba manual lo señaló y ahora es `no-responder@owomarket.com`, en `.env`
+y en `.env.example`.
 
 ---
 
@@ -64,7 +64,12 @@ para que dejen de ser tres caminos paralelos.
 el cambio de contraseña, y que caduca cuando dice que caduca. Es el único de los tres que
 bloquea una acción: si el correo no llega, el administrador no puede cambiar su contraseña.
 
-### 2 · Reenvío de una factura
+### 2 · Reenvío de una factura ⏳ *sin verificar*
+
+> **No se pudo probar el 13/09/2026: no hay ninguna factura en la base de datos de ningún
+> inquilino.** Hay que emitir una primero desde el módulo de Facturación. Es el único de los once
+> que sigue sin comprobarse contra un servidor real.
+
 
 | | |
 | :--- | :--- |
@@ -83,7 +88,14 @@ bloquea una acción: si el correo no llega, el administrador no puede cambiar su
 **Qué comprobar además del envío:** que el PDF adjunto abre y que los importes cuadran con la
 pantalla. Una factura que llega rota es peor que una que no llega.
 
-### 3 · Aviso de tasa BCV obsoleta
+### 3 · Aviso de tasa BCV obsoleta ⏳ *camino verificado, entrega no*
+
+> El 13/09/2026 se reportó como OK porque el comando corrió bien — **pero eso no prueba este
+> correo**: el aviso solo sale cuando el scraping FALLA, y el BCV respondió. Forzando el fallo se
+> confirmó que el camino llega hasta el mailer; la entrega quedó sin ver porque el VPN estaba
+> activo en ese momento. La receta para forzarlo está en
+> [`PRUEBA_MANUAL_CORREO.md`](PRUEBA_MANUAL_CORREO.md).
+
 
 | | |
 | :--- | :--- |

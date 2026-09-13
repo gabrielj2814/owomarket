@@ -34,9 +34,14 @@ campana. De paso se arregló un callejón sin salida — la recuperación de con
 generaba un PIN y **no lo enviaba a ningún sitio**, así que en producción nadie habría podido
 recuperar su contraseña.
 
-**El correo está sin probar contra un servidor real:** con el VPN activo los cuatro puertos SMTP
-salen bloqueados. El guion para probarlo a mano —once flujos, qué comprobar dentro de cada
-correo, y una plantilla para reportar— está en
+**El correo está probado contra Mailtrap real** (13/09/2026, con el VPN apagado): **9 de 11
+flujos verificados**, incluidas las tres comprobaciones críticas —que el aviso de KYC no lleve la
+cédula, que aprobar un retiro diga «pagado», y que una reclamación ganada por silencio no le
+atribuya la decisión a la tienda—.
+
+Quedan dos sin verificar, y **los dos son correos anteriores a este módulo**: el reenvío de
+factura (no existe ninguna factura en la base) y el aviso de tasa BCV obsoleta (solo sale cuando
+el scraping falla). El guion, con la receta para forzar los dos, está en
 [`planes/anotaciones/PRUEBA_MANUAL_CORREO.md`](planes/anotaciones/PRUEBA_MANUAL_CORREO.md).
 
 Queda la fase 4 (lo periódico, incluido el aviso del techo mensual).

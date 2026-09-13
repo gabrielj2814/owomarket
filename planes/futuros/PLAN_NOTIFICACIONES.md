@@ -333,10 +333,15 @@ error—. En producción no pasa: `CreateSuperAdminCommand` lo asigna directamen
 
 ### Fase 3 — El correo ✅ (13/09/2026)
 
-Mailtrap ya estaba configurado en `.env`. **La prueba real está pendiente**: con el VPN activo
-los cuatro puertos SMTP salen bloqueados. El guion para hacerla a mano está en
-[`PRUEBA_MANUAL_CORREO.md`](../anotaciones/PRUEBA_MANUAL_CORREO.md) — once flujos, con qué
-comprobar dentro de cada correo y una plantilla para reportar.
+**Probada contra Mailtrap real el 13/09/2026**, con el VPN apagado: los ocho avisos del módulo
+llegaron y las tres validaciones que más importaban pasaron —el aviso de KYC no lleva la cédula,
+aprobar un retiro dice «pagado», y una reclamación ganada por silencio no le atribuye la decisión
+a la tienda—. El informe está en
+[`PRUEBA_MANUAL_CORREO.md`](../anotaciones/PRUEBA_MANUAL_CORREO.md).
+
+Solo quedan sin verificar los dos correos **que ya existían antes** de este módulo: el reenvío de
+factura (no hay ninguna factura en la base) y el aviso de tasa BCV obsoleta (solo sale cuando el
+scraping falla).
 
 #### El reparto: lo crítico no se apaga, el resto llega apagado
 

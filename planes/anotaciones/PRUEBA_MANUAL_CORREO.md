@@ -11,6 +11,38 @@
 
 ---
 
+## ✅ Ejecutado el 13/09/2026 — 9 de 11 verificados
+
+Con el VPN desconectado, el puerto 2525 abierto y todo comprobado en Mailtrap.
+
+**Los nueve que pasaron**, incluidas las tres comprobaciones que más importaban:
+
+| Comprobación | Resultado |
+| :--- | :--- |
+| El aviso de KYC **no lleva cédula, RIF ni nombre legal** | ✅ solo el nombre comercial |
+| Aprobar un retiro dice **«pagado»**, no «rechazado» | ✅ el estado `settled` se lee bien |
+| Una reclamación ganada **por silencio no dice «la tienda aceptó»** | ✅ y además avisa al dueño de que la perdió |
+| Un correo sin cuenta **no dispara ningún envío** | ✅ no se puede enumerar usuarios |
+| Lo crítico llega con el interruptor apagado | ✅ |
+| Lo opcional no llega con el interruptor apagado | ✅ solo campana |
+
+**Los dos que quedaron sin probar**, y por qué:
+
+- **A2 · Reenvío de factura** — no había ninguna factura en la base de datos. El guion suponía
+  que existía una; ahora incluye cómo emitirla primero.
+- **A3 · Tasa BCV obsoleta** — se reportó como OK porque el comando corrió bien, **pero eso no
+  prueba este correo**: el aviso solo sale cuando el scraping FALLA. Con el BCV respondiendo, el
+  camino que envía el correo no se ejecuta. El guion ahora explica cómo forzar el fallo.
+
+> **La lección, para la próxima:** *un comando que termina sin error no es una prueba del correo
+> que envía cuando algo va mal.* Si el camino que manda el correo no se ejecutó, el resultado es
+> **NO PROBADO**, no OK.
+
+**Arreglado de lo reportado:** `MAIL_FROM_ADDRESS` ya no es `hello@example.com`; ahora es
+`no-responder@owomarket.com` en `.env` y en `.env.example`.
+
+---
+
 ## Reglas de la prueba
 
 1. **No modifiques código.** Si un paso falla, anótalo y sigue con el siguiente.
@@ -39,8 +71,8 @@ docker compose exec app php artisan tinker --execute="Illuminate\Support\Facades
 
 **Configuración actual:** Mailtrap sandbox, `MAIL_MAILER=smtp`, host `sandbox.smtp.mailtrap.io:2525`.
 
-> ⚠️ **Anota esto si lo ves:** el remitente es `hello@example.com`, el valor de ejemplo que trae
-> Laravel. Funciona, pero debería ser un buzón del dominio antes de producción.
+> El remitente es `no-responder@owomarket.com`. Era `hello@example.com` --el valor de ejemplo de
+> Laravel-- hasta que la ejecución del 13/09/2026 lo señaló.
 
 ---
 
@@ -75,19 +107,55 @@ contraseña.
 
 ### A2 · Reenvío de una factura
 
-1. Entra al panel de la tienda `tecs.owomarket.local` como su dueño.
-2. Abre **Facturación** y elige una factura.
-3. Reenvía por correo (acepta una dirección distinta: escribe la tuya).
+> **Ojo: en desarrollo no hay ninguna factura.** Comprobado el 13/09/2026: cero facturas en
+> todos los inquilinos. Hay que **emitir una primero**, y eso es parte de la prueba.
 
-**Comprueba además:** que el PDF adjunto abre y que los importes cuadran con la pantalla.
+1. Entra al panel de la tienda `tecs.owomarket.local` como su dueño.
+2. Abre **Facturación** y **emite una factura nueva** (el módulo permite crearla directamente,
+   sin necesidad de una venta previa).
+3. Sobre esa factura, pulsa reenviar por correo. Acepta una dirección distinta a la del cliente:
+   escribe la tuya.
+
+**Comprueba además:** que el PDF adjunto **abre** y que los importes cuadran con la pantalla. Una
+factura que llega rota ha fallado igual que una que no llega.
 
 ### A3 · Aviso de tasa BCV obsoleta
 
-El más difícil de provocar: hace falta que el BCV falle.
+> **Correr el comando con éxito NO prueba este correo.** Es el fallo de lectura del 13/09/2026:
+> el BCV respondió, la tasa se actualizó, y el camino que envía el aviso **ni se ejecutó**.
+
+Hacen falta **dos condiciones a la vez**, y las dos hay que provocarlas:
+
+1. Que el scraping del BCV **falle**.
+2. Que la tasa activa lleve **3 días o más** sin actualizarse (`STALE_RATE_ALERT_DAYS`). Con una
+   tasa de hoy, el comando solo deja un aviso en el log y **no manda correo**.
+
+**Receta completa, verificada el 13/09/2026.** Envejece la tasa activa, corta el BCV, ejecuta y
+lo devuelve todo:
 
 ```bash
+docker compose exec app php artisan tinker --execute="\Src\ExchangeRate\Infrastructure\Eloquent\Models\ExchangeRate::where('is_active',true)->update(['rate_date' => now()->subDays(5)]); echo 'tasa envejecida';"
+docker compose exec app sh -c "echo '127.0.0.1 www.bcv.org.ve' >> /etc/hosts"
+docker compose exec app php artisan cache:forget exchange_rate:stale_alert_sent
 docker compose exec app php artisan exchange-rate:sync-bcv
 ```
+
+**Debe llegar a los superadministradores** un aviso de tasa congelada. En el log verás primero
+`Fallo en sincronización con BCV: la tasa activa lleva 5 días sin actualizarse`.
+
+**Y ahora devuélvelo todo, sin saltarte nada** — todo el sitio factura con esa tasa:
+
+```bash
+docker compose exec app sh -c "grep -v 'bcv.org.ve' /etc/hosts > /tmp/h && cat /tmp/h > /etc/hosts && rm /tmp/h"
+docker compose exec app php artisan exchange-rate:sync-bcv
+```
+
+Comprueba que la última salida trae **la fecha de hoy**, no la que envejeciste.
+
+> **Por qué no se usa `sed -i` para quitar la línea:** en Docker `/etc/hosts` es un punto de
+> montaje, así que `sed -i` falla con *«Resource busy»* — intenta reemplazar el fichero entero y
+> no puede. Hay que **sobrescribir el contenido en el mismo inodo**, que es lo que hace el
+> `cat … > /etc/hosts` de arriba.
 
 > ⚠️ **Tiene freno: sale una vez al día como mucho.** Si pruebas dos veces seguidas, la segunda
 > **no sale y eso no es un fallo**. Para repetir:
