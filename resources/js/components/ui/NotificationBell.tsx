@@ -6,6 +6,8 @@ import {
     HiOutlineBanknotes,
     HiOutlineBell,
     HiOutlineCheckCircle,
+    HiOutlineClock,
+    HiOutlineExclamationTriangle,
     HiOutlineIdentification,
     HiOutlineScale,
     HiOutlineTruck,
@@ -41,6 +43,7 @@ const ICONO: Record<string, typeof HiOutlineBell> = {
     'claim.opened': HiOutlineScale,
     'claim.resolved': HiOutlineScale,
     'claim.timedout': HiOutlineScale,
+    'claim.expiring': HiOutlineClock,
     'delivery.declared': HiOutlineTruck,
     'kyc.submitted': HiOutlineIdentification,
     'kyc.reviewed': HiOutlineIdentification,
@@ -48,6 +51,7 @@ const ICONO: Record<string, typeof HiOutlineBell> = {
     'payout.resolved': HiOutlineBanknotes,
     'plan.requested': HiOutlineArrowsRightLeft,
     'plan.resolved': HiOutlineArrowsRightLeft,
+    'coverage.ceiling': HiOutlineExclamationTriangle,
 };
 
 const cuando = (iso: string | null) => {
@@ -234,8 +238,8 @@ export default function NotificationBell({ audience }: NotificationBellProps) {
                         <span className="text-[11px] text-gray-600 dark:text-gray-400">
                             Enviarme también por correo.{' '}
                             <span className="text-gray-400">
-                                Los avisos urgentes —reclamaciones, entregas e identidad— te llegan por correo
-                                siempre.
+                                Los avisos urgentes —los que tienen dinero o un plazo detrás— te llegan por
+                                correo siempre.
                             </span>
                         </span>
                     </label>

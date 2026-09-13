@@ -23,6 +23,20 @@ class NotificationServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        if ($this->app->runningInConsole()) {
+            /*
+            | Los dos comandos de la fase 4: lo periodico.
+            |
+            | Se registran aqui y no junto a los de pedidos porque son de notificaciones --lo
+            | unico que hacen es decidir cuando toca avisar-- y porque este proveedor ya existe:
+            | un fichero nuevo para dos lineas no se justifica.
+            */
+            $this->commands([
+                \Src\CentralCustomer\Infrastructure\Console\Commands\RemindExpiringClaimsCommand::class,
+                \Src\Admin\Infrastructure\Console\Commands\CheckCoverageCeilingCommand::class,
+            ]);
+        }
+
         /*
         |----------------------------------------------------------------------
         | Quién puede recibir un aviso, con un nombre corto y estable

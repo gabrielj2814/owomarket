@@ -31,14 +31,26 @@ final class EmailDelivery
     /**
      * Los avisos que se mandan por correo aunque nadie lo pida.
      *
-     * Tres, y se corresponden exactamente con los tres que la decisión de garantías deja sin
-     * poder apagar. Añadir uno aquí es decidir que le puede llegar correo a alguien que no lo
-     * pidió: no se hace sin una razón del tamaño de estas.
+     * La regla para entrar aquí es una: **que perdérselo cueste dinero o deje correr un plazo**.
+     * Añadir uno es decidir que le puede llegar correo a alguien que no lo pidió, así que no se
+     * hace sin una razón de ese tamaño.
+     *
+     * Los tres primeros son los que la decisión de garantías deja sin poder apagar. Los dos de
+     * la fase 4 entraron después, y por la misma regla:
+     *
+     * - `claim.expiring` es el **último** aviso antes de que el reloj resuelva en contra. Si el
+     *   primero es crítico, el último lo es más: es la diferencia entre perder una venta y
+     *   llegar a tiempo.
+     * - `coverage.ceiling` es la «revisión obligatoria» que pide la decisión de garantías.
+     *   Dejarla opcional sería volver al problema que vino a resolver: el número estaba a la
+     *   vista y nadie miraba. Sale una vez al mes como mucho, así que no hay riesgo de ruido.
      */
     public const CRITICOS = [
         'claim.opened',
+        'claim.expiring',
         'delivery.declared',
         'kyc.reviewed',
+        'coverage.ceiling',
     ];
 
     public function shouldEmail(object $destinatario, string $tipo): bool

@@ -1,9 +1,9 @@
 # 📋 Plan: Módulo de notificaciones
 
-> **Estado:** 🟨 **Fases 1, 2 y 3 HECHAS el 13/09/2026** · Fase 4 pendiente ·
+> **Estado:** ✅ **TERMINADO el 13/09/2026** — las cuatro fases ·
 > Redactado el 23/08/2026 · Reescrito el 12/09/2026 con el código delante.
-> **Es lo que más rinde ahora, y ya no compite con nada:** los cinco subsistemas de garantías
-> están terminados y todos dependen de que alguien se entere.
+> **Terminado.** Los cinco subsistemas de garantías ya no dependen de que alguien entre a mirar:
+> once eventos avisan a las tres audiencias, por campana y por correo.
 >
 > Escrito para retomarlo sin contexto previo.
 
@@ -398,14 +398,52 @@ reclamación se abre una vez, una entrega se declara una vez. El caso que de ver
 techo mensual de la fase 4, y **construir el freno antes de tener qué frenar es inventarse un
 problema**. La lección de `MailStaleRateAlerter` sigue anotada para entonces.
 
-### Fase 4 — Lo periódico
+### Fase 4 — Lo periódico ✅ (13/09/2026)
 
-- **Techo mensual superado → administrador.** Aquí sí hace falta un comando: el número se
-  deriva al consultarlo, así que sin alguien que pregunte no hay momento en el que avisar.
-  Mensual, con freno.
-- *Stock bajo* → comerciante, si se retoma [`PLAN_HISTORIAL_STOCK.md`](PLAN_HISTORIAL_STOCK.md).
-- Reclamación **a punto de vencer** → comerciante, un día antes. Es el aviso que convierte el
-  reloj en justo: perder por silencio después de dos avisos es decisión suya.
+Dos comandos y el freno. **Verificado contra la base de desarrollo:** `returns:remind-expiring`
+avisó de una reclamación real («Tu reclamación vence hoy») y, ejecutado tres veces seguidas, dejó
+**un solo aviso**.
+
+#### Aquí sí hacía falta el freno, y por eso no se construyó antes
+
+Las fases 1 a 3 no lo necesitaban: una reclamación se abre una vez, un retiro se resuelve una vez.
+Los dos avisos de esta fase los dispara un comando que corre **cada madrugada sobre un estado que
+no cambia** —el mes sigue pasado del techo mañana, la reclamación sigue a punto de vencer hasta
+que alguien conteste—. Sin freno, el mismo aviso saldría todos los días.
+
+Es la lección que `MailStaleRateAlerter` lleva escrita desde agosto: **un aviso repetido no avisa
+el doble, avisa menos.**
+
+| Aviso | Ventana del freno |
+| :--- | :--- |
+| Reclamación a punto de vencer | El plazo de respuesta entero, por reclamación |
+| Techo mensual superado | Hasta fin de mes, con el mes en la clave |
+
+#### El techo se comprueba a diario, aunque sea mensual
+
+El plan decía «mensual». Se hace **diario**, y el cambio importa: una comprobación el día 1
+avisaría de un mes **que ya terminó**, y el techo existe para poder intervenir *antes* de que el
+mes se descontrole. Lo que evita el correo diario no es la frecuencia del comando, es el freno.
+
+#### El orden de los comandos no es casual
+
+`returns:remind-expiring` corre a las **02:45**, antes de `returns:auto-resolve` (03:30). Al revés
+recordaría reclamaciones que el reloj acaba de resolver esa misma madrugada: un aviso para actuar
+sobre algo que ya no se puede tocar.
+
+#### Dos avisos que entraron en la lista de críticos
+
+`claim.expiring` es el **último** aviso antes de que el reloj resuelva en contra: si el primero es
+crítico, el último lo es más. Y `coverage.ceiling` es la «revisión obligatoria» que pide la
+decisión de garantías — dejarla opcional sería volver al problema que vino a resolver: el número
+estaba a la vista y nadie miraba.
+
+Hay un test que lo fija, para que no se puedan quitar de la lista sin que se note.
+
+#### Lo que queda fuera, y por qué
+
+**Stock bajo → comerciante.** Depende de [`PLAN_HISTORIAL_STOCK.md`](PLAN_HISTORIAL_STOCK.md), que
+no está construido. El aviso es una línea el día que exista de dónde sacarlo.
 
 ---
 

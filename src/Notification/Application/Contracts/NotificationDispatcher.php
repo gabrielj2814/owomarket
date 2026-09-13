@@ -101,4 +101,32 @@ interface NotificationDispatcher
      * *«Te avisaremos cuando la revisemos»* desde el 23/08/2026.
      */
     public function planChangeResolved(string $requestId): void;
+
+    // ---------------------------------------------------------------- Lo periódico
+
+    /**
+     * A esta reclamación le queda un día. Avisa otra vez a los dueños de la tienda.
+     *
+     * **Es lo que convierte el reloj en justo.** Perder una venta por silencio después de un
+     * aviso al abrirse y otro antes de vencer es una decisión del comerciante; perderla con un
+     * solo aviso de hace cinco días es un descuido que la plataforma podía haber evitado.
+     *
+     * Lo dispara un comando diario, así que **lleva freno**: sin él saldría cada madrugada hasta
+     * que alguien conteste.
+     */
+    public function claimAboutToExpire(string $claimId): void;
+
+    /**
+     * El gasto mensual en coberturas pasó del techo. Avisa a la plataforma.
+     *
+     * La decisión de garantías pide una «revisión obligatoria» al superarlo. `MonthlyCoverageSpend`
+     * calcula el número desde el 12/09/2026 y lo pinta donde el administrador entra, pero **nada
+     * le obligaba a mirarlo**. Esto es el empujón que faltaba.
+     *
+     * No corta ningún pago, igual que el techo: solo pide que alguien mire la causa.
+     *
+     * Lleva freno **por mes**: una vez pasado el techo, el mes sigue pasado mañana y pasado
+     * mañana. Un aviso diario de lo mismo deja de leerse justo cuando importa.
+     */
+    public function coverageCeilingExceeded(): void;
 }

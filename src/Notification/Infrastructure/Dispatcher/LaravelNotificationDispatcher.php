@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification as LaravelNotification;
 use Src\CentralCustomer\Application\Service\ClaimResponseWindow;
 use Src\CentralCustomer\Application\Service\ClaimWindow;
+use Src\CentralCustomer\Application\Service\MonthlyCoverageSpend;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
@@ -16,6 +17,7 @@ use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantPlanChangeRequest;
 use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Src\Notification\Application\Service\NotificationRecipients;
+use Src\Notification\Application\Service\NotificationThrottle;
 use Src\Notification\Infrastructure\Laravel\InboxNotification;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
@@ -48,7 +50,9 @@ final class LaravelNotificationDispatcher implements NotificationDispatcher
     public function __construct(
         private readonly NotificationRecipients $destinatarios,
         private readonly ClaimResponseWindow $plazoDeRespuesta,
-        private readonly ClaimWindow $ventanaDeReclamacion
+        private readonly ClaimWindow $ventanaDeReclamacion,
+        private readonly MonthlyCoverageSpend $cobertura,
+        private readonly NotificationThrottle $freno
     ) {}
 
     // ---------------------------------------------------------------- Garantías
@@ -319,6 +323,92 @@ final class LaravelNotificationDispatcher implements NotificationDispatcher
                     : 'Tu plan actual sigue igual.'.$this->motivo($solicitud->rejection_reason),
                 'url' => '/tenant/owner/backoffice/{recipient}/billing',
             ], contexto: 'cambio de plan resuelto');
+        });
+    }
+
+    // ---------------------------------------------------------------- Lo periódico
+
+    public function claimAboutToExpire(string $claimId): void
+    {
+        $this->sinPropagar('claim.expiring', $claimId, function () use ($claimId) {
+            $reclamacion = CustomerReturnRequest::find($claimId);
+
+            if ($reclamacion === null || ! $reclamacion->isOpen()) {
+                return;
+            }
+
+            /*
+             * Freno por reclamación. El comando corre cada madrugada y el estado no cambia hasta
+             * que alguien conteste, así que sin esto el mismo recordatorio saldría todos los días
+             * — y un aviso repetido no avisa el doble: avisa menos.
+             *
+             * La ventana del freno es el plazo entero de respuesta: dentro de ese plazo, un
+             * recordatorio es suficiente.
+             */
+            if (! $this->freno->shouldSend('claim-expiring:'.$claimId, now()->addDays($this->plazoDeRespuesta->days()))) {
+                return;
+            }
+
+            $dias = $this->plazoDeRespuesta->daysLeftFrom($reclamacion->created_at);
+
+            $this->aLosDuenos($reclamacion->tenant_id, [
+                'type' => 'claim.expiring',
+                'claim_id' => $reclamacion->id,
+                'order_number' => $reclamacion->order_number,
+                'days_left' => $dias,
+                'title' => $dias === 0
+                    ? 'Tu reclamación vence hoy'
+                    : 'Te queda un día para responder una reclamación',
+                'body' => sprintf(
+                    'La reclamación de «%s» (pedido %s) se resolverá a favor del comprador si no respondes%s. Responder —aunque sea para rechazarla— lo evita.',
+                    $reclamacion->product_name,
+                    $reclamacion->order_number,
+                    $dias === 0 ? ' hoy' : ' mañana',
+                ),
+                'url' => '/tenant/owner/backoffice/{recipient}/returns',
+            ], contexto: 'reclamación a punto de vencer');
+        });
+    }
+
+    public function coverageCeilingExceeded(): void
+    {
+        $this->sinPropagar('coverage.ceiling', 'mes-actual', function () {
+            $mes = $this->cobertura->currentMonth();
+
+            if (! $mes['over']) {
+                return;
+            }
+
+            /*
+             * Freno por MES, no por día. Una vez pasado el techo, el mes sigue pasado mañana y
+             * pasado mañana: sin esto el aviso saldría cada madrugada hasta fin de mes y dejaría
+             * de leerse justo cuando importa.
+             *
+             * La clave lleva el mes dentro, así que el aviso vuelve solo si el mes siguiente
+             * también se pasa.
+             */
+            if (! $this->freno->shouldSend('coverage-ceiling:'.$mes['month'], now()->endOfMonth())) {
+                return;
+            }
+
+            $this->aLaPlataforma([
+                'type' => 'coverage.ceiling',
+                'month' => $mes['month'],
+                'spent_usd' => $mes['spent_usd'],
+                'threshold_usd' => $mes['threshold_usd'],
+                'title' => 'El gasto en coberturas pasó del techo',
+                /*
+                 * Se dice explícitamente que NO se ha cortado nada. El techo es una alarma, no un
+                 * muro, y un aviso que no lo aclare hará que alguien salga corriendo a
+                 * desbloquear pagos que nunca se bloquearon.
+                 */
+                'body' => sprintf(
+                    'Este mes la plataforma lleva puestos $%s de su bolsillo, sobre un techo de $%s. No se ha cortado ningún pago: toca mirar qué lo causa.',
+                    number_format($mes['spent_usd'], 2),
+                    number_format($mes['threshold_usd'], 2),
+                ),
+                'url' => '/admin/backoffice/{recipient}/guarantee-rules',
+            ]);
         });
     }
 

@@ -74,6 +74,10 @@ final class DespachadorEspia implements NotificationDispatcher
     public function planChangeRequested(string $requestId): void {}
 
     public function planChangeResolved(string $requestId): void {}
+
+    public function claimAboutToExpire(string $claimId): void {}
+
+    public function coverageCeilingExceeded(): void {}
 }
 
 /** @return array{0: CreateCustomerReturnRequestUseCase, 1: ClaimableOrderData, 2: DespachadorEspia} */

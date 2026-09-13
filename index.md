@@ -1,7 +1,7 @@
 # Qué falta en OwoMarket
 
 > **Última actualización:** 12/09/2026 · Rama `moduleProduct`
-> **Estado de la suite:** 928 tests de backend, 115 de frontend, `tsc --noEmit` limpio.
+> **Estado de la suite:** 938 tests de backend, 115 de frontend, `tsc --noEmit` limpio.
 > **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
@@ -11,45 +11,22 @@
 
 ## Por dónde seguir mañana
 
-**Lo que más rinde ahora son las notificaciones**, y ya no compite con nada.
+**Ya no hay nada roto ni a medias.** Los cinco subsistemas de garantías están construidos y, desde
+el 13/09/2026, **también avisan**: once eventos llegan a las tres audiencias por campana y por
+correo. Lo que queda es elegir, no arreglar.
 
-El subsistema 5 quedó cerrado el 12/09/2026: un comprador de tienda ya puede reclamar. Lo que
-falta ahora no es una pieza del flujo, es que **alguien se entere** de que el flujo ocurrió.
+Las dos opciones razonables, en orden:
 
-Los cinco subsistemas de garantías están construidos y todos dependen de eso. **Dos de los
-silencios no son comodidad, son dinero que se mueve solo:**
+1. **El refresco de diseño del escaparate.** Lo elegiste al cerrar la migración a Flowbite y
+   sigue sin empezar. Es la cara pública del producto y lo único pendiente que ya habías decidido
+   hacer. Necesita dirección: «refrescar» puede ser desde afinar espaciados hasta una identidad
+   visual nueva.
+2. **Funcionalidad nueva del panel del comerciante** —
+   [`PLANIFICACION_MODULOS_AVANZADOS_TENANT.md`](planes/por_hacer/PLANIFICACION_MODULOS_AVANZADOS_TENANT.md),
+   seis módulos sin empezar.
 
-- Se abre una reclamación contra una tienda y **el comerciante no se entera**. El reloj resuelve
-  a favor del comprador a los 5 días: pierde la venta sin haber sabido que tenía que contestar.
-- La tienda declara la entrega y **el comprador no se entera**. Confirmar es lo que libera el
-  dinero, así que la venta se libera por plazo y él pierde su ventana para reclamar sin saberlo.
-
-**Las fases 1 y 2 están hechas desde el 13/09/2026.** La campana del backoffice —que era
-decoración: estaba dentro del desplegable del avatar— funciona, y **las tres audiencias reciben
-avisos**: nueve eventos, del reclamo abierto al retiro pagado. El puerto
-`NotificationDispatcher` se lee como el catálogo de todo lo que la plataforma anuncia.
-
-**La fase 3 también**: los avisos críticos salen por correo siempre y el resto es opt-in desde la
-campana. De paso se arregló un callejón sin salida — la recuperación de contraseña del comprador
-generaba un PIN y **no lo enviaba a ningún sitio**, así que en producción nadie habría podido
-recuperar su contraseña.
-
-**El correo está probado contra Mailtrap real** (13/09/2026, con el VPN apagado): **9 de 11
-flujos verificados**, incluidas las tres comprobaciones críticas —que el aviso de KYC no lleve la
-cédula, que aprobar un retiro diga «pagado», y que una reclamación ganada por silencio no le
-atribuya la decisión a la tienda—.
-
-Quedan dos sin verificar, y **los dos son correos anteriores a este módulo**: el reenvío de
-factura (no existe ninguna factura en la base) y el aviso de tasa BCV obsoleta (solo sale cuando
-el scraping falla). El guion, con la receta para forzar los dos, está en
-[`planes/anotaciones/PRUEBA_MANUAL_CORREO.md`](planes/anotaciones/PRUEBA_MANUAL_CORREO.md).
-
-Queda la fase 4 (lo periódico, incluido el aviso del techo mensual).
-
-→ [`planes/futuros/PLAN_NOTIFICACIONES.md`](planes/futuros/PLAN_NOTIFICACIONES.md)
-
-Los envíos que existen, con sus pasos para probarlos a mano, están en
-[`planes/anotaciones/FLUJOS_DE_CORREO.md`](planes/anotaciones/FLUJOS_DE_CORREO.md).
+Y antes de producción, sin fecha pero sin escapatoria: **las tres preguntas del abogado** y los
+pedidos de invitado huérfanos, los dos aquí abajo.
 
 ---
 
@@ -83,6 +60,33 @@ Nadie puede demostrar que son suyos, así que ni se ven, ni se confirman, ni se 
 nuevos sí quedan enlazados si se compra con sesión, y el checkout lo advierte antes de pagar.
 
 En desarrollo da igual. **Antes de que haya compras reales, no.**
+
+---
+
+## ✅ Notificaciones — terminadas, las cuatro fases
+
+**Once eventos, tres audiencias, campana y correo.** Los cinco subsistemas de garantías llevaban
+construidos desde el 11/09 y **ninguno avisaba a nadie**; dos de esos silencios no eran comodidad
+sino dinero moviéndose solo —una reclamación que el comerciante no ve y el reloj resuelve en su
+contra, una entrega que el comprador no confirma y libera el pago por plazo—.
+
+La campana del backoffice, que **era decoración** (estaba dentro del desplegable del avatar),
+funciona. Los avisos con dinero o un plazo detrás salen por correo **siempre**; el resto es opt-in
+desde la propia campana.
+
+De paso se arregló un callejón sin salida: la recuperación de contraseña del comprador generaba un
+PIN y **no lo enviaba a ningún sitio**, así que en producción nadie habría podido recuperar su
+contraseña.
+
+**Probado contra Mailtrap real**: 9 de 11 flujos verificados el 13/09, y los dos que faltaban ya
+tienen receta. Los dos avisos periódicos de la fase 4 llevan freno — un aviso repetido no avisa el
+doble, avisa menos.
+
+→ [`planes/futuros/PLAN_NOTIFICACIONES.md`](planes/futuros/PLAN_NOTIFICACIONES.md) ·
+[`PRUEBA_MANUAL_CORREO.md`](planes/anotaciones/PRUEBA_MANUAL_CORREO.md)
+
+**Lo único que quedó fuera:** el aviso de stock bajo, que depende de
+[`PLAN_HISTORIAL_STOCK.md`](planes/futuros/PLAN_HISTORIAL_STOCK.md) y no está construido.
 
 ---
 

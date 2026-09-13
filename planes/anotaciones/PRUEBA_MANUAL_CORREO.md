@@ -78,7 +78,7 @@ docker compose exec app php artisan tinker --execute="Illuminate\Support\Facades
 
 ## Cómo provocar cada correo
 
-Hay **once** envíos. Los tres primeros existían antes; los ocho restantes son del módulo de
+Hay **trece** envíos. Los tres primeros existían antes; los ocho restantes son del módulo de
 notificaciones.
 
 ### Cuentas de prueba
@@ -295,6 +295,48 @@ no contestó. Debe decir que no respondió dentro del plazo. Si dice que la tien
 Y en ese caso **también debe llegarle al dueño** un aviso de que perdió la reclamación por no
 responder.
 
+### C9 · Reclamación a punto de vencer → dueño *(crítico, fase 4)*
+
+Es el **último** aviso antes de que el reloj resuelva en contra. Lo dispara un comando diario.
+
+```bash
+docker compose exec app php artisan returns:remind-expiring
+```
+
+Solo avisa de reclamaciones abiertas a las que **les queda un día o menos**. Si no hay ninguna,
+dirá «Ninguna reclamación está a punto de vencer» y eso no es un fallo.
+
+**Comprueba además:** que dice que **responder —aunque sea para rechazarla— lo evita**. Un aviso
+que solo dice «vence» no ayuda a nadie.
+
+> ⚠️ **Lleva freno.** Si ejecutas el comando dos veces, la segunda **no manda nada**, aunque el
+> mensaje de salida siga contando la reclamación: el número cuenta las que *tocaba* avisar, no los
+> correos enviados. Es lo correcto — el comando corre cada madrugada y sin freno el mismo aviso
+> saldría todos los días. Para repetirlo, borra la marca:
+> ```bash
+> docker compose exec app php artisan cache:forget notif-throttle:claim-expiring:{id-de-la-reclamacion}
+> ```
+
+### C10 · Techo mensual superado → plataforma *(crítico, fase 4)*
+
+```bash
+docker compose exec app php artisan coverage:check-ceiling
+```
+
+Solo avisa si el gasto del mes **pasó del techo**, así que en una base recién sembrada dirá que
+completó la comprobación y no mandará nada. Para provocarlo, baja el techo desde **Reglas de
+garantía** por debajo del gasto que ya haya, o crea una reclamación aprobada con cobertura.
+
+**Comprueba además — y esto es lo que más importa:** que el correo dice **«No se ha cortado
+ningún pago»**. El techo es una alarma, no un muro: sin esa frase, alguien saldrá corriendo a
+desbloquear pagos que nunca se bloquearon.
+
+> ⚠️ **Freno por MES, no por día.** Una vez pasado el techo, el mes sigue pasado mañana. Sale un
+> aviso por mes:
+> ```bash
+> docker compose exec app php artisan cache:forget notif-throttle:coverage-ceiling:2026-09
+> ```
+
 ---
 
 ## D · Dos comprobaciones sobre el reparto
@@ -337,6 +379,9 @@ C5 Retiro solicitado:       OK / FALLA / NO PROBADO — qué pasó:
 C6 Retiro resuelto:         OK / FALLA / NO PROBADO — ¿el texto acertó?:
 C7 Cambio de plan:          OK / FALLA / NO PROBADO — qué pasó:
 C8 Reclamación resuelta:    OK / FALLA / NO PROBADO — ¿atribuyó a la tienda una decisión que no tomó?:
+C9 Reclamación por vencer:  OK / FALLA / NO PROBADO — ¿dice que responder lo evita?:
+C10 Techo mensual:          OK / FALLA / NO PROBADO — ¿dice que no se cortó ningún pago?:
+C9/C10 el freno calla la segunda ejecución: OK / FALLA
 D1 Crítico con correo apagado: OK / FALLA
 D2 Opcional con correo apagado: OK / FALLA
 

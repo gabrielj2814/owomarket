@@ -151,9 +151,12 @@ El personal del backoffice no tiene flujo de recuperación en absoluto.
 
 ---
 
-> **Desde la fase 3 (13/09/2026) hay ocho envíos más**, los del módulo de notificaciones. El
-> guion completo para probarlos todos a mano —incluidos estos tres— está en
+> **Desde el módulo de notificaciones hay diez envíos más** (fases 2 a 4). El guion completo para
+> probarlos todos a mano —incluidos estos tres— está en
 > [`PRUEBA_MANUAL_CORREO.md`](PRUEBA_MANUAL_CORREO.md).
+>
+> Los dos últimos, de la fase 4, son **periódicos**: los dispara un comando diario y **llevan
+> freno**, así que la segunda ejecución del día no manda nada. Eso no es un fallo.
 
 ## La fase 1 de notificaciones no añadió ningún correo ✅ (13/09/2026)
 
