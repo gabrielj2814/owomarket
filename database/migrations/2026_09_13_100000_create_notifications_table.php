@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * El buzon de las tres audiencias (fase 1 de `planes/futuros/PLAN_NOTIFICACIONES.md`).
+ * El buzon de las tres audiencias (fase 1 de `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * Es la tabla que Laravel crea con `notifications:table`, que en este proyecto **nunca se
  * genero**: hasta hoy no habia modulo de notificaciones y los tres unicos correos salian

@@ -37,7 +37,7 @@ import {
 
 /**
  * Reclamaciones de la plataforma y su expediente (subsistema 5, fase D · vista 5 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **El expediente casi nunca recupera el dinero** —los importes son pequeños y el proceso
  * lento—. Su valor está en disuadir: una tienda que sabe que ignorar genera un documento con su

@@ -12,7 +12,7 @@ use Src\Notification\Infrastructure\Dispatcher\LaravelNotificationDispatcher;
 use Src\User\Infrastructure\Eloquent\Models\User;
 
 /**
- * El módulo de notificaciones (fase 1 de `planes/futuros/PLAN_NOTIFICACIONES.md`).
+ * El módulo de notificaciones (fase 1 de `planes/ESTADO_DEL_PROYECTO.md`).
  */
 class NotificationServiceProvider extends ServiceProvider
 {

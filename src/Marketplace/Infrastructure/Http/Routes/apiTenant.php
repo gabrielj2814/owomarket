@@ -13,7 +13,7 @@ use Src\Marketplace\Infrastructure\Http\Controller\ListStorefrontMyOrdersGETCont
 | El comprador del escaparate y sus propios pedidos
 |--------------------------------------------------------------------------
 |
-| Fase 1 de `planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`.
+| Fase 1 de `planes/ESTADO_DEL_PROYECTO.md`.
 |
 | NO llevan el middleware 'auth': ese guard es el del PERSONAL de la tienda, y el
 | comprador de un escaparate no es personal de nadie. Su identidad vive en la sesion

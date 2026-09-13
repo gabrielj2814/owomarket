@@ -41,7 +41,7 @@ y en `.env.example`.
 ## Los tres envíos que existen hoy
 
 Los tres son directos con `Mail::to()`. **No hay módulo de notificaciones**: eso es justo lo que
-construye [`PLAN_NOTIFICACIONES.md`](../futuros/PLAN_NOTIFICACIONES.md), y su fase 3 los migrará
+construye [`PLAN_NOTIFICACIONES.md`](../ESTADO_DEL_PROYECTO.md), y su fase 3 los migrará
 para que dejen de ser tres caminos paralelos.
 
 ### 1 · PIN de seguridad del administrador
@@ -145,7 +145,7 @@ manda `null`. O sea:
 
 No es un agujero de seguridad —el PIN no se filtra fuera de local— pero sí un callejón sin
 salida en cuanto se despliegue. Es trabajo de la fase 3 de
-[`PLAN_NOTIFICACIONES.md`](../futuros/PLAN_NOTIFICACIONES.md), y conviene que no se olvide.
+[`PLAN_NOTIFICACIONES.md`](../ESTADO_DEL_PROYECTO.md), y conviene que no se olvide.
 
 El personal del backoffice no tiene flujo de recuperación en absoluto.
 

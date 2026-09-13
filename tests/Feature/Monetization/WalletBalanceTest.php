@@ -8,7 +8,7 @@ use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 /**
- * Fase 2 de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`.
+ * Fase 2 de `planes/ESTADO_DEL_PROYECTO.md`.
  *
  * `TenantAvailableBalance::netEarnings()` sumaba `order_total` y `commission_amount` de
  * TODAS las comisiones de la tienda, sin mirar ni el estado ni el canal. Y no es una

@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Fase 1 de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`.
+ * Fase 1 de `planes/ESTADO_DEL_PROYECTO.md`.
  *
  * La wallet de cada tienda guarda el saldo **en bolívares, congelado a la tasa de la venta**:
  * la plataforma recibe X Bs del comprador y le debe exactamente esos X Bs al comerciante, así

@@ -1,16 +1,23 @@
-# Planes Por Hacer
-En esta carpeta se colocan los planes de trabajo aprobados o en curso.
-Una vez completados al 100% y testeados, se mueven a `planes/implementados/`.
+# Planes por hacer
+
+Planes aprobados o en curso. **Al terminar uno, lo que se aprendió pasa a
+[`../ESTADO_DEL_PROYECTO.md`](../ESTADO_DEL_PROYECTO.md) y el fichero se borra** — no se archiva.
+La carpeta `implementados/` existió hasta el 13/09/2026 y acumuló 60 planes que nadie leía.
+
+Antes de borrar uno, comprueba quién lo cita:
+
+```bash
+grep -rn "NOMBRE_DEL_PLAN" src/ resources/ tests/
+```
 
 ---
 
-## Por dónde empezar (11/09/2026)
+## Lo que hay aquí
 
-1. **[ESTADO_Y_PENDIENTES.md](ESTADO_Y_PENDIENTES.md)** — qué está hecho, qué está roto ahora
-   mismo y qué falta. Empieza aquí si vuelves sin contexto.
-2. **[PLAN_VISTAS_PENDIENTES.md](PLAN_VISTAS_PENDIENTES.md)** — las seis vistas que faltan, con
-   sus endpoints, su comportamiento y su orden de urgencia.
+- **[PLANIFICACION_MODULOS_AVANZADOS_TENANT.md](PLANIFICACION_MODULOS_AVANZADOS_TENANT.md)** —
+  seis módulos del backoffice del inquilino. Sin empezar; funcionalidad nueva, nada roto detrás.
+- **[PLAN_EJECUCION_MIGRACIONES_Y_SEEDERS.md](PLAN_EJECUCION_MIGRACIONES_Y_SEEDERS.md)** — ya no
+  es un plan sino un **runbook**: cómo reconstruir el entorno de desarrollo desde cero.
 
-> ⚠️ **Dos cosas están rotas y no son estéticas:** ninguna tienda puede retirar dinero (falta la
-> pantalla de verificación de KYC) y el reloj de reclamaciones aprueba todo por silencio (falta
-> la pantalla del comerciante). Están explicadas al principio de los dos documentos.
+> Para saber por dónde seguir, no empieces aquí: empieza en
+> [`../ESTADO_DEL_PROYECTO.md`](../ESTADO_DEL_PROYECTO.md).

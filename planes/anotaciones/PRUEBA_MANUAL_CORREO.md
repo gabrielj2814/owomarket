@@ -5,7 +5,7 @@
 > **No hay que programar nada.** Este documento es un guion: se ejecutan pasos, se mira qué llega
 > a Mailtrap y se anota el resultado. Si algo no funciona, **se reporta — no se arregla**.
 >
-> Creado el 13/09/2026, tras la fase 3 de [`PLAN_NOTIFICACIONES.md`](../futuros/PLAN_NOTIFICACIONES.md).
+> Creado el 13/09/2026, tras la fase 3 de [`PLAN_NOTIFICACIONES.md`](../ESTADO_DEL_PROYECTO.md).
 > El registro de flujos vive en [`FLUJOS_DE_CORREO.md`](FLUJOS_DE_CORREO.md); este es cómo
 > probarlos.
 

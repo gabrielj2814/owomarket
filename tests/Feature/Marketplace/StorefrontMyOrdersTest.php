@@ -14,7 +14,7 @@ use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
  * Los pedidos del comprador en el escaparate (fase 1 de
- * `planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **Lo que arregla, y que no veía nadie:** el subsistema 3 ya estaba roto en el escaparate.
  * `DeclareOrderDeliveredUseCase` resuelve al comprador de una venta de tienda por

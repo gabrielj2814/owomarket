@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Fase 4b de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`: el saldo no es retirable hasta que
+ * Fase 4b de `planes/ESTADO_DEL_PROYECTO.md`: el saldo no es retirable hasta que
  * el pedido llega a `delivered`.
  *
  * Protege del reembolso posterior al retiro. Si la plataforma paga al comerciante y el

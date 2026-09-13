@@ -1,6 +1,6 @@
 # 🔑 Puntos Clave y Consideraciones Operativas para la Facturación en Producción
 
-Este documento complementa a [`PLANIFICACION_FACTURACION.md`](file:///c:/laragon/www/owomarket/PLANIFICACION_FACTURACION.md) y detalla qué necesita exactamente el Tenant para poner a operar y facturar su negocio en el mundo real.
+Este documento complementa a **`PLANIFICACION_FACTURACION.md`** y detalla qué necesita exactamente el Tenant para poner a operar y facturar su negocio en el mundo real.
 
 ---
 

@@ -21,7 +21,7 @@ Route::post('/checkout/create-order', [CreateStorefrontOrderPOSTController::clas
 Route::get('/order/{id}/confirmation', [ViewOrderConfirmationTenantGETController::class, 'index'])->name('tenant.order.confirmation');
 
 /*
- * Fase 1 de `planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`.
+ * Fase 1 de `planes/ESTADO_DEL_PROYECTO.md`.
  *
  * El comprador de una tienda no tenia donde ver sus pedidos, asi que no podia confirmar una
  * entrega: TODAS las ventas de escaparate se liberaban por vencimiento del plazo.

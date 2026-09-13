@@ -14,7 +14,7 @@ use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
- * El buzón (fase 1 de `planes/futuros/PLAN_NOTIFICACIONES.md`).
+ * El buzón (fase 1 de `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * Lo que se vigila:
  *
@@ -204,7 +204,7 @@ it('sin sesión el buzón responde 401', function () {
 it('un comprador sin cuenta central enlazada no recibe aviso de entrega', function () {
     // Compra de invitado: `DeclareOrderDeliveredUseCase` no encuentra cuenta que enlazar, así
     // que el expediente nace sin `customer_id`. Es el precio aceptado del camino elegido en
-    // `PLAN_PEDIDOS_ESCAPARATE.md`, no una anomalía.
+    // los pedidos de escaparate, no una anomalía.
     \Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation::create([
         'id' => (string) Str::uuid(),
         'tenant_id' => $this->tenant->id,

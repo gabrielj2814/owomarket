@@ -12,7 +12,7 @@
 
 ## De dónde sale
 
-Del **hueco 2** de [`PLAN_REEMBOLSO_TRAS_RETIRO.md`](../por_hacer/PLAN_REEMBOLSO_TRAS_RETIRO.md):
+Del **hueco 2** de [`PLAN_REEMBOLSO_TRAS_RETIRO.md`](../ESTADO_DEL_PROYECTO.md):
 un comerciante al que se le reembolsó una venta cuyo dinero ya había retirado arrastra un saldo
 negativo que solo se compensa contra ventas futuras. Si deja de vender, nunca se compensa, y la
 plataforma no tiene forma de cobrarlo.
@@ -574,7 +574,7 @@ no en el camino feliz.
 
 ### El 5 no se empieza de cero
 
-Ya existe [`planes/futuros/PLAN_RESOLUCION_DEVOLUCIONES.md`](../futuros/PLAN_RESOLUCION_DEVOLUCIONES.md),
+Ya existe [`planes/futuros/PLAN_RESOLUCION_DEVOLUCIONES.md`](../ESTADO_DEL_PROYECTO.md),
 y ya existe la tabla `customer_return_requests` con un flujo por el que **el cliente crea
 devoluciones que nadie resuelve**. El subsistema 5 tiene que **absorber ese plan**, no duplicarlo.
 

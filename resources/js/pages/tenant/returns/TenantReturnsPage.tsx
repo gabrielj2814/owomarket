@@ -25,7 +25,7 @@ import {
 
 /**
  * Reclamaciones de la tienda (subsistema 5, vista 2 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **Sin esta pantalla el reloj aprobaba todo por silencio.** `returns:auto-resolve` corre a
  * diario y resuelve a favor del comprador lo que la tienda no responde en plazo; como no había

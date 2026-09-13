@@ -11,7 +11,7 @@ use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
 
 /**
  * Los pedidos que un comprador ha hecho EN ESTA TIENDA (fase 1 de
- * `planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * ## La identidad entra por parámetro, y es la central
  *

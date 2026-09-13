@@ -9,7 +9,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 /**
  * La revisión de identidad del backoffice (subsistema 1, vista 1 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **El agujero que cierra:** `ReviewTenantKycUseCase` existía sin controlador ni ruta. El KYC
  * exige identidad verificada para solicitar un retiro y no había ninguna forma de verificar a

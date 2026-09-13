@@ -19,7 +19,7 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
    * **Flowbite en todas las vistas. Tailwind puro SOLO para lo que Flowbite no cubra**: un componente que la librería no trae, o un remate que ningún componente resuelve. Un `className` para ajustar un margen es normal; un `className` que **reconstruye** algo que Flowbite ya trae —una tarjeta, un modal, un botón— no lo es.
    * **El aspecto de una zona se declara en un tema, no en cada pantalla.** Ver `resources/js/theme/portalTheme.ts` y su `<ThemeProvider>` en `CustomerAccountLayout`: las páginas escriben `<Card>` y `<Button color="primary">` a secas y salen con el aspecto de su zona. Si una pantalla necesita un `className` para parecerse a sus hermanas, el sitio de arreglarlo es el tema. Sin esto, migrar a Flowbite solo cambia la etiqueta con la que se duplica el mismo estilo.
    * **Los colores válidos dependen del componente.** En `flowbite-react` 0.12 los BOTONES aceptan `red`, `green`, `blue`, `light`, `dark`… pero **no** `success` ni `failure` (que sí valen en las insignias). Un color inexistente deja el botón sin relleno, sin ningún error: se ve como texto plano y nadie lo reporta.
-   * Lo pendiente de migrar está inventariado en `planes/por_hacer/PLAN_MIGRACION_FLOWBITE.md`.
+   * La migración terminó el 12/09/2026 (81/83 páginas). Lo que quedó fuera lo está a propósito, con la razón escrita en cada fichero.
 
 4. **Diseño Responsivo y Scroll**:
    * Las vistas de administración que se renderizan dentro del layout `<Dashboard>` deben utilizar los contenedores con scroll vertical interno (`overflow-y-auto`) para garantizar que ningún formulario o botón se corte en dispositivos móviles ni en pantallas de escritorio.
@@ -87,13 +87,17 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 
 ## 📁 5. Ubicación y Gestión de Documentos de Planificación
  
- 1. **Carpeta `planes/` Centralizada y Estructura en 4 Carpetas:**
-    * Todos los planes maestros, desgloses de desarrollo por fases, especificaciones de módulos, notas y hojas de ruta (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`, `ARQUITECTURA_*.md`) deben almacenarse exclusivamente dentro del directorio `planes/` en la raíz del proyecto, organizados en 4 subcarpetas obligatorias:
-      - `planes/implementados/`: Planes de trabajo finalizados y 100% implementados.
-      - `planes/por_hacer/`: Planes de trabajo en curso o aprobados que, al completarse al 100%, se moverán a la carpeta `planes/implementados/`.
-      - `planes/futuros/`: Planificaciones y requerimientos a futuro que todavía no se van a realizar.
-      - `planes/anotaciones/`: Documentos generales, notas técnicas, diagramas de arquitectura y especificaciones de referencia global.
-    * Cada vez que se complete una fase o plan de desarrollo, se debe actualizar el archivo de planificación correspondiente marcando el checking `[x]` y trasladarlo a `planes/implementados/`.
+ 1. **Carpeta `planes/`, con un solo fichero de estado y tres subcarpetas:**
+    * `planes/ESTADO_DEL_PROYECTO.md` es **el punto de entrada**: qué hace el proyecto, qué no hace todavía, las decisiones tomadas y no aplicadas, y los riesgos. Quien vuelve sin contexto empieza ahí.
+    * Todos los planes (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`, `ARQUITECTURA_*.md`) viven dentro de `planes/`, en tres subcarpetas:
+      - `planes/por_hacer/`: planes en curso o aprobados.
+      - `planes/futuros/`: planificaciones que todavía no se van a realizar.
+      - `planes/anotaciones/`: auditorías, decisiones y referencias. **Esta carpeta no se borra**: los comentarios del código citan sus hallazgos por número («hallazgo N35», «hallazgo A3»), y sin ella esas referencias quedan huérfanas.
+    * **Un plan terminado no se archiva: se absorbe y se borra.** Al completarlo, lo que se aprendió pasa a `ESTADO_DEL_PROYECTO.md` y el fichero se elimina. La carpeta `planes/implementados/` existió hasta el 13/09/2026 y llegó a acumular 60 planes que nadie leía y que el código no citaba; el historial de git los conserva si alguien los necesita.
+    * **Antes de borrar un plan, comprueba quién lo cita.** Los comentarios del código enlazan ficheros de `planes/`, y borrar uno sin repuntar sus referencias deja enlaces a ninguna parte:
+      ```bash
+      grep -rn "NOMBRE_DEL_PLAN" src/ resources/ tests/
+      ```
 
 ---
 

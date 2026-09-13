@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Fase 4c de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`: la comisión por transferir a un banco
+ * Fase 4c de `planes/ESTADO_DEL_PROYECTO.md`: la comisión por transferir a un banco
  * distinto del de la plataforma.
  *
  * Cada tienda cobra en el banco que quiera. Si al retirar hace falta una transferencia

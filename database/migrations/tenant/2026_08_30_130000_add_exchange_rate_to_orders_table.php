@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Fase 4 de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`: la tasa a la que compró el cliente,
+ * Fase 4 de `planes/ESTADO_DEL_PROYECTO.md`: la tasa a la que compró el cliente,
  * guardada en su pedido.
  *
  * La Fase 1 la capturó en la comisión, que basta para calcular la wallet del comerciante pero

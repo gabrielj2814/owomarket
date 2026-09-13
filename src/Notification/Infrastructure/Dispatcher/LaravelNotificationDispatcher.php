@@ -148,7 +148,7 @@ final class LaravelNotificationDispatcher implements NotificationDispatcher
             /*
              * Sin `customer_id` no hay a quién avisar. Le pasa a las compras de invitado:
              * `DeclareOrderDeliveredUseCase` no encuentra cuenta central que enlazar. Es el
-             * precio aceptado del camino elegido en `PLAN_PEDIDOS_ESCAPARATE.md`, y por eso no
+             * precio aceptado del camino elegido para los pedidos de escaparate, y por eso no
              * se registra como aviso: es lo esperado, no una anomalía.
              */
             if ($expediente === null || $expediente->customer_id === null) {

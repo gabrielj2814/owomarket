@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Src\Admin\Infrastructure\Http\Controller;
 
-use Src\Admin\Application\UseCase\FindTenantsByIdentityUseCase;
 use Illuminate\Http\JsonResponse;
+use Src\Admin\Application\UseCase\FindTenantsByIdentityUseCase;
 use Src\Shared\Helper\ApiResponse;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
 
@@ -14,7 +14,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
  *
  * ## Por qué se busca por expediente y no por un número que el administrador escriba
  *
- * `PLAN_VISTAS_PENDIENTES.md` proponía `GET .../kyc/identity-search` con la cédula o el RIF en
+ * El plan de las vistas proponía `GET .../kyc/identity-search` con la cédula o el RIF en
  * la consulta. No se hace así, y conviene dejar escrito el porqué antes de que alguien lo
  * "arregle":
  *

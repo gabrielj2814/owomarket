@@ -16,7 +16,7 @@ use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
  * Reclamar desde el escaparate de una tienda (fase 2 de
- * `planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **Lo que cierra:** desde la fase 1 el comprador de una tienda veía sus pedidos y confirmaba la
  * entrega, y ahí se le acababa el camino. Podía dar por recibido un producto roto y no tenía

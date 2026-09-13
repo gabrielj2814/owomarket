@@ -15,7 +15,7 @@ use Src\Shared\Infrastructure\Security\LaravelUuidGenerator;
 use Src\Tenant\Infrastructure\Eloquent\Models\Tenant;
 
 /**
- * Fase 1 de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`.
+ * Fase 1 de `planes/ESTADO_DEL_PROYECTO.md`.
  *
  * La wallet guarda el saldo de cada tienda en bolívares congelados a la tasa de la venta, de
  * modo que la plataforma le deba exactamente los bolívares que recibió del comprador. Eso

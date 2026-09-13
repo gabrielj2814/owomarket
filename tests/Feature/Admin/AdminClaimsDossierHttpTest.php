@@ -10,7 +10,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 /**
  * La mesa de reclamaciones del backoffice y su expediente (subsistema 5, fase D · vista 5 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **El agujero que cierra:** `BuildClaimDossierUseCase` existía sin controlador ni ruta, y
  * además pedía un `claimId` que nadie podía obtener porque ninguna pantalla central listaba

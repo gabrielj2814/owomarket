@@ -10,7 +10,7 @@ import { HiOutlineArchiveBox, HiOutlineArrowPath, HiOutlineCheckCircle, HiOutlin
 
 /**
  * «Mis pedidos» dentro del escaparate de una tienda (fase 1 de
- * `planes/por_hacer/PLAN_PEDIDOS_ESCAPARATE.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **Sin esta pantalla el subsistema 3 estaba roto en el escaparate y no lo notaba nadie.** El
  * comprador de una tienda no tenía dónde ver lo que había comprado, así que no podía confirmar

@@ -7,7 +7,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Quien quiere recibir tambien por correo (fase 3 de `planes/futuros/PLAN_NOTIFICACIONES.md`).
+ * Quien quiere recibir tambien por correo (fase 3 de `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * ## Una fila por persona, no una por tipo de aviso
  *

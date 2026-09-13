@@ -13,7 +13,7 @@ use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
- * Fase 5 de `planes/por_hacer/PLAN_WALLET_Y_RETIROS.md`: cablear `suspended`.
+ * Fase 5 de `planes/ESTADO_DEL_PROYECTO.md`: cablear `suspended`.
  *
  * El estado existía —definido en `TenantStatus`, escrito por `TenantRepository::suspended()`,
  * invocado por dos casos de uso con sus endpoints— y **no lo leía nadie para impedir nada**.

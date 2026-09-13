@@ -18,7 +18,7 @@ use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
- * El canal de correo (fase 3 de `planes/futuros/PLAN_NOTIFICACIONES.md`).
+ * El canal de correo (fase 3 de `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * Lo que se vigila es **el reparto**, porque los dos errores posibles duelen en direcciones
  * opuestas:

@@ -9,7 +9,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 /**
  * El nivel de reputación en la billetera (subsistema 5, fase C · vista 3 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * `TenantReputation::progress()` existía desde que se construyó la fase C **sin que ningún
  * endpoint lo expusiera**: el comerciante veía bajar su saldo disponible y no tenía forma de

@@ -43,7 +43,7 @@ import {
 
 /**
  * Revisión de identidad de comerciantes (subsistema 1, vista 1 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **Esta pantalla es la que deja cobrar a las tiendas.** El KYC exige identidad verificada para
  * solicitar un retiro, y hasta que existió no había ninguna forma de verificar a nadie: todos

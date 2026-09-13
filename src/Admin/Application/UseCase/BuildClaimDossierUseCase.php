@@ -90,7 +90,7 @@ final class BuildClaimDossierUseCase
              * Decision del 11/09/2026, con el proyecto todavia EN DESARROLLO y sin usuarios
              * reales: se entrega **todo lo que hay**, cedula y RIF incluidos. La pregunta de
              * que puede entregarsele legalmente a un comprador que denuncia sigue abierta
-             * --es una de las dos pendientes con abogado en `ESTADO_Y_PENDIENTES.md`-- y la
+             * --es una de las tres pendientes con abogado en `planes/ESTADO_DEL_PROYECTO.md`-- y la
              * respuesta llegara como una lista de campos a quitar.
              *
              * Por eso los campos se arman AQUI y solo aqui: quitar uno tiene que ser borrar

@@ -16,7 +16,7 @@ use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
- * Fase 3 de `planes/por_hacer/PLAN_COBRO_UNIFICADO.md`.
+ * Fase 3 de `planes/ESTADO_DEL_PROYECTO.md`.
  *
  * Desde que la plataforma cobra todas las ventas, el comerciante ya no puede decir si el dinero
  * llegó: no tiene acceso a ese extracto bancario. El que cobra es el que confirma.

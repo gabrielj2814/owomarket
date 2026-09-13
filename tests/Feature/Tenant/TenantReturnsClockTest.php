@@ -12,7 +12,7 @@ use Src\Tenant\Infrastructure\Eloquent\Models\User;
 
 /**
  * El reloj que la tienda tiene que ver (subsistema 5, vista 2 de
- * `planes/por_hacer/PLAN_VISTAS_PENDIENTES.md`).
+ * `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * **El dato que hace que la pantalla se use.** `returns:auto-resolve` resuelve a favor del
  * comprador lo que la tienda no contesta en plazo; sin una cuenta atrás, el comerciante no sabe

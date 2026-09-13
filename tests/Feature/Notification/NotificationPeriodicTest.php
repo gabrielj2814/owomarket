@@ -19,7 +19,7 @@ use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
 
 /**
- * Lo periódico (fase 4 de `planes/futuros/PLAN_NOTIFICACIONES.md`).
+ * Lo periódico (fase 4 de `planes/ESTADO_DEL_PROYECTO.md`).
  *
  * Los dos avisos de esta fase los dispara un comando que corre **todos los días** sobre un estado
  * que no cambia: el mes sigue pasado del techo mañana, y la reclamación sigue a punto de vencer
