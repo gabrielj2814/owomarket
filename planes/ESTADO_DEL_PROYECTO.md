@@ -2,9 +2,12 @@
 
 > **13/09/2026** · Rama `moduleProduct` · 939 tests de backend, 115 de frontend, `tsc` limpio.
 >
-> **Este es el único fichero que hay que leer para saber dónde está el proyecto.** Sustituye a
-> `ESTADO_Y_PENDIENTES.md` y a los 60 planes ya implementados, que se borraron al escribirlo —
-> siguen en el historial de git si alguien los necesita.
+> **Este fichero dice QUÉ ESTÁ HECHO.** Su pareja, [`COMO_FUNCIONA.md`](COMO_FUNCIONA.md),
+> dice **cómo funciona** el negocio y la aplicación: el recorrido del dinero, las garantías, la
+> arquitectura y las reglas que explican el código raro. Antes de tocar nada, los dos.
+>
+> Sustituye a `ESTADO_Y_PENDIENTES.md` y a los 60 planes ya implementados, que se borraron al
+> escribirlo — siguen en el historial de git si alguien los necesita.
 >
 > Lo que **no** está aquí, y no debe borrarse: `planes/anotaciones/`, que es el *porqué* de las
 > decisiones y de los hallazgos que el código cita por número.
@@ -157,6 +160,8 @@ grep -rn "ponytail:" src/ resources/
 
 ## 5 · Qué leer antes de tocar código
 
+- **[`COMO_FUNCIONA.md`](COMO_FUNCIONA.md)** — el negocio, el dinero, las garantías y la
+  arquitectura. Si algo del código parece innecesariamente complicado, la razón suele estar ahí.
 - [`reglas.md`](../reglas.md) — obligatorio. Servicios para toda llamada HTTP, Flowbite en todas
   las vistas, arquitectura hexagonal, tests antes del commit.
 - [`anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md`](anotaciones/DECISION_GARANTIAS_Y_RESPONSABILIDAD.md)

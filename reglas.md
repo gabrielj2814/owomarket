@@ -87,8 +87,16 @@ Este documento establece las **reglas de desarrollo obligatorias** que todo desa
 
 ## 📁 5. Ubicación y Gestión de Documentos de Planificación
  
- 1. **Carpeta `planes/`, con un solo fichero de estado y tres subcarpetas:**
-    * `planes/ESTADO_DEL_PROYECTO.md` es **el punto de entrada**: qué hace el proyecto, qué no hace todavía, las decisiones tomadas y no aplicadas, y los riesgos. Quien vuelve sin contexto empieza ahí.
+ 1. **Dos ficheros de referencia, y hay que leer los dos antes de tocar nada:**
+    * `planes/COMO_FUNCIONA.md` — **cómo funciona**: el negocio, el recorrido del dinero, las garantías, la arquitectura y las reglas que explican el código raro.
+    * `planes/ESTADO_DEL_PROYECTO.md` — **qué está hecho**: lo que hace, lo que no hace todavía, las decisiones tomadas y no aplicadas, y los riesgos.
+
+ 2. **Los dos se actualizan en la MISMA entrega que el código, nunca después.**
+    * ¿El cambio toca una regla, un recorrido del dinero o uno de los ajustes? → también a `COMO_FUNCIONA.md`.
+    * ¿Es una pantalla nueva, un arreglo, algo que se termina o se descarta? → también a `ESTADO_DEL_PROYECTO.md`.
+    * **Un documento de referencia desactualizado es peor que no tenerlo**: se lee con confianza y miente. Dejarlo «para el final» es no hacerlo.
+
+ 3. **Carpeta `planes/`, con tres subcarpetas:**
     * Todos los planes (`PLANIFICACION_*.md`, `PLAN_*.md`, `PUNTOS_CLAVE_*.md`, `ARQUITECTURA_*.md`) viven dentro de `planes/`, en tres subcarpetas:
       - `planes/por_hacer/`: planes en curso o aprobados.
       - `planes/futuros/`: planificaciones que todavía no se van a realizar.

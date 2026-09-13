@@ -5,14 +5,17 @@ compran juntos desde un carrito único, con una sola factura pagada en Pago Móv
 
 ---
 
-## 👉 Dónde está el proyecto
+## 👉 Los dos ficheros de referencia
 
-**[`planes/ESTADO_DEL_PROYECTO.md`](planes/ESTADO_DEL_PROYECTO.md)** — qué hace, qué no hace
-todavía, las decisiones tomadas y no aplicadas, y los riesgos.
+- **[`planes/COMO_FUNCIONA.md`](planes/COMO_FUNCIONA.md)** — **cómo funciona**: el negocio, el
+  recorrido del dinero, las garantías, la arquitectura y las cinco reglas que explican casi todo
+  el código raro.
+- **[`planes/ESTADO_DEL_PROYECTO.md`](planes/ESTADO_DEL_PROYECTO.md)** — **qué está hecho**: lo
+  que hace, lo que no hace todavía, las decisiones tomadas y no aplicadas, y los riesgos.
 
-Ese fichero es el único que hay que leer para retomar sin contexto. Este de aquí solo apunta a
-él: **dos ficheros contando lo mismo acaban diciendo cosas distintas**, y el que miente es
-siempre el que nadie recuerda actualizar.
+Con esos dos se retoma el proyecto sin contexto previo. Este fichero solo apunta a ellos: **dos
+documentos contando lo mismo acaban diciendo cosas distintas**, y el que miente es siempre el que
+nadie recuerda actualizar.
 
 ## Antes de tocar código
 
