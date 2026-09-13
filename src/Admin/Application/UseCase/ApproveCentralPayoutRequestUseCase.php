@@ -8,11 +8,13 @@ use Exception;
 use Illuminate\Support\Facades\DB;
 use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 
 final class ApproveCentralPayoutRequestUseCase
 {
     public function __construct(
-        private readonly TenantAvailableBalance $balance
+        private readonly TenantAvailableBalance $balance,
+        private readonly NotificationDispatcher $avisos
     ) {}
 
     /**
@@ -23,9 +25,15 @@ final class ApproveCentralPayoutRequestUseCase
      */
     public function execute(string $settlementId, string $adminUserId, array $data): CommissionSettlement
     {
-        return DB::transaction(function () use ($settlementId, $adminUserId, $data) {
+        $retiro = DB::transaction(function () use ($settlementId, $adminUserId, $data) {
             return $this->aprobar($settlementId, $adminUserId, $data);
         });
+
+        // Fuera de la transaccion: aqui el dinero ya salio, y un fallo de avisos no puede
+        // deshacer un pago que el comerciante ya tiene en su cuenta.
+        $this->avisos->payoutResolved($retiro->id);
+
+        return $retiro;
     }
 
     /**

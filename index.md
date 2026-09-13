@@ -1,7 +1,7 @@
 # Qué falta en OwoMarket
 
 > **Última actualización:** 12/09/2026 · Rama `moduleProduct`
-> **Estado de la suite:** 904 tests de backend, 111 de frontend, `tsc --noEmit` limpio.
+> **Estado de la suite:** 918 tests de backend, 111 de frontend, `tsc --noEmit` limpio.
 > **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
@@ -24,10 +24,12 @@ silencios no son comodidad, son dinero que se mueve solo:**
 - La tienda declara la entrega y **el comprador no se entera**. Confirmar es lo que libera el
   dinero, así que la venta se libera por plazo y él pierde su ventana para reclamar sin saberlo.
 
-**La fase 1 está hecha desde el 13/09/2026**, y es justo la que arregla esos dos silencios: la
-campana del backoffice —que era decoración: estaba dentro del desplegable del avatar— funciona,
-y los dos avisos llegan. Quedan las fases 2 (el resto del ciclo de garantías), 3 (el correo) y
-4 (lo periódico, incluido el techo mensual).
+**Las fases 1 y 2 están hechas desde el 13/09/2026.** La campana del backoffice —que era
+decoración: estaba dentro del desplegable del avatar— funciona, y **las tres audiencias reciben
+avisos**: nueve eventos, del reclamo abierto al retiro pagado. El puerto
+`NotificationDispatcher` se lee como el catálogo de todo lo que la plataforma anuncia.
+
+Quedan la fase 3 (el correo) y la 4 (lo periódico, incluido el aviso del techo mensual).
 
 → [`planes/futuros/PLAN_NOTIFICACIONES.md`](planes/futuros/PLAN_NOTIFICACIONES.md)
 

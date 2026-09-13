@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantPlanChangeRequest;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 
 /**
@@ -21,7 +22,8 @@ use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 final class CreateTenantPlanChangeRequestUseCase
 {
     public function __construct(
-        private readonly TenantOwnershipVerifier $ownership
+        private readonly TenantOwnershipVerifier $ownership,
+        private readonly NotificationDispatcher $avisos
     ) {}
 
     /**
@@ -71,5 +73,9 @@ final class CreateTenantPlanChangeRequestUseCase
                 'notes' => $data['notes'] ?? null,
             ]);
         });
+
+        $this->avisos->planChangeRequested($solicitud->id);
+
+        return $solicitud;
     }
 }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Application\UseCases\ReverseOrderCommissionUseCase;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Throwable;
 
@@ -46,7 +47,8 @@ final class ResolveReturnRequestUseCase
 
     public function __construct(
         private readonly ReverseOrderCommissionUseCase $reverse,
-        private readonly TenantAvailableBalance $balance
+        private readonly TenantAvailableBalance $balance,
+        private readonly NotificationDispatcher $avisos
     ) {}
 
     /**
@@ -60,7 +62,7 @@ final class ResolveReturnRequestUseCase
         string $resolvedBy = 'merchant',
         ?string $notas = null
     ): CustomerReturnRequest {
-        return DB::transaction(function () use ($requestId, $aprobada, $resolvedBy, $notas) {
+        $reclamacion = DB::transaction(function () use ($requestId, $aprobada, $resolvedBy, $notas) {
             $reclamacion = CustomerReturnRequest::where('id', $requestId)->lockForUpdate()->first();
 
             if ($reclamacion === null) {
@@ -93,6 +95,20 @@ final class ResolveReturnRequestUseCase
 
             return $reclamacion;
         });
+
+        /*
+         * El aviso va FUERA de la transaccion, y eso no es estetica: dentro, un fallo del
+         * despachador revertiria la reversion de comision que se acaba de hacer. El despachador
+         * ademas no propaga, asi que son dos redes y no una.
+         *
+         * Un solo enganche cubre los dos caminos. `AutoResolveStaleReturnsUseCase` reutiliza
+         * este caso de uso con `resolvedBy: 'timeout'`, y el despachador decide a quien avisa
+         * mirando ese campo: al comprador siempre, y ademas al comerciante cuando la resolvio el
+         * reloj --que es el unico caso en el que perdio una venta sin saberlo--.
+         */
+        $this->avisos->claimResolved($reclamacion->id);
+
+        return $reclamacion;
     }
 
     /**

@@ -55,7 +55,25 @@ final class DespachadorEspia implements NotificationDispatcher
         $this->reclamacionesAvisadas[] = $claimId;
     }
 
+    /*
+     * El resto del catalogo no le interesa a este test. Se declaran vacios y ya: inventar una
+     * clase base para ahorrarse siete lineas seria mas codigo del que quita.
+     */
+    public function claimResolved(string $claimId): void {}
+
     public function deliveryDeclared(string $tenantOrderId): void {}
+
+    public function kycSubmitted(string $kycProfileId): void {}
+
+    public function kycReviewed(string $kycProfileId): void {}
+
+    public function payoutRequested(string $settlementId): void {}
+
+    public function payoutResolved(string $settlementId): void {}
+
+    public function planChangeRequested(string $requestId): void {}
+
+    public function planChangeResolved(string $requestId): void {}
 }
 
 /** @return array{0: CreateCustomerReturnRequestUseCase, 1: ClaimableOrderData, 2: DespachadorEspia} */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Admin\Application\UseCase;
 
 use Exception;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
 
 /**
@@ -15,6 +16,10 @@ use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
  */
 final class ReviewTenantKycUseCase
 {
+    public function __construct(
+        private readonly NotificationDispatcher $avisos
+    ) {}
+
     /**
      * @throws Exception 404 si no existe, 422 si se rechaza sin motivo.
      */
@@ -35,6 +40,13 @@ final class ReviewTenantKycUseCase
         $perfil->reviewed_by = $adminId;
         $perfil->rejection_reason = $aprobado ? null : trim((string) $motivo);
         $perfil->save();
+
+        /*
+         * Sin KYC verificado una tienda no puede cobrar, asi que este aviso es la diferencia
+         * entre esperar sabiendo y esperar sin saber. Y si se rechazo, el motivo viaja con el:
+         * un rechazo sin motivo deja al comerciante adivinando que corregir.
+         */
+        $this->avisos->kycReviewed($perfil->id);
 
         return $perfil;
     }

@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Src\Monetization\Application\Service\TenantAvailableBalance;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Src\Payment\Infrastructure\Eloquent\Models\CentralSetting;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
@@ -18,7 +19,8 @@ final class CreateTenantOwnerPayoutRequestUseCase
 {
     public function __construct(
         private readonly TenantOwnershipVerifier $ownership,
-        private readonly TenantAvailableBalance $balance
+        private readonly TenantAvailableBalance $balance,
+        private readonly NotificationDispatcher $avisos
     ) {}
 
     /**
@@ -71,7 +73,7 @@ final class CreateTenantOwnerPayoutRequestUseCase
             );
         }
 
-        return DB::transaction(function () use ($userId, $data) {
+        $retiro = DB::transaction(function () use ($userId, $data) {
             /*
              * 2. El importe solicitado no puede superar el saldo disponible de la tienda.
              *
@@ -127,6 +129,12 @@ final class CreateTenantOwnerPayoutRequestUseCase
                 ],
             ]);
         });
+
+        // Fuera de la transaccion, como el resto: un fallo de avisos no puede deshacer una
+        // solicitud de retiro que el comerciante ya dio por enviada.
+        $this->avisos->payoutRequested($retiro->id);
+
+        return $retiro;
     }
 
     /**

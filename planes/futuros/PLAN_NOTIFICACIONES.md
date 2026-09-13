@@ -1,6 +1,6 @@
 # 📋 Plan: Módulo de notificaciones
 
-> **Estado:** 🟨 **Fase 1 HECHA el 13/09/2026** · Fases 2, 3 y 4 pendientes ·
+> **Estado:** 🟨 **Fases 1 y 2 HECHAS el 13/09/2026** · Fases 3 y 4 pendientes ·
 > Redactado el 23/08/2026 · Reescrito el 12/09/2026 con el código delante.
 > **Es lo que más rinde ahora, y ya no compite con nada:** los cinco subsistemas de garantías
 > están terminados y todos dependen de que alguien se entere.
@@ -276,14 +276,60 @@ señal de que tiene una reclamación esperando. Se marca al pulsar el aviso.
 **Tests:** que el aviso llegue a los `owner` y no al `staff`; que un fallo del despachador **no**
 revierta la resolución de la reclamación; que el buzón de un comprador no vea los de otro.
 
-### Fase 2 — El resto del ciclo de garantías
+### Fase 2 — El resto del ciclo de garantías ✅ (13/09/2026)
 
-- KYC verificado o rechazado → comerciante.
-- Reclamación resuelta → comprador (con el motivo, que ya se guarda en `resolution_notes`).
-- Reclamación resuelta **por silencio** → comerciante. Es la que más va a doler, y es la que
-  hace que la siguiente sí se conteste.
-- Retiro y cambio de plan resueltos → comerciante.
-- KYC, retiro y cambio de plan pendientes → administrador.
+> **Verificado en la aplicación real:** el superadministrador vio *«Una tienda envió su
+> identidad — cosplay_ está esperando verificación. Sin ella no puede cobrar»* en su campana.
+> Es la tercera audiencia, que hasta ahora no había recibido nada.
+
+Nueve eventos en total, y el puerto se lee como el catálogo de todo lo que la plataforma
+anuncia:
+
+| Evento | Quién lo recibe |
+| :--- | :--- |
+| `claim.opened` | Dueños de la tienda |
+| `claim.resolved` | Comprador |
+| `claim.timedout` | Dueños de la tienda, **solo si la resolvió el reloj** |
+| `delivery.declared` | Comprador |
+| `kyc.submitted` | Plataforma |
+| `kyc.reviewed` | Dueños de la tienda |
+| `payout.requested` | Plataforma |
+| `payout.resolved` | Dueños de la tienda |
+| `plan.requested` / `plan.resolved` | Plataforma / dueños |
+
+#### Nueve clases de notificación se quedaron en una
+
+El idiom de Laravel es una clase por aviso. Al llegar a nueve, las nueve hacían lo mismo:
+declarar `['database']` y devolver un array. **Nueve ficheros de veinte líneas cuya única
+diferencia es el texto no son nueve conceptos: son un array con ceremonia.**
+
+Queda `InboxNotification`, y el texto vive en el despachador —que ya tenía inyectados los
+servicios de los que salen los plazos—. Añadir un aviso pasó de «un fichero nuevo» a «un
+método». La fase 3 no se bloquea: `toMail()` puede resolver la plantilla por el `type`.
+
+#### Un solo enganche cubre dos comportamientos
+
+`AutoResolveStaleReturnsUseCase` **reutiliza** `ResolveReturnRequestUseCase` con
+`resolvedBy: 'timeout'`. Así que enganchar el aviso en la resolución cubre los dos caminos, y es
+el despachador quien decide a quién avisa mirando ese campo. Eso es exactamente lo que compra
+que el puerto hable de **eventos** y no de destinatarios.
+
+#### Tres textos que el código tuvo que ir a leer
+
+1. **`settled`, no `paid`.** Es el estado que deja `ApproveCentralPayoutRequestUseCase` al
+   aprobar un retiro. Con el estado supuesto, el aviso le habría dicho «rechazado» a quien
+   acababa de cobrar.
+2. **Una aprobación por silencio no la aprobó la tienda.** El mismo error que ya se corrigió en
+   la pantalla del comprador, ahora también en el buzón.
+3. **Los rechazos llevan su motivo** —KYC, retiro, plan—. Un rechazo sin explicación deja a
+   quien lo recibe adivinando qué corregir.
+
+#### Y una trampa de fixtures que conviene recordar
+
+`type` **no está en `$fillable`** de `Src\User\...\User`, así que `User::create(['type' =>
+'super_admin'])` lo descarta en silencio y el usuario nace sin tipo. `platformAdmins()` entonces
+no encuentra a nadie y los avisos a la plataforma se pierden —con su aviso en el log, pero sin
+error—. En producción no pasa: `CreateSuperAdminCommand` lo asigna directamente.
 
 ### Fase 3 — El correo
 

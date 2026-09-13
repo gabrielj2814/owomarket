@@ -6,6 +6,7 @@ namespace Src\Monetization\Application\UseCases;
 
 use Exception;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantPlanChangeRequest;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 
 /**
  * El administrador rechaza el cambio de plan (hallazgo T3).
@@ -15,6 +16,10 @@ use Src\Monetization\Infrastructure\Eloquent\Models\TenantPlanChangeRequest;
  */
 final class RejectTenantPlanChangeRequestUseCase
 {
+    public function __construct(
+        private readonly NotificationDispatcher $avisos
+    ) {}
+
     public function execute(string $requestId, string $adminUserId, string $motivo): TenantPlanChangeRequest
     {
         $solicitud = TenantPlanChangeRequest::find($requestId);
@@ -38,6 +43,12 @@ final class RejectTenantPlanChangeRequestUseCase
             'rejection_reason' => trim($motivo),
         ]);
 
-        return $solicitud->fresh();
+        $resuelta = $solicitud->fresh();
+
+        // El motivo viaja con el aviso: es lo unico que le dice al comerciante si insistir con
+        // otra solicitud o corregir algo antes.
+        $this->avisos->planChangeResolved($resuelta->id);
+
+        return $resuelta;
     }
 }

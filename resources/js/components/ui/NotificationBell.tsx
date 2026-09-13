@@ -1,7 +1,15 @@
 import NotificationServices, { NotificationAudience, NotificationItem } from '@/Services/NotificationServices';
 import { Badge, Button, Dropdown, Spinner } from 'flowbite-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { HiOutlineBell, HiOutlineCheckCircle, HiOutlineScale, HiOutlineTruck } from 'react-icons/hi2';
+import {
+    HiOutlineArrowsRightLeft,
+    HiOutlineBanknotes,
+    HiOutlineBell,
+    HiOutlineCheckCircle,
+    HiOutlineIdentification,
+    HiOutlineScale,
+    HiOutlineTruck,
+} from 'react-icons/hi2';
 
 /**
  * La campana del buzón.
@@ -24,9 +32,22 @@ interface NotificationBellProps {
     audience: NotificationAudience;
 }
 
+/*
+ * Un icono por familia, no por evento. Con siete tipos compartiendo el mismo simbolo el buzon se
+ * lee como un muro de texto: el icono es lo que deja distinguir «me reclamaron» de «me pagaron»
+ * sin leer la linea entera.
+ */
 const ICONO: Record<string, typeof HiOutlineBell> = {
     'claim.opened': HiOutlineScale,
+    'claim.resolved': HiOutlineScale,
+    'claim.timedout': HiOutlineScale,
     'delivery.declared': HiOutlineTruck,
+    'kyc.submitted': HiOutlineIdentification,
+    'kyc.reviewed': HiOutlineIdentification,
+    'payout.requested': HiOutlineBanknotes,
+    'payout.resolved': HiOutlineBanknotes,
+    'plan.requested': HiOutlineArrowsRightLeft,
+    'plan.resolved': HiOutlineArrowsRightLeft,
 };
 
 const cuando = (iso: string | null) => {

@@ -6,6 +6,7 @@ namespace Src\Tenant\Application\UseCase;
 
 use Exception;
 use Illuminate\Support\Str;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Src\Tenant\Application\Service\TenantOwnershipVerifier;
 use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
 
@@ -20,7 +21,8 @@ use Src\Tenant\Infrastructure\Eloquent\Models\TenantKycProfile;
 final class SubmitTenantKycUseCase
 {
     public function __construct(
-        private readonly TenantOwnershipVerifier $ownership
+        private readonly TenantOwnershipVerifier $ownership,
+        private readonly NotificationDispatcher $avisos
     ) {}
 
     /**
@@ -75,6 +77,10 @@ final class SubmitTenantKycUseCase
         }
 
         $perfil->fill($atributos)->save();
+
+        // Sin verificar, una tienda NO puede cobrar. Que el aviso llegue a la plataforma es lo
+        // que evita que un perfil enviado se quede esperando a que alguien entre a mirar.
+        $this->avisos->kycSubmitted($perfil->id);
 
         return $perfil;
     }

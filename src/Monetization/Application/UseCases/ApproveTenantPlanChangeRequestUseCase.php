@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Src\Monetization\Infrastructure\Eloquent\Models\SubscriptionPlan;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantPlanChangeRequest;
 use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 
 /**
  * El administrador aprueba el cambio de plan (hallazgo T3).
@@ -22,9 +23,13 @@ use Src\Monetization\Infrastructure\Eloquent\Models\TenantSubscription;
  */
 final class ApproveTenantPlanChangeRequestUseCase
 {
+    public function __construct(
+        private readonly NotificationDispatcher $avisos
+    ) {}
+
     public function execute(string $requestId, string $adminUserId): TenantPlanChangeRequest
     {
-        return DB::transaction(function () use ($requestId, $adminUserId) {
+        $resuelta = DB::transaction(function () use ($requestId, $adminUserId) {
             $solicitud = TenantPlanChangeRequest::lockForUpdate()->find($requestId);
 
             if ($solicitud === null) {
@@ -78,5 +83,13 @@ final class ApproveTenantPlanChangeRequestUseCase
 
             return $solicitud->fresh();
         });
+
+        /*
+         * **La promesa que la aplicacion llevaba haciendo desde el 23/08/2026.** La pantalla
+         * responde «Solicitud enviada. Te avisaremos cuando la revisemos» y no habia con que.
+         */
+        $this->avisos->planChangeResolved($resuelta->id);
+
+        return $resuelta;
     }
 }

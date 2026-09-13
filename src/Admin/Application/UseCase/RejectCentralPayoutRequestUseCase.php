@@ -6,9 +6,14 @@ namespace Src\Admin\Application\UseCase;
 
 use Exception;
 use Src\Monetization\Infrastructure\Eloquent\Models\CommissionSettlement;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 
 final class RejectCentralPayoutRequestUseCase
 {
+    public function __construct(
+        private readonly NotificationDispatcher $avisos
+    ) {}
+
     /**
      * @param array{
      *     rejection_reason: string,
@@ -41,6 +46,10 @@ final class RejectCentralPayoutRequestUseCase
             'notes' => $data['rejection_reason'],
             'metadata' => $metadata,
         ]);
+
+        // El motivo viaja con el aviso: un rechazo sin explicacion deja al comerciante sin
+        // saber si volver a pedirlo o que corregir antes.
+        $this->avisos->payoutResolved($settlement->id);
 
         return $settlement;
     }
