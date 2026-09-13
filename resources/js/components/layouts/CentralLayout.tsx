@@ -1,22 +1,22 @@
-import React, { FC, useState } from 'react';
-import { Link, usePage } from '@inertiajs/react';
+import NotificationBell from '@/components/ui/NotificationBell';
+import CustomerAuthModal from '@/components/ui/storefront/CustomerAuthModal';
 import { CentralCartProvider, useCentralCart } from '@/contexts/CentralCartContext';
 import { CustomerAuthProvider, useCustomerAuth } from '@/contexts/CustomerAuthContext';
-import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem, ThemeProvider } from 'flowbite-react';
-import CentralCartDrawer from '../ui/marketplace/CentralCartDrawer';
-import CustomerAuthModal from '@/components/ui/storefront/CustomerAuthModal';
 import storefrontTheme from '@/theme/storefrontTheme';
+import { Link } from '@inertiajs/react';
+import { Dropdown, DropdownDivider, DropdownHeader, DropdownItem, ThemeProvider } from 'flowbite-react';
+import React, { FC, useState } from 'react';
 import {
-    HiOutlineShoppingBag,
-    HiOutlineMagnifyingGlass,
-    HiOutlineUser,
     HiOutlineBuildingStorefront,
-    HiOutlineSparkles,
-    HiOutlineShieldCheck,
-    HiOutlineDevicePhoneMobile,
     HiOutlineCurrencyDollar,
-    HiArrowRightOnRectangle,
+    HiOutlineDevicePhoneMobile,
+    HiOutlineMagnifyingGlass,
+    HiOutlineShieldCheck,
+    HiOutlineShoppingBag,
+    HiOutlineSparkles,
+    HiOutlineUser,
 } from 'react-icons/hi2';
+import CentralCartDrawer from '../ui/marketplace/CentralCartDrawer';
 
 interface CentralLayoutProps {
     children?: React.ReactNode;
@@ -36,27 +36,29 @@ const CentralNavbar: React.FC = () => {
     };
 
     return (
-        <header className="sticky top-0 z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md border-b border-gray-200/80 dark:border-gray-800/80 transition-colors">
+        <header className="sticky top-0 z-40 border-b border-gray-200/80 bg-white/95 backdrop-blur-md transition-colors dark:border-gray-800/80 dark:bg-gray-900/95">
             {/* Top Bar Announcement */}
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2">
-                <span className="inline-flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                    <HiOutlineSparkles className="w-3 h-3" /> NUEVO
+            <div className="flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-4 py-1.5 text-center text-xs font-medium text-white">
+                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">
+                    <HiOutlineSparkles className="h-3 w-3" /> NUEVO
                 </span>
-                <span>Marketplace Multi-Tienda Central de OwOMarket. Compra en varias tiendas y paga en una sola factura con Pago Móvil o Binance Pay.</span>
+                <span>
+                    Marketplace Multi-Tienda Central de OwOMarket. Compra en varias tiendas y paga en una sola factura con Pago Móvil o Binance Pay.
+                </span>
             </div>
 
             {/* Main Navigation */}
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex items-center justify-between h-16 gap-4">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between gap-4">
                     {/* Brand Logo */}
-                    <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 group">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-xl flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition">
+                    <Link href="/" className="group flex flex-shrink-0 items-center gap-2.5">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-xl font-black text-white shadow-md shadow-blue-500/20 transition group-hover:scale-105">
                             OwO
                         </div>
                         <div>
-                            <span className="font-extrabold text-lg text-gray-900 dark:text-white tracking-tight flex items-center gap-1.5">
+                            <span className="flex items-center gap-1.5 text-lg font-extrabold tracking-tight text-gray-900 dark:text-white">
                                 OwOMarket
-                                <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300">
+                                <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wider text-blue-700 uppercase dark:bg-blue-900/50 dark:text-blue-300">
                                     Central
                                 </span>
                             </span>
@@ -64,21 +66,21 @@ const CentralNavbar: React.FC = () => {
                     </Link>
 
                     {/* Global Search Bar */}
-                    <form onSubmit={handleSearch} className="flex-1 max-w-xl hidden md:flex items-center">
+                    <form onSubmit={handleSearch} className="hidden max-w-xl flex-1 items-center md:flex">
                         <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
-                                <HiOutlineMagnifyingGlass className="w-4 h-4" />
+                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
+                                <HiOutlineMagnifyingGlass className="h-4 w-4" />
                             </div>
                             <input
                                 type="text"
                                 value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Buscar productos, marcas o tiendas oficiales..."
-                                className="w-full pl-10 pr-24 py-2 text-sm bg-gray-100/80 dark:bg-gray-800/80 text-gray-900 dark:text-white rounded-xl border-0 focus:ring-2 focus:ring-blue-500 transition placeholder-gray-400"
+                                className="w-full rounded-xl border-0 bg-gray-100/80 py-2 pr-24 pl-10 text-sm text-gray-900 placeholder-gray-400 transition focus:ring-2 focus:ring-blue-500 dark:bg-gray-800/80 dark:text-white"
                             />
                             <button
                                 type="submit"
-                                className="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition"
+                                className="absolute top-1.5 right-1.5 bottom-1.5 rounded-lg bg-blue-600 px-3 text-xs font-semibold text-white transition hover:bg-blue-700"
                             >
                                 Buscar
                             </button>
@@ -89,18 +91,24 @@ const CentralNavbar: React.FC = () => {
                     <div className="flex items-center gap-2 sm:gap-3">
                         <Link
                             href="/marketplace"
-                            className="hidden lg:flex items-center gap-1 px-3 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition"
+                            className="hidden items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 hover:text-blue-600 lg:flex dark:text-gray-200 dark:hover:bg-gray-800 dark:hover:text-blue-400"
                         >
                             Explorar Catálogo
                         </Link>
 
                         <Link
                             href="/vender"
-                            className="hidden sm:flex items-center gap-1 px-3 py-2 text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/60 transition"
+                            className="hidden items-center gap-1 rounded-xl bg-blue-50 px-3 py-2 text-xs font-bold text-blue-600 transition hover:bg-blue-100 sm:flex dark:bg-blue-950/60 dark:text-blue-400 dark:hover:bg-blue-900/60"
                         >
-                            <HiOutlineBuildingStorefront className="w-4 h-4" />
+                            <HiOutlineBuildingStorefront className="h-4 w-4" />
                             <span>Vende con Nosotros</span>
                         </Link>
+
+                        {/*
+                         * La campana solo con sesion: sin ella no hay buzon que pedir, y una
+                         * campana que siempre sale vacia ensena a ignorarla.
+                         */}
+                        {isAuthenticated && customer && <NotificationBell audience="customer" />}
 
                         {/* Customer Auth / OwO Pass SSO */}
                         {isAuthenticated && customer ? (
@@ -108,23 +116,17 @@ const CentralNavbar: React.FC = () => {
                                 label=""
                                 dismissOnClick={true}
                                 renderTrigger={() => (
-                                    <button className="flex items-center gap-2 p-1.5 sm:p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/50 rounded-xl transition-colors font-semibold">
-                                        <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-bold shadow-sm">
-                                            {((customer.name || 'U')[0]).toUpperCase()}
+                                    <button className="flex items-center gap-2 rounded-xl bg-blue-50 p-1.5 font-semibold text-blue-700 transition-colors hover:bg-blue-100 sm:p-2 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50">
+                                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-bold text-white shadow-sm">
+                                            {(customer.name || 'U')[0].toUpperCase()}
                                         </div>
-                                        <span className="hidden lg:inline text-xs max-w-[110px] truncate">
-                                            {customer.name}
-                                        </span>
+                                        <span className="hidden max-w-[110px] truncate text-xs lg:inline">{customer.name}</span>
                                     </button>
                                 )}
                             >
                                 <DropdownHeader>
-                                    <span className="block text-sm font-bold text-gray-900 dark:text-white">
-                                        {customer.name}
-                                    </span>
-                                    <span className="block truncate text-xs text-gray-500">
-                                        {customer.email}
-                                    </span>
+                                    <span className="block text-sm font-bold text-gray-900 dark:text-white">{customer.name}</span>
+                                    <span className="block truncate text-xs text-gray-500">{customer.email}</span>
                                 </DropdownHeader>
                                 <DropdownItem href="/account/dashboard">📊 Mi Dashboard</DropdownItem>
                                 <DropdownItem href="/account/orders">📦 Mis Pedidos & Tracking</DropdownItem>
@@ -133,16 +135,14 @@ const CentralNavbar: React.FC = () => {
                                 <DropdownItem href="/account/coupons">🎟️ Mis Cupones</DropdownItem>
                                 <DropdownItem href="/account/profile">⚙️ Mi Perfil & Seguridad</DropdownItem>
                                 <DropdownDivider />
-                                <DropdownItem onClick={logout}>
-                                    🚪 Cerrar Sesión
-                                </DropdownItem>
+                                <DropdownItem onClick={logout}>🚪 Cerrar Sesión</DropdownItem>
                             </Dropdown>
                         ) : (
                             <button
                                 onClick={() => openAuthModal()}
-                                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-gray-700 dark:text-gray-200 bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-xl transition"
+                                className="inline-flex items-center gap-1.5 rounded-xl bg-gray-100 px-3.5 py-2 text-xs font-bold text-gray-700 transition hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
                             >
-                                <HiOutlineUser className="w-4 h-4 text-blue-600" />
+                                <HiOutlineUser className="h-4 w-4 text-blue-600" />
                                 <span className="hidden sm:inline">OwO Pass</span>
                             </button>
                         )}
@@ -150,14 +150,12 @@ const CentralNavbar: React.FC = () => {
                         {/* Multi-Store Cart Button */}
                         <button
                             onClick={() => setIsDrawerOpen(true)}
-                            className="relative flex items-center gap-2 px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition"
+                            className="relative flex items-center gap-2 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition hover:bg-blue-700"
                         >
-                            <HiOutlineShoppingBag className="w-4 h-4" />
+                            <HiOutlineShoppingBag className="h-4 w-4" />
                             <span className="hidden sm:inline">Carrito</span>
                             {itemCount > 0 && (
-                                <span className="px-1.5 py-0.5 text-[10px] font-black bg-white text-blue-600 rounded-full">
-                                    {itemCount}
-                                </span>
+                                <span className="rounded-full bg-white px-1.5 py-0.5 text-[10px] font-black text-blue-600">{itemCount}</span>
                             )}
                         </button>
                     </div>
@@ -169,13 +167,13 @@ const CentralNavbar: React.FC = () => {
                         <input
                             type="text"
                             value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
+                            onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Buscar en todo el marketplace..."
-                            className="w-full pl-9 pr-16 py-2 text-xs bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white rounded-xl border-0 focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
+                            className="w-full rounded-xl border-0 bg-gray-100 py-2 pr-16 pl-9 text-xs text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white"
                         />
                         <button
                             type="submit"
-                            className="absolute right-1 top-1 bottom-1 px-3 bg-blue-600 text-white rounded-lg text-[10px] font-bold"
+                            className="absolute top-1 right-1 bottom-1 rounded-lg bg-blue-600 px-3 text-[10px] font-bold text-white"
                         >
                             Buscar
                         </button>
@@ -188,57 +186,84 @@ const CentralNavbar: React.FC = () => {
 
 const CentralFooter: React.FC = () => {
     return (
-        <footer className="bg-gray-900 text-gray-400 border-t border-gray-800 pt-12 pb-8 mt-20">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <footer className="mt-20 border-t border-gray-800 bg-gray-900 pt-12 pb-8 text-gray-400">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="mb-8 grid grid-cols-1 gap-8 md:grid-cols-4">
                     {/* Brand Info */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-black text-sm flex items-center justify-center">
+                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 text-sm font-black text-white">
                                 OwO
                             </div>
-                            <span className="font-extrabold text-base text-white">OwOMarket Central</span>
+                            <span className="text-base font-extrabold text-white">OwOMarket Central</span>
                         </div>
                         <p className="text-xs leading-relaxed text-gray-400">
-                            La plataforma multi-tienda definitiva donde puedes comprar en diferentes tiendas asociadas y pagar en una sola transacción unificada.
+                            La plataforma multi-tienda definitiva donde puedes comprar en diferentes tiendas asociadas y pagar en una sola transacción
+                            unificada.
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div>
-                        <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Marketplace</h4>
+                        <h4 className="mb-3 text-xs font-bold tracking-wider text-white uppercase">Marketplace</h4>
                         <ul className="space-y-2 text-xs">
-                            <li><Link href="/" className="hover:text-white transition">Inicio</Link></li>
-                            <li><Link href="/marketplace" className="hover:text-white transition">Explorar Catálogo</Link></li>
-                            <li><Link href="/vender" className="text-blue-400 hover:text-blue-300 font-bold transition">Vende con Nosotros (Crear Tienda)</Link></li>
-                            <li><Link href="/cart" className="hover:text-white transition">Carrito Multi-Tienda</Link></li>
-                            <li><Link href="/checkout" className="hover:text-white transition">Checkout Unificado</Link></li>
+                            <li>
+                                <Link href="/" className="transition hover:text-white">
+                                    Inicio
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/marketplace" className="transition hover:text-white">
+                                    Explorar Catálogo
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/vender" className="font-bold text-blue-400 transition hover:text-blue-300">
+                                    Vende con Nosotros (Crear Tienda)
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/cart" className="transition hover:text-white">
+                                    Carrito Multi-Tienda
+                                </Link>
+                            </li>
+                            <li>
+                                <Link href="/checkout" className="transition hover:text-white">
+                                    Checkout Unificado
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
                     {/* Security & Guarantees */}
                     <div>
-                        <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Garantía y Seguridad</h4>
+                        <h4 className="mb-3 text-xs font-bold tracking-wider text-white uppercase">Garantía y Seguridad</h4>
                         <ul className="space-y-2 text-xs">
-                            <li className="flex items-center gap-2"><HiOutlineShieldCheck className="w-4 h-4 text-green-400" /> Compra 100% Protegida</li>
-                            <li className="flex items-center gap-2"><HiOutlineSparkles className="w-4 h-4 text-purple-400" /> OwO Pass Universal SSO</li>
-                            <li className="flex items-center gap-2"><HiOutlineBuildingStorefront className="w-4 h-4 text-blue-400" /> Tiendas Verificadas</li>
+                            <li className="flex items-center gap-2">
+                                <HiOutlineShieldCheck className="h-4 w-4 text-green-400" /> Compra 100% Protegida
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <HiOutlineSparkles className="h-4 w-4 text-purple-400" /> OwO Pass Universal SSO
+                            </li>
+                            <li className="flex items-center gap-2">
+                                <HiOutlineBuildingStorefront className="h-4 w-4 text-blue-400" /> Tiendas Verificadas
+                            </li>
                         </ul>
                     </div>
 
                     {/* Payment Gateways */}
                     <div>
-                        <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">Métodos de Pago</h4>
+                        <h4 className="mb-3 text-xs font-bold tracking-wider text-white uppercase">Métodos de Pago</h4>
                         <div className="space-y-2.5">
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-800/60 border border-gray-700/60">
-                                <HiOutlineDevicePhoneMobile className="w-5 h-5 text-blue-400" />
+                            <div className="flex items-center gap-2 rounded-lg border border-gray-700/60 bg-gray-800/60 p-2">
+                                <HiOutlineDevicePhoneMobile className="h-5 w-5 text-blue-400" />
                                 <div>
                                     <p className="text-xs font-bold text-white">Pago Móvil</p>
                                     <p className="text-[10px] text-gray-400">Bancos Nacionales de Venezuela (Bs.)</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-gray-800/60 border border-gray-700/60">
-                                <HiOutlineCurrencyDollar className="w-5 h-5 text-yellow-400" />
+                            <div className="flex items-center gap-2 rounded-lg border border-gray-700/60 bg-gray-800/60 p-2">
+                                <HiOutlineCurrencyDollar className="h-5 w-5 text-yellow-400" />
                                 <div>
                                     <p className="text-xs font-bold text-white">Binance Pay</p>
                                     <p className="text-[10px] text-gray-400">Pagos instantáneos con USDT</p>
@@ -248,7 +273,7 @@ const CentralFooter: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="border-t border-gray-800 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500">
+                <div className="flex flex-col items-center justify-between border-t border-gray-800 pt-6 text-xs text-gray-500 sm:flex-row">
                     <p>© {new Date().getFullYear()} OwOMarket. Todos los derechos reservados.</p>
                     <p className="mt-2 sm:mt-0">Diseñado con tecnología multi-inquilino de alto rendimiento.</p>
                 </div>
@@ -259,11 +284,9 @@ const CentralFooter: React.FC = () => {
 
 const CentralLayoutContent: React.FC<CentralLayoutProps> = ({ children }) => {
     return (
-        <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 antialiased selection:bg-blue-500 selection:text-white">
+        <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900 antialiased selection:bg-blue-500 selection:text-white dark:bg-gray-950 dark:text-gray-100">
             <CentralNavbar />
-            <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-                {children}
-            </main>
+            <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">{children}</main>
             <CentralFooter />
             <CentralCartDrawer />
             <CustomerAuthModal />
@@ -281,11 +304,11 @@ const CentralLayoutContent: React.FC<CentralLayoutProps> = ({ children }) => {
 const CentralLayout: FC<CentralLayoutProps> = ({ children }) => {
     return (
         <ThemeProvider theme={storefrontTheme}>
-        <CustomerAuthProvider>
-            <CentralCartProvider>
-                <CentralLayoutContent>{children}</CentralLayoutContent>
-            </CentralCartProvider>
-        </CustomerAuthProvider>
+            <CustomerAuthProvider>
+                <CentralCartProvider>
+                    <CentralLayoutContent>{children}</CentralLayoutContent>
+                </CentralCartProvider>
+            </CustomerAuthProvider>
         </ThemeProvider>
     );
 };

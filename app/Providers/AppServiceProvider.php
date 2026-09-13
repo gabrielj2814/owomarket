@@ -18,6 +18,7 @@ use Src\CentralCustomer\Application\UseCases\CreateCustomerReturnRequestUseCase;
 use Src\CentralCustomer\Infrastructure\Eloquent\Repositories\CentralClaimableOrderLocator;
 use Src\Marketplace\Infrastructure\Eloquent\Repositories\StorefrontClaimableOrderLocator;
 use Src\Marketplace\Infrastructure\Http\Controller\CreateStorefrontReturnPOSTController;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Stancl\Tenancy\Events\TenancyBootstrapped;
 use Stancl\Tenancy\Events\TenancyEnded;
 
@@ -61,7 +62,8 @@ class AppServiceProvider extends ServiceProvider
             ->needs(CreateCustomerReturnRequestUseCase::class)
             ->give(fn ($app) => new CreateCustomerReturnRequestUseCase(
                 $app->make(StorefrontClaimableOrderLocator::class),
-                $app->make(ClaimWindow::class)
+                $app->make(ClaimWindow::class),
+                $app->make(NotificationDispatcher::class)
             ));
     }
 

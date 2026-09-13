@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
 use Src\Monetization\Infrastructure\Eloquent\Models\PlatformCommission;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Throwable;
 
 /**
@@ -29,6 +30,10 @@ use Throwable;
  */
 class DeclareOrderDeliveredUseCase
 {
+    public function __construct(
+        private readonly NotificationDispatcher $avisos
+    ) {}
+
     /**
      * @param  string  $orderId  ID del pedido DE LA TIENDA, igual que en
      *                           `PlatformCommission.order_id`.
@@ -59,6 +64,10 @@ class DeclareOrderDeliveredUseCase
                 if ($existente->declared_delivered_at === null) {
                     $existente->declared_delivered_at = now();
                     $existente->save();
+
+                    // Solo la PRIMERA vez. Declarar dos veces no mueve la fecha, asi que
+                    // tampoco puede volver a avisar: seria una forma de perseguir al comprador.
+                    $this->avisos->deliveryDeclared($orderId);
                 }
 
                 return true;
@@ -72,6 +81,17 @@ class DeclareOrderDeliveredUseCase
                 'customer_id' => $this->compradorDe($commission->central_order_id, $orderId),
                 'declared_delivered_at' => now(),
             ]);
+
+            /*
+             * **Este aviso es lo que hace que el subsistema 3 funcione de verdad.** Confirmar
+             * libera el dinero del comerciante; sin avisar, el comprador no se entera de que le
+             * toca, la venta se libera por vencimiento del plazo y de paso gasta su ventana para
+             * reclamar sin saber que estaba corriendo.
+             *
+             * El despachador no propaga excepciones, asi que un fallo de avisos no puede
+             * deshacer la declaracion de entrega.
+             */
+            $this->avisos->deliveryDeclared($orderId);
 
             return true;
         } catch (Throwable $e) {

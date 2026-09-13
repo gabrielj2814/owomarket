@@ -13,6 +13,7 @@ use Src\CentralCustomer\Application\Service\ClaimWindow;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 
 /**
  * Abrir una reclamacion (subsistema 5).
@@ -38,7 +39,7 @@ use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
  * 1. **Entregado.** Un `OrderDeliveryConfirmation` solo nace en `DeclareOrderDeliveredUseCase`,
  *    asi que su mera existencia ya significa que la tienda declaro la entrega. No hizo falta
  *    inventar ningun estado nuevo.
- * 2. **Dentro de plazo.** `ClaimWindow`, 60 dias configurables desde la entrega. Reclamar mas
+ * 2. **Dentro de plazo.** `ClaimWindow`, 14 dias configurables desde la entrega. Reclamar mas
  *    tarde es reclamar contra dinero que la plataforma ya solto entero.
  *
  * Es un cambio de comportamiento tambien para el portal central. Es deliberado.
@@ -47,7 +48,8 @@ final class CreateCustomerReturnRequestUseCase
 {
     public function __construct(
         private readonly ClaimableOrderLocator $localizador,
-        private readonly ClaimWindow $ventana
+        private readonly ClaimWindow $ventana,
+        private readonly NotificationDispatcher $avisos
     ) {}
 
     /**
@@ -84,7 +86,7 @@ final class CreateCustomerReturnRequestUseCase
 
         $this->exigirQueNoHayaOtraViva($pedido);
 
-        return CustomerReturnRequest::create([
+        $reclamacion = CustomerReturnRequest::create([
             'id' => (string) Str::uuid(),
             'order_id' => $pedido->orderId,
             /*
@@ -116,6 +118,19 @@ final class CreateCustomerReturnRequestUseCase
             'photos' => $data['photos'] ?? [],
             'status' => 'requested',
         ]);
+
+        /*
+         * **El aviso mas urgente del sistema.** `AutoResolveStaleReturnsUseCase` resuelve esta
+         * reclamacion a favor del comprador cuando venza el plazo, asi que un comerciante que no
+         * se entera pierde la venta sin haber sabido nunca que tenia que contestar. El
+         * subsistema 5 lleva construido desde el 11/09 esperando esto.
+         *
+         * Va DESPUES de guardar y fuera de cualquier transaccion, y el despachador no propaga:
+         * un fallo de avisos no puede impedir que se registre una reclamacion.
+         */
+        $this->avisos->claimOpened($reclamacion->id);
+
+        return $reclamacion;
     }
 
     /**

@@ -9,13 +9,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
+use Src\Notification\Infrastructure\Eloquent\Concerns\NotifiableCentral;
 use Src\Order\Infrastructure\Eloquent\Models\CentralOrder;
 use Src\SupportTicket\Infrastructure\Eloquent\Models\SupportTicket;
 
 class CentralCustomer extends Authenticatable
 {
-    use HasFactory, HasUuids, Notifiable, SoftDeletes;
+    use HasFactory, HasUuids, NotifiableCentral, SoftDeletes;
 
     public function getConnectionName()
     {

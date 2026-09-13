@@ -13,6 +13,7 @@ return [
     App\Providers\ExchangeRateServiceProvider::class,
     App\Providers\HorizonServiceProvider::class,
     App\Providers\ModulesServiceProvider::class,
+    App\Providers\NotificationServiceProvider::class,
     App\Providers\OrderServiceProvider::class,
     App\Providers\ProductServiceProvider::class,
     App\Providers\ReviewServiceProvider::class,

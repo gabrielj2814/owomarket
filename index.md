@@ -1,7 +1,7 @@
 # Qué falta en OwoMarket
 
 > **Última actualización:** 12/09/2026 · Rama `moduleProduct`
-> **Estado de la suite:** 891 tests de backend, 103 de frontend, `tsc --noEmit` limpio.
+> **Estado de la suite:** 904 tests de backend, 111 de frontend, `tsc --noEmit` limpio.
 > **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
@@ -24,11 +24,17 @@ silencios no son comodidad, son dinero que se mueve solo:**
 - La tienda declara la entrega y **el comprador no se entera**. Confirmar es lo que libera el
   dinero, así que la venta se libera por plazo y él pierde su ventana para reclamar sin saberlo.
 
-El plan está **reescrito el 12/09/2026 con el código delante**, en cuatro fases y con las
-trampas anotadas antes de caer en ellas — entre ellas las cuatro clases `User` sobre la misma
-tabla, que sin normalizar harían desaparecer avisos sin dar ningún error.
+**La fase 1 está hecha desde el 13/09/2026**, y es justo la que arregla esos dos silencios: la
+campana del backoffice —que era decoración: estaba dentro del desplegable del avatar— funciona,
+y los dos avisos llegan. Quedan las fases 2 (el resto del ciclo de garantías), 3 (el correo) y
+4 (lo periódico, incluido el techo mensual).
 
 → [`planes/futuros/PLAN_NOTIFICACIONES.md`](planes/futuros/PLAN_NOTIFICACIONES.md)
+
+**Antes de la fase 3 hay que decidir el proveedor de correo**, y de paso está sin resolver que
+la recuperación de contraseña del comprador genera un PIN y no lo envía a ningún sitio: en
+producción sería un callejón sin salida. Los envíos que existen, con sus pasos para probarlos a
+mano, están en [`planes/anotaciones/FLUJOS_DE_CORREO.md`](planes/anotaciones/FLUJOS_DE_CORREO.md).
 
 ---
 

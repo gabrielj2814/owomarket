@@ -12,6 +12,7 @@ use Src\CentralCustomer\Application\UseCases\CreateCustomerReturnRequestUseCase;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer;
 use Src\CentralCustomer\Infrastructure\Eloquent\Models\CustomerReturnRequest;
 use Src\Monetization\Infrastructure\Eloquent\Models\OrderDeliveryConfirmation;
+use Src\Notification\Application\Contracts\NotificationDispatcher;
 use Stancl\Tenancy\Bootstrappers\DatabaseTenancyBootstrapper;
 use Stancl\Tenancy\Events\TenantCreated;
 use Stancl\Tenancy\Events\TenantDeleted;
@@ -38,7 +39,26 @@ final class LocalizadorDePrueba implements ClaimableOrderLocator
     }
 }
 
-/** @return array{0: CreateCustomerReturnRequestUseCase, 1: ClaimableOrderData} */
+/**
+ * Un despachador que apunta a quien se aviso, en vez de avisar.
+ *
+ * Que esto quepa en ocho lineas es justo lo que el puerto compraba: el caso de uso puede
+ * probarse sin buzon, sin usuarios y sin tocar la tabla de notificaciones.
+ */
+final class DespachadorEspia implements NotificationDispatcher
+{
+    /** @var array<int, string> */
+    public array $reclamacionesAvisadas = [];
+
+    public function claimOpened(string $claimId): void
+    {
+        $this->reclamacionesAvisadas[] = $claimId;
+    }
+
+    public function deliveryDeclared(string $tenantOrderId): void {}
+}
+
+/** @return array{0: CreateCustomerReturnRequestUseCase, 1: ClaimableOrderData, 2: DespachadorEspia} */
 function casoDeUsoCon(string $tenantOrderId, string $origen = 'central'): array
 {
     $pedido = new ClaimableOrderData(
@@ -53,9 +73,12 @@ function casoDeUsoCon(string $tenantOrderId, string $origen = 'central'): array
         amount: 45.00,
     );
 
+    $espia = new DespachadorEspia;
+
     return [
-        new CreateCustomerReturnRequestUseCase(new LocalizadorDePrueba($pedido), new ClaimWindow),
+        new CreateCustomerReturnRequestUseCase(new LocalizadorDePrueba($pedido), new ClaimWindow, $espia),
         $pedido,
+        $espia,
     ];
 }
 
@@ -203,11 +226,41 @@ test('no se puede abrir una segunda reclamacion sobre el mismo articulo', functi
 test('un pedido que el localizador no encuentra da 404 y no filtra por que', function () {
     $comprador = compradorConCedula();
 
-    $casoDeUso = new CreateCustomerReturnRequestUseCase(new LocalizadorDePrueba(null), new ClaimWindow);
+    $casoDeUso = new CreateCustomerReturnRequestUseCase(new LocalizadorDePrueba(null), new ClaimWindow, new DespachadorEspia);
 
     // Mismo mensaje para «no existe», «no es tuyo» y «ese producto no esta en el pedido»:
     // distinguirlos le contaria a quien prueba identificadores ajenos cual de sus intentos
     // acerto.
     expect(fn () => $casoDeUso->execute($comprador->id, datosDeReclamacion((string) Str::uuid())))
         ->toThrow(Exception::class, 'no fue encontrado o no pertenece a tu cuenta');
+});
+
+test('abrir una reclamacion avisa a la tienda', function () {
+    /*
+     * Es el aviso mas urgente del sistema: sin el, `AutoResolveStaleReturnsUseCase` resuelve a
+     * favor del comprador al vencer el plazo y el comerciante pierde la venta sin haber sabido
+     * nunca que tenia que contestar.
+     */
+    $comprador = compradorConCedula();
+    $tenantOrderId = (string) Str::uuid();
+    entregaDeclaradaHace($tenantOrderId, 3);
+
+    [$casoDeUso, $pedido, $espia] = casoDeUsoCon($tenantOrderId);
+    $resultado = $casoDeUso->execute($comprador->id, datosDeReclamacion($pedido->orderId));
+
+    expect($espia->reclamacionesAvisadas)->toBe([$resultado->id]);
+});
+
+test('una reclamacion rechazada no avisa a nadie', function () {
+    // El aviso va DESPUES de guardar. Si saliera antes de las comprobaciones, una tienda
+    // recibiria avisos de reclamaciones que nunca existieron.
+    $comprador = compradorConCedula(conCedula: false);
+    $tenantOrderId = (string) Str::uuid();
+    entregaDeclaradaHace($tenantOrderId, 3);
+
+    [$casoDeUso, $pedido, $espia] = casoDeUsoCon($tenantOrderId);
+
+    expect(fn () => $casoDeUso->execute($comprador->id, datosDeReclamacion($pedido->orderId)))
+        ->toThrow(Exception::class);
+    expect($espia->reclamacionesAvisadas)->toBe([]);
 });

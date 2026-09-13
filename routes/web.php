@@ -26,6 +26,19 @@ foreach (config('tenancy.central_domains') as $domain) {
         Route::prefix('admin')->group(callback: base_path('src/Payment/Infrastructure/Http/Routes/web.php'));
         Route::prefix('tenant')->group(callback: base_path('src/Tenant/Infrastructure/Http/Routes/web.php'));
 
+        /*
+        | El buzon del PERSONAL: administradores y comerciantes a la vez.
+        |
+        | Va aqui y no dentro de `admin/` o de `tenant/` porque los dos son filas de la misma
+        | tabla `users` y comparten el guard `auth`. Montarlo dos veces daria dos URLs para el
+        | mismo buzon, y el dia que una cambie la otra se queda atras.
+        |
+        | El comprador tiene el suyo bajo su propio guard, en
+        | `src/CentralCustomer/Infrastructure/Http/Routes/apiCentral.php`.
+        */
+        Route::middleware('auth')->prefix('api')
+            ->group(callback: base_path('src/Notification/Infrastructure/Http/Routes/shared.php'));
+
         Route::get('/login', function (Request $request) {
             return redirect('/auth/login');
         })->name('login');

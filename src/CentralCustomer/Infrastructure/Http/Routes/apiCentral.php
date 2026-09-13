@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
 use Src\CentralCustomer\Infrastructure\Http\Controller\AddCustomerAddressPOSTController;
-use Src\CentralCustomer\Infrastructure\Http\Controller\CreateCustomerReturnPOSTController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\ConfirmOrderDeliveryPOSTController;
-use Src\CentralCustomer\Infrastructure\Http\Controller\GetCustomerDeliveryStatusGETController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\CreateCustomerReturnPOSTController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\CustomerLogoutCentralPOSTController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\DeleteCustomerAddressDELETEController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\DownloadCustomerInvoicePdfGETController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\GenerateSsoTokenPOSTController;
+use Src\CentralCustomer\Infrastructure\Http\Controller\GetCustomerDeliveryStatusGETController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\GetCustomerOrderDetailGETController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\GetCustomerOrderTrackingGETController;
 use Src\CentralCustomer\Infrastructure\Http\Controller\GetCustomerProfileGETController;
@@ -98,6 +98,10 @@ Route::middleware('web')->group(function () {
         // Facturación Electrónica y Descarga PDF
         Route::get('/invoices', ListCustomerInvoicesGETController::class);
         Route::get('/invoices/{id}/pdf', DownloadCustomerInvoicePdfGETController::class);
+
+        // El buzon del comprador. Mismas rutas que las del personal, montadas bajo SU guard:
+        // ver `src/Notification/Infrastructure/Http/Routes/shared.php`.
+        Route::group([], base_path('src/Notification/Infrastructure/Http/Routes/shared.php'));
 
         // Devoluciones y Reclamaciones (RMA)
         Route::post('/returns', CreateCustomerReturnPOSTController::class);

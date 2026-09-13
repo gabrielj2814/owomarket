@@ -1,3 +1,4 @@
+import NotificationBell from "@/components/ui/NotificationBell";
 import { useDashboard } from "@/contexts/DashboardContext";
 import {
     Avatar,
@@ -45,7 +46,6 @@ import {
     HiViewGrid,
 } from "react-icons/hi";
 import {
-    LuBell,
     LuFingerprint,
     LuFolderTree,
     LuMenu,
@@ -82,15 +82,19 @@ const NavBarMovilDashboardComponent = () => {
                     <img src="/favicon.svg" className="mr-3 h-6 sm:h-9" alt="Flowbite React Logo" />
                     <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">OwOMarket</span>
                 </NavbarBrand>
-                <div className="flex md:order-2">
+                <div className="flex items-center md:order-2">
+                    {/*
+                      * La campana estaba DENTRO de la etiqueta de este desplegable, asi que
+                      * pulsarla abria el menu de perfil: prometia un buzon que no existia. Ahora
+                      * es su propio control, y el buzon existe.
+                      */}
+                    <NotificationBell audience="staff" />
+
                     <Dropdown
                         arrowIcon={false}
                         inline
                         label={
-                            <>
-                                <LuBell className="w-9 h-9 mr-2 lg:mr-5 block cursor-pointer rounded-lg p-2 text-base font-normal text-gray-900 hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700" />
-                                <Avatar className="cursor-pointer" alt="User Avatar" img={state.authUser.user_avatar} rounded />
-                            </>
+                            <Avatar className="cursor-pointer" alt="User Avatar" img={state.authUser.user_avatar} rounded />
                         }
                     >
                         <DropdownHeader>

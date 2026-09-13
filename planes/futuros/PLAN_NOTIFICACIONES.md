@@ -1,7 +1,7 @@
 # 📋 Plan: Módulo de notificaciones
 
-> **Estado:** plan de implementación, listo para empezar · Redactado el 23/08/2026 ·
-> **Reescrito el 12/09/2026** tras leer el código con los subsistemas 1–5 ya construidos.
+> **Estado:** 🟨 **Fase 1 HECHA el 13/09/2026** · Fases 2, 3 y 4 pendientes ·
+> Redactado el 23/08/2026 · Reescrito el 12/09/2026 con el código delante.
 > **Es lo que más rinde ahora, y ya no compite con nada:** los cinco subsistemas de garantías
 > están terminados y todos dependen de que alguien se entere.
 >
@@ -104,14 +104,20 @@ esto.
 
 **Decisión:** el módulo normaliza. Un solo destinatario canónico por audiencia
 —`Src\User\...\User` para el personal, `CentralCustomer` para el comprador— y un **mapa de
-morfismos** (`Relation::enforceMorphMap`) con alias cortos y estables:
+morfismos** con alias cortos y estables:
 
 ```php
-Relation::enforceMorphMap([
+Relation::morphMap([
     'staff'    => Src\User\Infrastructure\Eloquent\Models\User::class,
     'customer' => Src\CentralCustomer\Infrastructure\Eloquent\Models\CentralCustomer::class,
 ]);
 ```
+
+> **`morphMap`, no `enforceMorphMap`.** Este plan proponía el segundo y habría tumbado el
+> arranque: además de registrar alias, exige que *toda* relación polimórfica de la aplicación
+> esté en el mapa y lanza para las que no — `model_has_roles` de Spatie Permissions y el
+> `addressable` de las direcciones, ninguna relacionada con esto. Corregido al construir la
+> fase 1.
 
 Guardar `'staff'` en vez del nombre completo de la clase tiene un segundo beneficio: **mover o
 renombrar la clase deja de romper las filas ya guardadas**.
@@ -208,9 +214,50 @@ le cuesta dinero a quien lo eligió.
 
 ## 🚧 Las fases
 
-### Fase 1 — El núcleo y los dos avisos que hacen funcionar lo ya construido
+### Fase 1 — El núcleo y los dos avisos que hacen funcionar lo ya construido ✅ (13/09/2026)
 
-Lo mínimo que existe y ya sirve.
+> **Verificado en la aplicación real**, no solo en tests: se abrió una reclamación contra
+> `tecs`, su dueño vio el «1» rojo en la campana, la abrió, leyó «Te quedan 5 días para
+> responder» y al pulsar llegó a la pantalla de reclamaciones — que dice lo mismo, porque el
+> plazo sale del mismo `ClaimResponseWindow`.
+
+**Lo que se construyó:** la tabla `notifications` en la base central, el mapa de morfismos, el
+puerto `NotificationDispatcher` con su implementación de canal `database`, `TenantRecipients`,
+los dos avisos de dinero, el buzón con sus dos rutas y la campana.
+
+#### Una trampa que habría tumbado la aplicación entera
+
+El plan proponía `Relation::enforceMorphMap()`. **Habría reventado el arranque**: ese método no
+solo registra alias, también exige que *toda* relación polimórfica de la aplicación esté en el
+mapa y lanza para las que no. Aquí hay dos que no tienen nada que ver con notificaciones:
+`model_has_roles` de Spatie Permissions y el `addressable` de las direcciones.
+
+Lo correcto es `Relation::morphMap()`, que registra sin exigir.
+
+#### Dos cosas que el plan no había previsto
+
+**`config/auth.php` ya apuntaba a las dos clases canónicas.** De las cuatro clases `User`, los
+guards resuelven exactamente la de `Src\User`, y el comprador `CentralCustomer`. Así que
+`$request->user()` devuelve siempre un destinatario del mapa y **un solo controlador sirve a las
+dos audiencias**: lo único que cambia es el guard que lo protege.
+
+**`Notifiable` escribe en la conexión por defecto**, que en un sistema multi-inquilino es la del
+inquilino que esté inicializado. Un aviso escrito mientras alguien navega una tienda habría
+acabado en la base de esa tienda, y el buzón —que lee la central— lo habría enseñado vacío. Sin
+error. Lo corta el trait `NotifiableCentral`, que sustituye la relación `notifications()`.
+
+#### Dos decisiones de la campana, sobre el ruido
+
+**El contador solo aparece si hay algo.** Un «0» permanente entrena a no mirar, y esta campana
+lleva avisos con un reloj detrás.
+
+**Abrirla no marca nada como leído.** Es tentador —deja el número limpio— pero borraría el
+rastro de lo que no se ha atendido: el comerciante abriría por curiosidad y perdería la única
+señal de que tiene una reclamación esperando. Se marca al pulsar el aviso.
+
+---
+
+### Lo que la fase 1 incluía, y así quedó
 
 - Migración `notifications` en la base central (la de Laravel, más un índice por
   `notifiable_type, notifiable_id, read_at`, que es la consulta del buzón).
