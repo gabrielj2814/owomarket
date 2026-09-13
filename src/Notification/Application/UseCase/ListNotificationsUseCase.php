@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Src\Notification\Application\UseCase;
 
 use Illuminate\Notifications\Notifiable;
+use Src\Notification\Application\Service\EmailDelivery;
 use Src\Notification\Infrastructure\Eloquent\Models\Notification;
 
 /**
@@ -21,9 +22,13 @@ final class ListNotificationsUseCase
     /** Un buzón no es un archivo histórico: se enseñan las últimas y ya. */
     private const LIMITE = 30;
 
+    public function __construct(
+        private readonly EmailDelivery $correo
+    ) {}
+
     /**
      * @param  Notifiable  $destinatario
-     * @return array{items: array<int, array<string, mixed>>, unread: int}
+     * @return array{items: array<int, array<string, mixed>>, unread: int, email_enabled: bool}
      */
     public function execute(object $destinatario): array
     {
@@ -47,6 +52,14 @@ final class ListNotificationsUseCase
              * de significar nada.
              */
             'unread' => $destinatario->unreadNotifications()->count(),
+            /*
+             * Viaja con el buzón y no en una petición aparte porque la campana lo necesita para
+             * pintar su interruptor: dos peticiones para abrir un desplegable es una de más.
+             *
+             * Es solo el interruptor de lo OPCIONAL. Los avisos críticos salen por correo
+             * igualmente, y la campana lo dice.
+             */
+            'email_enabled' => $this->correo->emailEnabled($destinatario),
         ];
     }
 }

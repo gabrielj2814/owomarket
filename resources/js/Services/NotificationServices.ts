@@ -37,6 +37,12 @@ export interface NotificationInbox {
     items: NotificationItem[];
     /** Se calcula en el servidor: el listado viene limitado, así que contar aquí daría un tope. */
     unread: number;
+    /**
+     * Si recibe también por correo los avisos **opcionales**. Los urgentes —reclamación abierta,
+     * entrega declarada, identidad resuelta— salen por correo de todas formas: tienen un reloj o
+     * dinero detrás, y la pantalla lo dice para que nadie crea que apagó algo que no apagó.
+     */
+    email_enabled: boolean;
 }
 
 interface Respuesta<T> {
@@ -56,6 +62,15 @@ const cliente = (audiencia: NotificationAudience) =>
 const NotificationServices = {
     buzon: async (audiencia: NotificationAudience) => {
         const res = await cliente(audiencia).get<Respuesta<NotificationInbox>>('/notifications');
+
+        return res.data;
+    },
+
+    /** Activa o desactiva los correos opcionales. Los urgentes no se apagan. */
+    cambiarCorreo: async (audiencia: NotificationAudience, activado: boolean) => {
+        const res = await cliente(audiencia).post<Respuesta<{ email_enabled: boolean }>>('/notifications/email-preference', {
+            email_enabled: activado,
+        });
 
         return res.data;
     },

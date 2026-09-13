@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Src\Notification\Infrastructure\Http\Controller\ListNotificationsGETController;
 use Src\Notification\Infrastructure\Http\Controller\MarkNotificationsReadPOSTController;
+use Src\Notification\Infrastructure\Http\Controller\UpdateNotificationEmailPreferencePOSTController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,3 +21,6 @@ use Src\Notification\Infrastructure\Http\Controller\MarkNotificationsReadPOSTCon
 */
 Route::get('/notifications', ListNotificationsGETController::class);
 Route::post('/notifications/read', MarkNotificationsReadPOSTController::class);
+
+// Fase 3: el interruptor de los correos OPCIONALES. Los criticos salen igual.
+Route::post('/notifications/email-preference', UpdateNotificationEmailPreferencePOSTController::class);

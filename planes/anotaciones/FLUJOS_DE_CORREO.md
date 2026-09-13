@@ -116,7 +116,11 @@ produciría 15 correos y el aviso dejaría de leerse justo cuando importa.
 
 ## ⚠️ Un flujo que debería mandar correo y no lo manda
 
-### Recuperación de contraseña del comprador
+### ~~Recuperación de contraseña del comprador~~ ✅ ARREGLADO el 13/09/2026
+
+> Ya se envía, en la fase 3. Lo de abajo queda como registro de lo que pasaba.
+
+
 
 `SendCentralCustomerPasswordResetPinUseCase` genera un PIN de 6 dígitos, lo guarda con 15
 minutos de caducidad… **y no lo envía a ningún sitio.**
@@ -134,6 +138,10 @@ salida en cuanto se despliegue. Es trabajo de la fase 3 de
 El personal del backoffice no tiene flujo de recuperación en absoluto.
 
 ---
+
+> **Desde la fase 3 (13/09/2026) hay ocho envíos más**, los del módulo de notificaciones. El
+> guion completo para probarlos todos a mano —incluidos estos tres— está en
+> [`PRUEBA_MANUAL_CORREO.md`](PRUEBA_MANUAL_CORREO.md).
 
 ## La fase 1 de notificaciones no añadió ningún correo ✅ (13/09/2026)
 

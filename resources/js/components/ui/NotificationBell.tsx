@@ -66,6 +66,8 @@ export default function NotificationBell({ audience }: NotificationBellProps) {
     const [unread, setUnread] = useState(0);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(false);
+    /** Solo gobierna los correos OPCIONALES: los urgentes salen igual, y el pie lo dice. */
+    const [correo, setCorreo] = useState(false);
 
     const cargar = useCallback(async () => {
         setCargando(true);
@@ -74,6 +76,7 @@ export default function NotificationBell({ audience }: NotificationBellProps) {
             const res = await NotificationServices.buzon(audience);
             setItems(res.data?.items ?? []);
             setUnread(res.data?.unread ?? 0);
+            setCorreo(res.data?.email_enabled ?? false);
         } catch {
             /*
              * Un fallo de red deja el buzón vacío y sin contador, que se lee igual que «no
@@ -102,6 +105,17 @@ export default function NotificationBell({ audience }: NotificationBellProps) {
         }
 
         if (item.url) window.location.href = item.url;
+    };
+
+    const cambiarCorreo = async (activado: boolean) => {
+        // Optimista: el interruptor responde al instante y se revierte si el servidor dice que
+        // no. Un interruptor que tarda medio segundo en moverse se pulsa dos veces.
+        setCorreo(activado);
+        try {
+            await NotificationServices.cambiarCorreo(audience, activado);
+        } catch {
+            setCorreo(!activado);
+        }
     };
 
     const marcarTodo = async () => {
@@ -202,6 +216,30 @@ export default function NotificationBell({ audience }: NotificationBellProps) {
                         })}
                     </ul>
                 )}
+
+                {/*
+                  * El interruptor va al final y no arriba: es un ajuste, no lo que se viene a
+                  * hacer. Y dice EXACTAMENTE qué apaga, porque creer que apagaste el aviso de
+                  * una reclamación y perderla por silencio sería culpa de esta frase.
+                  */}
+                <div className="border-t border-gray-100 px-4 py-2.5 dark:border-gray-700">
+                    <label className="flex cursor-pointer items-start gap-2">
+                        <input
+                            type="checkbox"
+                            data-testid="campana-correo"
+                            checked={correo}
+                            onChange={(e) => void cambiarCorreo(e.target.checked)}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span className="text-[11px] text-gray-600 dark:text-gray-400">
+                            Enviarme también por correo.{' '}
+                            <span className="text-gray-400">
+                                Los avisos urgentes —reclamaciones, entregas e identidad— te llegan por correo
+                                siempre.
+                            </span>
+                        </span>
+                    </label>
+                </div>
             </div>
         </Dropdown>
     );

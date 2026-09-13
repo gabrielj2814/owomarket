@@ -1,6 +1,6 @@
 # 📋 Plan: Módulo de notificaciones
 
-> **Estado:** 🟨 **Fases 1 y 2 HECHAS el 13/09/2026** · Fases 3 y 4 pendientes ·
+> **Estado:** 🟨 **Fases 1, 2 y 3 HECHAS el 13/09/2026** · Fase 4 pendiente ·
 > Redactado el 23/08/2026 · Reescrito el 12/09/2026 con el código delante.
 > **Es lo que más rinde ahora, y ya no compite con nada:** los cinco subsistemas de garantías
 > están terminados y todos dependen de que alguien se entere.
@@ -331,14 +331,67 @@ que el puerto hable de **eventos** y no de destinatarios.
 no encuentra a nadie y los avisos a la plataforma se pierden —con su aviso en el log, pero sin
 error—. En producción no pasa: `CreateSuperAdminCommand` lo asigna directamente.
 
-### Fase 3 — El correo
+### Fase 3 — El correo ✅ (13/09/2026)
 
-- Canal `mail` **en cola**, con las preferencias mandando.
-- Plantillas sobre el layout de correo que ya usan las tres que existen.
-- **Migrar los tres envíos sueltos** al módulo, para que dejen de ser tres caminos paralelos.
-- El freno (`NotificationThrottle`) aplicado a todo lo repetible.
+Mailtrap ya estaba configurado en `.env`. **La prueba real está pendiente**: con el VPN activo
+los cuatro puertos SMTP salen bloqueados. El guion para hacerla a mano está en
+[`PRUEBA_MANUAL_CORREO.md`](../anotaciones/PRUEBA_MANUAL_CORREO.md) — once flujos, con qué
+comprobar dentro de cada correo y una plantilla para reportar.
 
-**Antes de esta fase hay que decidir el proveedor de correo.** Hoy `MAIL_MAILER=log`: nada sale.
+#### El reparto: lo crítico no se apaga, el resto llega apagado
+
+Los dos errores posibles duelen en direcciones opuestas. Mandar de más llena de correo a quien no
+lo pidió —y entonces deja de leer también los que importan—. Mandar de menos deja a un
+comerciante sin enterarse de una reclamación con el reloj corriendo.
+
+| | Sale por correo |
+| :--- | :--- |
+| `claim.opened`, `delivery.declared`, `kyc.reviewed` | **Siempre.** Tienen un reloj o dinero detrás |
+| Los demás | Solo si la persona lo activó |
+
+Son exactamente los tres que este plan ya dejaba sin poder apagar. Que se puedan apagar sería
+como dejar apagar la alarma de incendios — y el interruptor lo dice donde se apaga, porque creer
+que silenciaste ruido y perder una reclamación sería culpa de esa frase.
+
+#### Una preferencia por persona, no una por tipo de aviso
+
+La tentación es «cada aviso con su casilla». Nadie rellena veinte casillas, y un panel de
+preferencias vacío es el mismo silencio de hoy con más pantallas. La pregunta es una: **¿te mando
+también correo?** La tabla admite una columna `types` el día que alguien pida afinar.
+
+#### La plantilla es la de Laravel
+
+Los tres correos que ya existían construyen su HTML a mano, cada uno el suyo. `MailMessage` se ve
+bien, es responsive y respeta `MAIL_FROM_NAME`. Escribir una cuarta plantilla propia habría sido
+una más que nadie mantiene.
+
+#### Se arregló un callejón sin salida
+
+`SendCentralCustomerPasswordResetPinUseCase` generaba el PIN, lo guardaba con 15 minutos de
+caducidad **y no lo mandaba a ningún sitio**. El controlador lo devuelve solo en `local` y
+`testing`, así que **en producción nadie habría podido recuperar su contraseña**.
+
+Va por `Notification::route('mail', …)` porque quien recupera no tiene sesión, y **no se encola**
+a diferencia del resto: no es un aviso, es un paso que la persona está esperando delante de la
+pantalla. Con la cola caída, encolarlo la dejaría mirando «revisa tu correo» para siempre.
+
+#### Una trampa que costó un test
+
+`ShouldQueue` necesita `Illuminate\Bus\Queueable`, no `InteractsWithQueue`: es el que aporta
+`$connection`, `$queue` y `$delay`. Sin él, encolar lanza «Undefined property: $connection» — y
+con el despachador capturando, **el aviso se perdía sin que nadie viera el error**. Lo cazó el
+test del catálogo, no el ojo.
+
+#### Dos cosas del plan que NO se hicieron, y por qué
+
+**Migrar los tres envíos sueltos al módulo.** Son tres flujos que funcionan; reescribirlos ahora
+es riesgo sin beneficio inmediato, y uno de ellos —la factura— lleva adjunto. Queda pendiente y
+anotado; el módulo no los necesita para nada.
+
+**El freno (`NotificationThrottle`).** Ninguno de los nueve avisos actuales se repite: una
+reclamación se abre una vez, una entrega se declara una vez. El caso que de verdad repite es el
+techo mensual de la fase 4, y **construir el freno antes de tener qué frenar es inventarse un
+problema**. La lección de `MailStaleRateAlerter` sigue anotada para entonces.
 
 ### Fase 4 — Lo periódico
 

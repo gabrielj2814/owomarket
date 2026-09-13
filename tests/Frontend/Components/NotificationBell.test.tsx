@@ -17,11 +17,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
  */
 const buzon = vi.fn();
 const marcarLeido = vi.fn();
+const cambiarCorreo = vi.fn();
 
 vi.mock('@/Services/NotificationServices', () => ({
     default: {
         buzon: (...args: unknown[]) => buzon(...args),
         marcarLeido: (...args: unknown[]) => marcarLeido(...args),
+        cambiarCorreo: (...args: unknown[]) => cambiarCorreo(...args),
     },
 }));
 
@@ -47,8 +49,9 @@ const abrirCampana = async () => {
 describe('Campana de notificaciones', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        buzon.mockResolvedValue({ data: { items: [aviso()], unread: 1 } });
+        buzon.mockResolvedValue({ data: { items: [aviso()], unread: 1, email_enabled: false } });
         marcarLeido.mockResolvedValue({ data: { marked: 1 } });
+        cambiarCorreo.mockResolvedValue({ data: { email_enabled: true } });
     });
 
     it('enseña el contador solo cuando hay avisos sin leer', async () => {
@@ -58,7 +61,7 @@ describe('Campana de notificaciones', () => {
     });
 
     it('sin nada sin leer no enseña contador', async () => {
-        buzon.mockResolvedValue({ data: { items: [aviso({ read: true })], unread: 0 } });
+        buzon.mockResolvedValue({ data: { items: [aviso({ read: true })], unread: 0, email_enabled: false } });
 
         render(<NotificationBell audience="staff" />);
 
@@ -109,13 +112,58 @@ describe('Campana de notificaciones', () => {
     });
 
     it('el buzón vacío invita en vez de disculparse', async () => {
-        buzon.mockResolvedValue({ data: { items: [], unread: 0 } });
+        buzon.mockResolvedValue({ data: { items: [], unread: 0, email_enabled: false } });
 
         render(<NotificationBell audience="staff" />);
 
         await abrirCampana();
 
         expect(await screen.findByTestId('campana-vacia')).toHaveTextContent(/necesite tu atención/i);
+    });
+
+    it('el interruptor de correo refleja lo que dice el servidor', async () => {
+        buzon.mockResolvedValue({ data: { items: [aviso()], unread: 1, email_enabled: true } });
+
+        render(<NotificationBell audience="staff" />);
+
+        await abrirCampana();
+
+        expect(await screen.findByTestId('campana-correo')).toBeChecked();
+    });
+
+    it('el interruptor avisa de que lo urgente llega igual', async () => {
+        /*
+         * EL TEXTO QUE IMPORTA. Si alguien cree que apagó los avisos de reclamaciones y pierde
+         * una por silencio, la culpa es de esta frase. Los críticos no se pueden apagar y la
+         * pantalla tiene que decirlo donde se apaga.
+         */
+        render(<NotificationBell audience="staff" />);
+
+        await abrirCampana();
+
+        expect(await screen.findByText(/urgentes/i)).toBeInTheDocument();
+    });
+
+    it('activar el correo se manda al servidor', async () => {
+        render(<NotificationBell audience="staff" />);
+
+        await abrirCampana();
+        fireEvent.click(await screen.findByTestId('campana-correo'));
+
+        await waitFor(() => expect(cambiarCorreo).toHaveBeenCalledWith('staff', true));
+    });
+
+    it('si el servidor rechaza el cambio, el interruptor vuelve atrás', async () => {
+        // Un interruptor que se queda encendido tras un fallo miente sobre lo que va a llegar.
+        cambiarCorreo.mockRejectedValue(new Error('network'));
+
+        render(<NotificationBell audience="staff" />);
+
+        await abrirCampana();
+        const casilla = await screen.findByTestId('campana-correo');
+        fireEvent.click(casilla);
+
+        await waitFor(() => expect(casilla).not.toBeChecked());
     });
 
     it('el comprador pide su propio buzón, no el del personal', async () => {
