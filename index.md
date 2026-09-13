@@ -1,7 +1,7 @@
 # Qué falta en OwoMarket
 
-> **Última actualización:** 12/09/2026 · Rama `moduleProduct`
-> **Estado de la suite:** 938 tests de backend, 115 de frontend, `tsc --noEmit` limpio.
+> **Última actualización:** 13/09/2026 · Rama `moduleProduct`
+> **Estado de la suite:** 939 tests de backend, 115 de frontend, `tsc --noEmit` limpio.
 > **Flowbite:** 81/83 páginas y 30/34 componentes.
 >
 > Este fichero es el punto de entrada: qué queda, por qué importa y dónde está escrito.
